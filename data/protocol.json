@@ -1,0 +1,1940 @@
+{
+  "toServer": {
+    "id_connected_ping": {
+      "id": "0x00",
+      "online": "false",
+      "fields": [
+        {
+          "name": "sendpingtime",
+          "type": "long"
+        }
+      ]
+    },
+    "id_connected_pong": {
+      "id": "0x03",
+      "online": "false",
+      "fields": [
+        {
+          "name": "sendpingtime",
+          "type": "long"
+        },
+        {
+          "name": "sendpongtime",
+          "type": "long"
+        }
+      ]
+    },
+    "id_detect_lost_connections": {
+      "id": "0x04",
+      "online": "false",
+      "fields": []
+    },
+    "id_open_connection_reply_1": {
+      "id": "0x06",
+      "fields": [
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        },
+        {
+          "name": "server_guid",
+          "type": "long"
+        },
+        {
+          "name": "server_has_security",
+          "type": "byte"
+        },
+        {
+          "name": "mtu_size",
+          "type": "short"
+        }
+      ]
+    },
+    "id_open_connection_reply_2": {
+      "id": "0x08",
+      "fields": [
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        },
+        {
+          "name": "server_guid",
+          "type": "long"
+        },
+        {
+          "name": "clientendpoint",
+          "type": "ipendpoint"
+        },
+        {
+          "name": "mtu_size",
+          "type": "short"
+        },
+        {
+          "name": "do_security_and_handshake",
+          "type": "byte[]"
+        }
+      ]
+    },
+    "id_connection_request": {
+      "id": "0x09",
+      "online": "false",
+      "fields": [
+        {
+          "name": "client_guid",
+          "type": "long"
+        },
+        {
+          "name": "timestamp",
+          "type": "long"
+        },
+        {
+          "name": "do_security",
+          "type": "byte"
+        }
+      ]
+    },
+    "id_connection_request_accepted": {
+      "id": "0x10",
+      "online": "false",
+      "fields": [
+        {
+          "name": "system_address",
+          "type": "ipendpoint"
+        },
+        {
+          "name": "system_addresses",
+          "type": "ipendpoint[]"
+        },
+        {
+          "name": "incoming_timestamp",
+          "type": "long"
+        },
+        {
+          "name": "server_timestamp",
+          "type": "long"
+        }
+      ]
+    },
+    "id_no_free_incoming_connections": {
+      "id": "0x14",
+      "online": "false",
+      "fields": []
+    },
+    "id_disconnection_notification": {
+      "id": "0x15",
+      "online": "false",
+      "fields": []
+    },
+    "id_connection_banned": {
+      "id": "0x17",
+      "online": "false",
+      "fields": []
+    },
+    "id_ip_recently_connected": {
+      "id": "0x1A",
+      "online": "false",
+      "fields": []
+    },
+    "mcpe_player_status": {
+      "id": "0x90",
+      "online": "false",
+      "fields": [
+        {
+          "name": "status",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_disconnect": {
+      "id": "0x91",
+      "online": "false",
+      "fields": [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ]
+    },
+    "mcpe_batch": {
+      "id": "0x92",
+      "online": "false",
+      "fields": [
+        {
+          "name": "payload_size",
+          "type": "int"
+        },
+        {
+          "name": "payload",
+          "type": "byte[]"
+        }
+      ]
+    },
+    "mcpe_text": {
+      "id": "0x93",
+      "online": "false",
+      "fields": [
+        {
+          "name": "type",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_set_time": {
+      "id": "0x94",
+      "online": "false",
+      "fields": [
+        {
+          "name": "time",
+          "type": "int"
+        },
+        {
+          "name": "started",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_start_game": {
+      "id": "0x95",
+      "online": "false",
+      "fields": [
+        {
+          "name": "seed",
+          "type": "int"
+        },
+        {
+          "name": "dimension",
+          "type": "byte"
+        },
+        {
+          "name": "generator",
+          "type": "int"
+        },
+        {
+          "name": "gamemode",
+          "type": "int"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "spawn_x",
+          "type": "int"
+        },
+        {
+          "name": "spawn_y",
+          "type": "int"
+        },
+        {
+          "name": "spawn_z",
+          "type": "int"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "unknown",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_add_player": {
+      "id": "0x96",
+      "online": "false",
+      "fields": [
+        {
+          "name": "uuid",
+          "type": "uuid"
+        },
+        {
+          "name": "username",
+          "type": "string"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "speed_x",
+          "type": "float"
+        },
+        {
+          "name": "speed_y",
+          "type": "float"
+        },
+        {
+          "name": "speed_z",
+          "type": "float"
+        },
+        {
+          "name": "yaw",
+          "type": "float"
+        },
+        {
+          "name": "head_yaw",
+          "type": "float"
+        },
+        {
+          "name": "pitch",
+          "type": "float"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        },
+        {
+          "name": "metadata",
+          "type": "metadatadictionary"
+        }
+      ]
+    },
+    "mcpe_remove_player": {
+      "id": "0x97",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "client_uuid",
+          "type": "uuid"
+        }
+      ]
+    },
+    "mcpe_add_entity": {
+      "id": "0x98",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "entity_type",
+          "type": "int"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "speed_x",
+          "type": "float"
+        },
+        {
+          "name": "speed_y",
+          "type": "float"
+        },
+        {
+          "name": "speed_z",
+          "type": "float"
+        },
+        {
+          "name": "yaw",
+          "type": "float"
+        },
+        {
+          "name": "pitch",
+          "type": "float"
+        },
+        {
+          "name": "metadata",
+          "type": "metadatadictionary"
+        },
+        {
+          "name": "links",
+          "type": "short"
+        }
+      ]
+    },
+    "mcpe_remove_entity": {
+      "id": "0x99",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        }
+      ]
+    },
+    "mcpe_add_item_entity": {
+      "id": "0x9a",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "speed_x",
+          "type": "float"
+        },
+        {
+          "name": "speed_y",
+          "type": "float"
+        },
+        {
+          "name": "speed_z",
+          "type": "float"
+        }
+      ]
+    },
+    "mcpe_take_item_entity": {
+      "id": "0x9b",
+      "online": "false",
+      "fields": [
+        {
+          "name": "target",
+          "type": "long"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        }
+      ]
+    },
+    "mcpe_move_entity": {
+      "id": "0x9c",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entities",
+          "type": "entitylocations"
+        }
+      ]
+    },
+    "mcpe_move_player": {
+      "id": "0x9d",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "yaw",
+          "type": "float"
+        },
+        {
+          "name": "head_yaw",
+          "type": "float"
+        },
+        {
+          "name": "pitch",
+          "type": "float"
+        },
+        {
+          "name": "mode",
+          "type": "byte"
+        },
+        {
+          "name": "on_ground",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_remove_block": {
+      "id": "0x9e",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_update_block": {
+      "id": "0x9f",
+      "online": "false",
+      "fields": [
+        {
+          "name": "blocks",
+          "type": "blockrecords"
+        }
+      ]
+    },
+    "mcpe_add_painting": {
+      "id": "0xa0",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "direction",
+          "type": "int"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        }
+      ]
+    },
+    "mcpe_explode": {
+      "id": "0xa1",
+      "online": "false",
+      "fields": [
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        },
+        {
+          "name": "records",
+          "type": "records"
+        }
+      ]
+    },
+    "mcpe_level_event": {
+      "id": "0xa2",
+      "online": "false",
+      "fields": [
+        {
+          "name": "event_id",
+          "type": "short"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "data",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_tile_event": {
+      "id": "0xa3",
+      "online": "false",
+      "fields": [
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "case_1",
+          "type": "int"
+        },
+        {
+          "name": "case_2",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_entity_event": {
+      "id": "0xa4",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "event_id",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_mob_effect": {
+      "id": "0xa5",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "event_id",
+          "type": "byte"
+        },
+        {
+          "name": "effect_id",
+          "type": "byte"
+        },
+        {
+          "name": "amplifier",
+          "type": "byte"
+        },
+        {
+          "name": "particles",
+          "type": "byte"
+        },
+        {
+          "name": "duration",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_update_attributes": {
+      "id": "0xa6",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "attributes",
+          "type": "playerattributes"
+        }
+      ]
+    },
+    "mcpe_player_equipment": {
+      "id": "0xa7",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        },
+        {
+          "name": "slot",
+          "type": "byte"
+        },
+        {
+          "name": "selected_slot",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_player_armor_equipment": {
+      "id": "0xa8",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "helmet",
+          "type": "item"
+        },
+        {
+          "name": "chestplate",
+          "type": "item"
+        },
+        {
+          "name": "leggings",
+          "type": "item"
+        },
+        {
+          "name": "boots",
+          "type": "item"
+        }
+      ]
+    },
+    "mcpe_interact": {
+      "id": "0xa9",
+      "online": "false",
+      "fields": [
+        {
+          "name": "action_id",
+          "type": "byte"
+        },
+        {
+          "name": "target_entity_id",
+          "type": "long"
+        }
+      ]
+    },
+    "mcpe_use_item": {
+      "id": "0xaa",
+      "online": "false",
+      "fields": [
+        {
+          "name": "blockcoordinates",
+          "type": "blockcoordinates"
+        },
+        {
+          "name": "face",
+          "type": "byte"
+        },
+        {
+          "name": "facecoordinates",
+          "type": "vector3"
+        },
+        {
+          "name": "playerposition",
+          "type": "vector3"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        }
+      ]
+    },
+    "mcpe_hurt_armor": {
+      "id": "0xac",
+      "online": "false",
+      "fields": [
+        {
+          "name": "health",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_set_entity_data": {
+      "id": "0xad",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "metadata",
+          "type": "metadatadictionary"
+        }
+      ]
+    },
+    "mcpe_set_entity_motion": {
+      "id": "0xae",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entities",
+          "type": "entitymotions"
+        }
+      ]
+    },
+    "mcpe_set_entity_link": {
+      "id": "0xaf",
+      "online": "false",
+      "fields": [
+        {
+          "name": "rider_id",
+          "type": "long"
+        },
+        {
+          "name": "ridden_id",
+          "type": "long"
+        },
+        {
+          "name": "link_type",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_set_health": {
+      "id": "0xb0",
+      "online": "false",
+      "fields": [
+        {
+          "name": "health",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_set_spawn_position": {
+      "id": "0xb1",
+      "online": "false",
+      "fields": [
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_animate": {
+      "id": "0xb2",
+      "online": "false",
+      "fields": [
+        {
+          "name": "action_id",
+          "type": "byte"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        }
+      ]
+    },
+    "mcpe_respawn": {
+      "id": "0xb3",
+      "online": "false",
+      "fields": [
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        }
+      ]
+    },
+    "mcpe_container_open": {
+      "id": "0xb5",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "type",
+          "type": "byte"
+        },
+        {
+          "name": "slot_count",
+          "type": "short"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_container_close": {
+      "id": "0xb6",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_container_set_slot": {
+      "id": "0xb7",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "slot",
+          "type": "short"
+        },
+        {
+          "name": "unknown",
+          "type": "short"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        }
+      ]
+    },
+    "mcpe_container_set_data": {
+      "id": "0xb8",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "property",
+          "type": "short"
+        },
+        {
+          "name": "value",
+          "type": "short"
+        }
+      ]
+    },
+    "mcpe_container_set_content": {
+      "id": "0xb9",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "slot_data",
+          "type": "itemstacks"
+        },
+        {
+          "name": "hotbar_data",
+          "type": "metadataints"
+        }
+      ]
+    },
+    "mcpe_crafting_data": {
+      "id": "0xba",
+      "online": "false",
+      "fields": [
+        {
+          "name": "recipes",
+          "type": "recipes"
+        }
+      ]
+    },
+    "mcpe_crafting_event": {
+      "id": "0xbb",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "recipe_type",
+          "type": "int"
+        },
+        {
+          "name": "recipe_id",
+          "type": "uuid"
+        },
+        {
+          "name": "input",
+          "type": "itemstacks"
+        },
+        {
+          "name": "result",
+          "type": "itemstacks"
+        }
+      ]
+    },
+    "mcpe_adventure_settings": {
+      "id": "0xbc",
+      "online": "false",
+      "fields": [
+        {
+          "name": "flags",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_tile_entity_data": {
+      "id": "0xbd",
+      "online": "false",
+      "fields": [
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "namedtag",
+          "type": "nbt"
+        }
+      ]
+    },
+    "mcpe_full_chunk_data": {
+      "id": "0xbf",
+      "online": "false",
+      "fields": [
+        {
+          "name": "chunk_x",
+          "type": "int"
+        },
+        {
+          "name": "chunk_z",
+          "type": "int"
+        },
+        {
+          "name": "order",
+          "type": "byte"
+        },
+        {
+          "name": "chunk_data_length",
+          "type": "int"
+        },
+        {
+          "name": "chunk_data",
+          "type": "byte[]"
+        }
+      ]
+    },
+    "mcpe_set_difficulty": {
+      "id": "0xc0",
+      "online": "false",
+      "fields": [
+        {
+          "name": "difficulty",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_player_list": {
+      "id": "0xc3",
+      "online": "false",
+      "fields": [
+        {
+          "name": "records",
+          "type": "playerrecords"
+        }
+      ]
+    },
+    "mcpe_transfer": {
+      "id": "0x1b",
+      "online": "false",
+      "fields": [
+        {
+          "name": "endpoint",
+          "type": "ipendpoint"
+        }
+      ]
+    },
+    "mcpe_spawn_experience_orb": {
+      "id": "0xc5",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "count",
+          "type": "int"
+        }
+      ]
+    }
+  },
+  "toClient": {
+    "id_connected_ping": {
+      "id": "0x00",
+      "online": "false",
+      "fields": [
+        {
+          "name": "sendpingtime",
+          "type": "long"
+        }
+      ]
+    },
+    "id_unconnected_ping": {
+      "id": "0x01",
+      "online": "false",
+      "fields": [
+        {
+          "name": "ping_id",
+          "type": "long"
+        },
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        }
+      ]
+    },
+    "id_connected_pong": {
+      "id": "0x03",
+      "online": "false",
+      "fields": [
+        {
+          "name": "sendpingtime",
+          "type": "long"
+        },
+        {
+          "name": "sendpongtime",
+          "type": "long"
+        }
+      ]
+    },
+    "id_unconnected_pong": {
+      "id": "0x1c",
+      "fields": [
+        {
+          "name": "ping_id",
+          "type": "long"
+        },
+        {
+          "name": "server_id",
+          "type": "long"
+        },
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        },
+        {
+          "name": "server_name",
+          "type": "string"
+        }
+      ]
+    },
+    "id_open_connection_request_1": {
+      "id": "0x05",
+      "fields": [
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        },
+        {
+          "name": "raknet_protocol_version",
+          "type": "byte"
+        }
+      ]
+    },
+    "id_open_connection_request_2": {
+      "id": "0x07",
+      "fields": [
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        },
+        {
+          "name": "clientendpoint",
+          "type": "ipendpoint"
+        },
+        {
+          "name": "mtu_size",
+          "type": "short"
+        },
+        {
+          "name": "client_guid",
+          "type": "long"
+        }
+      ]
+    },
+    "id_new_incoming_connection": {
+      "id": "0x13",
+      "online": "false",
+      "fields": [
+        {
+          "name": "cookie",
+          "type": "int"
+        },
+        {
+          "name": "do_security",
+          "type": "byte"
+        },
+        {
+          "name": "port",
+          "type": "short"
+        },
+        {
+          "name": "session",
+          "type": "long"
+        },
+        {
+          "name": "session2",
+          "type": "long"
+        }
+      ]
+    },
+    "id_no_free_incoming_connections": {
+      "id": "0x14",
+      "online": "false",
+      "fields": []
+    },
+    "id_disconnection_notification": {
+      "id": "0x15",
+      "online": "false",
+      "fields": []
+    },
+    "id_connection_banned": {
+      "id": "0x17",
+      "online": "false",
+      "fields": []
+    },
+    "id_ip_recently_connected": {
+      "id": "0x1A",
+      "online": "false",
+      "fields": []
+    },
+    "mcpe_login": {
+      "id": "0x8f",
+      "online": "false",
+      "fields": [
+        {
+          "name": "username",
+          "type": "string"
+        },
+        {
+          "name": "protocol",
+          "type": "int"
+        },
+        {
+          "name": "protocol2",
+          "type": "int"
+        },
+        {
+          "name": "client_id",
+          "type": "long"
+        },
+        {
+          "name": "client_uuid",
+          "type": "uuid"
+        },
+        {
+          "name": "server_address",
+          "type": "string"
+        },
+        {
+          "name": "client_secret",
+          "type": "string"
+        },
+        {
+          "name": "skin",
+          "type": "skin"
+        }
+      ]
+    },
+    "mcpe_add_player": {
+      "id": "0x96",
+      "online": "false",
+      "fields": [
+        {
+          "name": "uuid",
+          "type": "uuid"
+        },
+        {
+          "name": "username",
+          "type": "string"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "speed_x",
+          "type": "float"
+        },
+        {
+          "name": "speed_y",
+          "type": "float"
+        },
+        {
+          "name": "speed_z",
+          "type": "float"
+        },
+        {
+          "name": "yaw",
+          "type": "float"
+        },
+        {
+          "name": "head_yaw",
+          "type": "float"
+        },
+        {
+          "name": "pitch",
+          "type": "float"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        },
+        {
+          "name": "metadata",
+          "type": "metadatadictionary"
+        }
+      ]
+    },
+    "mcpe_add_item_entity": {
+      "id": "0x9a",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "speed_x",
+          "type": "float"
+        },
+        {
+          "name": "speed_y",
+          "type": "float"
+        },
+        {
+          "name": "speed_z",
+          "type": "float"
+        }
+      ]
+    },
+    "mcpe_take_item_entity": {
+      "id": "0x9b",
+      "online": "false",
+      "fields": [
+        {
+          "name": "target",
+          "type": "long"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        }
+      ]
+    },
+    "mcpe_move_entity": {
+      "id": "0x9c",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entities",
+          "type": "entitylocations"
+        }
+      ]
+    },
+    "mcpe_move_player": {
+      "id": "0x9d",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "yaw",
+          "type": "float"
+        },
+        {
+          "name": "head_yaw",
+          "type": "float"
+        },
+        {
+          "name": "pitch",
+          "type": "float"
+        },
+        {
+          "name": "mode",
+          "type": "byte"
+        },
+        {
+          "name": "on_ground",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_remove_block": {
+      "id": "0x9e",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_update_block": {
+      "id": "0x9f",
+      "online": "false",
+      "fields": [
+        {
+          "name": "blocks",
+          "type": "blockrecords"
+        }
+      ]
+    },
+    "mcpe_add_painting": {
+      "id": "0xa0",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "direction",
+          "type": "int"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        }
+      ]
+    },
+    "mcpe_level_event": {
+      "id": "0xa2",
+      "online": "false",
+      "fields": [
+        {
+          "name": "event_id",
+          "type": "short"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "data",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_tile_event": {
+      "id": "0xa3",
+      "online": "false",
+      "fields": [
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "case_1",
+          "type": "int"
+        },
+        {
+          "name": "case_2",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_entity_event": {
+      "id": "0xa4",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "event_id",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_mob_effect": {
+      "id": "0xa5",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "event_id",
+          "type": "byte"
+        },
+        {
+          "name": "effect_id",
+          "type": "byte"
+        },
+        {
+          "name": "amplifier",
+          "type": "byte"
+        },
+        {
+          "name": "particles",
+          "type": "byte"
+        },
+        {
+          "name": "duration",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_update_attributes": {
+      "id": "0xa6",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "attributes",
+          "type": "playerattributes"
+        }
+      ]
+    },
+    "mcpe_player_equipment": {
+      "id": "0xa7",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        },
+        {
+          "name": "slot",
+          "type": "byte"
+        },
+        {
+          "name": "selected_slot",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_player_armor_equipment": {
+      "id": "0xa8",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "helmet",
+          "type": "item"
+        },
+        {
+          "name": "chestplate",
+          "type": "item"
+        },
+        {
+          "name": "leggings",
+          "type": "item"
+        },
+        {
+          "name": "boots",
+          "type": "item"
+        }
+      ]
+    },
+    "mcpe_interact": {
+      "id": "0xa9",
+      "online": "false",
+      "fields": [
+        {
+          "name": "action_id",
+          "type": "byte"
+        },
+        {
+          "name": "target_entity_id",
+          "type": "long"
+        }
+      ]
+    },
+    "mcpe_use_item": {
+      "id": "0xaa",
+      "online": "false",
+      "fields": [
+        {
+          "name": "blockcoordinates",
+          "type": "blockcoordinates"
+        },
+        {
+          "name": "face",
+          "type": "byte"
+        },
+        {
+          "name": "facecoordinates",
+          "type": "vector3"
+        },
+        {
+          "name": "playerposition",
+          "type": "vector3"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        }
+      ]
+    },
+    "mcpe_player_action": {
+      "id": "0xab",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "action_id",
+          "type": "int"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "face",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_hurt_armor": {
+      "id": "0xac",
+      "online": "false",
+      "fields": [
+        {
+          "name": "health",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_set_entity_motion": {
+      "id": "0xae",
+      "online": "false",
+      "fields": [
+        {
+          "name": "entities",
+          "type": "entitymotions"
+        }
+      ]
+    },
+    "mcpe_set_entity_link": {
+      "id": "0xaf",
+      "online": "false",
+      "fields": [
+        {
+          "name": "rider_id",
+          "type": "long"
+        },
+        {
+          "name": "ridden_id",
+          "type": "long"
+        },
+        {
+          "name": "link_type",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_animate": {
+      "id": "0xb2",
+      "online": "false",
+      "fields": [
+        {
+          "name": "action_id",
+          "type": "byte"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        }
+      ]
+    },
+    "mcpe_respawn": {
+      "id": "0xb3",
+      "online": "false",
+      "fields": [
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        }
+      ]
+    },
+    "mcpe_drop_item": {
+      "id": "0xb4",
+      "online": "false",
+      "fields": [
+        {
+          "name": "itemtype",
+          "type": "byte"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        }
+      ]
+    },
+    "mcpe_container_open": {
+      "id": "0xb5",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "type",
+          "type": "byte"
+        },
+        {
+          "name": "slot_count",
+          "type": "short"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_container_close": {
+      "id": "0xb6",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        }
+      ]
+    },
+    "mcpe_container_set_slot": {
+      "id": "0xb7",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "slot",
+          "type": "short"
+        },
+        {
+          "name": "unknown",
+          "type": "short"
+        },
+        {
+          "name": "item",
+          "type": "item"
+        }
+      ]
+    },
+    "mcpe_container_set_data": {
+      "id": "0xb8",
+      "online": "false",
+      "fields": [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "property",
+          "type": "short"
+        },
+        {
+          "name": "value",
+          "type": "short"
+        }
+      ]
+    }
+  }
+}

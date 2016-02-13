@@ -1,0 +1,35 @@
+{
+  "name": "pocket-minecraft-protocol",
+  "version": "0.1.0",
+  "description": "Parse and serialize Minecraft pocket edition packets.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "minecraft",
+    "pocket-edition",
+    "protocol"
+  ],
+  "author": "mhsjlw <mhsjlw@aol.com>",
+  "license": "MIT",
+  "dependencies": {
+    "babel-runtime": "^5.4.4",
+    "protodef": "0.2.2",
+    "xml2js": "0.4.16"
+  },
+  "devDependencies": {
+    "gulp": "3.8.11",
+    "gulp-babel": "5.1.0",
+    "gulp-plumber": "1.0.1",
+    "gulp-sourcemaps": "1.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhsjlw/pocket-minecraft-protocol.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mhsjlw/pocket-minecraft-protocol/issues"
+  },
+  "homepage": "https://github.com/mhsjlw/pocket-minecraft-protocol#readme"
+}
