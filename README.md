@@ -4,7 +4,7 @@ pocket-minecraft-protocol
 [![NPM version](https://img.shields.io/npm/v/pocket-minecraft-protocol.svg)](http://npmjs.com/package/pocket-minecraft-protocol)
 [![Join the chat at https://gitter.im/PrismarineJS/node-minecraft-protocol](https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg)](https://gitter.im/PrismarineJS/node-minecraft-protocol)
 
-Parse and serialize Minecraft pocket edition packets.
+Parse and serialize Minecraft PE packets.
 
 ## Features
   
