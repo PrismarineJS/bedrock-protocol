@@ -15,7 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "babel-runtime": "^5.4.4",
-    "protodef": "0.2.2",
+    "protodef": "^1.0.0",
     "xml2js": "0.4.16"
   },
   "devDependencies": {

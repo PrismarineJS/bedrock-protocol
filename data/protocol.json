@@ -6,7 +6,7 @@
       "fields": [
         {
           "name": "sendpingtime",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -16,11 +16,11 @@
       "fields": [
         {
           "name": "sendpingtime",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "sendpongtime",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -38,15 +38,15 @@
         },
         {
           "name": "server_guid",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "server_has_security",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "mtu_size",
-          "type": "short"
+          "type": "i16"
         }
       ]
     },
@@ -59,7 +59,7 @@
         },
         {
           "name": "server_guid",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "clientendpoint",
@@ -67,7 +67,7 @@
         },
         {
           "name": "mtu_size",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "do_security_and_handshake",
@@ -81,15 +81,15 @@
       "fields": [
         {
           "name": "client_guid",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "timestamp",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "do_security",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -107,11 +107,11 @@
         },
         {
           "name": "incoming_timestamp",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "server_timestamp",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -141,7 +141,7 @@
       "fields": [
         {
           "name": "status",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -161,7 +161,7 @@
       "fields": [
         {
           "name": "payload_size",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "payload",
@@ -175,7 +175,7 @@
       "fields": [
         {
           "name": "type",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -185,11 +185,11 @@
       "fields": [
         {
           "name": "time",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "started",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -199,51 +199,51 @@
       "fields": [
         {
           "name": "seed",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "dimension",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "generator",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "gamemode",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "spawn_x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "spawn_y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "spawn_z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "unknown",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -261,43 +261,43 @@
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "head_yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "item",
@@ -315,7 +315,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "client_uuid",
@@ -329,43 +329,43 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "entity_type",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "metadata",
@@ -373,7 +373,7 @@
         },
         {
           "name": "links",
-          "type": "short"
+          "type": "i16"
         }
       ]
     },
@@ -383,7 +383,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -393,7 +393,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "item",
@@ -401,27 +401,27 @@
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         }
       ]
     },
@@ -431,11 +431,11 @@
       "fields": [
         {
           "name": "target",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -455,39 +455,39 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "head_yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "mode",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "on_ground",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -497,19 +497,19 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -529,23 +529,23 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "direction",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "title",
@@ -559,19 +559,19 @@
       "fields": [
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "radius",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "records",
@@ -585,23 +585,23 @@
       "fields": [
         {
           "name": "event_id",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "data",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -611,23 +611,23 @@
       "fields": [
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "case_1",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "case_2",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -637,11 +637,11 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "event_id",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -651,27 +651,27 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "event_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "effect_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "amplifier",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "particles",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "duration",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -681,7 +681,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "attributes",
@@ -695,7 +695,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "item",
@@ -703,11 +703,11 @@
         },
         {
           "name": "slot",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "selected_slot",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -717,7 +717,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "helmet",
@@ -743,11 +743,11 @@
       "fields": [
         {
           "name": "action_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "target_entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -761,7 +761,7 @@
         },
         {
           "name": "face",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "facecoordinates",
@@ -783,7 +783,7 @@
       "fields": [
         {
           "name": "health",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -793,7 +793,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "metadata",
@@ -817,15 +817,15 @@
       "fields": [
         {
           "name": "rider_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "ridden_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "link_type",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -835,7 +835,7 @@
       "fields": [
         {
           "name": "health",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -845,15 +845,15 @@
       "fields": [
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -863,11 +863,11 @@
       "fields": [
         {
           "name": "action_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -877,15 +877,15 @@
       "fields": [
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         }
       ]
     },
@@ -895,27 +895,27 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "type",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot_count",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -925,7 +925,7 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -935,15 +935,15 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "unknown",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "item",
@@ -957,15 +957,15 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "property",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "value",
-          "type": "short"
+          "type": "i16"
         }
       ]
     },
@@ -975,7 +975,7 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot_data",
@@ -1003,11 +1003,11 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "recipe_type",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "recipe_id",
@@ -1029,7 +1029,7 @@
       "fields": [
         {
           "name": "flags",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -1039,15 +1039,15 @@
       "fields": [
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "namedtag",
@@ -1061,19 +1061,19 @@
       "fields": [
         {
           "name": "chunk_x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "chunk_z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "order",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "chunk_data_length",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "chunk_data",
@@ -1087,7 +1087,7 @@
       "fields": [
         {
           "name": "difficulty",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -1117,23 +1117,23 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "count",
-          "type": "int"
+          "type": "i32"
         }
       ]
     }
@@ -1145,7 +1145,7 @@
       "fields": [
         {
           "name": "sendpingtime",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -1155,7 +1155,7 @@
       "fields": [
         {
           "name": "ping_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "offline_message_data_id",
@@ -1169,11 +1169,11 @@
       "fields": [
         {
           "name": "sendpingtime",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "sendpongtime",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -1182,11 +1182,11 @@
       "fields": [
         {
           "name": "ping_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "server_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "offline_message_data_id",
@@ -1207,7 +1207,7 @@
         },
         {
           "name": "raknet_protocol_version",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1224,11 +1224,11 @@
         },
         {
           "name": "mtu_size",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "client_guid",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -1238,23 +1238,23 @@
       "fields": [
         {
           "name": "cookie",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "do_security",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "port",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "session",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "session2",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -1288,15 +1288,15 @@
         },
         {
           "name": "protocol",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "protocol2",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "client_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "client_uuid",
@@ -1330,43 +1330,43 @@
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "head_yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "item",
@@ -1384,7 +1384,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "item",
@@ -1392,27 +1392,27 @@
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         }
       ]
     },
@@ -1422,11 +1422,11 @@
       "fields": [
         {
           "name": "target",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -1446,39 +1446,39 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "head_yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "mode",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "on_ground",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1488,19 +1488,19 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1520,23 +1520,23 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "direction",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "title",
@@ -1550,23 +1550,23 @@
       "fields": [
         {
           "name": "event_id",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "data",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -1576,23 +1576,23 @@
       "fields": [
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "case_1",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "case_2",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -1602,11 +1602,11 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "event_id",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1616,27 +1616,27 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "event_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "effect_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "amplifier",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "particles",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "duration",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -1646,7 +1646,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "attributes",
@@ -1660,7 +1660,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "item",
@@ -1668,11 +1668,11 @@
         },
         {
           "name": "slot",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "selected_slot",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1682,7 +1682,7 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "helmet",
@@ -1708,11 +1708,11 @@
       "fields": [
         {
           "name": "action_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "target_entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -1726,7 +1726,7 @@
         },
         {
           "name": "face",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "facecoordinates",
@@ -1748,27 +1748,27 @@
       "fields": [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "action_id",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "face",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -1778,7 +1778,7 @@
       "fields": [
         {
           "name": "health",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1798,15 +1798,15 @@
       "fields": [
         {
           "name": "rider_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "ridden_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "link_type",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1816,11 +1816,11 @@
       "fields": [
         {
           "name": "action_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     },
@@ -1830,15 +1830,15 @@
       "fields": [
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         }
       ]
     },
@@ -1848,7 +1848,7 @@
       "fields": [
         {
           "name": "itemtype",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "item",
@@ -1862,27 +1862,27 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "type",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot_count",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         }
       ]
     },
@@ -1892,7 +1892,7 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     },
@@ -1902,15 +1902,15 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "unknown",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "item",
@@ -1924,15 +1924,15 @@
       "fields": [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "property",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "value",
-          "type": "short"
+          "type": "i16"
         }
       ]
     }
