@@ -1,9 +1,10 @@
 {
   "name": "pocket-minecraft-protocol",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Parse and serialize Minecraft pocket edition packets.",
   "main": "index.js",
   "scripts": {
+    "prepublish": "gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -12,11 +13,19 @@
     "protocol"
   ],
   "author": "mhsjlw <mhsjlw@aol.com>",
+  "contributors": [
+    "rom1504"
+  ],
   "license": "MIT",
   "dependencies": {
     "babel-runtime": "^5.4.4",
+<<<<<<< 6dfd78b12f3010ef09633a3bec362d8d552d8452
     "protodef": "^1.0.0",
     "xml2js": "0.4.16"
+=======
+    "protodef": "0.2.2",
+    "raknet": "^1.1.0"
+>>>>>>> update to 14.0 and add node-raknet
   },
   "devDependencies": {
     "gulp": "3.8.11",

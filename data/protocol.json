@@ -1101,6 +1101,26 @@
         }
       ]
     },
+    "mcpe_request_chunk_radius": {
+      "id": "0xc8",
+      "online": "false",
+      "fields": [
+        {
+          "name": "chunk_radius",
+          "type": "int"
+        }
+      ]
+    },
+    "mcpe_chunk_radius_update": {
+      "id": "0xc9",
+      "online": "false",
+      "fields": [
+        {
+          "name": "chunk_radius",
+          "type": "int"
+        }
+      ]
+    },
     "mcpe_transfer": {
       "id": "0x1b",
       "online": "false",
