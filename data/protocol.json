@@ -223,7 +223,7 @@
         },
         {
           "name": "payload",
-          "type": "byte[]"
+          "type": "byte_array"
         }
       ]
     ],
@@ -1135,7 +1135,7 @@
         },
         {
           "name": "chunk_data",
-          "type": "byte[]"
+          "type": "byte_array"
         }
       ]
     ],
