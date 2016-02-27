@@ -1,1212 +1,221 @@
 {
-  "toServer": {
-    "id_connected_ping": {
-      "id": "0x00",
-      "online": "false",
-      "fields": [
+  "types": {
+    "packet": [
+      "container",
+      [
         {
-          "name": "sendpingtime",
-          "type": "i64"
+          "name": "name",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0x00": "id_connected_ping",
+                "0x01": "id_unconnected_ping",
+                "0x03": "id_connected_pong",
+                "0x04": "id_detect_lost_connections",
+                "0x1c": "id_unconnected_pong",
+                "0x05": "id_open_connection_request_1",
+                "0x06": "id_open_connection_reply_1",
+                "0x07": "id_open_connection_request_2",
+                "0x08": "id_open_connection_reply_2",
+                "0x09": "id_connection_request",
+                "0x10": "id_connection_request_accepted",
+                "0x13": "id_new_incoming_connection",
+                "0x14": "id_no_free_incoming_connections",
+                "0x15": "id_disconnection_notification",
+                "0x17": "id_connection_banned",
+                "0x1A": "id_ip_recently_connected",
+                "0x8f": "mcpe_login",
+                "0x90": "mcpe_player_status",
+                "0x91": "mcpe_disconnect",
+                "0x92": "mcpe_batch",
+                "0x93": "mcpe_text",
+                "0x94": "mcpe_set_time",
+                "0x95": "mcpe_start_game",
+                "0x96": "mcpe_add_player",
+                "0x97": "mcpe_remove_player",
+                "0x98": "mcpe_add_entity",
+                "0x99": "mcpe_remove_entity",
+                "0x9a": "mcpe_add_item_entity",
+                "0x9b": "mcpe_take_item_entity",
+                "0x9c": "mcpe_move_entity",
+                "0x9d": "mcpe_move_player",
+                "0x9e": "mcpe_remove_block",
+                "0x9f": "mcpe_update_block",
+                "0xa0": "mcpe_add_painting",
+                "0xa1": "mcpe_explode",
+                "0xa2": "mcpe_level_event",
+                "0xa3": "mcpe_tile_event",
+                "0xa4": "mcpe_entity_event",
+                "0xa5": "mcpe_mob_effect",
+                "0xa6": "mcpe_update_attributes",
+                "0xa7": "mcpe_player_equipment",
+                "0xa8": "mcpe_player_armor_equipment",
+                "0xa9": "mcpe_interact",
+                "0xaa": "mcpe_use_item",
+                "0xab": "mcpe_player_action",
+                "0xac": "mcpe_hurt_armor",
+                "0xad": "mcpe_set_entity_data",
+                "0xae": "mcpe_set_entity_motion",
+                "0xaf": "mcpe_set_entity_link",
+                "0xb0": "mcpe_set_health",
+                "0xb1": "mcpe_set_spawn_position",
+                "0xb2": "mcpe_animate",
+                "0xb3": "mcpe_respawn",
+                "0xb4": "mcpe_drop_item",
+                "0xb5": "mcpe_container_open",
+                "0xb6": "mcpe_container_close",
+                "0xb7": "mcpe_container_set_slot",
+                "0xb8": "mcpe_container_set_data",
+                "0xb9": "mcpe_container_set_content",
+                "0xba": "mcpe_crafting_data",
+                "0xbb": "mcpe_crafting_event",
+                "0xbc": "mcpe_adventure_settings",
+                "0xbd": "mcpe_tile_entity_data",
+                "0xbf": "mcpe_full_chunk_data",
+                "0xc0": "mcpe_set_difficulty",
+                "0xc3": "mcpe_player_list",
+                "0xc8": "mcpe_request_chunk_radius",
+                "0xc9": "mcpe_chunk_radius_update",
+                "0x1b": "mcpe_transfer",
+                "0xc5": "mcpe_spawn_experience_orb"
+              }
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "type": [
+            "switch",
+            {
+              "compareTo": "name",
+              "fields": {
+                "id_connected_ping": "packet_id_connected_ping",
+                "id_unconnected_ping": "packet_id_unconnected_ping",
+                "id_connected_pong": "packet_id_connected_pong",
+                "id_detect_lost_connections": "packet_id_detect_lost_connections",
+                "id_unconnected_pong": "packet_id_unconnected_pong",
+                "id_open_connection_request_1": "packet_id_open_connection_request_1",
+                "id_open_connection_reply_1": "packet_id_open_connection_reply_1",
+                "id_open_connection_request_2": "packet_id_open_connection_request_2",
+                "id_open_connection_reply_2": "packet_id_open_connection_reply_2",
+                "id_connection_request": "packet_id_connection_request",
+                "id_connection_request_accepted": "packet_id_connection_request_accepted",
+                "id_new_incoming_connection": "packet_id_new_incoming_connection",
+                "id_no_free_incoming_connections": "packet_id_no_free_incoming_connections",
+                "id_disconnection_notification": "packet_id_disconnection_notification",
+                "id_connection_banned": "packet_id_connection_banned",
+                "id_ip_recently_connected": "packet_id_ip_recently_connected",
+                "mcpe_login": "packet_mcpe_login",
+                "mcpe_player_status": "packet_mcpe_player_status",
+                "mcpe_disconnect": "packet_mcpe_disconnect",
+                "mcpe_batch": "packet_mcpe_batch",
+                "mcpe_text": "packet_mcpe_text",
+                "mcpe_set_time": "packet_mcpe_set_time",
+                "mcpe_start_game": "packet_mcpe_start_game",
+                "mcpe_add_player": "packet_mcpe_add_player",
+                "mcpe_remove_player": "packet_mcpe_remove_player",
+                "mcpe_add_entity": "packet_mcpe_add_entity",
+                "mcpe_remove_entity": "packet_mcpe_remove_entity",
+                "mcpe_add_item_entity": "packet_mcpe_add_item_entity",
+                "mcpe_take_item_entity": "packet_mcpe_take_item_entity",
+                "mcpe_move_entity": "packet_mcpe_move_entity",
+                "mcpe_move_player": "packet_mcpe_move_player",
+                "mcpe_remove_block": "packet_mcpe_remove_block",
+                "mcpe_update_block": "packet_mcpe_update_block",
+                "mcpe_add_painting": "packet_mcpe_add_painting",
+                "mcpe_explode": "packet_mcpe_explode",
+                "mcpe_level_event": "packet_mcpe_level_event",
+                "mcpe_tile_event": "packet_mcpe_tile_event",
+                "mcpe_entity_event": "packet_mcpe_entity_event",
+                "mcpe_mob_effect": "packet_mcpe_mob_effect",
+                "mcpe_update_attributes": "packet_mcpe_update_attributes",
+                "mcpe_player_equipment": "packet_mcpe_player_equipment",
+                "mcpe_player_armor_equipment": "packet_mcpe_player_armor_equipment",
+                "mcpe_interact": "packet_mcpe_interact",
+                "mcpe_use_item": "packet_mcpe_use_item",
+                "mcpe_player_action": "packet_mcpe_player_action",
+                "mcpe_hurt_armor": "packet_mcpe_hurt_armor",
+                "mcpe_set_entity_data": "packet_mcpe_set_entity_data",
+                "mcpe_set_entity_motion": "packet_mcpe_set_entity_motion",
+                "mcpe_set_entity_link": "packet_mcpe_set_entity_link",
+                "mcpe_set_health": "packet_mcpe_set_health",
+                "mcpe_set_spawn_position": "packet_mcpe_set_spawn_position",
+                "mcpe_animate": "packet_mcpe_animate",
+                "mcpe_respawn": "packet_mcpe_respawn",
+                "mcpe_drop_item": "packet_mcpe_drop_item",
+                "mcpe_container_open": "packet_mcpe_container_open",
+                "mcpe_container_close": "packet_mcpe_container_close",
+                "mcpe_container_set_slot": "packet_mcpe_container_set_slot",
+                "mcpe_container_set_data": "packet_mcpe_container_set_data",
+                "mcpe_container_set_content": "packet_mcpe_container_set_content",
+                "mcpe_crafting_data": "packet_mcpe_crafting_data",
+                "mcpe_crafting_event": "packet_mcpe_crafting_event",
+                "mcpe_adventure_settings": "packet_mcpe_adventure_settings",
+                "mcpe_tile_entity_data": "packet_mcpe_tile_entity_data",
+                "mcpe_full_chunk_data": "packet_mcpe_full_chunk_data",
+                "mcpe_set_difficulty": "packet_mcpe_set_difficulty",
+                "mcpe_player_list": "packet_mcpe_player_list",
+                "mcpe_request_chunk_radius": "packet_mcpe_request_chunk_radius",
+                "mcpe_chunk_radius_update": "packet_mcpe_chunk_radius_update",
+                "mcpe_transfer": "packet_mcpe_transfer",
+                "mcpe_spawn_experience_orb": "packet_mcpe_spawn_experience_orb"
+              }
+            }
+          ]
         }
       ]
-    },
-    "id_connected_pong": {
-      "id": "0x03",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_id_connected_ping": [
+      "container",
+      [
         {
           "name": "sendpingtime",
-          "type": "i64"
+          "type": "long"
+        }
+      ]
+    ],
+    "packet_id_unconnected_ping": [
+      "container",
+      [
+        {
+          "name": "ping_id",
+          "type": "long"
+        },
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        }
+      ]
+    ],
+    "packet_id_connected_pong": [
+      "container",
+      [
+        {
+          "name": "sendpingtime",
+          "type": "long"
         },
         {
           "name": "sendpongtime",
-          "type": "i64"
+          "type": "long"
         }
       ]
-    },
-    "id_detect_lost_connections": {
-      "id": "0x04",
-      "online": "false",
-      "fields": []
-    },
-    "id_open_connection_reply_1": {
-      "id": "0x06",
-      "fields": [
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        },
-        {
-          "name": "server_guid",
-          "type": "i64"
-        },
-        {
-          "name": "server_has_security",
-          "type": "i8"
-        },
-        {
-          "name": "mtu_size",
-          "type": "i16"
-        }
-      ]
-    },
-    "id_open_connection_reply_2": {
-      "id": "0x08",
-      "fields": [
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        },
-        {
-          "name": "server_guid",
-          "type": "i64"
-        },
-        {
-          "name": "clientendpoint",
-          "type": "ipendpoint"
-        },
-        {
-          "name": "mtu_size",
-          "type": "i16"
-        },
-        {
-          "name": "do_security_and_handshake",
-          "type": "byte[]"
-        }
-      ]
-    },
-    "id_connection_request": {
-      "id": "0x09",
-      "online": "false",
-      "fields": [
-        {
-          "name": "client_guid",
-          "type": "i64"
-        },
-        {
-          "name": "timestamp",
-          "type": "i64"
-        },
-        {
-          "name": "do_security",
-          "type": "i8"
-        }
-      ]
-    },
-    "id_connection_request_accepted": {
-      "id": "0x10",
-      "online": "false",
-      "fields": [
-        {
-          "name": "system_address",
-          "type": "ipendpoint"
-        },
-        {
-          "name": "system_addresses",
-          "type": "ipendpoint[]"
-        },
-        {
-          "name": "incoming_timestamp",
-          "type": "i64"
-        },
-        {
-          "name": "server_timestamp",
-          "type": "i64"
-        }
-      ]
-    },
-    "id_no_free_incoming_connections": {
-      "id": "0x14",
-      "online": "false",
-      "fields": []
-    },
-    "id_disconnection_notification": {
-      "id": "0x15",
-      "online": "false",
-      "fields": []
-    },
-    "id_connection_banned": {
-      "id": "0x17",
-      "online": "false",
-      "fields": []
-    },
-    "id_ip_recently_connected": {
-      "id": "0x1A",
-      "online": "false",
-      "fields": []
-    },
-    "mcpe_player_status": {
-      "id": "0x90",
-      "online": "false",
-      "fields": [
-        {
-          "name": "status",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_disconnect": {
-      "id": "0x91",
-      "online": "false",
-      "fields": [
-        {
-          "name": "message",
-          "type": "string"
-        }
-      ]
-    },
-    "mcpe_batch": {
-      "id": "0x92",
-      "online": "false",
-      "fields": [
-        {
-          "name": "payload_size",
-          "type": "i32"
-        },
-        {
-          "name": "payload",
-          "type": "byte[]"
-        }
-      ]
-    },
-    "mcpe_text": {
-      "id": "0x93",
-      "online": "false",
-      "fields": [
-        {
-          "name": "type",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_set_time": {
-      "id": "0x94",
-      "online": "false",
-      "fields": [
-        {
-          "name": "time",
-          "type": "i32"
-        },
-        {
-          "name": "started",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_start_game": {
-      "id": "0x95",
-      "online": "false",
-      "fields": [
-        {
-          "name": "seed",
-          "type": "i32"
-        },
-        {
-          "name": "dimension",
-          "type": "i8"
-        },
-        {
-          "name": "generator",
-          "type": "i32"
-        },
-        {
-          "name": "gamemode",
-          "type": "i32"
-        },
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "spawn_x",
-          "type": "i32"
-        },
-        {
-          "name": "spawn_y",
-          "type": "i32"
-        },
-        {
-          "name": "spawn_z",
-          "type": "i32"
-        },
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        },
-        {
-          "name": "unknown",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_add_player": {
-      "id": "0x96",
-      "online": "false",
-      "fields": [
-        {
-          "name": "uuid",
-          "type": "uuid"
-        },
-        {
-          "name": "username",
-          "type": "string"
-        },
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        },
-        {
-          "name": "speed_x",
-          "type": "f32"
-        },
-        {
-          "name": "speed_y",
-          "type": "f32"
-        },
-        {
-          "name": "speed_z",
-          "type": "f32"
-        },
-        {
-          "name": "yaw",
-          "type": "f32"
-        },
-        {
-          "name": "head_yaw",
-          "type": "f32"
-        },
-        {
-          "name": "pitch",
-          "type": "f32"
-        },
-        {
-          "name": "item",
-          "type": "item"
-        },
-        {
-          "name": "metadata",
-          "type": "metadatadictionary"
-        }
-      ]
-    },
-    "mcpe_remove_player": {
-      "id": "0x97",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "client_uuid",
-          "type": "uuid"
-        }
-      ]
-    },
-    "mcpe_add_entity": {
-      "id": "0x98",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "entity_type",
-          "type": "i32"
-        },
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        },
-        {
-          "name": "speed_x",
-          "type": "f32"
-        },
-        {
-          "name": "speed_y",
-          "type": "f32"
-        },
-        {
-          "name": "speed_z",
-          "type": "f32"
-        },
-        {
-          "name": "yaw",
-          "type": "f32"
-        },
-        {
-          "name": "pitch",
-          "type": "f32"
-        },
-        {
-          "name": "metadata",
-          "type": "metadatadictionary"
-        },
-        {
-          "name": "links",
-          "type": "i16"
-        }
-      ]
-    },
-    "mcpe_remove_entity": {
-      "id": "0x99",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        }
-      ]
-    },
-    "mcpe_add_item_entity": {
-      "id": "0x9a",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "item",
-          "type": "item"
-        },
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        },
-        {
-          "name": "speed_x",
-          "type": "f32"
-        },
-        {
-          "name": "speed_y",
-          "type": "f32"
-        },
-        {
-          "name": "speed_z",
-          "type": "f32"
-        }
-      ]
-    },
-    "mcpe_take_item_entity": {
-      "id": "0x9b",
-      "online": "false",
-      "fields": [
-        {
-          "name": "target",
-          "type": "i64"
-        },
-        {
-          "name": "entity_id",
-          "type": "i64"
-        }
-      ]
-    },
-    "mcpe_move_entity": {
-      "id": "0x9c",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entities",
-          "type": "entitylocations"
-        }
-      ]
-    },
-    "mcpe_move_player": {
-      "id": "0x9d",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        },
-        {
-          "name": "yaw",
-          "type": "f32"
-        },
-        {
-          "name": "head_yaw",
-          "type": "f32"
-        },
-        {
-          "name": "pitch",
-          "type": "f32"
-        },
-        {
-          "name": "mode",
-          "type": "i8"
-        },
-        {
-          "name": "on_ground",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_remove_block": {
-      "id": "0x9e",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "x",
-          "type": "i32"
-        },
-        {
-          "name": "z",
-          "type": "i32"
-        },
-        {
-          "name": "y",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_update_block": {
-      "id": "0x9f",
-      "online": "false",
-      "fields": [
-        {
-          "name": "blocks",
-          "type": "blockrecords"
-        }
-      ]
-    },
-    "mcpe_add_painting": {
-      "id": "0xa0",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "x",
-          "type": "i32"
-        },
-        {
-          "name": "y",
-          "type": "i32"
-        },
-        {
-          "name": "z",
-          "type": "i32"
-        },
-        {
-          "name": "direction",
-          "type": "i32"
-        },
-        {
-          "name": "title",
-          "type": "string"
-        }
-      ]
-    },
-    "mcpe_explode": {
-      "id": "0xa1",
-      "online": "false",
-      "fields": [
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        },
-        {
-          "name": "radius",
-          "type": "f32"
-        },
-        {
-          "name": "records",
-          "type": "records"
-        }
-      ]
-    },
-    "mcpe_level_event": {
-      "id": "0xa2",
-      "online": "false",
-      "fields": [
-        {
-          "name": "event_id",
-          "type": "i16"
-        },
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        },
-        {
-          "name": "data",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_tile_event": {
-      "id": "0xa3",
-      "online": "false",
-      "fields": [
-        {
-          "name": "x",
-          "type": "i32"
-        },
-        {
-          "name": "y",
-          "type": "i32"
-        },
-        {
-          "name": "z",
-          "type": "i32"
-        },
-        {
-          "name": "case_1",
-          "type": "i32"
-        },
-        {
-          "name": "case_2",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_entity_event": {
-      "id": "0xa4",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "event_id",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_mob_effect": {
-      "id": "0xa5",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "event_id",
-          "type": "i8"
-        },
-        {
-          "name": "effect_id",
-          "type": "i8"
-        },
-        {
-          "name": "amplifier",
-          "type": "i8"
-        },
-        {
-          "name": "particles",
-          "type": "i8"
-        },
-        {
-          "name": "duration",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_update_attributes": {
-      "id": "0xa6",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "attributes",
-          "type": "playerattributes"
-        }
-      ]
-    },
-    "mcpe_player_equipment": {
-      "id": "0xa7",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "item",
-          "type": "item"
-        },
-        {
-          "name": "slot",
-          "type": "i8"
-        },
-        {
-          "name": "selected_slot",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_player_armor_equipment": {
-      "id": "0xa8",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "helmet",
-          "type": "item"
-        },
-        {
-          "name": "chestplate",
-          "type": "item"
-        },
-        {
-          "name": "leggings",
-          "type": "item"
-        },
-        {
-          "name": "boots",
-          "type": "item"
-        }
-      ]
-    },
-    "mcpe_interact": {
-      "id": "0xa9",
-      "online": "false",
-      "fields": [
-        {
-          "name": "action_id",
-          "type": "i8"
-        },
-        {
-          "name": "target_entity_id",
-          "type": "i64"
-        }
-      ]
-    },
-    "mcpe_use_item": {
-      "id": "0xaa",
-      "online": "false",
-      "fields": [
-        {
-          "name": "blockcoordinates",
-          "type": "blockcoordinates"
-        },
-        {
-          "name": "face",
-          "type": "i8"
-        },
-        {
-          "name": "facecoordinates",
-          "type": "vector3"
-        },
-        {
-          "name": "playerposition",
-          "type": "vector3"
-        },
-        {
-          "name": "item",
-          "type": "item"
-        }
-      ]
-    },
-    "mcpe_hurt_armor": {
-      "id": "0xac",
-      "online": "false",
-      "fields": [
-        {
-          "name": "health",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_set_entity_data": {
-      "id": "0xad",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "metadata",
-          "type": "metadatadictionary"
-        }
-      ]
-    },
-    "mcpe_set_entity_motion": {
-      "id": "0xae",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entities",
-          "type": "entitymotions"
-        }
-      ]
-    },
-    "mcpe_set_entity_link": {
-      "id": "0xaf",
-      "online": "false",
-      "fields": [
-        {
-          "name": "rider_id",
-          "type": "i64"
-        },
-        {
-          "name": "ridden_id",
-          "type": "i64"
-        },
-        {
-          "name": "link_type",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_set_health": {
-      "id": "0xb0",
-      "online": "false",
-      "fields": [
-        {
-          "name": "health",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_set_spawn_position": {
-      "id": "0xb1",
-      "online": "false",
-      "fields": [
-        {
-          "name": "x",
-          "type": "i32"
-        },
-        {
-          "name": "z",
-          "type": "i32"
-        },
-        {
-          "name": "y",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_animate": {
-      "id": "0xb2",
-      "online": "false",
-      "fields": [
-        {
-          "name": "action_id",
-          "type": "i8"
-        },
-        {
-          "name": "entity_id",
-          "type": "i64"
-        }
-      ]
-    },
-    "mcpe_respawn": {
-      "id": "0xb3",
-      "online": "false",
-      "fields": [
-        {
-          "name": "x",
-          "type": "f32"
-        },
-        {
-          "name": "y",
-          "type": "f32"
-        },
-        {
-          "name": "z",
-          "type": "f32"
-        }
-      ]
-    },
-    "mcpe_container_open": {
-      "id": "0xb5",
-      "online": "false",
-      "fields": [
-        {
-          "name": "window_id",
-          "type": "i8"
-        },
-        {
-          "name": "type",
-          "type": "i8"
-        },
-        {
-          "name": "slot_count",
-          "type": "i16"
-        },
-        {
-          "name": "x",
-          "type": "i32"
-        },
-        {
-          "name": "y",
-          "type": "i32"
-        },
-        {
-          "name": "z",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_container_close": {
-      "id": "0xb6",
-      "online": "false",
-      "fields": [
-        {
-          "name": "window_id",
-          "type": "i8"
-        }
-      ]
-    },
-    "mcpe_container_set_slot": {
-      "id": "0xb7",
-      "online": "false",
-      "fields": [
-        {
-          "name": "window_id",
-          "type": "i8"
-        },
-        {
-          "name": "slot",
-          "type": "i16"
-        },
-        {
-          "name": "unknown",
-          "type": "i16"
-        },
-        {
-          "name": "item",
-          "type": "item"
-        }
-      ]
-    },
-    "mcpe_container_set_data": {
-      "id": "0xb8",
-      "online": "false",
-      "fields": [
-        {
-          "name": "window_id",
-          "type": "i8"
-        },
-        {
-          "name": "property",
-          "type": "i16"
-        },
-        {
-          "name": "value",
-          "type": "i16"
-        }
-      ]
-    },
-    "mcpe_container_set_content": {
-      "id": "0xb9",
-      "online": "false",
-      "fields": [
-        {
-          "name": "window_id",
-          "type": "i8"
-        },
-        {
-          "name": "slot_data",
-          "type": "itemstacks"
-        },
-        {
-          "name": "hotbar_data",
-          "type": "metadataints"
-        }
-      ]
-    },
-    "mcpe_crafting_data": {
-      "id": "0xba",
-      "online": "false",
-      "fields": [
-        {
-          "name": "recipes",
-          "type": "recipes"
-        }
-      ]
-    },
-    "mcpe_crafting_event": {
-      "id": "0xbb",
-      "online": "false",
-      "fields": [
-        {
-          "name": "window_id",
-          "type": "i8"
-        },
-        {
-          "name": "recipe_type",
-          "type": "i32"
-        },
-        {
-          "name": "recipe_id",
-          "type": "uuid"
-        },
-        {
-          "name": "input",
-          "type": "itemstacks"
-        },
-        {
-          "name": "result",
-          "type": "itemstacks"
-        }
-      ]
-    },
-    "mcpe_adventure_settings": {
-      "id": "0xbc",
-      "online": "false",
-      "fields": [
-        {
-          "name": "flags",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_tile_entity_data": {
-      "id": "0xbd",
-      "online": "false",
-      "fields": [
-        {
-          "name": "x",
-          "type": "i32"
-        },
-        {
-          "name": "y",
-          "type": "i32"
-        },
-        {
-          "name": "z",
-          "type": "i32"
-        },
-        {
-          "name": "namedtag",
-          "type": "nbt"
-        }
-      ]
-    },
-    "mcpe_full_chunk_data": {
-      "id": "0xbf",
-      "online": "false",
-      "fields": [
-        {
-          "name": "chunk_x",
-          "type": "i32"
-        },
-        {
-          "name": "chunk_z",
-          "type": "i32"
-        },
-        {
-          "name": "order",
-          "type": "i8"
-        },
-        {
-          "name": "chunk_data_length",
-          "type": "i32"
-        },
-        {
-          "name": "chunk_data",
-          "type": "byte[]"
-        }
-      ]
-    },
-    "mcpe_set_difficulty": {
-      "id": "0xc0",
-      "online": "false",
-      "fields": [
-        {
-          "name": "difficulty",
-          "type": "i32"
-        }
-      ]
-    },
-    "mcpe_player_list": {
-      "id": "0xc3",
-      "online": "false",
-      "fields": [
-        {
-          "name": "records",
-          "type": "playerrecords"
-        }
-      ]
-    },
-    "mcpe_request_chunk_radius": {
-      "id": "0xc8",
-      "online": "false",
-      "fields": [
-        {
-          "name": "chunk_radius",
-          "type": "int"
-        }
-      ]
-    },
-    "mcpe_chunk_radius_update": {
-      "id": "0xc9",
-      "online": "false",
-      "fields": [
-        {
-          "name": "chunk_radius",
-          "type": "int"
-        }
-      ]
-    },
-    "mcpe_transfer": {
-      "id": "0x1b",
-      "online": "false",
-      "fields": [
-        {
-          "name": "endpoint",
-          "type": "ipendpoint"
-        }
-      ]
-    },
-    "mcpe_spawn_experience_orb": {
-      "id": "0xc5",
-      "online": "false",
-      "fields": [
-        {
-          "name": "entity_id",
-          "type": "i64"
-        },
-        {
-          "name": "x",
-          "type": "i32"
-        },
-        {
-          "name": "y",
-          "type": "i32"
-        },
-        {
-          "name": "z",
-          "type": "i32"
-        },
-        {
-          "name": "count",
-          "type": "i32"
-        }
-      ]
-    }
-  },
-  "toClient": {
-    "id_connected_ping": {
-      "id": "0x00",
-      "online": "false",
-      "fields": [
-        {
-          "name": "sendpingtime",
-          "type": "i64"
-        }
-      ]
-    },
-    "id_unconnected_ping": {
-      "id": "0x01",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_id_detect_lost_connections": [
+      "container",
+      []
+    ],
+    "packet_id_unconnected_pong": [
+      "container",
+      [
         {
           "name": "ping_id",
-          "type": "i64"
-        },
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        }
-      ]
-    },
-    "id_connected_pong": {
-      "id": "0x03",
-      "online": "false",
-      "fields": [
-        {
-          "name": "sendpingtime",
-          "type": "i64"
-        },
-        {
-          "name": "sendpongtime",
-          "type": "i64"
-        }
-      ]
-    },
-    "id_unconnected_pong": {
-      "id": "0x1c",
-      "fields": [
-        {
-          "name": "ping_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "server_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "offline_message_data_id",
@@ -1217,23 +226,44 @@
           "type": "string"
         }
       ]
-    },
-    "id_open_connection_request_1": {
-      "id": "0x05",
-      "fields": [
+    ],
+    "packet_id_open_connection_request_1": [
+      "container",
+      [
         {
           "name": "offline_message_data_id",
           "type": "offline_message_data_id"
         },
         {
           "name": "raknet_protocol_version",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "id_open_connection_request_2": {
-      "id": "0x07",
-      "fields": [
+    ],
+    "packet_id_open_connection_reply_1": [
+      "container",
+      [
+        {
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        },
+        {
+          "name": "server_guid",
+          "type": "long"
+        },
+        {
+          "name": "server_has_security",
+          "type": "byte"
+        },
+        {
+          "name": "mtu_size",
+          "type": "short"
+        }
+      ]
+    ],
+    "packet_id_open_connection_request_2": [
+      "container",
+      [
         {
           "name": "offline_message_data_id",
           "type": "offline_message_data_id"
@@ -1244,79 +274,136 @@
         },
         {
           "name": "mtu_size",
-          "type": "i16"
+          "type": "short"
         },
         {
           "name": "client_guid",
-          "type": "i64"
+          "type": "long"
         }
       ]
-    },
-    "id_new_incoming_connection": {
-      "id": "0x13",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_id_open_connection_reply_2": [
+      "container",
+      [
         {
-          "name": "cookie",
-          "type": "i32"
+          "name": "offline_message_data_id",
+          "type": "offline_message_data_id"
+        },
+        {
+          "name": "server_guid",
+          "type": "long"
+        },
+        {
+          "name": "clientendpoint",
+          "type": "ipendpoint"
+        },
+        {
+          "name": "mtu_size",
+          "type": "short"
+        },
+        {
+          "name": "do_security_and_handshake",
+          "type": "byte[]"
+        }
+      ]
+    ],
+    "packet_id_connection_request": [
+      "container",
+      [
+        {
+          "name": "client_guid",
+          "type": "long"
+        },
+        {
+          "name": "timestamp",
+          "type": "long"
         },
         {
           "name": "do_security",
-          "type": "i8"
+          "type": "byte"
+        }
+      ]
+    ],
+    "packet_id_connection_request_accepted": [
+      "container",
+      [
+        {
+          "name": "system_address",
+          "type": "ipendpoint"
+        },
+        {
+          "name": "system_addresses",
+          "type": "ipendpoint[]"
+        },
+        {
+          "name": "incoming_timestamp",
+          "type": "long"
+        },
+        {
+          "name": "server_timestamp",
+          "type": "long"
+        }
+      ]
+    ],
+    "packet_id_new_incoming_connection": [
+      "container",
+      [
+        {
+          "name": "cookie",
+          "type": "int"
+        },
+        {
+          "name": "do_security",
+          "type": "byte"
         },
         {
           "name": "port",
-          "type": "i16"
+          "type": "short"
         },
         {
           "name": "session",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "session2",
-          "type": "i64"
+          "type": "long"
         }
       ]
-    },
-    "id_no_free_incoming_connections": {
-      "id": "0x14",
-      "online": "false",
-      "fields": []
-    },
-    "id_disconnection_notification": {
-      "id": "0x15",
-      "online": "false",
-      "fields": []
-    },
-    "id_connection_banned": {
-      "id": "0x17",
-      "online": "false",
-      "fields": []
-    },
-    "id_ip_recently_connected": {
-      "id": "0x1A",
-      "online": "false",
-      "fields": []
-    },
-    "mcpe_login": {
-      "id": "0x8f",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_id_no_free_incoming_connections": [
+      "container",
+      []
+    ],
+    "packet_id_disconnection_notification": [
+      "container",
+      []
+    ],
+    "packet_id_connection_banned": [
+      "container",
+      []
+    ],
+    "packet_id_ip_recently_connected": [
+      "container",
+      []
+    ],
+    "packet_mcpe_login": [
+      "container",
+      [
         {
           "name": "username",
           "type": "string"
         },
         {
           "name": "protocol",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "protocol2",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "client_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "client_uuid",
@@ -1335,11 +422,116 @@
           "type": "skin"
         }
       ]
-    },
-    "mcpe_add_player": {
-      "id": "0x96",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_player_status": [
+      "container",
+      [
+        {
+          "name": "status",
+          "type": "int"
+        }
+      ]
+    ],
+    "packet_mcpe_disconnect": [
+      "container",
+      [
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ]
+    ],
+    "packet_mcpe_batch": [
+      "container",
+      [
+        {
+          "name": "payload_size",
+          "type": "int"
+        },
+        {
+          "name": "payload",
+          "type": "byte[]"
+        }
+      ]
+    ],
+    "packet_mcpe_text": [
+      "container",
+      [
+        {
+          "name": "type",
+          "type": "byte"
+        }
+      ]
+    ],
+    "packet_mcpe_set_time": [
+      "container",
+      [
+        {
+          "name": "time",
+          "type": "int"
+        },
+        {
+          "name": "started",
+          "type": "byte"
+        }
+      ]
+    ],
+    "packet_mcpe_start_game": [
+      "container",
+      [
+        {
+          "name": "seed",
+          "type": "int"
+        },
+        {
+          "name": "dimension",
+          "type": "byte"
+        },
+        {
+          "name": "generator",
+          "type": "int"
+        },
+        {
+          "name": "gamemode",
+          "type": "int"
+        },
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "spawn_x",
+          "type": "int"
+        },
+        {
+          "name": "spawn_y",
+          "type": "int"
+        },
+        {
+          "name": "spawn_z",
+          "type": "int"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "unknown",
+          "type": "byte"
+        }
+      ]
+    ],
+    "packet_mcpe_add_player": [
+      "container",
+      [
         {
           "name": "uuid",
           "type": "uuid"
@@ -1350,43 +542,43 @@
         },
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "x",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "y",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "z",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "speed_x",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "speed_y",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "speed_z",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "yaw",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "head_yaw",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "pitch",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "item",
@@ -1397,14 +589,88 @@
           "type": "metadatadictionary"
         }
       ]
-    },
-    "mcpe_add_item_entity": {
-      "id": "0x9a",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_remove_player": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
+        },
+        {
+          "name": "client_uuid",
+          "type": "uuid"
+        }
+      ]
+    ],
+    "packet_mcpe_add_entity": [
+      "container",
+      [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "entity_type",
+          "type": "int"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
+        },
+        {
+          "name": "speed_x",
+          "type": "float"
+        },
+        {
+          "name": "speed_y",
+          "type": "float"
+        },
+        {
+          "name": "speed_z",
+          "type": "float"
+        },
+        {
+          "name": "yaw",
+          "type": "float"
+        },
+        {
+          "name": "pitch",
+          "type": "float"
+        },
+        {
+          "name": "metadata",
+          "type": "metadatadictionary"
+        },
+        {
+          "name": "links",
+          "type": "short"
+        }
+      ]
+    ],
+    "packet_mcpe_remove_entity": [
+      "container",
+      [
+        {
+          "name": "entity_id",
+          "type": "long"
+        }
+      ]
+    ],
+    "packet_mcpe_add_item_entity": [
+      "container",
+      [
+        {
+          "name": "entity_id",
+          "type": "long"
         },
         {
           "name": "item",
@@ -1412,275 +678,288 @@
         },
         {
           "name": "x",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "y",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "z",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "speed_x",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "speed_y",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "speed_z",
-          "type": "f32"
+          "type": "float"
         }
       ]
-    },
-    "mcpe_take_item_entity": {
-      "id": "0x9b",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_take_item_entity": [
+      "container",
+      [
         {
           "name": "target",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         }
       ]
-    },
-    "mcpe_move_entity": {
-      "id": "0x9c",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_move_entity": [
+      "container",
+      [
         {
           "name": "entities",
           "type": "entitylocations"
         }
       ]
-    },
-    "mcpe_move_player": {
-      "id": "0x9d",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_move_player": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "x",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "y",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "z",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "yaw",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "head_yaw",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "pitch",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "mode",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "on_ground",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "mcpe_remove_block": {
-      "id": "0x9e",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_remove_block": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "x",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "z",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "y",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "mcpe_update_block": {
-      "id": "0x9f",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_update_block": [
+      "container",
+      [
         {
           "name": "blocks",
           "type": "blockrecords"
         }
       ]
-    },
-    "mcpe_add_painting": {
-      "id": "0xa0",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_add_painting": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "x",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "y",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "z",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "direction",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "title",
           "type": "string"
         }
       ]
-    },
-    "mcpe_level_event": {
-      "id": "0xa2",
-      "online": "false",
-      "fields": [
-        {
-          "name": "event_id",
-          "type": "i16"
-        },
+    ],
+    "packet_mcpe_explode": [
+      "container",
+      [
         {
           "name": "x",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "y",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "z",
-          "type": "f32"
+          "type": "float"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        },
+        {
+          "name": "records",
+          "type": "records"
+        }
+      ]
+    ],
+    "packet_mcpe_level_event": [
+      "container",
+      [
+        {
+          "name": "event_id",
+          "type": "short"
+        },
+        {
+          "name": "x",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "type": "float"
+        },
+        {
+          "name": "z",
+          "type": "float"
         },
         {
           "name": "data",
-          "type": "i32"
+          "type": "int"
         }
       ]
-    },
-    "mcpe_tile_event": {
-      "id": "0xa3",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_tile_event": [
+      "container",
+      [
         {
           "name": "x",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "y",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "z",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "case_1",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "case_2",
-          "type": "i32"
+          "type": "int"
         }
       ]
-    },
-    "mcpe_entity_event": {
-      "id": "0xa4",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_entity_event": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "event_id",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "mcpe_mob_effect": {
-      "id": "0xa5",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_mob_effect": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "event_id",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "effect_id",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "amplifier",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "particles",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "duration",
-          "type": "i32"
+          "type": "int"
         }
       ]
-    },
-    "mcpe_update_attributes": {
-      "id": "0xa6",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_update_attributes": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "attributes",
           "type": "playerattributes"
         }
       ]
-    },
-    "mcpe_player_equipment": {
-      "id": "0xa7",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_player_equipment": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "item",
@@ -1688,21 +967,20 @@
         },
         {
           "name": "slot",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "selected_slot",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "mcpe_player_armor_equipment": {
-      "id": "0xa8",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_player_armor_equipment": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "helmet",
@@ -1721,32 +999,30 @@
           "type": "item"
         }
       ]
-    },
-    "mcpe_interact": {
-      "id": "0xa9",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_interact": [
+      "container",
+      [
         {
           "name": "action_id",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "target_entity_id",
-          "type": "i64"
+          "type": "long"
         }
       ]
-    },
-    "mcpe_use_item": {
-      "id": "0xaa",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_use_item": [
+      "container",
+      [
         {
           "name": "blockcoordinates",
           "type": "blockcoordinates"
         },
         {
           "name": "face",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "facecoordinates",
@@ -1761,200 +1037,404 @@
           "type": "item"
         }
       ]
-    },
-    "mcpe_player_action": {
-      "id": "0xab",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_player_action": [
+      "container",
+      [
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "action_id",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "x",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "y",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "z",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "face",
-          "type": "i32"
+          "type": "int"
         }
       ]
-    },
-    "mcpe_hurt_armor": {
-      "id": "0xac",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_hurt_armor": [
+      "container",
+      [
         {
           "name": "health",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "mcpe_set_entity_motion": {
-      "id": "0xae",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_set_entity_data": [
+      "container",
+      [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "metadata",
+          "type": "metadatadictionary"
+        }
+      ]
+    ],
+    "packet_mcpe_set_entity_motion": [
+      "container",
+      [
         {
           "name": "entities",
           "type": "entitymotions"
         }
       ]
-    },
-    "mcpe_set_entity_link": {
-      "id": "0xaf",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_set_entity_link": [
+      "container",
+      [
         {
           "name": "rider_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "ridden_id",
-          "type": "i64"
+          "type": "long"
         },
         {
           "name": "link_type",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "mcpe_animate": {
-      "id": "0xb2",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_set_health": [
+      "container",
+      [
+        {
+          "name": "health",
+          "type": "int"
+        }
+      ]
+    ],
+    "packet_mcpe_set_spawn_position": [
+      "container",
+      [
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        }
+      ]
+    ],
+    "packet_mcpe_animate": [
+      "container",
+      [
         {
           "name": "action_id",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "entity_id",
-          "type": "i64"
+          "type": "long"
         }
       ]
-    },
-    "mcpe_respawn": {
-      "id": "0xb3",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_respawn": [
+      "container",
+      [
         {
           "name": "x",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "y",
-          "type": "f32"
+          "type": "float"
         },
         {
           "name": "z",
-          "type": "f32"
+          "type": "float"
         }
       ]
-    },
-    "mcpe_drop_item": {
-      "id": "0xb4",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_drop_item": [
+      "container",
+      [
         {
           "name": "itemtype",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "item",
           "type": "item"
         }
       ]
-    },
-    "mcpe_container_open": {
-      "id": "0xb5",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_container_open": [
+      "container",
+      [
         {
           "name": "window_id",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "type",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "slot_count",
-          "type": "i16"
+          "type": "short"
         },
         {
           "name": "x",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "y",
-          "type": "i32"
+          "type": "int"
         },
         {
           "name": "z",
-          "type": "i32"
+          "type": "int"
         }
       ]
-    },
-    "mcpe_container_close": {
-      "id": "0xb6",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_container_close": [
+      "container",
+      [
         {
           "name": "window_id",
-          "type": "i8"
+          "type": "byte"
         }
       ]
-    },
-    "mcpe_container_set_slot": {
-      "id": "0xb7",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_container_set_slot": [
+      "container",
+      [
         {
           "name": "window_id",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "slot",
-          "type": "i16"
+          "type": "short"
         },
         {
           "name": "unknown",
-          "type": "i16"
+          "type": "short"
         },
         {
           "name": "item",
           "type": "item"
         }
       ]
-    },
-    "mcpe_container_set_data": {
-      "id": "0xb8",
-      "online": "false",
-      "fields": [
+    ],
+    "packet_mcpe_container_set_data": [
+      "container",
+      [
         {
           "name": "window_id",
-          "type": "i8"
+          "type": "byte"
         },
         {
           "name": "property",
-          "type": "i16"
+          "type": "short"
         },
         {
           "name": "value",
-          "type": "i16"
+          "type": "short"
         }
       ]
-    }
+    ],
+    "packet_mcpe_container_set_content": [
+      "container",
+      [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "slot_data",
+          "type": "itemstacks"
+        },
+        {
+          "name": "hotbar_data",
+          "type": "metadataints"
+        }
+      ]
+    ],
+    "packet_mcpe_crafting_data": [
+      "container",
+      [
+        {
+          "name": "recipes",
+          "type": "recipes"
+        }
+      ]
+    ],
+    "packet_mcpe_crafting_event": [
+      "container",
+      [
+        {
+          "name": "window_id",
+          "type": "byte"
+        },
+        {
+          "name": "recipe_type",
+          "type": "int"
+        },
+        {
+          "name": "recipe_id",
+          "type": "uuid"
+        },
+        {
+          "name": "input",
+          "type": "itemstacks"
+        },
+        {
+          "name": "result",
+          "type": "itemstacks"
+        }
+      ]
+    ],
+    "packet_mcpe_adventure_settings": [
+      "container",
+      [
+        {
+          "name": "flags",
+          "type": "int"
+        }
+      ]
+    ],
+    "packet_mcpe_tile_entity_data": [
+      "container",
+      [
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "namedtag",
+          "type": "nbt"
+        }
+      ]
+    ],
+    "packet_mcpe_full_chunk_data": [
+      "container",
+      [
+        {
+          "name": "chunk_x",
+          "type": "int"
+        },
+        {
+          "name": "chunk_z",
+          "type": "int"
+        },
+        {
+          "name": "order",
+          "type": "byte"
+        },
+        {
+          "name": "chunk_data_length",
+          "type": "int"
+        },
+        {
+          "name": "chunk_data",
+          "type": "byte[]"
+        }
+      ]
+    ],
+    "packet_mcpe_set_difficulty": [
+      "container",
+      [
+        {
+          "name": "difficulty",
+          "type": "int"
+        }
+      ]
+    ],
+    "packet_mcpe_player_list": [
+      "container",
+      [
+        {
+          "name": "records",
+          "type": "playerrecords"
+        }
+      ]
+    ],
+    "packet_mcpe_request_chunk_radius": [
+      "container",
+      [
+        {
+          "name": "chunk_radius",
+          "type": "int"
+        }
+      ]
+    ],
+    "packet_mcpe_chunk_radius_update": [
+      "container",
+      [
+        {
+          "name": "chunk_radius",
+          "type": "int"
+        }
+      ]
+    ],
+    "packet_mcpe_transfer": [
+      "container",
+      [
+        {
+          "name": "endpoint",
+          "type": "ipendpoint"
+        }
+      ]
+    ],
+    "packet_mcpe_spawn_experience_orb": [
+      "container",
+      [
+        {
+          "name": "entity_id",
+          "type": "long"
+        },
+        {
+          "name": "x",
+          "type": "int"
+        },
+        {
+          "name": "y",
+          "type": "int"
+        },
+        {
+          "name": "z",
+          "type": "int"
+        },
+        {
+          "name": "count",
+          "type": "int"
+        }
+      ]
+    ]
   }
 }
