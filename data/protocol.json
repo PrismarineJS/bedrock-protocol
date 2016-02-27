@@ -10,20 +10,8 @@
             {
               "type": "u8",
               "mappings": {
-                "0x00": "id_connected_ping",
-                "0x01": "id_unconnected_ping",
-                "0x03": "id_connected_pong",
                 "0x04": "id_detect_lost_connections",
-                "0x1c": "id_unconnected_pong",
-                "0x05": "id_open_connection_request_1",
-                "0x06": "id_open_connection_reply_1",
-                "0x07": "id_open_connection_request_2",
-                "0x08": "id_open_connection_reply_2",
-                "0x09": "id_connection_request",
-                "0x10": "id_connection_request_accepted",
-                "0x13": "id_new_incoming_connection",
                 "0x14": "id_no_free_incoming_connections",
-                "0x15": "id_disconnection_notification",
                 "0x17": "id_connection_banned",
                 "0x1A": "id_ip_recently_connected",
                 "0x8f": "mcpe_login",
@@ -91,20 +79,8 @@
             {
               "compareTo": "name",
               "fields": {
-                "id_connected_ping": "packet_id_connected_ping",
-                "id_unconnected_ping": "packet_id_unconnected_ping",
-                "id_connected_pong": "packet_id_connected_pong",
                 "id_detect_lost_connections": "packet_id_detect_lost_connections",
-                "id_unconnected_pong": "packet_id_unconnected_pong",
-                "id_open_connection_request_1": "packet_id_open_connection_request_1",
-                "id_open_connection_reply_1": "packet_id_open_connection_reply_1",
-                "id_open_connection_request_2": "packet_id_open_connection_request_2",
-                "id_open_connection_reply_2": "packet_id_open_connection_reply_2",
-                "id_connection_request": "packet_id_connection_request",
-                "id_connection_request_accepted": "packet_id_connection_request_accepted",
-                "id_new_incoming_connection": "packet_id_new_incoming_connection",
                 "id_no_free_incoming_connections": "packet_id_no_free_incoming_connections",
-                "id_disconnection_notification": "packet_id_disconnection_notification",
                 "id_connection_banned": "packet_id_connection_banned",
                 "id_ip_recently_connected": "packet_id_ip_recently_connected",
                 "mcpe_login": "packet_mcpe_login",
@@ -167,214 +143,11 @@
         }
       ]
     ],
-    "packet_id_connected_ping": [
-      "container",
-      [
-        {
-          "name": "sendpingtime",
-          "type": "long"
-        }
-      ]
-    ],
-    "packet_id_unconnected_ping": [
-      "container",
-      [
-        {
-          "name": "ping_id",
-          "type": "long"
-        },
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        }
-      ]
-    ],
-    "packet_id_connected_pong": [
-      "container",
-      [
-        {
-          "name": "sendpingtime",
-          "type": "long"
-        },
-        {
-          "name": "sendpongtime",
-          "type": "long"
-        }
-      ]
-    ],
     "packet_id_detect_lost_connections": [
       "container",
       []
     ],
-    "packet_id_unconnected_pong": [
-      "container",
-      [
-        {
-          "name": "ping_id",
-          "type": "long"
-        },
-        {
-          "name": "server_id",
-          "type": "long"
-        },
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        },
-        {
-          "name": "server_name",
-          "type": "string"
-        }
-      ]
-    ],
-    "packet_id_open_connection_request_1": [
-      "container",
-      [
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        },
-        {
-          "name": "raknet_protocol_version",
-          "type": "byte"
-        }
-      ]
-    ],
-    "packet_id_open_connection_reply_1": [
-      "container",
-      [
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        },
-        {
-          "name": "server_guid",
-          "type": "long"
-        },
-        {
-          "name": "server_has_security",
-          "type": "byte"
-        },
-        {
-          "name": "mtu_size",
-          "type": "short"
-        }
-      ]
-    ],
-    "packet_id_open_connection_request_2": [
-      "container",
-      [
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        },
-        {
-          "name": "clientendpoint",
-          "type": "ipendpoint"
-        },
-        {
-          "name": "mtu_size",
-          "type": "short"
-        },
-        {
-          "name": "client_guid",
-          "type": "long"
-        }
-      ]
-    ],
-    "packet_id_open_connection_reply_2": [
-      "container",
-      [
-        {
-          "name": "offline_message_data_id",
-          "type": "offline_message_data_id"
-        },
-        {
-          "name": "server_guid",
-          "type": "long"
-        },
-        {
-          "name": "clientendpoint",
-          "type": "ipendpoint"
-        },
-        {
-          "name": "mtu_size",
-          "type": "short"
-        },
-        {
-          "name": "do_security_and_handshake",
-          "type": "byte[]"
-        }
-      ]
-    ],
-    "packet_id_connection_request": [
-      "container",
-      [
-        {
-          "name": "client_guid",
-          "type": "long"
-        },
-        {
-          "name": "timestamp",
-          "type": "long"
-        },
-        {
-          "name": "do_security",
-          "type": "byte"
-        }
-      ]
-    ],
-    "packet_id_connection_request_accepted": [
-      "container",
-      [
-        {
-          "name": "system_address",
-          "type": "ipendpoint"
-        },
-        {
-          "name": "system_addresses",
-          "type": "ipendpoint[]"
-        },
-        {
-          "name": "incoming_timestamp",
-          "type": "long"
-        },
-        {
-          "name": "server_timestamp",
-          "type": "long"
-        }
-      ]
-    ],
-    "packet_id_new_incoming_connection": [
-      "container",
-      [
-        {
-          "name": "cookie",
-          "type": "int"
-        },
-        {
-          "name": "do_security",
-          "type": "byte"
-        },
-        {
-          "name": "port",
-          "type": "short"
-        },
-        {
-          "name": "session",
-          "type": "long"
-        },
-        {
-          "name": "session2",
-          "type": "long"
-        }
-      ]
-    ],
     "packet_id_no_free_incoming_connections": [
-      "container",
-      []
-    ],
-    "packet_id_disconnection_notification": [
       "container",
       []
     ],
