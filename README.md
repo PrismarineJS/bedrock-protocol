@@ -8,7 +8,7 @@ Parse and serialize Minecraft PE packets.
 
 ## Features
   
-  * Supports Minecraft PE `0.13.x`
+  * Supports Minecraft PE `0.14.0`
   * Pure javascript
   * Easily send and listen for any packet
   * RakNet support through node-raknet
