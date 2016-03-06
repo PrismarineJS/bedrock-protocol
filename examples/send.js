@@ -5,7 +5,9 @@ var serializer = mcpe.createSerializer();
 
 serializer.write({
   name: 'mcpe_player_status',
-  status: 1
+  "params": {
+    status: 1
+  }
 });
 
 serializer.pipe(parser);
