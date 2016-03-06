@@ -6,6 +6,69 @@
         "countType":"short"
       }
     ],
+    "playerrecords": [
+      "switch",
+      {
+        "compareTo": "type",
+        "fields": {
+          "0": [
+            {
+              "name": "clientuuid",
+              "type": "uuid"
+            },
+            {
+              "name": "entityid",
+              "type": "i64"
+            },
+            {
+              "name": "displayname",
+              "type": "string"
+            },
+            {
+              "name": "placeholder",
+              "type": "string"
+            },
+            {
+              "name": "placeholder",
+              "type": "string"
+            }
+          ],
+          "1": [
+            {
+              "name": "clientuuid",
+              "type": "uuid"
+            }
+          ]
+        }
+      }
+    ],
+    "playerattributes": [
+      "array",
+      {
+        "countType":"i16",
+        "type": [
+          "container",
+          [
+            {
+              "name": "minvalue",
+              "type": "f32"
+            },
+            {
+              "name": "maxvalue",
+              "type": "f32"
+            },
+            {
+              "name": "id",
+              "type": "f32"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ]
+        ]
+      }
+    ],
     "entitymotions": [
       "array",
       {
@@ -173,7 +236,9 @@
                 "0xc8": "mcpe_request_chunk_radius",
                 "0xc9": "mcpe_chunk_radius_update",
                 "0x1b": "mcpe_transfer",
-                "0xc5": "mcpe_spawn_experience_orb"
+                "0xc5": "mcpe_spawn_experience_orb",
+                "0xc7": "mcpe_map_info_request",
+                "0xc6": "mcpe_map_item_data"
               }
             }
           ]
@@ -242,7 +307,9 @@
                 "mcpe_request_chunk_radius": "packet_mcpe_request_chunk_radius",
                 "mcpe_chunk_radius_update": "packet_mcpe_chunk_radius_update",
                 "mcpe_transfer": "packet_mcpe_transfer",
-                "mcpe_spawn_experience_orb": "packet_mcpe_spawn_experience_orb"
+                "mcpe_spawn_experience_orb": "packet_mcpe_spawn_experience_orb",
+                "mcpe_map_info_request": "packet_mcpe_map_info_request",
+                "mcpe_map_item_data": "packet_mcpe_map_item_data"
               }
             }
           ]
@@ -1258,6 +1325,10 @@
       "container",
       [
         {
+          "name": "type",
+          "type": "byte"
+        },
+        {
           "name": "records",
           "type": "playerrecords"
         }
@@ -1312,6 +1383,24 @@
         {
           "name": "count",
           "type": "i32"
+        }
+      ]
+    ],
+    "packet_mcpe_map_info_request": [
+      "container",
+      [
+        {
+          "name": "mapid",
+          "type": "i64"
+        }
+      ]
+    ],
+    "packet_mcpe_map_item_data": [
+      "container",
+      [
+        {
+          "name": "mapinfo",
+          "type": "mapinfo"
         }
       ]
     ]
