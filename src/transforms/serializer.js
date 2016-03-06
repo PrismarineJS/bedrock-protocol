@@ -2,11 +2,11 @@ var ProtoDef = require('protodef').ProtoDef;
 var Serializer = require('protodef').Serializer;
 var Parser = require('protodef').Parser;
 
-var protocol = require('../data/protocol.json').types;
+var protocol = require(__dirname + '/../../data/protocol.json').types;
 
 function createProtocol(packets) {
   var proto = new ProtoDef();
-  proto.addTypes(require('./datatypes'));
+  proto.addTypes(require('../datatypes/minecraft'));
 
   return proto;
 }

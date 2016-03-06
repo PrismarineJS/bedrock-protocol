@@ -1,4 +1,6 @@
 module.exports = {
-  createDeserializer: require('./serializer').createDeserializer,
-  createSerializer: require('./serializer').createSerializer
-}
+  createSerializer: require("./transforms/serializer").createSerializer,
+  createDeserializer: require("./transforms/serializer").createDeserializer,
+  createServer: require("./createServer"),
+  createClient: require("./createClient")
+};
