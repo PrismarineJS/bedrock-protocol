@@ -6,6 +6,118 @@
         "countType":"short"
       }
     ],
+    "shapelessrecipe": [
+      "container",
+      [
+        {
+          "name":"ingredientList",
+          "type":
+          [
+            "array",
+            {
+              "countType":"i32",
+              "type":"slot"
+            }
+          ]
+        },
+        {
+          "name": "resultCount",
+          "type": "i32"
+        },
+        {
+          "name": "slot",
+          "type": "slot"
+        },
+        {
+          "name": "id",
+          "type": "uuid"
+        }
+      ]
+    ],
+    "shapedrecipe": [
+      "container",
+      [
+        {
+          "name": "width",
+          "type": [
+            "count", {
+              "type": "i32",
+              "countFor": "shape"
+            }
+          ]
+        },
+        {
+          "name": "height",
+          "type": [
+            "count",
+            {
+              "type": "i32",
+              "countFor": "shape/0"
+            }
+          ]
+        },
+        {
+          "name": "shape",
+          "type": [
+            "array",
+            {
+              "count": "width",
+              "type": [
+                "array",
+                {
+                  "count": "height",
+                  "type": "slot"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "resultCount",
+          "type": "i32"
+        },
+        {
+          "name": "slot",
+          "type": "slot"
+        },
+        {
+          "name": "id",
+          "type": "uuid"
+        }
+      ]
+    ],
+    "furnacerecipe": [
+      "container",
+      [
+        {
+          "name": "placeholder",
+          "type": "i16"
+        },
+        {
+          "name": "placeholder",
+          "type": "i16"
+        },
+        {
+          "name": "slot",
+          "type": "slot"
+        }
+      ]
+    ],
+    "enchantlist": [
+
+    ],
+    "recipes": [
+      "array",
+      {
+        "countType":"i32",
+        "type": [
+          "switch",
+          {
+
+          }
+        ]
+      }
+    ],
     "metadataints": [
       "switch",
       {
@@ -483,9 +595,7 @@
                 "0xc8": "mcpe_request_chunk_radius",
                 "0xc9": "mcpe_chunk_radius_update",
                 "0x1b": "mcpe_transfer",
-                "0xc5": "mcpe_spawn_experience_orb",
-                "0xc7": "mcpe_map_info_request",
-                "0xc6": "mcpe_map_item_data"
+                "0xc5": "mcpe_spawn_experience_orb"
               }
             }
           ]
@@ -555,8 +665,6 @@
                 "mcpe_chunk_radius_update": "packet_mcpe_chunk_radius_update",
                 "mcpe_transfer": "packet_mcpe_transfer",
                 "mcpe_spawn_experience_orb": "packet_mcpe_spawn_experience_orb",
-                "mcpe_map_info_request": "packet_mcpe_map_info_request",
-                "mcpe_map_item_data": "packet_mcpe_map_item_data"
               }
             }
           ]
@@ -1476,6 +1584,10 @@
         {
           "name": "recipes",
           "type": "recipes"
+        },
+        {
+          "name": "cleanRecipes",
+          "type": "byte"
         }
       ]
     ],
@@ -1630,24 +1742,6 @@
         {
           "name": "count",
           "type": "i32"
-        }
-      ]
-    ],
-    "packet_mcpe_map_info_request": [
-      "container",
-      [
-        {
-          "name": "mapid",
-          "type": "i64"
-        }
-      ]
-    ],
-    "packet_mcpe_map_item_data": [
-      "container",
-      [
-        {
-          "name": "mapinfo",
-          "type": "mapinfo"
         }
       ]
     ]
