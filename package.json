@@ -19,7 +19,7 @@
   "dependencies": {
     "prismarine-nbt": "^0.2.1",
     "protodef": "^1.1.2",
-    "raknet": "^1.1.0"
+    "raknet": "^1.2.0"
   },
   "devDependencies": {},
   "repository": {
