@@ -6,6 +6,64 @@
         "countType":"short"
       }
     ],
+    "vector3": [
+      "container",
+      [
+        {
+          "name": "x",
+          "type": "f32"
+        },
+        {
+          "name": "y",
+          "type": "f32"
+        },
+        {
+          "name": "z",
+          "type": "f32"
+        }
+      ]
+    ],
+    "entitylocations": [
+      [
+        "array",
+        {
+          "countType":"i16",
+          "type": [
+            "container",
+            [
+              {
+                "name": "eid",
+                "type": "i64"
+              },
+              {
+                "name": "x",
+                "type": "f32"
+              },
+              {
+                "name": "y",
+                "type": "f32"
+              },
+              {
+                "name": "z",
+                "type": "f32"
+              },
+              {
+                "name": "yaw",
+                "type": "f32"
+              },
+              {
+                "name": "headYaw",
+                "type": "f32"
+              },
+              {
+                "name": "pitch",
+                "type": "f32"
+              }
+            ]
+          ]
+        }
+      ]
+    ],
     "packet": [
       "container",
       [

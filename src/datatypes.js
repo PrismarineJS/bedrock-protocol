@@ -14,8 +14,7 @@ function writeUUID(value, buffer, offset) {
 }
 
 module.exports = {
-  'uuid': [readUUID, writeUUID, 16], // done
-  'vector3': [readVector3, writeVector3, sizeOfVector3]
+  'uuid': [readUUID, writeUUID, 16],
 
   'metadatadictionary': [readLTriad, writeLTriad, 3],
   'skin': [readIpAddress, writeIpAddress, 4],
