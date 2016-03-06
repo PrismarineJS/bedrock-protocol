@@ -6,6 +6,30 @@
         "countType":"short"
       }
     ],
+    "metadataints": [
+      "switch",
+      {
+        "compareTo": "window_id",
+        "fields": {
+          "0": [
+            "array",
+            {
+              "countType":"i16",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "slot",
+                    "type": "i32"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "default": "i16"
+      }
+    ],
     "entityMetadataItem": [
       "switch",
       {
