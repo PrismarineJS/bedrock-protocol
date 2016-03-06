@@ -2,7 +2,7 @@ var ProtoDef = require('protodef').ProtoDef;
 var Serializer = require('protodef').Serializer;
 var Parser = require('protodef').Parser;
 
-var protocol = require('../data/protocol.json');
+var protocol = require('../data/protocol.json').types;
 
 function createProtocol(packets) {
   var proto = new ProtoDef();
