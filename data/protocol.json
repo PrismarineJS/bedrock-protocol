@@ -6,6 +6,59 @@
         "countType":"short"
       }
     ],
+    "slot": [
+      "container",
+      [
+        {
+          "name": "blockId",
+          "type": "i16"
+        },
+        {
+          "anon": true,
+          "type": [
+            "switch",
+            {
+              "compareTo": "blockId",
+              "fields": {
+                "0": "void"
+              },
+              "default": [
+                "container",
+                [
+                  {
+                    "name": "itemCount",
+                    "type": "i8"
+                  },
+                  {
+                    "name": "itemDamage",
+                    "type": "i16"
+                  },
+                  {
+                    "name": "nbtData",
+                    "type": "optionalNbt"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    ],
+    "itemstacks": [
+      "array",
+      {
+        "countType":"i16",
+        "type": [
+          "container",
+          [
+            {
+              "name": "slot",
+              "type": "slot"
+            }
+          ]
+        ]
+      }
+    ],
     "skin": [
       "container",
       [
@@ -611,7 +664,7 @@
         },
         {
           "name": "item",
-          "type": "item"
+          "type": "slot"
         },
         {
           "name": "metadata",
@@ -703,7 +756,7 @@
         },
         {
           "name": "item",
-          "type": "item"
+          "type": "slot"
         },
         {
           "name": "x",
@@ -992,7 +1045,7 @@
         },
         {
           "name": "item",
-          "type": "item"
+          "type": "slot"
         },
         {
           "name": "slot",
@@ -1013,19 +1066,19 @@
         },
         {
           "name": "helmet",
-          "type": "item"
+          "type": "slot"
         },
         {
           "name": "chestplate",
-          "type": "item"
+          "type": "slot"
         },
         {
           "name": "leggings",
-          "type": "item"
+          "type": "slot"
         },
         {
           "name": "boots",
-          "type": "item"
+          "type": "slot"
         }
       ]
     ],
@@ -1063,7 +1116,7 @@
         },
         {
           "name": "item",
-          "type": "item"
+          "type": "slot"
         }
       ]
     ],
@@ -1209,7 +1262,7 @@
         },
         {
           "name": "item",
-          "type": "item"
+          "type": "slot"
         }
       ]
     ],
@@ -1268,7 +1321,7 @@
         },
         {
           "name": "item",
-          "type": "item"
+          "type": "slot"
         }
       ]
     ],
