@@ -6,7 +6,7 @@
         "countType":"short"
       }
     ],
-    "shapelessrecipe": [
+    "shapeless_recipe": [
       "container",
       [
         {
@@ -34,7 +34,7 @@
         }
       ]
     ],
-    "shapedrecipe": [
+    "shaped_recipe": [
       "container",
       [
         {
@@ -86,37 +86,111 @@
         }
       ]
     ],
-    "furnacerecipe": [
+    "furnace_recipe": [
       "container",
       [
         {
-          "name": "placeholder",
-          "type": "i16"
+          "name": "meta",
+          "type": "short"
         },
         {
-          "name": "placeholder",
-          "type": "i16"
+          "name": "id",
+          "type": "short"
         },
         {
-          "name": "slot",
+          "name": "result",
           "type": "slot"
         }
       ]
     ],
-    "enchantlist": [
-
+    "furnace_recipe_data": [
+      "container",
+      [
+        {
+          "name": "id",
+          "type": "short"
+        },
+        {
+          "name": "meta",
+          "type": "short"
+        },
+        {
+          "name": "result",
+          "type": "slot"
+        }
+      ]
     ],
-    "recipes": [
+    "enchant_list": [
       "array",
       {
-        "countType":"i32",
+        "countType": "i8",
         "type": [
-          "switch",
+          "container",
           {
-
+            "name": "cost",
+            "type": "i32"
+          },
+          {
+            "name": "enchantments",
+            "type": [
+              "array",
+              {
+                "countType": "i8",
+                "type": [
+                  "container",
+                  {
+                    "name": "id",
+                    "type": "i32"
+                  },
+                  {
+                    "name": "level",
+                    "id": "i32"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "name",
+            "type": "string"
           }
         ]
       }
+    ],
+    "recipes": [
+      "container",
+      [
+        {
+          "name": "entryType",
+          "type": "i32"
+        },
+        {
+          "name": "recipe",
+          "type": [
+            "array",
+            {
+              "countType": "i32",
+              "type": [
+                "switch",
+                {
+                  "compareTo": "entryType",
+                  "fields": {
+                    "0": "shapeless_recipe",
+                    "1": "shaped_recipe",
+                    "2": "furnace_recipe",
+                    "3": "furnace_recipe_data",
+                    "4": "enchant_list"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "cleanRecipes",
+          "type": "byte"
+        }
+      ]
     ],
     "metadataints": [
       "switch",
@@ -368,19 +442,19 @@
             "container",
             [
               {
-                "name": "clientuuid",
+                "name": "clientUuid",
                 "type": "uuid"
               },
               {
-                "name": "entityid",
+                "name": "entityId",
                 "type": "i64"
               },
               {
-                "name": "displayname",
+                "name": "displayName",
                 "type": "string"
               },
               {
-                "name": "skintype",
+                "name": "skinType",
                 "type": "string"
               },
               {
@@ -393,7 +467,7 @@
             "container",
             [
               {
-                "name": "clientuuid",
+                "name": "clientUuid",
                 "type": "uuid"
               }
             ]
@@ -409,11 +483,11 @@
           "container",
           [
             {
-              "name": "minvalue",
+              "name": "minValue",
               "type": "f32"
             },
             {
-              "name": "maxvalue",
+              "name": "maxValue",
               "type": "f32"
             },
             {
@@ -664,7 +738,7 @@
                 "mcpe_request_chunk_radius": "packet_mcpe_request_chunk_radius",
                 "mcpe_chunk_radius_update": "packet_mcpe_chunk_radius_update",
                 "mcpe_transfer": "packet_mcpe_transfer",
-                "mcpe_spawn_experience_orb": "packet_mcpe_spawn_experience_orb",
+                "mcpe_spawn_experience_orb": "packet_mcpe_spawn_experience_orb"
               }
             }
           ]
