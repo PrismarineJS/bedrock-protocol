@@ -6,6 +6,93 @@
         "countType":"short"
       }
     ],
+    "entityMetadataItem": [
+      "switch",
+      {
+        "compareTo": "$compareTo",
+        "fields": {
+          "0": "i8",
+          "1": "i16",
+          "2": "i32",
+          "3": "f32",
+          "4": "string",
+          "5": "slot",
+          "6": [
+            "container",
+            [
+              {
+                "name": "x",
+                "type": "i32"
+              },
+              {
+                "name": "y",
+                "type": "i32"
+              },
+              {
+                "name": "z",
+                "type": "i32"
+              }
+            ]
+          ],
+          "7": [
+            "container",
+            [
+              {
+                "name": "pitch",
+                "type": "f32"
+              },
+              {
+                "name": "yaw",
+                "type": "f32"
+              },
+              {
+                "name": "roll",
+                "type": "f32"
+              }
+            ]
+          ],
+          "8": "i64"
+        }
+      }
+    ],
+    "entityMetadata": [
+      "entityMetadataLoop",
+      {
+        "endVal": 127,
+        "type": [
+          "container",
+          [
+            {
+              "anon": true,
+              "type": [
+                "bitfield",
+                [
+                  {
+                    "name": "type",
+                    "size": 3,
+                    "signed": false
+                  },
+                  {
+                    "name": "key",
+                    "size": 5,
+                    "signed": false
+                  }
+                ]
+              ]
+            },
+            {
+              "name": "value",
+              "type": [
+                "entityMetadataItem",
+                {
+                  "compareTo": "type"
+                }
+              ]
+            }
+          ]
+        ]
+      }
+    ],
     "slot": [
       "container",
       [
