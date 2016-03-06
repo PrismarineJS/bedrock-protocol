@@ -188,7 +188,7 @@
         },
         {
           "name": "cleanRecipes",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -386,7 +386,7 @@
             },
             {
               "name": "z",
-              "type": "byte"
+              "type": "i8"
             },
             {
               "anon": true,
@@ -419,15 +419,15 @@
           [
             {
               "name": "x",
-              "type": "byte"
+              "type": "i8"
             },
             {
               "name": "y",
-              "type": "byte"
+              "type": "i8"
             },
             {
               "name": "z",
-              "type": "byte"
+              "type": "i8"
             }
           ]
         ]
@@ -1661,7 +1661,7 @@
         },
         {
           "name": "cleanRecipes",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -1759,7 +1759,7 @@
       [
         {
           "name": "type",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "records",

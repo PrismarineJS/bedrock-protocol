@@ -3,7 +3,8 @@ var mcpe = require('../');
 var parser = mcpe.createDeserializer();
 var serializer = mcpe.createSerializer();
 
-serializer.write('mcpe_player_status', {
+serializer.write({
+  name: 'mcpe_player_status',
   status: 1
 });
 
