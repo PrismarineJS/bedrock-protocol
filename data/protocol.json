@@ -1,9 +1,86 @@
 {
   "types": {
     "string": [
-      "pstring"
+      "pstring",
       {
         "countType":"short"
+      }
+    ],
+    "skin": [
+      "container",
+      [
+        {
+          "name": "skinType",
+          "type": "string"
+        },
+        {
+          "name": "texture",
+          "type": "string"
+        }
+      ]
+    ],
+    "blockrecords": [
+      "array",
+      {
+        "countType":"i16",
+        "type": [
+          "container",
+          [
+            {
+              "name": "x",
+              "type": "i32"
+            },
+            {
+              "name": "y",
+              "type": "i32"
+            },
+            {
+              "name": "z",
+              "type": "byte"
+            },
+            {
+              "anon": true,
+              "type": [
+                "bitfield",
+                [
+                  {
+                    "name": "blockData",
+                    "size": 4,
+                    "signed": false
+                  },
+                  {
+                    "name": "flags",
+                    "size": 4,
+                    "signed": false
+                  }
+                ]
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "records": [
+      "array",
+      {
+        "countType":"i16",
+        "type": [
+          "container",
+          [
+            {
+              "name": "x",
+              "type": "byte"
+            },
+            {
+              "name": "y",
+              "type": "byte"
+            },
+            {
+              "name": "z",
+              "type": "byte"
+            }
+          ]
+        ]
       }
     ],
     "playerrecords": [
