@@ -55,7 +55,7 @@
         }
       }
     ],
-    "entityMetadata": [
+    "metadatadictionary": [
       "entityMetadataLoop",
       {
         "endVal": 127,
