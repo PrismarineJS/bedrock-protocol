@@ -1,4 +1,4 @@
-pocket-minecraft-protocol 
+pocket-minecraft-protocol
 =========================
 
 [![NPM version](https://img.shields.io/npm/v/pocket-minecraft-protocol.svg)](http://npmjs.com/package/pocket-minecraft-protocol)
@@ -7,17 +7,17 @@ pocket-minecraft-protocol
 Parse and serialize Minecraft PE packets.
 
 ## Features
-  
+
   * Supports Minecraft PE `0.14.0`
-  * Pure javascript
+  * Pure JavaScript
   * Easily send and listen for any packet
-  * RakNet support through node-raknet
+  * RakNet support through [node-raknet](https://github.com/mhsjlw/node-raknet)
 
 ## Installation
 Simply run
 
     npm install pocket-minecraft-protcol
-    
+
 Then view our `examples` for inspiration!
 
 ## Contributors

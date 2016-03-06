@@ -1,5 +1,11 @@
 {
   "types": {
+    "string": [
+      "pstring"
+      {
+        "countType":"short"
+      }
+    ],
     "packet": [
       "container",
       [
@@ -223,7 +229,7 @@
         },
         {
           "name": "payload",
-          "type": "byte_array"
+          "type":["buffer",{"countType":"i16"}]
         }
       ]
     ],
@@ -1135,7 +1141,7 @@
         },
         {
           "name": "chunk_data",
-          "type": "byte_array"
+          "type":["buffer",{"countType":"i16"}]
         }
       ]
     ],
