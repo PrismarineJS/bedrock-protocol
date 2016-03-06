@@ -12,32 +12,38 @@
         "compareTo": "type",
         "fields": {
           "0": [
-            {
-              "name": "clientuuid",
-              "type": "uuid"
-            },
-            {
-              "name": "entityid",
-              "type": "i64"
-            },
-            {
-              "name": "displayname",
-              "type": "string"
-            },
-            {
-              "name": "placeholder",
-              "type": "string"
-            },
-            {
-              "name": "placeholder",
-              "type": "string"
-            }
+            "container",
+            [
+              {
+                "name": "clientuuid",
+                "type": "uuid"
+              },
+              {
+                "name": "entityid",
+                "type": "i64"
+              },
+              {
+                "name": "displayname",
+                "type": "string"
+              },
+              {
+                "name": "skintype",
+                "type": "string"
+              },
+              {
+                "name": "textures",
+                "type": "string"
+              }
+            ]
           ],
           "1": [
-            {
-              "name": "clientuuid",
-              "type": "uuid"
-            }
+            "container",
+            [
+              {
+                "name": "clientuuid",
+                "type": "uuid"
+              }
+            ]
           ]
         }
       }
