@@ -1790,7 +1790,7 @@
       [
         {
           "name": "endpoint",
-          "type": "ipendpoint"
+          "type": "ipAddress"
         }
       ]
     ],

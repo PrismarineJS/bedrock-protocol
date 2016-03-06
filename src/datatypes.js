@@ -73,8 +73,28 @@ function sizeOfEntityMetadata(value, _ref3) {
   return size;
 }
 
+function readIpAddress(buffer, offset) {
+  var address = buffer[offset] + '.' + buffer[offset+1] + '.' + buffer[offset+2] + '.' + buffer[offset+3];
+  return {
+    size: 4,
+    value: address
+  }
+}
+
+function writeIpAddress(value, buffer, offset) {
+  var address = value.split('.');
+
+  address.forEach(function(b) {
+    buffer[offset] = parseInt(b);
+    offset++;
+  });
+
+  return offset;
+}
+
 module.exports = {
   'uuid': [readUUID, writeUUID, 16],
   'nbt': [readNbt, writeNbt, sizeOfNbt],
-  'entityMetadataLoop': [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata]
+  'entityMetadataLoop': [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
+  'ipAddress': [readIpAddress, writeIpAddress, 4]
 };
