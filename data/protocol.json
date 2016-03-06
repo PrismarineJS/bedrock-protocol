@@ -35,7 +35,7 @@
                   },
                   {
                     "name": "nbtData",
-                    "type": "optionalNbt"
+                    "type": "nbt"
                   }
                 ]
               ]

@@ -1,3 +1,5 @@
+var nbt = require('prismarine-nbt');
+
 function readUUID(buffer, offset) {
   if(offset+16>buffer.length)
     throw new PartialReadError();
@@ -13,15 +15,19 @@ function writeUUID(value, buffer, offset) {
   return offset + 16;
 }
 
+function readNbt(buffer, offset) {
+  return nbt.proto.read(buffer,offset,"nbt");
+}
+
+function writeNbt(value, buffer, offset) {
+  return nbt.proto.write(value,buffer,offset,"nbt");
+}
+
+function sizeOfNbt(value) {
+  return nbt.proto.sizeOf(value,"nbt");
+}
+
 module.exports = {
   'uuid': [readUUID, writeUUID, 16],
-
-  'metadatadictionary': [readLTriad, writeLTriad, 3],
-  'skin': [readIpAddress, writeIpAddress, 4],
-  'entitylocations': [readRestBuffer, writeRestBuffer, sizeOfRestBuffer],
-  'blockrecords':[readEndOfArray,writeEndOfArray,sizeOfEndOfArray],
-  'records':[readToByte,writeToByte,sizeOfToByte],
-  'playerattributes': [],
-  'item': [],
-  'blockcoordinates': []
+  'nbt': [readNbt, writeNbt, sizeOfNbt]
 };
