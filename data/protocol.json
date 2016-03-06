@@ -168,15 +168,15 @@
         },
         {
           "name": "protocol",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "protocol2",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "client_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "client_uuid",
@@ -201,7 +201,7 @@
       [
         {
           "name": "status",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -219,7 +219,7 @@
       [
         {
           "name": "payload_size",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "payload",
@@ -232,7 +232,7 @@
       [
         {
           "name": "type",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -241,11 +241,11 @@
       [
         {
           "name": "time",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "started",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -254,51 +254,51 @@
       [
         {
           "name": "seed",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "dimension",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "generator",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "gamemode",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "spawn_x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "spawn_y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "spawn_z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "unknown",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -315,43 +315,43 @@
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "head_yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "item",
@@ -368,7 +368,7 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "client_uuid",
@@ -381,43 +381,43 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "entity_type",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "metadata",
@@ -425,7 +425,7 @@
         },
         {
           "name": "links",
-          "type": "short"
+          "type": "i16"
         }
       ]
     ],
@@ -434,7 +434,7 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     ],
@@ -443,7 +443,7 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "item",
@@ -451,27 +451,27 @@
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "speed_z",
-          "type": "float"
+          "type": "f32"
         }
       ]
     ],
@@ -480,11 +480,11 @@
       [
         {
           "name": "target",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     ],
@@ -502,39 +502,39 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "head_yaw",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "pitch",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "mode",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "on_ground",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -543,19 +543,19 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -573,23 +573,23 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "direction",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "title",
@@ -602,19 +602,19 @@
       [
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "radius",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "records",
@@ -627,23 +627,23 @@
       [
         {
           "name": "event_id",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "data",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -652,23 +652,23 @@
       [
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "case_1",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "case_2",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -677,11 +677,11 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "event_id",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -690,27 +690,27 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "event_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "effect_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "amplifier",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "particles",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "duration",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -719,7 +719,7 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "attributes",
@@ -732,7 +732,7 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "item",
@@ -740,11 +740,11 @@
         },
         {
           "name": "slot",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "selected_slot",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -753,7 +753,7 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "helmet",
@@ -778,11 +778,11 @@
       [
         {
           "name": "action_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "target_entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     ],
@@ -795,7 +795,7 @@
         },
         {
           "name": "face",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "facecoordinates",
@@ -816,27 +816,27 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "action_id",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "face",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -845,7 +845,7 @@
       [
         {
           "name": "health",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -854,7 +854,7 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "metadata",
@@ -876,15 +876,15 @@
       [
         {
           "name": "rider_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "ridden_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "link_type",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -893,7 +893,7 @@
       [
         {
           "name": "health",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -902,15 +902,15 @@
       [
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -919,11 +919,11 @@
       [
         {
           "name": "action_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         }
       ]
     ],
@@ -932,15 +932,15 @@
       [
         {
           "name": "x",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "y",
-          "type": "float"
+          "type": "f32"
         },
         {
           "name": "z",
-          "type": "float"
+          "type": "f32"
         }
       ]
     ],
@@ -949,7 +949,7 @@
       [
         {
           "name": "itemtype",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "item",
@@ -962,27 +962,27 @@
       [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "type",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot_count",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -991,7 +991,7 @@
       [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         }
       ]
     ],
@@ -1000,15 +1000,15 @@
       [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "unknown",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "item",
@@ -1021,15 +1021,15 @@
       [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "property",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "value",
-          "type": "short"
+          "type": "i16"
         }
       ]
     ],
@@ -1038,7 +1038,7 @@
       [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "slot_data",
@@ -1064,11 +1064,11 @@
       [
         {
           "name": "window_id",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "recipe_type",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "recipe_id",
@@ -1089,7 +1089,7 @@
       [
         {
           "name": "flags",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -1098,15 +1098,15 @@
       [
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "namedtag",
@@ -1119,19 +1119,19 @@
       [
         {
           "name": "chunk_x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "chunk_z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "order",
-          "type": "byte"
+          "type": "i8"
         },
         {
           "name": "chunk_data_length",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "chunk_data",
@@ -1144,7 +1144,7 @@
       [
         {
           "name": "difficulty",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -1162,7 +1162,7 @@
       [
         {
           "name": "chunk_radius",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -1171,7 +1171,7 @@
       [
         {
           "name": "chunk_radius",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ],
@@ -1189,23 +1189,23 @@
       [
         {
           "name": "entity_id",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "x",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "y",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "z",
-          "type": "int"
+          "type": "i32"
         },
         {
           "name": "count",
-          "type": "int"
+          "type": "i32"
         }
       ]
     ]
