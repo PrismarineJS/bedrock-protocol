@@ -1,6 +1,8 @@
 pocket-minecraft-protocol
 =========================
 
+[![Join the chat at https://gitter.im/mhsjlw/pocket-minecraft-protocol](https://badges.gitter.im/mhsjlw/pocket-minecraft-protocol.svg)](https://gitter.im/mhsjlw/pocket-minecraft-protocol?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![NPM version](https://img.shields.io/npm/v/pocket-minecraft-protocol.svg)](http://npmjs.com/package/pocket-minecraft-protocol)
 [![Join the chat at https://gitter.im/PrismarineJS/node-minecraft-protocol](https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg)](https://gitter.im/PrismarineJS/node-minecraft-protocol)
 
