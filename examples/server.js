@@ -12,7 +12,6 @@ var server = pmp.createServer({
 
 server.on('connection', function(client) {
   client.on('unconnected_ping', function(packet) {
-    console.log(packet);
     client.write('unconnected_pong', {
       pingID: packet.pingID,
       serverID: 0,
@@ -22,6 +21,6 @@ server.on('connection', function(client) {
   });
 
   client.on('error', function(err) {
-    // ignore it
+    console.log(err.stack);
   });
 });
