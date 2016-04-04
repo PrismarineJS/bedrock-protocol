@@ -19,6 +19,7 @@ function createServer(options) {
   server.playerCount = 0;
 
   server.on("connection", function (client) {
+    client.on("mcpe",packet => client.emit(packet.name,packet.params))
 
 
   });

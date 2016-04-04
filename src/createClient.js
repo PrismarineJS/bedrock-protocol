@@ -14,6 +14,7 @@ function createClient(options) {
 
   var client=raknet.createClient(options);
   client.username = options.username;
+  client.on("mcpe",packet => client.emit(packet.name,packet.params))
 
   return client;
 }

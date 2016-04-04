@@ -12,6 +12,10 @@ var server = pmp.createServer({
 });
 
 server.on('connection', function(client) {
+  client.on("mcpe_login",packet => {
+    console.log(packet);
+  });
+
   client.on('error', function(err) {
     console.log(err.stack);
   });
