@@ -7,19 +7,11 @@ if(process.argv.length !=4) {
 
 var server = pmp.createServer({
   host: process.argv[2],
-  port: parseInt(process.argv[3])
+  port: parseInt(process.argv[3]),
+  name: 'MCPE;numerous-alpaca test server!;45 45;0.0.1;0;20'
 });
 
 server.on('connection', function(client) {
-  client.on('unconnected_ping', function(packet) {
-    client.write('unconnected_pong', {
-      pingID: packet.pingID,
-      serverID: 0,
-      magic: 0,
-      serverName: 'MCPE;numerous-alpaca test server!;45 45;0.0.1;0;20'
-    });
-  });
-
   client.on('error', function(err) {
     console.log(err.stack);
   });

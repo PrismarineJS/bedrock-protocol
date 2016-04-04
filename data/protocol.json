@@ -3,7 +3,7 @@
     "string": [
       "pstring",
       {
-        "countType":"short"
+        "countType":"i16"
       }
     ],
     "shapeless_recipe": [
@@ -91,11 +91,11 @@
       [
         {
           "name": "meta",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "id",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "result",
@@ -108,11 +108,11 @@
       [
         {
           "name": "id",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "meta",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "result",
@@ -602,7 +602,36 @@
         ]
       }
     ],
-    "packet": [
+    "encapsulated_packet":[
+      "container",
+      [
+        {
+          "name": "name",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0x8e": "mcpe"
+              }
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "type": [
+            "switch",
+            {
+              "compareTo": "name",
+              "fields": {
+                "mcpe":"mcpe_packet"
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    "mcpe_packet": [
       "container",
       [
         {
