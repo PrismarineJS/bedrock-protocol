@@ -10,6 +10,7 @@ function createClient(options) {
   assert.ok(options.username, "username is required");
 
   options.customPackets=require("../data/protocol");
+  options.customTypes=require("./datatypes/minecraft");
 
   var client=raknet.createClient(options);
   client.username = options.username;

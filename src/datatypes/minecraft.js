@@ -1,6 +1,7 @@
 'use strict';
 
 var nbt = require('prismarine-nbt');
+const UUID = require('uuid-1345');
 
 function readUUID(buffer, offset) {
   if(offset+16>buffer.length)

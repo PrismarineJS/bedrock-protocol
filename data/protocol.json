@@ -365,7 +365,7 @@
         },
         {
           "name": "texture",
-          "type": "string"
+          "type": ["buffer",{"countType":"i16"}]
         }
       ]
     ],
@@ -819,7 +819,7 @@
         },
         {
           "name": "client_secret",
-          "type": "string"
+          "type": ["buffer",{"countType":"i16"}]
         },
         {
           "name": "skin",

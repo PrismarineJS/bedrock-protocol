@@ -7,12 +7,12 @@ var protocol = require('../../data/protocol.json').types;
 function createProtocol(packets) {
   var proto = new ProtoDef();
   proto.addTypes(require('../datatypes/minecraft'));
+  proto.addTypes(protocol);
 
   return proto;
 }
 
-var proto = new createProtocol(protocol);
-proto.addTypes(protocol);
+var proto = createProtocol(protocol);
 
 function createSerializer() {
   return new Serializer(proto, 'packet');
@@ -25,4 +25,4 @@ function createDeserializer() {
 module.exports = {
   createDeserializer: createDeserializer,
   createSerializer: createSerializer
-}
+};

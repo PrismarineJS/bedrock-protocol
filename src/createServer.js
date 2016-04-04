@@ -10,6 +10,7 @@ function createServer(options) {
   var host = options.host || '0.0.0.0';
 
   options.customPackets=require("../data/protocol");
+  options.customTypes=require("./datatypes/minecraft");
   var server = raknet.createServer(options);
 
   server.name = options.name || "Minecraft Server";
