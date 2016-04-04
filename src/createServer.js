@@ -19,9 +19,13 @@ function createServer(options) {
   server.playerCount = 0;
 
   server.on("connection", function (client) {
-    client.on("mcpe",packet => client.emit(packet.name,packet.params))
-
-
+    client.on("mcpe",packet => client.emit(packet.name,packet.params));
+    client.writeMCPE=(name,packet) => {
+      client.writeEncapsulated("mcpe",{
+        name:name,
+        params:packet
+      });
+    };
   });
   return server;
 }

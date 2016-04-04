@@ -15,6 +15,12 @@ function createClient(options) {
   var client=raknet.createClient(options);
   client.username = options.username;
   client.on("mcpe",packet => client.emit(packet.name,packet.params))
+  client.writeMCPE=(name,packet) => {
+    client.writeEncapsulated("mcpe",{
+      name:name,
+      params:packet
+    });
+  };
 
   return client;
 }
