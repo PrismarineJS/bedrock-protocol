@@ -1,6 +1,7 @@
 'use strict';
 
 var pmp = require('../');
+var fs = require("fs");
 
 if(process.argv.length !=4) {
   console.log("Usage: node server.js <host> <port>");
@@ -44,15 +45,18 @@ server.on('connection', function(client) {
   });
 
   client.on("mcpe_request_chunk_radius",packet => {
-    const chunkRadius=packet.chunk_radius;
+    const chunkRadius = packet.chunk_radius;
     // TODO : to fix, no idea what to send
-    client.writeMCPE("mcpe_full_chunk_data",{
-      chunk_x:0,
-      chunk_z:0,
-      order:0,
-      chunk_data_length:8,
-      chunk_data:new Buffer([0,1])
-    });
+    for (let x = 5; x < 6; x++) {
+      for (let z = 2; z < 3; z++) {
+        client.writeBatch([{"name":"mcpe","params":{name:"mcpe_full_chunk_data",params:{
+        chunk_x: x,
+        chunk_z: z,
+        order: 1,
+        chunk_data:fs.readFileSync(__dirname+"/chunk")
+      }}}]);
+    }
+  }
   });
 
   client.on('error', function(err) {

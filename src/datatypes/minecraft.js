@@ -93,9 +93,43 @@ function writeIpAddress(value, buffer, offset) {
   return offset;
 }
 
+function readEndOfArray(buffer, offset, typeArgs) {
+  var type=typeArgs.type;
+  var cursor = offset;
+  var elements = [];
+  while(cursor<buffer.length) {
+    var results = this.read(buffer, cursor, type, {});
+    elements.push(results.value);
+    cursor += results.size;
+  }
+  return {
+    value: elements,
+    size: cursor - offset
+  };
+}
+
+function writeEndOfArray(value, buffer, offset,typeArgs) {
+  var type=typeArgs.type;
+  var self = this;
+  value.forEach(function(item) {
+    offset = self.write(item, buffer, offset, type, {});
+  });
+  return offset;
+}
+
+function sizeOfEndOfArray(value, typeArgs) {
+  var type=typeArgs.type;
+  var size = 0;
+  for(var i = 0; i < value.length; ++i) {
+    size += this.sizeOf(value[i], type, {});
+  }
+  return size;
+}
+
 module.exports = {
   'uuid': [readUUID, writeUUID, 16],
   'nbt': [readNbt, writeNbt, sizeOfNbt],
   'entityMetadataLoop': [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
-  'ipAddress': [readIpAddress, writeIpAddress, 4]
+  'ipAddress': [readIpAddress, writeIpAddress, 4],
+  'endOfArray':[readEndOfArray,writeEndOfArray,sizeOfEndOfArray]
 };

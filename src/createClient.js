@@ -4,6 +4,10 @@ const raknet = require('raknet');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const ProtoDef = require('protodef').ProtoDef;
+const batchProto=new ProtoDef();
+batchProto.addTypes(require("./datatypes/minecraft"));
+batchProto.addType("insideBatch",["endOfArray",{"type":["buffer",{"countType":"i32"}]}]);
 
 function createClient(options) {
   assert.ok(options, 'options is required');
@@ -41,24 +45,14 @@ function createClient(options) {
           texture: fs.readFileSync(path.join(__dirname,'texture'))
         }
       }
-    )
+    );
+
   });
 
   client.on('mcpe_batch', function(packet) {
     var buf = zlib.inflateSync(packet.payload);
-    var offset = 0;
-    var length = buf.length;
-
-    while(offset < length) {
-      var pkLength = buf.readInt32BE(offset);
-      offset += 4;
-        
-      var packetBuffer = buf.slice(offset, pkLength);
-      offset += pkLength;
-
-      packetBuffer = Buffer.concat([new Buffer([0x8e]),packetBuffer]);
-      client.readEncapsulatedPacket(packetBuffer);
-    }
+    var packets=batchProto.parsePacketBuffer("insideBatch",buf).data;
+    packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0x8e]),packet])));
   });
 
   return client;

@@ -1,4 +1,9 @@
 const raknet = require('raknet');
+const zlib = require('zlib');
+const ProtoDef = require('protodef').ProtoDef;
+const batchProto=new ProtoDef();
+batchProto.addTypes(require("./datatypes/minecraft"));
+batchProto.addType("insideBatch",["endOfArray",{"type":["buffer",{"countType":"i32"}]}]);
 
 function createServer(options) {
   options = options || {};
@@ -20,12 +25,21 @@ function createServer(options) {
 
   server.on("connection", function (client) {
     client.on("mcpe",packet => client.emit(packet.name,packet.params));
+
     client.writeMCPE=(name,packet) => {
       client.writeEncapsulated("mcpe",{
         name:name,
         params:packet
       });
     };
+    client.writeBatch=function(packets) {
+      const payload=zlib.deflateSync(batchProto.createPacketBuffer("insideBatch",
+        packets.map(packet =>
+          client.encapsulatedPacketSerializer.createPacketBuffer(packet).slice(1))));
+      client.writeMCPE("mcpe_batch",{
+        payload:payload
+      });
+    }
   });
   return server;
 }
