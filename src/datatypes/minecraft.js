@@ -19,15 +19,15 @@ function writeUUID(value, buffer, offset) {
 }
 
 function readNbt(buffer, offset) {
-  return nbt.proto.read(buffer,offset,"nbt");
+  return nbt.protoLE.read(buffer,offset,"nbt");
 }
 
 function writeNbt(value, buffer, offset) {
-  return nbt.proto.write(value,buffer,offset,"nbt");
+  return nbt.protoLE.write(value,buffer,offset,"nbt");
 }
 
 function sizeOfNbt(value) {
-  return nbt.proto.sizeOf(value,"nbt");
+  return nbt.protoLE.sizeOf(value,"nbt");
 }
 
 function readEntityMetadata(buffer, offset, _ref) {

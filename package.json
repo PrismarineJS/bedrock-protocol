@@ -17,9 +17,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "prismarine-nbt": "^0.2.2",
+    "prismarine-nbt": "^1.0.0",
     "protodef": "^1.2.0",
-    "raknet": "^1.6.2",
+    "raknet": "^1.6.4",
     "uuid-1345": "^0.99.6"
   },
   "devDependencies": {},

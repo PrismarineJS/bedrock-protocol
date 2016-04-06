@@ -6,6 +6,12 @@
         "countType":"i16"
       }
     ],
+    "lstring": [
+      "pstring",
+      {
+        "countType":"li16"
+      }
+    ],
     "shapeless_recipe": [
       "container",
       [
@@ -221,26 +227,39 @@
       {
         "compareTo": "$compareTo",
         "fields": {
-          "0": "i8",
-          "1": "i16",
-          "2": "i32",
-          "3": "f32",
-          "4": "string",
-          "5": "slot",
+          "0": "li8",
+          "1": "li16",
+          "2": "li32",
+          "3": "lf32",
+          "4": "lstring",
+          "5": ["container",[
+            {
+              "name":"blockId",
+              "type":"li16"
+            },
+            {
+              "name":"itemCount",
+              "type":"li8"
+            },
+            {
+              "name":"itemDamage",
+              "type":"li16"
+            }
+          ]],
           "6": [
             "container",
             [
               {
                 "name": "x",
-                "type": "i32"
+                "type": "li32"
               },
               {
                 "name": "y",
-                "type": "i32"
+                "type": "li32"
               },
               {
                 "name": "z",
-                "type": "i32"
+                "type": "li32"
               }
             ]
           ],
@@ -249,19 +268,19 @@
             [
               {
                 "name": "pitch",
-                "type": "f32"
+                "type": "lf32"
               },
               {
                 "name": "yaw",
-                "type": "f32"
+                "type": "lf32"
               },
               {
                 "name": "roll",
-                "type": "f32"
+                "type": "lf32"
               }
             ]
           ],
-          "8": "i64"
+          "8": "li64"
         }
       }
     ],
