@@ -1780,12 +1780,8 @@
           "type": "i8"
         },
         {
-          "name": "chunk_data_length",
-          "type": "i32"
-        },
-        {
           "name": "chunk_data",
-          "type":["buffer",{"countType":"i16"}]
+          "type":["buffer",{"countType":"i32"}]
         }
       ]
     ],
