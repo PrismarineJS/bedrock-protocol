@@ -10,7 +10,7 @@ if(process.argv.length !=4) {
 var server = pmp.createServer({
   host: process.argv[2],
   port: parseInt(process.argv[3]),
-  name: 'MCPE;numerous-alpaca test server!;45 45;0.0.1;0;20'
+  name: 'MCPE;Minecraft: PE Server;45 45;0.14.1;0;20'
 });
 
 server.on('connection', function(client) {

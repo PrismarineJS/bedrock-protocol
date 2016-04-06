@@ -868,12 +868,8 @@
       "container",
       [
         {
-          "name": "payload_size",
-          "type": "i32"
-        },
-        {
           "name": "payload",
-          "type":["buffer",{"countType":"i16"}]
+          "type":["buffer",{"countType":"i32"}]
         }
       ]
     ],
