@@ -57,7 +57,7 @@ function createClient(options) {
       offset += pkLength;
 
       packetBuffer = Buffer.concat([new Buffer([0x8e]),packetBuffer]);
-      console.log(client.readEncapsulatedPacket(packetBuffer));
+      client.readEncapsulatedPacket(packetBuffer);
     }
   });
 
