@@ -23,5 +23,5 @@ Then view our `examples` for inspiration!
 ## Contributors
 This project is run by these guys:
 
-  - [mhsjlw](https://github.com/mhsjlw) ([mhsjlw@aol.com](mailto:mhsjlw@aol.com))
+  - [mhsjlw](https://github.com/mhsjlw)
   - [rom1504](https://github.com/rom1504)
