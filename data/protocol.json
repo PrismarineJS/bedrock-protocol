@@ -879,6 +879,34 @@
         {
           "name": "type",
           "type": "i8"
+        },
+        {
+          "name": "name",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type",
+              "fields": {
+                "1": "string",
+                "5": "string"
+                },
+              "default": "1"
+             }
+          ]
+        },
+        {
+          "name": "message",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type",
+              "fields": {
+                "1": "string",
+                "5": "string"
+                },
+              "default": "1"
+             }
+          ]
         }
       ]
     ],
