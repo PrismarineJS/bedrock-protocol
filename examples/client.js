@@ -13,6 +13,12 @@ var client = pmp.createClient({
 
 client.on('mcpe',packet => console.log(packet));
 
+client.on('mcpe_set_spawn_position',() => {
+  client.writeMCPE('mcpe_request_chunk_radius',{
+    chunk_radius:8
+  })
+});
+
 client.on('error',function(err){
   console.log(err);
 });
