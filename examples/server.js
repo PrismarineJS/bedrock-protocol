@@ -72,8 +72,12 @@ server.on('connection', function(client) {
     const chunkRadius = packet.chunk_radius;
     // TODO : to fix, no idea what to send
 
-    for (let x = 0; x < 1; x++) {
-      for (let z = 0; z < 1; z++) {
+    client.writeMCPE('mcpe_chunk_radius_update',{
+      chunk_radius:1
+    });
+
+    for (let x = -1; x <=1; x++) {
+      for (let z = -1; z <=1; z++) {
         client.writeBatch([{"name":"mcpe","params":{name:"mcpe_full_chunk_data",params:{
         chunk_x: x,
         chunk_z: z,
