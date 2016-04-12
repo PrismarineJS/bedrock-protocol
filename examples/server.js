@@ -68,10 +68,7 @@ server.on('connection', function(client) {
     });
   });
 
-  client.on("mcpe_request_chunk_radius",packet => {
-    const chunkRadius = packet.chunk_radius;
-    // TODO : to fix, no idea what to send
-
+  client.on("mcpe_request_chunk_radius",() => {
     client.writeMCPE('mcpe_chunk_radius_update',{
       chunk_radius:1
     });
