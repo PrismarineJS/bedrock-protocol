@@ -1804,43 +1804,49 @@
           "type": "i8"
         },
         {
-          "name": "records",
+          "name": "entries",
           "type": [
-            "switch",
+            "array",
             {
-              "compareTo": "type",
-              "fields": {
-                "0": [
-                  "container",
-                  [
-                    {
-                      "name": "clientUuid",
-                      "type": "uuid"
-                    },
-                    {
-                      "name": "entityId",
-                      "type": "i64"
-                    },
-                    {
-                      "name": "displayName",
-                      "type": "string"
-                    },
-                    {
-                      "name": "skin",
-                      "type": "skin"
-                    }
-                  ]
-                ],
-                "1": [
-                  "container",
-                  [
-                    {
-                      "name": "clientUuid",
-                      "type": "uuid"
-                    }
-                  ]
-                ]
-              }
+              "countType": "i32",
+              "type": [
+                "switch",
+                {
+                  "compareTo": "type",
+                  "fields": {
+                    "0": [
+                      "container",
+                      [
+                        {
+                          "name": "clientUuid",
+                          "type": "uuid"
+                        },
+                        {
+                          "name": "entityId",
+                          "type": "i64"
+                        },
+                        {
+                          "name": "displayName",
+                          "type": "string"
+                        },
+                        {
+                          "name": "skin",
+                          "type": "skin"
+                        }
+                      ]
+                    ],
+                    "1": [
+                      "container",
+                      [
+                        {
+                          "name": "clientUuid",
+                          "type": "uuid"
+                        }
+                      ]
+                    ]
+                  }
+                }
+              ]
             }
           ]
         }
