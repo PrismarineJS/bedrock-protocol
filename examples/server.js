@@ -40,7 +40,7 @@ server.on('connection', function(client) {
       seed:-1,
       dimension:0,
       generator:1,
-      gamemode:0,
+      gamemode:1,
       entity_id:[0,0],
       spawn_x:1,
       spawn_y:1,
