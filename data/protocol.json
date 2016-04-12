@@ -452,48 +452,6 @@
         ]
       }
     ],
-    "playerrecords": [
-      "switch",
-      {
-        "compareTo": "type",
-        "fields": {
-          "0": [
-            "container",
-            [
-              {
-                "name": "clientUuid",
-                "type": "uuid"
-              },
-              {
-                "name": "entityId",
-                "type": "i64"
-              },
-              {
-                "name": "displayName",
-                "type": "string"
-              },
-              {
-                "name": "skinType",
-                "type": "string"
-              },
-              {
-                "name": "textures",
-                "type": "string"
-              }
-            ]
-          ],
-          "1": [
-            "container",
-            [
-              {
-                "name": "clientUuid",
-                "type": "uuid"
-              }
-            ]
-          ]
-        }
-      }
-    ],
     "playerattributes": [
       "array",
       {
@@ -1852,7 +1810,48 @@
         },
         {
           "name": "records",
-          "type": "playerrecords"
+          "type": [
+            "switch",
+            {
+              "compareTo": "type",
+              "fields": {
+                "0": [
+                  "container",
+                  [
+                    {
+                      "name": "clientUuid",
+                      "type": "uuid"
+                    },
+                    {
+                      "name": "entityId",
+                      "type": "i64"
+                    },
+                    {
+                      "name": "displayName",
+                      "type": "string"
+                    },
+                    {
+                      "name": "skinType",
+                      "type": "string"
+                    },
+                    {
+                      "name": "textures",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "1": [
+                  "container",
+                  [
+                    {
+                      "name": "clientUuid",
+                      "type": "uuid"
+                    }
+                  ]
+                ]
+              }
+            }
+          ]
         }
       ]
     ],
