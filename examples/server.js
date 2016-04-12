@@ -17,9 +17,9 @@ var server = pmp.createServer({
 server.on('connection', function(client) {
 
 
-  client.on("mcpe",packet => {
-    console.log(packet);
-  });
+  client.on("mcpe",packet => console.log(packet));
+
+
   client.on("game_login",packet => {
     client.writeMCPE("player_status",{
       status:0
