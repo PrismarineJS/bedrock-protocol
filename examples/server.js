@@ -20,11 +20,11 @@ server.on('connection', function(client) {
   client.on("mcpe",packet => {
     console.log(packet);
   });
-  client.on("mcpe_login",packet => {
-    client.writeMCPE("mcpe_player_status",{
+  client.on("game_login",packet => {
+    client.writeMCPE("player_status",{
       status:0
     });
-    client.writeMCPE('mcpe_move_player', {
+    client.writeMCPE('move_player', {
       entity_id: [0,0],
       x: 1,
       y: 64 + 1.62,
@@ -36,7 +36,7 @@ server.on('connection', function(client) {
       on_ground: 1
     });
 
-    client.writeMCPE("mcpe_start_game",{
+    client.writeMCPE("start_game",{
       seed:-1,
       dimension:0,
       generator:1,
@@ -51,31 +51,31 @@ server.on('connection', function(client) {
       unknown:0
     });
 
-    client.writeMCPE('mcpe_set_spawn_position', {
+    client.writeMCPE('set_spawn_position', {
       x: 1,
       y: 64,
       z: 1
     });
-    client.writeMCPE("mcpe_set_time",{
+    client.writeMCPE("set_time",{
       time:0,
       started:1
     });
 
-    client.writeMCPE('mcpe_respawn', {
+    client.writeMCPE('respawn', {
       x: 1,
       y: 64,
       z: 1
     });
   });
 
-  client.on("mcpe_request_chunk_radius",() => {
-    client.writeMCPE('mcpe_chunk_radius_update',{
+  client.on("request_chunk_radius",() => {
+    client.writeMCPE('chunk_radius_update',{
       chunk_radius:1
     });
 
     for (let x = -1; x <=1; x++) {
       for (let z = -1; z <=1; z++) {
-        client.writeBatch([{"name":"mcpe","params":{name:"mcpe_full_chunk_data",params:{
+        client.writeBatch([{"name":"mcpe","params":{name:"full_chunk_data",params:{
         chunk_x: x,
         chunk_z: z,
         order: 1,
@@ -84,11 +84,11 @@ server.on('connection', function(client) {
       }
     }
 
-    client.writeMCPE('mcpe_player_status', {
+    client.writeMCPE('player_status', {
       status: 3
     });
 
-    client.writeMCPE('mcpe_set_time', {
+    client.writeMCPE('set_time', {
       time: 0,
       started: 1
     });

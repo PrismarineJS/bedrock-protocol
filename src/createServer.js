@@ -36,7 +36,7 @@ function createServer(options) {
       const payload=zlib.deflateSync(batchProto.createPacketBuffer("insideBatch",
         packets.map(packet =>
           client.encapsulatedPacketSerializer.createPacketBuffer(packet).slice(1))));
-      client.writeMCPE("mcpe_batch",{
+      client.writeMCPE("batch",{
         payload:payload
       });
     }

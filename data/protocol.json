@@ -664,60 +664,60 @@
                 "0x14": "id_no_free_incoming_connections",
                 "0x17": "id_connection_banned",
                 "0x1A": "id_ip_recently_connected",
-                "0x8f": "mcpe_login",
-                "0x90": "mcpe_player_status",
-                "0x91": "mcpe_disconnect",
-                "0x92": "mcpe_batch",
-                "0x93": "mcpe_text",
-                "0x94": "mcpe_set_time",
-                "0x95": "mcpe_start_game",
-                "0x96": "mcpe_add_player",
-                "0x97": "mcpe_remove_player",
-                "0x98": "mcpe_add_entity",
-                "0x99": "mcpe_remove_entity",
-                "0x9a": "mcpe_add_item_entity",
-                "0x9b": "mcpe_take_item_entity",
-                "0x9c": "mcpe_move_entity",
-                "0x9d": "mcpe_move_player",
-                "0x9e": "mcpe_remove_block",
-                "0x9f": "mcpe_update_block",
-                "0xa0": "mcpe_add_painting",
-                "0xa1": "mcpe_explode",
-                "0xa2": "mcpe_level_event",
-                "0xa3": "mcpe_tile_event",
-                "0xa4": "mcpe_entity_event",
-                "0xa5": "mcpe_mob_effect",
-                "0xa6": "mcpe_update_attributes",
-                "0xa7": "mcpe_player_equipment",
-                "0xa8": "mcpe_player_armor_equipment",
-                "0xa9": "mcpe_interact",
-                "0xaa": "mcpe_use_item",
-                "0xab": "mcpe_player_action",
-                "0xac": "mcpe_hurt_armor",
-                "0xad": "mcpe_set_entity_data",
-                "0xae": "mcpe_set_entity_motion",
-                "0xaf": "mcpe_set_entity_link",
-                "0xb0": "mcpe_set_health",
-                "0xb1": "mcpe_set_spawn_position",
-                "0xb2": "mcpe_animate",
-                "0xb3": "mcpe_respawn",
-                "0xb4": "mcpe_drop_item",
-                "0xb5": "mcpe_container_open",
-                "0xb6": "mcpe_container_close",
-                "0xb7": "mcpe_container_set_slot",
-                "0xb8": "mcpe_container_set_data",
-                "0xb9": "mcpe_container_set_content",
-                "0xba": "mcpe_crafting_data",
-                "0xbb": "mcpe_crafting_event",
-                "0xbc": "mcpe_adventure_settings",
-                "0xbd": "mcpe_tile_entity_data",
-                "0xbf": "mcpe_full_chunk_data",
-                "0xc0": "mcpe_set_difficulty",
-                "0xc3": "mcpe_player_list",
-                "0xc8": "mcpe_request_chunk_radius",
-                "0xc9": "mcpe_chunk_radius_update",
-                "0x1b": "mcpe_transfer",
-                "0xc5": "mcpe_spawn_experience_orb"
+                "0x8f": "game_login",
+                "0x90": "player_status",
+                "0x91": "disconnect",
+                "0x92": "batch",
+                "0x93": "text",
+                "0x94": "set_time",
+                "0x95": "start_game",
+                "0x96": "add_player",
+                "0x97": "remove_player",
+                "0x98": "add_entity",
+                "0x99": "remove_entity",
+                "0x9a": "add_item_entity",
+                "0x9b": "take_item_entity",
+                "0x9c": "move_entity",
+                "0x9d": "move_player",
+                "0x9e": "remove_block",
+                "0x9f": "update_block",
+                "0xa0": "add_painting",
+                "0xa1": "explode",
+                "0xa2": "level_event",
+                "0xa3": "tile_event",
+                "0xa4": "entity_event",
+                "0xa5": "mob_effect",
+                "0xa6": "update_attributes",
+                "0xa7": "player_equipment",
+                "0xa8": "player_armor_equipment",
+                "0xa9": "interact",
+                "0xaa": "use_item",
+                "0xab": "player_action",
+                "0xac": "hurt_armor",
+                "0xad": "set_entity_data",
+                "0xae": "set_entity_motion",
+                "0xaf": "set_entity_link",
+                "0xb0": "set_health",
+                "0xb1": "set_spawn_position",
+                "0xb2": "animate",
+                "0xb3": "respawn",
+                "0xb4": "drop_item",
+                "0xb5": "container_open",
+                "0xb6": "container_close",
+                "0xb7": "container_set_slot",
+                "0xb8": "container_set_data",
+                "0xb9": "container_set_content",
+                "0xba": "crafting_data",
+                "0xbb": "crafting_event",
+                "0xbc": "adventure_settings",
+                "0xbd": "tile_entity_data",
+                "0xbf": "full_chunk_data",
+                "0xc0": "set_difficulty",
+                "0xc3": "player_list",
+                "0xc8": "request_chunk_radius",
+                "0xc9": "chunk_radius_update",
+                "0x1b": "transfer",
+                "0xc5": "spawn_experience_orb"
               }
             }
           ]
@@ -733,60 +733,60 @@
                 "id_no_free_incoming_connections": "packet_id_no_free_incoming_connections",
                 "id_connection_banned": "packet_id_connection_banned",
                 "id_ip_recently_connected": "packet_id_ip_recently_connected",
-                "mcpe_login": "packet_mcpe_login",
-                "mcpe_player_status": "packet_mcpe_player_status",
-                "mcpe_disconnect": "packet_mcpe_disconnect",
-                "mcpe_batch": "packet_mcpe_batch",
-                "mcpe_text": "packet_mcpe_text",
-                "mcpe_set_time": "packet_mcpe_set_time",
-                "mcpe_start_game": "packet_mcpe_start_game",
-                "mcpe_add_player": "packet_mcpe_add_player",
-                "mcpe_remove_player": "packet_mcpe_remove_player",
-                "mcpe_add_entity": "packet_mcpe_add_entity",
-                "mcpe_remove_entity": "packet_mcpe_remove_entity",
-                "mcpe_add_item_entity": "packet_mcpe_add_item_entity",
-                "mcpe_take_item_entity": "packet_mcpe_take_item_entity",
-                "mcpe_move_entity": "packet_mcpe_move_entity",
-                "mcpe_move_player": "packet_mcpe_move_player",
-                "mcpe_remove_block": "packet_mcpe_remove_block",
-                "mcpe_update_block": "packet_mcpe_update_block",
-                "mcpe_add_painting": "packet_mcpe_add_painting",
-                "mcpe_explode": "packet_mcpe_explode",
-                "mcpe_level_event": "packet_mcpe_level_event",
-                "mcpe_tile_event": "packet_mcpe_tile_event",
-                "mcpe_entity_event": "packet_mcpe_entity_event",
-                "mcpe_mob_effect": "packet_mcpe_mob_effect",
-                "mcpe_update_attributes": "packet_mcpe_update_attributes",
-                "mcpe_player_equipment": "packet_mcpe_player_equipment",
-                "mcpe_player_armor_equipment": "packet_mcpe_player_armor_equipment",
-                "mcpe_interact": "packet_mcpe_interact",
-                "mcpe_use_item": "packet_mcpe_use_item",
-                "mcpe_player_action": "packet_mcpe_player_action",
-                "mcpe_hurt_armor": "packet_mcpe_hurt_armor",
-                "mcpe_set_entity_data": "packet_mcpe_set_entity_data",
-                "mcpe_set_entity_motion": "packet_mcpe_set_entity_motion",
-                "mcpe_set_entity_link": "packet_mcpe_set_entity_link",
-                "mcpe_set_health": "packet_mcpe_set_health",
-                "mcpe_set_spawn_position": "packet_mcpe_set_spawn_position",
-                "mcpe_animate": "packet_mcpe_animate",
-                "mcpe_respawn": "packet_mcpe_respawn",
-                "mcpe_drop_item": "packet_mcpe_drop_item",
-                "mcpe_container_open": "packet_mcpe_container_open",
-                "mcpe_container_close": "packet_mcpe_container_close",
-                "mcpe_container_set_slot": "packet_mcpe_container_set_slot",
-                "mcpe_container_set_data": "packet_mcpe_container_set_data",
-                "mcpe_container_set_content": "packet_mcpe_container_set_content",
-                "mcpe_crafting_data": "packet_mcpe_crafting_data",
-                "mcpe_crafting_event": "packet_mcpe_crafting_event",
-                "mcpe_adventure_settings": "packet_mcpe_adventure_settings",
-                "mcpe_tile_entity_data": "packet_mcpe_tile_entity_data",
-                "mcpe_full_chunk_data": "packet_mcpe_full_chunk_data",
-                "mcpe_set_difficulty": "packet_mcpe_set_difficulty",
-                "mcpe_player_list": "packet_mcpe_player_list",
-                "mcpe_request_chunk_radius": "packet_mcpe_request_chunk_radius",
-                "mcpe_chunk_radius_update": "packet_mcpe_chunk_radius_update",
-                "mcpe_transfer": "packet_mcpe_transfer",
-                "mcpe_spawn_experience_orb": "packet_mcpe_spawn_experience_orb"
+                "game_login": "packet_game_login",
+                "player_status": "packet_player_status",
+                "disconnect": "packet_disconnect",
+                "batch": "packet_batch",
+                "text": "packet_text",
+                "set_time": "packet_set_time",
+                "start_game": "packet_start_game",
+                "add_player": "packet_add_player",
+                "remove_player": "packet_remove_player",
+                "add_entity": "packet_add_entity",
+                "remove_entity": "packet_remove_entity",
+                "add_item_entity": "packet_add_item_entity",
+                "take_item_entity": "packet_take_item_entity",
+                "move_entity": "packet_move_entity",
+                "move_player": "packet_move_player",
+                "remove_block": "packet_remove_block",
+                "update_block": "packet_update_block",
+                "add_painting": "packet_add_painting",
+                "explode": "packet_explode",
+                "level_event": "packet_level_event",
+                "tile_event": "packet_tile_event",
+                "entity_event": "packet_entity_event",
+                "mob_effect": "packet_mob_effect",
+                "update_attributes": "packet_update_attributes",
+                "player_equipment": "packet_player_equipment",
+                "player_armor_equipment": "packet_player_armor_equipment",
+                "interact": "packet_interact",
+                "use_item": "packet_use_item",
+                "player_action": "packet_player_action",
+                "hurt_armor": "packet_hurt_armor",
+                "set_entity_data": "packet_set_entity_data",
+                "set_entity_motion": "packet_set_entity_motion",
+                "set_entity_link": "packet_set_entity_link",
+                "set_health": "packet_set_health",
+                "set_spawn_position": "packet_set_spawn_position",
+                "animate": "packet_animate",
+                "respawn": "packet_respawn",
+                "drop_item": "packet_drop_item",
+                "container_open": "packet_container_open",
+                "container_close": "packet_container_close",
+                "container_set_slot": "packet_container_set_slot",
+                "container_set_data": "packet_container_set_data",
+                "container_set_content": "packet_container_set_content",
+                "crafting_data": "packet_crafting_data",
+                "crafting_event": "packet_crafting_event",
+                "adventure_settings": "packet_adventure_settings",
+                "tile_entity_data": "packet_tile_entity_data",
+                "full_chunk_data": "packet_full_chunk_data",
+                "set_difficulty": "packet_set_difficulty",
+                "player_list": "packet_player_list",
+                "request_chunk_radius": "packet_request_chunk_radius",
+                "chunk_radius_update": "packet_chunk_radius_update",
+                "transfer": "packet_transfer",
+                "spawn_experience_orb": "packet_spawn_experience_orb"
               }
             }
           ]
@@ -809,7 +809,7 @@
       "container",
       []
     ],
-    "packet_mcpe_login": [
+    "packet_game_login": [
       "container",
       [
         {
@@ -846,7 +846,7 @@
         }
       ]
     ],
-    "packet_mcpe_player_status": [
+    "packet_player_status": [
       "container",
       [
         {
@@ -855,7 +855,7 @@
         }
       ]
     ],
-    "packet_mcpe_disconnect": [
+    "packet_disconnect": [
       "container",
       [
         {
@@ -864,7 +864,7 @@
         }
       ]
     ],
-    "packet_mcpe_batch": [
+    "packet_batch": [
       "container",
       [
         {
@@ -873,7 +873,7 @@
         }
       ]
     ],
-    "packet_mcpe_text": [
+    "packet_text": [
       "container",
       [
         {
@@ -910,7 +910,7 @@
         }
       ]
     ],
-    "packet_mcpe_set_time": [
+    "packet_set_time": [
       "container",
       [
         {
@@ -923,7 +923,7 @@
         }
       ]
     ],
-    "packet_mcpe_start_game": [
+    "packet_start_game": [
       "container",
       [
         {
@@ -976,7 +976,7 @@
         }
       ]
     ],
-    "packet_mcpe_add_player": [
+    "packet_add_player": [
       "container",
       [
         {
@@ -1037,7 +1037,7 @@
         }
       ]
     ],
-    "packet_mcpe_remove_player": [
+    "packet_remove_player": [
       "container",
       [
         {
@@ -1050,7 +1050,7 @@
         }
       ]
     ],
-    "packet_mcpe_add_entity": [
+    "packet_add_entity": [
       "container",
       [
         {
@@ -1103,7 +1103,7 @@
         }
       ]
     ],
-    "packet_mcpe_remove_entity": [
+    "packet_remove_entity": [
       "container",
       [
         {
@@ -1112,7 +1112,7 @@
         }
       ]
     ],
-    "packet_mcpe_add_item_entity": [
+    "packet_add_item_entity": [
       "container",
       [
         {
@@ -1149,7 +1149,7 @@
         }
       ]
     ],
-    "packet_mcpe_take_item_entity": [
+    "packet_take_item_entity": [
       "container",
       [
         {
@@ -1162,7 +1162,7 @@
         }
       ]
     ],
-    "packet_mcpe_move_entity": [
+    "packet_move_entity": [
       "container",
       [
         {
@@ -1171,7 +1171,7 @@
         }
       ]
     ],
-    "packet_mcpe_move_player": [
+    "packet_move_player": [
       "container",
       [
         {
@@ -1212,7 +1212,7 @@
         }
       ]
     ],
-    "packet_mcpe_remove_block": [
+    "packet_remove_block": [
       "container",
       [
         {
@@ -1233,7 +1233,7 @@
         }
       ]
     ],
-    "packet_mcpe_update_block": [
+    "packet_update_block": [
       "container",
       [
         {
@@ -1242,7 +1242,7 @@
         }
       ]
     ],
-    "packet_mcpe_add_painting": [
+    "packet_add_painting": [
       "container",
       [
         {
@@ -1271,7 +1271,7 @@
         }
       ]
     ],
-    "packet_mcpe_explode": [
+    "packet_explode": [
       "container",
       [
         {
@@ -1296,7 +1296,7 @@
         }
       ]
     ],
-    "packet_mcpe_level_event": [
+    "packet_level_event": [
       "container",
       [
         {
@@ -1321,7 +1321,7 @@
         }
       ]
     ],
-    "packet_mcpe_tile_event": [
+    "packet_tile_event": [
       "container",
       [
         {
@@ -1346,7 +1346,7 @@
         }
       ]
     ],
-    "packet_mcpe_entity_event": [
+    "packet_entity_event": [
       "container",
       [
         {
@@ -1359,7 +1359,7 @@
         }
       ]
     ],
-    "packet_mcpe_mob_effect": [
+    "packet_mob_effect": [
       "container",
       [
         {
@@ -1388,7 +1388,7 @@
         }
       ]
     ],
-    "packet_mcpe_update_attributes": [
+    "packet_update_attributes": [
       "container",
       [
         {
@@ -1401,7 +1401,7 @@
         }
       ]
     ],
-    "packet_mcpe_player_equipment": [
+    "packet_player_equipment": [
       "container",
       [
         {
@@ -1422,7 +1422,7 @@
         }
       ]
     ],
-    "packet_mcpe_player_armor_equipment": [
+    "packet_player_armor_equipment": [
       "container",
       [
         {
@@ -1447,7 +1447,7 @@
         }
       ]
     ],
-    "packet_mcpe_interact": [
+    "packet_interact": [
       "container",
       [
         {
@@ -1460,7 +1460,7 @@
         }
       ]
     ],
-    "packet_mcpe_use_item": [
+    "packet_use_item": [
       "container",
       [
         {
@@ -1485,7 +1485,7 @@
         }
       ]
     ],
-    "packet_mcpe_player_action": [
+    "packet_player_action": [
       "container",
       [
         {
@@ -1514,7 +1514,7 @@
         }
       ]
     ],
-    "packet_mcpe_hurt_armor": [
+    "packet_hurt_armor": [
       "container",
       [
         {
@@ -1523,7 +1523,7 @@
         }
       ]
     ],
-    "packet_mcpe_set_entity_data": [
+    "packet_set_entity_data": [
       "container",
       [
         {
@@ -1536,7 +1536,7 @@
         }
       ]
     ],
-    "packet_mcpe_set_entity_motion": [
+    "packet_set_entity_motion": [
       "container",
       [
         {
@@ -1545,7 +1545,7 @@
         }
       ]
     ],
-    "packet_mcpe_set_entity_link": [
+    "packet_set_entity_link": [
       "container",
       [
         {
@@ -1562,7 +1562,7 @@
         }
       ]
     ],
-    "packet_mcpe_set_health": [
+    "packet_set_health": [
       "container",
       [
         {
@@ -1571,7 +1571,7 @@
         }
       ]
     ],
-    "packet_mcpe_set_spawn_position": [
+    "packet_set_spawn_position": [
       "container",
       [
         {
@@ -1588,7 +1588,7 @@
         }
       ]
     ],
-    "packet_mcpe_animate": [
+    "packet_animate": [
       "container",
       [
         {
@@ -1601,7 +1601,7 @@
         }
       ]
     ],
-    "packet_mcpe_respawn": [
+    "packet_respawn": [
       "container",
       [
         {
@@ -1618,7 +1618,7 @@
         }
       ]
     ],
-    "packet_mcpe_drop_item": [
+    "packet_drop_item": [
       "container",
       [
         {
@@ -1631,7 +1631,7 @@
         }
       ]
     ],
-    "packet_mcpe_container_open": [
+    "packet_container_open": [
       "container",
       [
         {
@@ -1660,7 +1660,7 @@
         }
       ]
     ],
-    "packet_mcpe_container_close": [
+    "packet_container_close": [
       "container",
       [
         {
@@ -1669,7 +1669,7 @@
         }
       ]
     ],
-    "packet_mcpe_container_set_slot": [
+    "packet_container_set_slot": [
       "container",
       [
         {
@@ -1690,7 +1690,7 @@
         }
       ]
     ],
-    "packet_mcpe_container_set_data": [
+    "packet_container_set_data": [
       "container",
       [
         {
@@ -1707,7 +1707,7 @@
         }
       ]
     ],
-    "packet_mcpe_container_set_content": [
+    "packet_container_set_content": [
       "container",
       [
         {
@@ -1724,7 +1724,7 @@
         }
       ]
     ],
-    "packet_mcpe_crafting_data": [
+    "packet_crafting_data": [
       "container",
       [
         {
@@ -1737,7 +1737,7 @@
         }
       ]
     ],
-    "packet_mcpe_crafting_event": [
+    "packet_crafting_event": [
       "container",
       [
         {
@@ -1762,7 +1762,7 @@
         }
       ]
     ],
-    "packet_mcpe_adventure_settings": [
+    "packet_adventure_settings": [
       "container",
       [
         {
@@ -1771,7 +1771,7 @@
         }
       ]
     ],
-    "packet_mcpe_tile_entity_data": [
+    "packet_tile_entity_data": [
       "container",
       [
         {
@@ -1792,7 +1792,7 @@
         }
       ]
     ],
-    "packet_mcpe_full_chunk_data": [
+    "packet_full_chunk_data": [
       "container",
       [
         {
@@ -1813,7 +1813,7 @@
         }
       ]
     ],
-    "packet_mcpe_set_difficulty": [
+    "packet_set_difficulty": [
       "container",
       [
         {
@@ -1822,7 +1822,7 @@
         }
       ]
     ],
-    "packet_mcpe_player_list": [
+    "packet_player_list": [
       "container",
       [
         {
@@ -1835,7 +1835,7 @@
         }
       ]
     ],
-    "packet_mcpe_request_chunk_radius": [
+    "packet_request_chunk_radius": [
       "container",
       [
         {
@@ -1844,7 +1844,7 @@
         }
       ]
     ],
-    "packet_mcpe_chunk_radius_update": [
+    "packet_chunk_radius_update": [
       "container",
       [
         {
@@ -1853,7 +1853,7 @@
         }
       ]
     ],
-    "packet_mcpe_transfer": [
+    "packet_transfer": [
       "container",
       [
         {
@@ -1862,7 +1862,7 @@
         }
       ]
     ],
-    "packet_mcpe_spawn_experience_orb": [
+    "packet_spawn_experience_orb": [
       "container",
       [
         {

@@ -30,7 +30,7 @@ function createClient(options) {
   };
 
   client.on('login', function() {
-    client.writeMCPE('mcpe_login',
+    client.writeMCPE('game_login',
       {
         username: client.username,
         protocol: 46,
@@ -49,7 +49,7 @@ function createClient(options) {
 
   });
 
-  client.on('mcpe_batch', function(packet) {
+  client.on('batch', function(packet) {
     var buf = zlib.inflateSync(packet.payload);
     var packets=batchProto.parsePacketBuffer("insideBatch",buf).data;
     packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0x8e]),packet])));
