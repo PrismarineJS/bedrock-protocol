@@ -888,9 +888,9 @@
               "compareTo": "type",
               "fields": {
                 "1": "string",
-                "5": "string"
+                "3": "string"
                 },
-              "default": "1"
+              "default": "void"
              }
           ]
         },
@@ -901,11 +901,32 @@
             {
               "compareTo": "type",
               "fields": {
+                "0": "string",
                 "1": "string",
+                "2": "string",
+                "3": "string",
+                "4": "string",
                 "5": "string"
-                },
-              "default": "1"
+                }
              }
+          ]
+        },
+        {
+          "name": "parameters",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type",
+              "fields":{
+                "2":[
+                  "array", {
+                    "countType":"i8",
+                    "type":"string"
+                  }
+                ]
+              },
+              "default":"void"
+            }
           ]
         }
       ]
