@@ -163,65 +163,6 @@
         ]
       }
     ],
-    "recipes": [
-      "container",
-      [
-        {
-          "name": "entryType",
-          "type": "i32"
-        },
-        {
-          "name": "recipe",
-          "type": [
-            "array",
-            {
-              "countType": "i32",
-              "type": [
-                "switch",
-                {
-                  "compareTo": "entryType",
-                  "fields": {
-                    "0": "shapeless_recipe",
-                    "1": "shaped_recipe",
-                    "2": "furnace_recipe",
-                    "3": "furnace_recipe_data",
-                    "4": "enchant_list"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "cleanRecipes",
-          "type": "i8"
-        }
-      ]
-    ],
-    "metadataints": [
-      "switch",
-      {
-        "compareTo": "window_id",
-        "fields": {
-          "0": [
-            "array",
-            {
-              "countType":"i16",
-              "type": [
-                "container",
-                [
-                  {
-                    "name": "slot",
-                    "type": "i32"
-                  }
-                ]
-              ]
-            }
-          ]
-        },
-        "default": "i16"
-      }
-    ],
     "entityMetadataItem": [
       "switch",
       {
@@ -351,7 +292,7 @@
                   },
                   {
                     "name": "nbtData",
-                    "type": "nbt"
+                    "type": ["buffer",{"countType":"li16"}]
                   }
                 ]
               ]
@@ -1699,7 +1640,30 @@
         },
         {
           "name": "hotbar_data",
-          "type": "metadataints"
+          "type": [
+            "switch",
+            {
+              "compareTo": "window_id",
+              "fields": {
+                "0": [
+                  "array",
+                  {
+                    "countType":"i16",
+                    "type": [
+                      "container",
+                      [
+                        {
+                          "name": "slot",
+                          "type": "i32"
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              },
+              "default": "i16"
+            }
+          ]
         }
       ]
     ],
@@ -1708,7 +1672,38 @@
       [
         {
           "name": "recipes",
-          "type": "recipes"
+          "type": [
+            "container",
+            [
+              {
+                "name": "entryType",
+                "type": "i32"
+              },
+              {
+                "name": "recipe",
+                "type": [
+                  "array",
+                  {
+                    "countType": "i32",
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "entryType",
+                        "fields": {
+                          "0": "shapeless_recipe",
+                          "1": "shaped_recipe",
+                          "2": "furnace_recipe",
+                          "3": "furnace_recipe_data",
+                          "4": "enchant_list"
+                        },
+                        "default":"void"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          ]
         },
         {
           "name": "cleanRecipes",
@@ -1767,7 +1762,7 @@
         },
         {
           "name": "namedtag",
-          "type": "nbt"
+          "type": "restBuffer"
         }
       ]
     ],
@@ -1831,12 +1826,8 @@
                       "type": "string"
                     },
                     {
-                      "name": "skinType",
-                      "type": "string"
-                    },
-                    {
-                      "name": "textures",
-                      "type": "string"
+                      "name": "skin",
+                      "type": "skin"
                     }
                   ]
                 ],
