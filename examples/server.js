@@ -98,4 +98,8 @@ server.on('connection', function(client) {
   client.on('error', function(err) {
     console.log(err.stack);
   });
+
+  client.on('end',function() {
+    console.log("client left");
+  })
 });
