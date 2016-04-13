@@ -1,3 +1,7 @@
+## 2.0.1
+* player list is now an array
+* reconnecting has been fixed
+
 ## 2.0.0
 
 * lot of raknet update that fix bugs
