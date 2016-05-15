@@ -1,3 +1,7 @@
+## 2.1.0
+* normalize names of packet fields
+* update to version 0.14.2
+
 ## 2.0.1
 * player list is now an array
 * reconnecting has been fixed

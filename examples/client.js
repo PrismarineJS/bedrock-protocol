@@ -11,10 +11,10 @@ var client = pmp.createClient({
   username:process.argv[4]
 });
 
-client.on('mcpe',packet => console.log(packet));
+client.on('mcpe', packet => console.log(packet));
 
-client.on('set_spawn_position',() => {
-  client.writeMCPE('request_chunk_radius',{
+client.on('set_spawn_position', () => {
+  client.writeMCPE('request_chunk_radius', {
     chunk_radius:8
   })
 });

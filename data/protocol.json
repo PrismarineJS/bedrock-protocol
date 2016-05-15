@@ -27,7 +27,7 @@
           ]
         },
         {
-          "name": "resultCount",
+          "name": "result_count",
           "type": "i32"
         },
         {
@@ -79,7 +79,7 @@
           ]
         },
         {
-          "name": "resultCount",
+          "name": "result_count",
           "type": "i32"
         },
         {
@@ -175,15 +175,15 @@
           "4": "lstring",
           "5": ["container",[
             {
-              "name":"blockId",
+              "name":"block_id",
               "type":"li16"
             },
             {
-              "name":"itemCount",
+              "name":"item_count",
               "type":"li8"
             },
             {
-              "name":"itemDamage",
+              "name":"item_damage",
               "type":"li16"
             }
           ]],
@@ -267,7 +267,7 @@
       "container",
       [
         {
-          "name": "blockId",
+          "name": "block_id",
           "type": "i16"
         },
         {
@@ -275,7 +275,7 @@
           "type": [
             "switch",
             {
-              "compareTo": "blockId",
+              "compareTo": "block_id",
               "fields": {
                 "0": "void"
               },
@@ -283,15 +283,15 @@
                 "container",
                 [
                   {
-                    "name": "itemCount",
+                    "name": "item_count",
                     "type": "i8"
                   },
                   {
-                    "name": "itemDamage",
+                    "name": "item_damage",
                     "type": "i16"
                   },
                   {
-                    "name": "nbtData",
+                    "name": "nbt_data",
                     "type": ["buffer",{"countType":"li16"}]
                   }
                 ]
@@ -320,7 +320,7 @@
       "container",
       [
         {
-          "name": "skinType",
+          "name": "skin_type",
           "type": "string"
         },
         {
@@ -354,7 +354,7 @@
                 "bitfield",
                 [
                   {
-                    "name": "blockData",
+                    "name": "block_data",
                     "size": 4,
                     "signed": false
                   },
@@ -401,11 +401,11 @@
           "container",
           [
             {
-              "name": "minValue",
+              "name": "min_value",
               "type": "f32"
             },
             {
-              "name": "maxValue",
+              "name": "max_value",
               "type": "f32"
             },
             {
@@ -432,15 +432,15 @@
               "type": "i64"
             },
             {
-              "name": "motX",
+              "name": "mot_x",
               "type": "f32"
             },
             {
-              "name": "motY",
+              "name": "mot_y",
               "type": "f32"
             },
             {
-              "name": "motZ",
+              "name": "mot_z",
               "type": "f32"
             }
           ]
@@ -509,7 +509,7 @@
               "type": "f32"
             },
             {
-              "name": "headYaw",
+              "name": "head_yaw",
               "type": "f32"
             },
             {
@@ -891,8 +891,20 @@
           "type": "f32"
         },
         {
-          "name": "unknown",
+          "name": "unknown1",
           "type": "i8"
+        },
+        {
+          "name": "unknown2",
+          "type": "i8"
+        },
+        {
+          "name": "unknown3",
+          "type": "i8"
+        },
+        {
+          "name": "unknown4",
+          "type": "string"
         }
       ]
     ],
@@ -1742,6 +1754,14 @@
         {
           "name": "flags",
           "type": "i32"
+        },
+        {
+          "name": "user_permission",
+          "type": "i32"
+        },
+        {
+          "name": "global_permission",
+          "type": "i32"
         }
       ]
     ],
@@ -1818,15 +1838,15 @@
                       "container",
                       [
                         {
-                          "name": "clientUuid",
+                          "name": "client_uuid",
                           "type": "uuid"
                         },
                         {
-                          "name": "entityId",
+                          "name": "entity_id",
                           "type": "i64"
                         },
                         {
-                          "name": "displayName",
+                          "name": "display_name",
                           "type": "string"
                         },
                         {
@@ -1839,7 +1859,7 @@
                       "container",
                       [
                         {
-                          "name": "clientUuid",
+                          "name": "client_uuid",
                           "type": "uuid"
                         }
                       ]

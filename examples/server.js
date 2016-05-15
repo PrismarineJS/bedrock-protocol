@@ -11,14 +11,13 @@ if(process.argv.length !=4) {
 var server = pmp.createServer({
   host: process.argv[2],
   port: parseInt(process.argv[3]),
-  name: 'MCPE;Minecraft: PE Server;45 45;0.14.1;0;20'
+  name: 'MCPE;Minecraft: PE Server;60 60;0.14.2;0;20'
 });
 
 server.on('connection', function(client) {
 
 
   client.on("mcpe",packet => console.log(packet));
-
 
   client.on("game_login",packet => {
     client.writeMCPE("player_status",{
@@ -48,7 +47,10 @@ server.on('connection', function(client) {
       x:0,
       y:1+1.62,
       z:0,
-      unknown:0
+      unknown1:0,
+      unknown2:0,
+      unknown3:0,
+      unknown4:""
     });
 
     client.writeMCPE('set_spawn_position', {
