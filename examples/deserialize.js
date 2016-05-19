@@ -1,16 +1,10 @@
 var mcpe = require('../');
+var Parser = require('protodef').Parser;
 
-var parser = mcpe.createDeserializer();
+var parser = new Parser(mcpe.createProtocol(),'mcpe_packet');
 var serializer = mcpe.createSerializer();
 
-serializer.write({
-  name: 'player_status',
-  "params": {
-    status: 1
-  }
-});
-
-serializer.pipe(parser);
+parser.write(new Buffer('b2010000000000000000', 'hex'));
 
 parser.on('error', function(err) {
   console.log(err.stack);

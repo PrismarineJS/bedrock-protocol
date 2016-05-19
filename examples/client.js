@@ -16,7 +16,7 @@ client.on('mcpe', packet => console.log(packet));
 client.on('set_spawn_position', () => {
   client.writeMCPE('request_chunk_radius', {
     chunk_radius:8
-  })
+  });
 });
 
 client.on('error',function(err){

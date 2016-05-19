@@ -33,8 +33,8 @@ function createClient(options) {
     client.writeMCPE('game_login',
       {
         username: client.username,
-        protocol: 60,
-        protocol2: 60,
+        protocol: 70,
+        protocol2: 70,
         client_id: [ -1, -697896776 ],
         client_uuid: '86372ed8-d055-b23a-9171-5e3ac594d766',
         server_address: client.host+":"+client.port,

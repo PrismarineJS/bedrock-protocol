@@ -4,7 +4,7 @@ var Parser = require('protodef').Parser;
 
 var protocol = require('../../data/protocol.json').types;
 
-function createProtocol(packets) {
+function createProtocol() {
   var proto = new ProtoDef();
   proto.addTypes(require('../datatypes/minecraft'));
   proto.addTypes(protocol);
@@ -12,17 +12,18 @@ function createProtocol(packets) {
   return proto;
 }
 
-var proto = createProtocol(protocol);
-
 function createSerializer() {
+  var proto = createProtocol(protocol);
   return new Serializer(proto, 'packet');
 }
 
 function createDeserializer() {
+  var proto = createProtocol(protocol);
   return new Parser(proto, 'packet');
 }
 
 module.exports = {
   createDeserializer: createDeserializer,
-  createSerializer: createSerializer
+  createSerializer: createSerializer,
+  createProtocol: createProtocol
 };

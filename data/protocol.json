@@ -1414,6 +1414,10 @@
         {
           "name": "item",
           "type": "slot"
+        },
+        {
+          "name": "in_use",
+          "type": "i32"
         }
       ]
     ],
