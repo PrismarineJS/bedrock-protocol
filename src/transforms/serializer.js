@@ -13,12 +13,12 @@ function createProtocol() {
 }
 
 function createSerializer() {
-  var proto = createProtocol(protocol);
+  var proto = createProtocol();
   return new Serializer(proto, 'packet');
 }
 
 function createDeserializer() {
-  var proto = createProtocol(protocol);
+  var proto = createProtocol();
   return new Parser(proto, 'packet');
 }
 
