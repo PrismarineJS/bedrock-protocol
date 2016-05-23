@@ -1,3 +1,6 @@
+## 2.2.2
+* fix the block update packet, for real this time
+
 ## 2.1.1
 * fix the block update packet
 
