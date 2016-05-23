@@ -1416,12 +1416,12 @@
           "type": "vector3"
         },
         {
-          "name": "item",
-          "type": "slot"
+          "name": "slot",
+          "type": "i32"
         },
         {
-          "name": "in_use",
-          "type": "i32"
+          "name": "item",
+          "type": "slot"
         }
       ]
     ],
