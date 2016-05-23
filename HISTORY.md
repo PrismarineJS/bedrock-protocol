@@ -1,3 +1,6 @@
+## 2.1.1
+* fix the block update packet
+
 ## 2.1.0
 * normalize names of packet fields
 * update to version 0.14.2
