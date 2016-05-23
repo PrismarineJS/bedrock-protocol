@@ -332,7 +332,7 @@
     "blockrecords": [
       "array",
       {
-        "countType":"i16",
+        "countType":"i32",
         "type": [
           "container",
           [
