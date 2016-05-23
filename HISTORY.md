@@ -1,3 +1,6 @@
+## 2.2.3
+* fix the use item packet
+
 ## 2.2.2
 * fix the block update packet, for real this time
 
