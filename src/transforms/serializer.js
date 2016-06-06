@@ -2,7 +2,7 @@ var ProtoDef = require('protodef').ProtoDef;
 var Serializer = require('protodef').Serializer;
 var Parser = require('protodef').Parser;
 
-var protocol = require('../../data/protocol.json').types;
+var protocol = require('minecraft-data')('pe_0.14').protocol;
 
 function createProtocol() {
   var proto = new ProtoDef();
