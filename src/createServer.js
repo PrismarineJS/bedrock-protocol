@@ -14,7 +14,7 @@ function createServer(options) {
     19132;
   var host = options.host || '0.0.0.0';
 
-  options.customPackets=require("../data/protocol");
+  options.customPackets=require('minecraft-data')('pe_0.14').protocol;
   options.customTypes=require("./datatypes/minecraft");
   var server = raknet.createServer(options);
 

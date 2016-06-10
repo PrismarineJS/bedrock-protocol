@@ -17,6 +17,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "minecraft-data": "^2.4.0",
     "prismarine-nbt": "^1.0.0",
     "protodef": "^1.2.0",
     "raknet": "^1.7.3",
