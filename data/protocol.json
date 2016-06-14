@@ -741,11 +741,11 @@
       [
         {
           "name": "unknown",
-          "type": "short"
+          "type": "i16"
         },
         {
           "name": "protocol",
-          "type": "long"
+          "type": "i64"
         },
         {
           "name": "bodyLength",
@@ -1819,7 +1819,7 @@
         },
         {
           "name": "flags",
-          "type": "short"
+          "type": "i16"
         }
       ]
     ],
