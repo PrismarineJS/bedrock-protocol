@@ -538,7 +538,7 @@
             {
               "type": "u8",
               "mappings": {
-                "0x8e": "mcpe"
+                "0xfe": "mcpe"
               }
             }
           ]
@@ -567,10 +567,6 @@
             {
               "type": "u8",
               "mappings": {
-                "0x04": "id_detect_lost_connections",
-                "0x14": "id_no_free_incoming_connections",
-                "0x17": "id_connection_banned",
-                "0x1A": "id_ip_recently_connected",
                 "0x03": "server_to_client_handshake",
                 "0x04": "client_to_server_handshake",
                 "0x01": "game_login",
@@ -639,10 +635,6 @@
             {
               "compareTo": "name",
               "fields": {
-                "id_detect_lost_connections": "packet_id_detect_lost_connections",
-                "id_no_free_incoming_connections": "packet_id_no_free_incoming_connections",
-                "id_connection_banned": "packet_id_connection_banned",
-                "id_ip_recently_connected": "packet_id_ip_recently_connected",
                 "server_to_client_handshake": "packet_server_to_client_handshake",
                 "client_to_server_handshake": "packet_client_to_server_handshake",
                 "game_login": "packet_game_login",
