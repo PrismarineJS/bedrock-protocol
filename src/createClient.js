@@ -52,7 +52,7 @@ function createClient(options) {
   client.on('batch', function(packet) {
     var buf = zlib.inflateSync(packet.payload);
     var packets=batchProto.parsePacketBuffer("insideBatch",buf).data;
-    packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0x8e]),packet])));
+    packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]),packet])));
   });
 
   return client;

@@ -39,7 +39,13 @@ function createServer(options) {
       client.writeMCPE("batch",{
         payload:payload
       });
-    }
+    };
+
+    client.on('batch', function(packet) {
+      var buf = zlib.inflateSync(packet.payload);
+      var packets=batchProto.parsePacketBuffer("insideBatch",buf).data;
+      packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]),packet])));
+    });
   });
   return server;
 }
