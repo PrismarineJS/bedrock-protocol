@@ -27,7 +27,7 @@
           ]
         },
         {
-          "name": "result_count",
+          "name": "resultCount",
           "type": "i32"
         },
         {
@@ -79,7 +79,7 @@
           ]
         },
         {
-          "name": "result_count",
+          "name": "resultCount",
           "type": "i32"
         },
         {
@@ -132,34 +132,38 @@
         "countType": "i8",
         "type": [
           "container",
-          {
-            "name": "cost",
-            "type": "i32"
-          },
-          {
-            "name": "enchantments",
-            "type": [
-              "array",
-              {
-                "countType": "i8",
-                "type": [
-                  "container",
-                  {
-                    "name": "id",
-                    "type": "i32"
-                  },
-                  {
-                    "name": "level",
-                    "id": "i32"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "name",
-            "type": "string"
-          }
+          [
+            {
+              "name": "cost",
+              "type": "i32"
+            },
+            {
+              "name": "enchantments",
+              "type": [
+                "array",
+                {
+                  "countType": "i8",
+                  "type": [
+                    "container",
+                    [
+                      {
+                        "name": "id",
+                        "type": "i32"
+                      },
+                      {
+                        "name": "level",
+                        "type": "i32"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ]
         ]
       }
     ],
@@ -175,15 +179,15 @@
           "4": "lstring",
           "5": ["container",[
             {
-              "name":"block_id",
+              "name":"blockId",
               "type":"li16"
             },
             {
-              "name":"item_count",
+              "name":"itemCount",
               "type":"li8"
             },
             {
-              "name":"item_damage",
+              "name":"itemDamage",
               "type":"li16"
             }
           ]],
@@ -267,7 +271,7 @@
       "container",
       [
         {
-          "name": "block_id",
+          "name": "blockId",
           "type": "i16"
         },
         {
@@ -275,7 +279,7 @@
           "type": [
             "switch",
             {
-              "compareTo": "block_id",
+              "compareTo": "blockId",
               "fields": {
                 "0": "void"
               },
@@ -283,15 +287,15 @@
                 "container",
                 [
                   {
-                    "name": "item_count",
+                    "name": "itemCount",
                     "type": "i8"
                   },
                   {
-                    "name": "item_damage",
+                    "name": "itemDamage",
                     "type": "i16"
                   },
                   {
-                    "name": "nbt_data",
+                    "name": "nbtData",
                     "type": ["buffer",{"countType":"li16"}]
                   }
                 ]
@@ -332,7 +336,7 @@
     "blockrecords": [
       "array",
       {
-        "countType":"i32",
+        "countType":"i16",
         "type": [
           "container",
           [
@@ -349,16 +353,12 @@
               "type": "i8"
             },
             {
-              "name": "block_id",
-              "type": "i8"
-            },
-            {
               "anon": true,
               "type": [
                 "bitfield",
                 [
                   {
-                    "name": "block_data",
+                    "name": "blockData",
                     "size": 4,
                     "signed": false
                   },
@@ -405,11 +405,11 @@
           "container",
           [
             {
-              "name": "min_value",
+              "name": "minValue",
               "type": "f32"
             },
             {
-              "name": "max_value",
+              "name": "maxValue",
               "type": "f32"
             },
             {
@@ -436,15 +436,15 @@
               "type": "i64"
             },
             {
-              "name": "mot_x",
+              "name": "motX",
               "type": "f32"
             },
             {
-              "name": "mot_y",
+              "name": "motY",
               "type": "f32"
             },
             {
-              "name": "mot_z",
+              "name": "motZ",
               "type": "f32"
             }
           ]
