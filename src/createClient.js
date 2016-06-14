@@ -35,10 +35,10 @@ function createClient(options) {
         username: client.username,
         protocol: 70,
         protocol2: 70,
-        client_id: [ -1, -697896776 ],
-        client_uuid: '86372ed8-d055-b23a-9171-5e3ac594d766',
-        server_address: client.host+":"+client.port,
-        client_secret: new Buffer('e8 88 db 7b 9f f2 f0 44 a3 51 08 18 4e 8c 7f 9a'.replace(/ /g,''),'hex'),
+        clientId: [ -1, -697896776 ],
+        clientUuid: '86372ed8-d055-b23a-9171-5e3ac594d766',
+        serverAddress: client.host+":"+client.port,
+        clientSecret: new Buffer('e8 88 db 7b 9f f2 f0 44 a3 51 08 18 4e 8c 7f 9a'.replace(/ /g,''),'hex'),
         skin:
         {
           skinType: 'Standard_Steve',
