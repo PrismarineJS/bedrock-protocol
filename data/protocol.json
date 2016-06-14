@@ -310,7 +310,7 @@
           [
             {
               "name": "slot",
-              "type": "slot"
+              "type": "itemstacks"
             }
           ]
         ]
@@ -567,60 +567,63 @@
                 "0x14": "id_no_free_incoming_connections",
                 "0x17": "id_connection_banned",
                 "0x1A": "id_ip_recently_connected",
-                "0x8f": "game_login",
-                "0x90": "player_status",
-                "0x91": "disconnect",
-                "0x92": "batch",
-                "0x93": "text",
-                "0x94": "set_time",
-                "0x95": "start_game",
-                "0x96": "add_player",
-                "0x97": "remove_player",
-                "0x98": "add_entity",
-                "0x99": "remove_entity",
-                "0x9a": "add_item_entity",
-                "0x9b": "take_item_entity",
-                "0x9c": "move_entity",
-                "0x9d": "move_player",
-                "0x9e": "remove_block",
-                "0x9f": "update_block",
-                "0xa0": "add_painting",
-                "0xa1": "explode",
-                "0xa2": "level_event",
-                "0xa3": "tile_event",
-                "0xa4": "entity_event",
-                "0xa5": "mob_effect",
-                "0xa6": "update_attributes",
-                "0xa7": "player_equipment",
-                "0xa8": "player_armor_equipment",
-                "0xa9": "interact",
-                "0xaa": "use_item",
-                "0xab": "player_action",
-                "0xac": "hurt_armor",
-                "0xad": "set_entity_data",
-                "0xae": "set_entity_motion",
-                "0xaf": "set_entity_link",
-                "0xb0": "set_health",
-                "0xb1": "set_spawn_position",
-                "0xb2": "animate",
-                "0xb3": "respawn",
-                "0xb4": "drop_item",
-                "0xb5": "container_open",
-                "0xb6": "container_close",
-                "0xb7": "container_set_slot",
-                "0xb8": "container_set_data",
-                "0xb9": "container_set_content",
-                "0xba": "crafting_data",
-                "0xbb": "crafting_event",
-                "0xbc": "adventure_settings",
-                "0xbd": "tile_entity_data",
-                "0xbf": "full_chunk_data",
-                "0xc0": "set_difficulty",
-                "0xc3": "player_list",
-                "0xc8": "request_chunk_radius",
-                "0xc9": "chunk_radius_update",
-                "0x1b": "transfer",
-                "0xc5": "spawn_experience_orb"
+                "0x03": "server_to_client_handshake",
+                "0x04": "client_to_server_handshake",
+                "0x01": "game_login",
+                "0x02": "player_status",
+                "0x05": "disconnect",
+                "0x06": "batch",
+                "0x07": "text",
+                "0x08": "set_time",
+                "0x09": "start_game",
+                "0x0a": "add_player",
+                "0x0b": "remove_player",
+                "0x0c": "add_entity",
+                "0x0d": "remove_entity",
+                "0x0e": "add_item_entity",
+                "0x0f": "take_item_entity",
+                "0x10": "move_entity",
+                "0x11": "move_player",
+                "0x12": "remove_block",
+                "0x13": "update_block",
+                "0x14": "add_painting",
+                "0x15": "explode",
+                "0x16": "level_event",
+                "0x17": "tile_event",
+                "0x18": "entity_event",
+                "0x19": "mob_effect",
+                "0x1a": "update_attributes",
+                "0x1b": "player_equipment",
+                "0x1c": "player_armor_equipment",
+                "0x1d": "interact",
+                "0x1e": "use_item",
+                "0x1f": "player_action",
+                "0x20": "hurt_armor",
+                "0x21": "set_entity_data",
+                "0x22": "set_entity_motion",
+                "0x23": "set_entity_link",
+                "0x24": "set_health",
+                "0x25": "set_spawn_position",
+                "0x26": "animate",
+                "0x27": "respawn",
+                "0x28": "drop_item",
+                "0x29": "container_open",
+                "0x2a": "container_close",
+                "0x2b": "container_set_slot",
+                "0x2c": "container_set_data",
+                "0x2d": "container_set_content",
+                "0x2e": "crafting_data",
+                "0x2f": "crafting_event",
+                "0x30": "adventure_settings",
+                "0x31": "tile_entity_data",
+                "0x32": "player_input",
+                "0x33": "full_chunk_data",
+                "0x34": "set_difficulty",
+                "0x37": "player_list",
+                "0x3c": "request_chunk_radius",
+                "0x3d": "chunk_radius_update",
+                "0x3a": "spawn_experience_orb",
+                "0x3f": "replace_selected_item"
               }
             }
           ]
@@ -636,6 +639,8 @@
                 "id_no_free_incoming_connections": "packet_id_no_free_incoming_connections",
                 "id_connection_banned": "packet_id_connection_banned",
                 "id_ip_recently_connected": "packet_id_ip_recently_connected",
+                "server_to_client_handshake": "packet_server_to_client_handshake",
+                "client_to_server_handshake": "packet_client_to_server_handshake",
                 "game_login": "packet_game_login",
                 "player_status": "packet_player_status",
                 "disconnect": "packet_disconnect",
@@ -689,7 +694,8 @@
                 "request_chunk_radius": "packet_request_chunk_radius",
                 "chunk_radius_update": "packet_chunk_radius_update",
                 "transfer": "packet_transfer",
-                "spawn_experience_orb": "packet_spawn_experience_orb"
+                "spawn_experience_orb": "packet_spawn_experience_orb",
+                "replace_selected_item": "packet_replace_selected_item"
               }
             }
           ]
@@ -712,40 +718,50 @@
       "container",
       []
     ],
+    "server_to_client_handshake": [
+      "container",
+      [
+        {
+          "name": "public_key",
+          "type": "string"
+        },
+        {
+          "name": "server_token",
+          "type": "string"
+        }
+      ]
+    ],
+    "client_to_server_handshake": [
+      "container",
+      [
+        {
+          "name": "magic",
+          "type": "i64"
+        }
+      ]
+    ],
     "packet_game_login": [
       "container",
       [
         {
-          "name": "username",
-          "type": "string"
+          "name": "unknown",
+          "type": "short"
         },
         {
           "name": "protocol",
+          "type": "long"
+        },
+        {
+          "name": "body_length",
           "type": "i32"
         },
         {
-          "name": "protocol2",
-          "type": "i32"
+          "name": "chain",
+          "type": ["pstring", {"countType": "li32"}]
         },
         {
-          "name": "client_id",
-          "type": "i64"
-        },
-        {
-          "name": "client_uuid",
-          "type": "uuid"
-        },
-        {
-          "name": "server_address",
-          "type": "string"
-        },
-        {
-          "name": "client_secret",
-          "type": ["buffer",{"countType":"i16"}]
-        },
-        {
-          "name": "skin",
-          "type": "skin"
+          "name": "client_data",
+          "type": ["pstring", {"countType": "li32"}]
         }
       ]
     ],
@@ -864,7 +880,7 @@
         },
         {
           "name": "gamemode",
-          "type": "i32"
+          "type": "i8"
         },
         {
           "name": "entity_id",
@@ -895,19 +911,19 @@
           "type": "f32"
         },
         {
-          "name": "unknown1",
+          "name": "is_loaded_in_creative",
+          "type": "bool"
+        },
+        {
+          "name": "day_cycle_stop_time",
           "type": "i8"
         },
         {
-          "name": "unknown2",
-          "type": "i8"
+          "name": "edu_mode",
+          "type": "bool"
         },
         {
-          "name": "unknown3",
-          "type": "i8"
-        },
-        {
-          "name": "unknown4",
+          "name": "unknown",
           "type": "string"
         }
       ]
@@ -1794,6 +1810,23 @@
         }
       ]
     ],
+    "packet_player_input": [
+      "container",
+      [
+        {
+          "name": "motion_x",
+          "type": "f32"
+        },
+        {
+          "name": "motion_z",
+          "type": "f32"
+        },
+        {
+          "name": "flags",
+          "type": "short"
+        }
+      ]
+    ],
     "packet_full_chunk_data": [
       "container",
       [
@@ -1929,6 +1962,15 @@
         {
           "name": "count",
           "type": "i32"
+        }
+      ]
+    ],
+    "packet_replace_selected_item": [
+      "container",
+      [
+        {
+          "name": "slot",
+          "type": "slot"
         }
       ]
     ]
