@@ -1,7 +1,9 @@
+'use strict';
 const raknet = require('raknet');
 const zlib = require('zlib');
 const ProtoDef = require('protodef').ProtoDef;
 const jwt = require('jwt-simple');
+const crypto = require('crypto');
 const batchProto = new ProtoDef();
 batchProto.addTypes(require("./datatypes/minecraft"));
 batchProto.addType("insideBatch",["endOfArray",{"type":["buffer",{"countType":"i32"}]}]);
@@ -56,6 +58,16 @@ function createServer(options) {
       client.displayName = decode2.extraData.displayName;
       client.XUID = decode2.extraData.XUID;
       client.emit('login', {displayName: client.displayName, randomId: client.randomId, skinData: client.skinData, skinId: client.skinId, identity: client.identity, XUID: client.XUID})
+
+      client.ecdh = crypto.createECDH('secp192k1');
+      // console.log(nextKey2);
+      // client.secret = client.ecdh.computeSecret(nextKey2, 'base64');
+      // console.log(client.edch.getPublicKey('base64'));
+
+      client.writeMCPE('server_to_client_handshake', {
+        publicKey: client.edch.getPublicKey('base64'),
+        serverToken: "SO SECRET VERY SECURE"
+      });
     });
 
     client.writeMCPE = (name,packet) => {

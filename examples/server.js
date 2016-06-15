@@ -15,17 +15,17 @@ var server = pmp.createServer({
 });
 
 server.on('connection', function(client) {
-  //client.on("mcpe", packet => console.log(packet));
+  client.on("mcpe", packet => console.log(packet));
 
   client.on("login", data => {
     console.log(client.displayName + '(' + client.XUID + ') ' + ' joined the game');
   });
 
-  client.on('error', function(err) {
+  client.on('error', err => {
     console.log(err.stack);
   });
 
-  client.on('end',function() {
+  client.on('end', () => {
     console.log("client left");
   })
 });

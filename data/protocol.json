@@ -714,7 +714,7 @@
       "container",
       []
     ],
-    "server_to_client_handshake": [
+    "packet_server_to_client_handshake": [
       "container",
       [
         {
@@ -727,7 +727,7 @@
         }
       ]
     ],
-    "client_to_server_handshake": [
+    "packet_client_to_server_handshake": [
       "container",
       [
         {

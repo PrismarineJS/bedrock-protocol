@@ -1,3 +1,4 @@
+'use strict';
 var pmp = require('../');
 
 if(process.argv.length !=5) {
