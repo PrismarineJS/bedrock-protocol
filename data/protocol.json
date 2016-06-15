@@ -740,24 +740,12 @@
       "container",
       [
         {
-          "name": "unknown",
-          "type": "i16"
-        },
-        {
           "name": "protocol",
-          "type": "i64"
-        },
-        {
-          "name": "bodyLength",
           "type": "i32"
         },
         {
-          "name": "chain",
-          "type": ["pstring", {"countType": "li32"}]
-        },
-        {
-          "name": "clientData",
-          "type": ["pstring", {"countType": "li32"}]
+          "name": "body",
+          "type": ["buffer",{"countType":"i32"}]
         }
       ]
     ],
