@@ -5,6 +5,7 @@ const ProtoDef = require('protodef').ProtoDef;
 const jwt = require('jwt-simple');
 const crypto = require('crypto');
 const Ber = require('asn1').Ber;
+const merge=require("lodash.merge");
 // const BN = require('bn.js');
 
 const batchProto = new ProtoDef();
@@ -51,7 +52,17 @@ function createServer(options) {
   server.playerCount = 0;
 
   server.on("connection", function(client) {
-    client.on("mcpe", packet => client.emit(packet.name, packet.params));
+
+
+    //if(encryptionEnabled) {
+    //  client.on('mcpe', packet => { decipher.write(packet); })
+    //} else {
+    client.on("mcpe", packet => {
+      client.emit(packet.name, packet.params)
+    });
+    //}
+
+    // decipher.on('data', data => console.log(data))
 
     client.on("game_login", packet => {
       var body = packet.body;
@@ -87,16 +98,31 @@ function createServer(options) {
       ec.generateKeys();
       client.sharedSecret = ec.computeSecret(pubKey);
 
-      client.secretKeyBytes = crypto.createHash('sha256').update(client.sharedSecret + "SO SECRET VERY SECURE").digest('binary');
-      // console.log(client.secretKeyBytes.length); => 32
+      client.secretKeyBytes = crypto.createHash('sha256');
+      client.secretKeyBytes.update("SO SECRET VERY SECURE");
+      client.secretKeyBytes.update(client.sharedSecret)
+      client.secretKeyBytes = new Buffer(client.secretKeyBytes.digest())
 
       client.writeMCPE('server_to_client_handshake', {
         publicKey: ec.getPublicKey('base64'),
         serverToken: "SO SECRET VERY SECURE" // obviously, this is super secure (it's not, change it)
       });
-
+      //console.log('secret', new Buffer(client.secretKeyBytes));
+      var decipher = crypto.createDecipheriv('aes-256-cfb8', client.secretKeyBytes, client.secretKeyBytes.slice(0,16));
+      let customPackets=require("../data/protocol");
+      customPackets['types']['encapsulated_packet'][1][1]['type'][1]['fields']['mcpe'] = 'restBuffer';
+      client.encapsulatedPacketParser.proto.addTypes(merge(require('raknet').protocol, customPackets).types);
       encryptionEnabled = true;
-      customPackets['types']['encapsulated_packet'][1][1]['type'][1]['fields']['mcpe']='restBuffer'; client.encapsulatedPacketParser.proto.addTypes(merge(require('raknet').protocol,customPackets).types);
+
+      client.on("mcpe", packet => {
+        //console.log('THE CONSOLELOG')
+        //console.log(packet);
+        //console.log('---------------')
+        decipher.write(packet);
+      });
+      decipher.on('data', data => console.log('decrypt', data))
+
+      //client.on('mcpe', packet => { decipher.write(packet); })
 
       client.emit('login', {
         displayName: client.displayName,
@@ -109,23 +135,13 @@ function createServer(options) {
     });
 
     client.writeMCPE = (name, packet) => {
-      if (!encryptionEnabled) {
-        client.writeEncapsulated("mcpe", {
-          name: name,
-          params: packet
-        });
-      } else {
-        sendCounter += 1;
-        // sendCounter.add(1);
-        // client.writeEncapsulated("mcpe", {
-        //   name: name,
-        //   params: packet
-        // });
-      }
+      client.writeEncapsulated("mcpe", {
+        name: name,
+        params: packet
+      });
     };
 
     client.writeBatch = function(packets) {
-      if (!encryptionEnabled) {
         const payload = zlib.deflateSync(batchProto.createPacketBuffer("insideBatch",
           packets.map(packet =>
             client.encapsulatedPacketSerializer.createPacketBuffer(packet).slice(1))));
@@ -133,54 +149,15 @@ function createServer(options) {
         client.writeMCPE("batch", {
           payload: payload
         });
-      } else {
-        sendCounter += 1;
-        // sendCounter.add(1);
-        // const payload = zlib.deflateSync(batchProto.createPacketBuffer("insideBatch",
-        //   packets.map(packet =>
-        //     client.encapsulatedPacketSerializer.createPacketBuffer(packet).slice(1))));
-        //
-        // client.writeMCPE("batch", {
-        //   payload: payload
-        // });
-      }
     };
 
     client.on('batch', function(packet) {
       var buf = zlib.inflateSync(packet.payload);
       var packets = batchProto.parsePacketBuffer("insideBatch", buf).data;
-      if (!encryptionEnabled) {
-        packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
-      } else {
-        sendCounter += 1;
-        // sendCounter.add(1);
-        // packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]),packet])));
-      }
+      packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
     });
   });
   return server;
 }
 
 module.exports = createServer;
-
-// http://stackoverflow.com/questions/19236327/nodejs-sha256-password-encryption
-var AES = {};
-
-AES.decrypt = function(cryptkey, iv, encryptdata) {
-  encryptdata = new Buffer(encryptdata, 'base64').toString('binary');
-
-  var decipher = crypto.createDecipheriv('aes-256-cbc', cryptkey, iv),
-    decoded = decipher.update(encryptdata, 'binary', 'utf8');
-
-  decoded += decipher.final('utf8');
-  return decoded;
-}
-
-AES.encrypt = function(cryptkey, iv, cleardata) {
-  var encipher = crypto.createCipheriv('aes-256-cbc', cryptkey, iv),
-    encryptdata = encipher.update(cleardata, 'utf8', 'binary');
-
-  encryptdata += encipher.final('binary');
-  encode_encryptdata = new Buffer(encryptdata, 'binary').toString('base64');
-  return encode_encryptdata;
-}
