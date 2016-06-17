@@ -83,7 +83,7 @@ function createServer(options) {
       var clientDecode = jwt.decode(clientData, nextKey1, 'ES384');
       client.randomId = clientDecode.ClientRandomId;
       client.skinData = clientDecode.SkinData;
-      client.skinId = clientDecode.SkinId
+      client.skinId = clientDecode.SkinId;
       client.identity = decode2.extraData.identity;
       client.displayName = decode2.extraData.displayName;
       client.XUID = decode2.extraData.XUID;
@@ -100,7 +100,7 @@ function createServer(options) {
 
       client.secretKeyBytes = crypto.createHash('sha256');
       client.secretKeyBytes.update("SO SECRET VERY SECURE");
-      client.secretKeyBytes.update(client.sharedSecret)
+      client.secretKeyBytes.update(client.sharedSecret);
       client.secretKeyBytes = client.secretKeyBytes.digest();
 
       client.writeMCPE('server_to_client_handshake', {
@@ -120,7 +120,7 @@ function createServer(options) {
         //console.log('---------------')
         decipher.write(packet);
       });
-      decipher.on('data', data => console.log('decrypt', data))
+      decipher.on('data', data => console.log('decrypt', data));
 
       //client.on('mcpe', packet => { decipher.write(packet); })
 
