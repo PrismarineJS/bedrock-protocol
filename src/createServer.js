@@ -51,6 +51,27 @@ function createServer(options) {
   server.maxPlayers = options['max-players'] || 20;
   server.playerCount = 0;
 
+  function readX509PublicKey(key) {
+    var reader = new Ber.Reader(new Buffer(key, "base64"));
+    reader.readSequence();
+    reader.readSequence();
+    reader.readOID();
+    reader.readOID();
+    return new Buffer(reader.readString(Ber.BitString, true)).slice(1);
+  }
+
+  function writeX509PublicKey(key) {
+    var writer = new Ber.Writer();
+    writer.startSequence();
+    writer.startSequence();
+    writer.writeOID("1.2.840.10045.2.1");
+    writer.writeOID("1.3.132.0.34");
+    writer.endSequence();
+    writer.writeBuffer(Buffer.concat([new Buffer([0x00]),key]),Ber.BitString);
+    writer.endSequence();
+    return writer.buffer.toString("base64");
+  }
+
   server.on("connection", function(client) {
 
 
@@ -88,23 +109,20 @@ function createServer(options) {
       client.displayName = decode2.extraData.displayName;
       client.XUID = decode2.extraData.XUID;
 
-      var reader = new Ber.Reader(new Buffer(nextKey2, "base64"));
-      reader.readSequence();
-      reader.readSequence();
-      reader.readOID();
-      reader.readOID();
-      var pubKey = new Buffer(reader.readString(Ber.BitString, true)).slice(1);
+
+      var pubKeyClient = readX509PublicKey(nextKey2);
       var ec = crypto.createECDH('secp384r1');
       ec.generateKeys();
-      client.sharedSecret = ec.computeSecret(pubKey);
+      client.sharedSecret = ec.computeSecret(pubKeyClient);
 
       client.secretKeyBytes = crypto.createHash('sha256');
       client.secretKeyBytes.update("SO SECRET VERY SECURE");
       client.secretKeyBytes.update(client.sharedSecret);
       client.secretKeyBytes = client.secretKeyBytes.digest();
 
+      let pubKeyServer=writeX509PublicKey(ec.getPublicKey());
       client.writeMCPE('server_to_client_handshake', {
-        publicKey: ec.getPublicKey('base64'),
+        publicKey: pubKeyServer,
         serverToken: "SO SECRET VERY SECURE" // obviously, this is super secure (it's not, change it)
       });
       //console.log('secret', new Buffer(client.secretKeyBytes));
