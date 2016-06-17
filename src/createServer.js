@@ -101,7 +101,7 @@ function createServer(options) {
       client.secretKeyBytes = crypto.createHash('sha256');
       client.secretKeyBytes.update("SO SECRET VERY SECURE");
       client.secretKeyBytes.update(client.sharedSecret)
-      client.secretKeyBytes = new Buffer(client.secretKeyBytes.digest())
+      client.secretKeyBytes = client.secretKeyBytes.digest();
 
       client.writeMCPE('server_to_client_handshake', {
         publicKey: ec.getPublicKey('base64'),
