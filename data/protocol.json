@@ -730,10 +730,6 @@
     "packet_client_to_server_handshake": [
       "container",
       [
-        {
-          "name": "magic",
-          "type": "i64"
-        }
       ]
     ],
     "packet_game_login": [
