@@ -2,10 +2,12 @@
 const raknet = require('raknet');
 const zlib = require('zlib');
 const ProtoDef = require('protodef').ProtoDef;
+const Parser = require('protodef').Parser;
 const jwt = require('jwt-simple');
 const crypto = require('crypto');
 const Ber = require('asn1').Ber;
 const merge=require("lodash.merge");
+const assert=require("assert");
 // const BN = require('bn.js');
 
 const batchProto = new ProtoDef();
@@ -28,6 +30,10 @@ dataProto.addType("data_chain", ["container", [{
     "countType": "li32"
   }]
 }]]);
+
+
+const Transform = require('stream').Transform;
+
 
 const PUBLIC_KEY = 'MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8ELkixyLcwlZryUQcu1TvPOmI2B7vX83ndnWRUaXm74wFfa5f/lwQNTfrLVHa2PmenpGI6JhIMUJaWZrjmMj90NoKNFSNBuKdm8rYiXsfaz3K36x/1U26HpG0ZxK/V1V';
 var encryptionEnabled = false;
@@ -74,11 +80,13 @@ function createServer(options) {
 
   server.on("connection", function(client) {
 
+    client.counter=0;
 
     //if(encryptionEnabled) {
     //  client.on('mcpe', packet => { decipher.write(packet); })
     //} else {
     client.on("mcpe", packet => {
+      console.log("actual mcpe",packet);
       client.emit(packet.name, packet.params)
     });
     //}
@@ -127,18 +135,61 @@ function createServer(options) {
       });
       //console.log('secret', new Buffer(client.secretKeyBytes));
       var decipher = crypto.createDecipheriv('aes-256-cfb8', client.secretKeyBytes, client.secretKeyBytes.slice(0,16));
-      let customPackets=require("../data/protocol");
-      customPackets['types']['encapsulated_packet'][1][1]['type'][1]['fields']['mcpe'] = 'restBuffer';
+      let customPackets=JSON.parse(JSON.stringify(require("../data/protocol")));
+      customPackets['types']['encapsulated_packet'][1][1]['type'][1]['fields']['mcpe_encrypted'] = 'restBuffer';
+      customPackets['types']['encapsulated_packet'][1][0]['type'][1]['mappings']['0xfe'] = 'mcpe_encrypted';
       client.encapsulatedPacketParser.proto.addTypes(merge(require('raknet').protocol, customPackets).types);
       encryptionEnabled = true;
 
-      client.on("mcpe", packet => {
+      client.on("mcpe_encrypted", packet => {
         //console.log('THE CONSOLELOG')
         //console.log(packet);
         //console.log('---------------')
         decipher.write(packet);
       });
       decipher.on('data', data => console.log('decrypt', data));
+
+
+      function writeLI64(value, buffer, offset) {
+        buffer.writeInt32LE(value[0], offset+4);
+        buffer.writeInt32LE(value[1], offset);
+        return offset + 8;
+      }
+
+      function computeCheckSum(packetPlaintext,sendCounter,secretKeyBytes) {
+        let digest = crypto.createHash('sha256');
+        let counter=new Buffer(8);
+        writeLI64(sendCounter,counter,0);
+        digest.update(counter);
+        digest.update(packetPlaintext);
+        digest.update(secretKeyBytes);
+        let hash = digest.digest();
+
+        return hash.slice(0,8);
+      }
+
+
+      const checksumTransform = new Transform({
+        transform(chunk,enc,cb) {
+          const packet=chunk.slice(0,chunk.length-8);
+          const checksum=chunk.slice(chunk.length-8);
+          const computedCheckSum=computeCheckSum(packet,[0,client.counter],client.secretKeyBytes);
+          const pass=checksum.toString("hex")==computedCheckSum.toString("hex");
+          //assert.equal(checksum.toString("hex"),computedCheckSum.toString("hex"));
+          client.counter++;
+          if(pass) this.push(packet);
+          cb();
+        }
+      });
+      checksumTransform.on("data",data => console.log('sliced',data));
+      decipher.pipe(checksumTransform);
+      const proto=new ProtoDef();
+      proto.addTypes(require("./datatypes/minecraft"));
+      proto.addTypes(require("../data/protocol").types);
+      const mcpePacketParser=new Parser(proto,"mcpe_packet");
+      checksumTransform.pipe(mcpePacketParser);
+      mcpePacketParser.on("data",parsed => console.log("parsed data",parsed));
+      mcpePacketParser.on("data",parsed => client.emitPacket(parsed));
 
       //client.on('mcpe', packet => { decipher.write(packet); })
 
@@ -171,6 +222,7 @@ function createServer(options) {
 
     client.on('batch', function(packet) {
       var buf = zlib.inflateSync(packet.payload);
+      console.log("in batch",buf);
       var packets = batchProto.parsePacketBuffer("insideBatch", buf).data;
       packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
     });
