@@ -106,7 +106,6 @@ function createServer(options) {
     client.encryptionEnabled = false;
 
     client.on("mcpe", packet => {
-      console.log("actual mcpe",packet);
       client.emit(packet.name, packet.params)
     });
 
@@ -159,10 +158,8 @@ function createServer(options) {
       client.encryptionEnabled = true;
 
       client.on("mcpe_encrypted", packet => {
-        console.log("raw",packet);
         decipher.write(packet);
       });
-      decipher.on('data', data => console.log('decrypt', data));
 
       client.cipher=crypto.createCipheriv('aes-256-cfb8', client.secretKeyBytes, client.secretKeyBytes.slice(0,16));
 
@@ -172,7 +169,7 @@ function createServer(options) {
           const packet=chunk.slice(0,chunk.length-8);
           const checksum=chunk.slice(chunk.length-8);
           const computedCheckSum=computeCheckSum(packet,[0,client.receiveCounter],client.secretKeyBytes);
-          //assert.equal(checksum.toString("hex"),computedCheckSum.toString("hex"));
+          assert.equal(checksum.toString("hex"),computedCheckSum.toString("hex"));
           client.receiveCounter++;
           if(checksum.toString("hex")==computedCheckSum.toString("hex")) this.push(packet);
           cb();
@@ -188,7 +185,6 @@ function createServer(options) {
       });
 
 
-      checksumTransform.on("data",data => console.log('sliced',data));
       decipher.pipe(checksumTransform);
       const proto=new ProtoDef();
       proto.addTypes(require("./datatypes/minecraft"));
@@ -196,19 +192,19 @@ function createServer(options) {
       client.mcpePacketParser=new Parser(proto,"mcpe_packet");
       client.mcpePacketSerializer=new Serializer(proto,"mcpe_packet");
       checksumTransform.pipe(client.mcpePacketParser);
-      client.mcpePacketParser.on("data",parsed => console.log("parsed data",parsed));
       client.mcpePacketParser.on("data",parsed => {if(parsed.data.name=="batch") parsed.data.name="batch_non_encrypted"; return client.emitPacket(parsed)});
 
 
       client.mcpePacketSerializer.pipe(client.addChecksumTransform);
       client.addChecksumTransform.pipe(client.cipher);
+
+      client.cipher.on('data', data => client.writeEncapsulated("mcpe_encrypted", data));
     });
 
     client.writeMCPE = (name, params) => {
       if(client.encryptionEnabled) {
+        debug("write mcpe",name,params);
         client.mcpePacketSerializer.write({ name, params });
-        client.cipher.on('data', data => console.log("crypted",data));
-        client.cipher.on('data', data => client.writeEncapsulated("mcpe_encrypted", data));
       }
       else {
         client.writeEncapsulated("mcpe", { name, params });
@@ -218,7 +214,7 @@ function createServer(options) {
     client.writeBatch = function(packets) {
         const payload = zlib.deflateSync(batchProto.createPacketBuffer("insideBatch",
           packets.map(packet =>
-            client.encapsulatedPacketSerializer.createPacketBuffer(packet).slice(1))));
+            client.mcpePacketSerializer.createPacketBuffer(packet))));
 
         client.writeMCPE("batch", {
           payload: payload
@@ -232,8 +228,7 @@ function createServer(options) {
     });
 
     client.on('client_to_server_handshake',() => {
-      console.log("plop");
-      client.emit('login', {
+      client.emit('login_mcpe', {
         displayName: client.displayName,
         randomId: client.randomId,
         skinData: client.skinData,

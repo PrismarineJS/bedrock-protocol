@@ -17,7 +17,7 @@ var server = pmp.createServer({
 server.on('connection', function(client) {
   client.on("mcpe", packet => console.log(packet));
 
-  client.on("login", data => {
+  client.on("login_mcpe", data => {
     console.log(client.displayName + '(' + client.XUID + ') ' + ' joined the game');
   });
 

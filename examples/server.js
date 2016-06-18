@@ -19,13 +19,11 @@ server.on('connection', function(client) {
 
   client.on("mcpe",packet => console.log(packet));
 
-  client.on("login",packet => {
-    console.log("aaaaa");
-
+  client.on("login_mcpe",packet => {
     client.writeMCPE("player_status",{
       status:0
     });
-/*
+
     client.writeMCPE('move_player', {
       entityId: [0,0],
       x: 1,
@@ -54,8 +52,8 @@ server.on('connection', function(client) {
       dayCycleStopTime:0,
       eduMode:0,
       unknown:""
-    });*/
-/*
+    });
+
     client.writeMCPE('set_spawn_position', {
       x: 1,
       y: 64,
@@ -70,22 +68,22 @@ server.on('connection', function(client) {
       x: 1,
       y: 64,
       z: 1
-    });*/
+    });
   });
 
-  client.on("request_chunk_radius",() => {
+  client.on("chunk_radius_update",() => {
     client.writeMCPE('chunk_radius_update',{
       chunk_radius:1
     });
 
     for (let x = -1; x <=1; x++) {
       for (let z = -1; z <=1; z++) {
-        client.writeBatch([{"name":"mcpe","params":{name:"full_chunk_data",params:{
+        client.writeBatch([{name:"full_chunk_data",params:{
           chunkX: x,
           chunkZ: z,
           order: 1,
           chunkData:fs.readFileSync(__dirname+"/chunk")
-        }}}]);
+        }}]);
       }
     }
 
