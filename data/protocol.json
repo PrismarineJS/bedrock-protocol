@@ -903,7 +903,7 @@
           "type": "bool"
         },
         {
-          "name": "unknown",
+          "name": "worldName",
           "type": "string"
         }
       ]
