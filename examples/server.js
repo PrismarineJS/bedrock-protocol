@@ -51,7 +51,7 @@ server.on('connection', function(client) {
       isLoadedInCreative:0,
       dayCycleStopTime:0,
       eduMode:0,
-      unknown:""
+      worldName:""
     });
 
     client.writeMCPE('set_spawn_position', {
