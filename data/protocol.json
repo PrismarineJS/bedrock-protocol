@@ -689,6 +689,7 @@
                 "crafting_event": "packet_crafting_event",
                 "adventure_settings": "packet_adventure_settings",
                 "block_entity_data": "packet_block_entity_data",
+                "player_input": "packet_player_input",
                 "full_chunk_data": "packet_full_chunk_data",
                 "set_difficulty": "packet_set_difficulty",
                 "player_list": "packet_player_list",
