@@ -118,31 +118,21 @@ function createServer(options) {
 
       var clientData = parsed.data.clientData;
       var chain1 = parsed.data.chain.chain[0];
-      var chain2 = parsed.data.chain.chain[1].replace('\n', '');
+      var chain2 = parsed.data.chain.chain[1];
 
       var decode1 = jwt.decode(chain1, PUBLIC_KEY, 'ES384');
       var nextKey1 = decode1.identityPublicKey;
-
-      var decode2 = jwt.decode(chain2, nextKey1, 'ES384');
-      var nextKey2 = decode2.identityPublicKey;
 
       var clientDecode = jwt.decode(clientData, nextKey1, 'ES384');
       client.randomId = clientDecode.ClientRandomId;
       client.skinData = clientDecode.SkinData;
       client.skinId = clientDecode.SkinId;
-      client.identity = decode2.extraData.identity;
-      client.displayName = decode2.extraData.displayName;
-      client.XUID = decode2.extraData.XUID;
 
-
-      var pubKeyClient = readX509PublicKey(nextKey2);
       var ec = crypto.createECDH('secp384r1');
       ec.generateKeys();
-      client.sharedSecret = ec.computeSecret(pubKeyClient);
 
       client.secretKeyBytes = crypto.createHash('sha256');
-      client.secretKeyBytes.update("SO SECRET VERY SECURE");
-      client.secretKeyBytes.update(client.sharedSecret);
+      client.secretKeyBytes.update("SO SECRET VERY SECURE");;
       client.secretKeyBytes = client.secretKeyBytes.digest();
 
       let pubKeyServer=writeX509PublicKey(ec.getPublicKey());
