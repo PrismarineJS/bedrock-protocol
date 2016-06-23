@@ -567,63 +567,68 @@
             {
               "type": "u8",
               "mappings": {
-                "0x03": "server_to_client_handshake",
-                "0x04": "client_to_server_handshake",
                 "0x01": "game_login",
                 "0x02": "player_status",
+                "0x03": "server_to_client_handshake",
+                "0x04": "client_to_server_handshake",
                 "0x05": "disconnect",
                 "0x06": "batch",
                 "0x07": "text",
                 "0x08": "set_time",
                 "0x09": "start_game",
                 "0x0a": "add_player",
-                "0x0b": "remove_player",
-                "0x0c": "add_entity",
-                "0x0d": "remove_entity",
-                "0x0e": "add_item_entity",
-                "0x0f": "take_item_entity",
-                "0x10": "move_entity",
-                "0x11": "move_player",
+                "0x0b": "add_entity",
+                "0x0c": "remove_entity",
+                "0x0d": "add_item_entity",
+                "0x0e": "take_item_entity",
+                "0x0f": "move_entity",
+                "0x10": "move_player",
+                "0x11": "rider_jump",
                 "0x12": "remove_block",
                 "0x13": "update_block",
                 "0x14": "add_painting",
                 "0x15": "explode",
                 "0x16": "level_event",
-                "0x17": "tile_event",
+                "0x17": "block_event",
                 "0x18": "entity_event",
                 "0x19": "mob_effect",
                 "0x1a": "update_attributes",
-                "0x1b": "player_equipment",
-                "0x1c": "player_armor_equipment",
+                "0x1b": "mob_equipment",
+                "0x1c": "mob_armor_equipment",
                 "0x1d": "interact",
-                "0x1e": "use_item",
-                "0x1f": "player_action",
-                "0x20": "hurt_armor",
-                "0x21": "set_entity_data",
-                "0x22": "set_entity_motion",
-                "0x23": "set_entity_link",
-                "0x24": "set_health",
-                "0x25": "set_spawn_position",
-                "0x26": "animate",
-                "0x27": "respawn",
-                "0x28": "drop_item",
-                "0x29": "container_open",
-                "0x2a": "container_close",
-                "0x2b": "container_set_slot",
-                "0x2c": "container_set_data",
-                "0x2d": "container_set_content",
-                "0x2e": "crafting_data",
-                "0x2f": "crafting_event",
-                "0x30": "adventure_settings",
-                "0x31": "tile_entity_data",
-                "0x32": "player_input",
-                "0x33": "full_chunk_data",
-                "0x34": "set_difficulty",
-                "0x37": "player_list",
-                "0x3c": "request_chunk_radius",
-                "0x3d": "chunk_radius_update",
+                "0x1f": "use_item",
+                "0x20": "player_action",
+                "0x21": "hurt_armor",
+                "0x22": "set_entity_data",
+                "0x23": "set_entity_motion",
+                "0x24": "set_entity_link",
+                "0x25": "set_health",
+                "0x26": "set_spawn_position",
+                "0x27": "animate",
+                "0x28": "respawn",
+                "0x29": "drop_item",
+                "0x2a": "container_open",
+                "0x2b": "container_close",
+                "0x2c": "container_set_slot",
+                "0x2d": "container_set_data",
+                "0x2e": "container_set_content",
+                "0x2f": "crafting_data",
+                "0x30": "crafting_event",
+                "0x31": "adventure_settings",
+                "0x32": "block_entity_data",
+                "0x33": "player_input",
+                "0x34": "full_chunk_data",
+                "0x35": "set_difficulty",
+                "0x36": "change_dimension",
+                "0x37": "set_player_gametype",
+                "0x38": "player_list",
+                "0x39": "telemetry_event",
                 "0x3a": "spawn_experience_orb",
-                "0x3f": "replace_selected_item"
+                "0x3d": "request_chunk_radius",
+                "0x3e": "chunk_radius_update",
+                "0x3f": "item_frame_drop_item",
+                "0x40": "replace_selected_item",
+                "0x41": "add_item_item"
               }
             }
           ]
@@ -657,12 +662,12 @@
                 "add_painting": "packet_add_painting",
                 "explode": "packet_explode",
                 "level_event": "packet_level_event",
-                "tile_event": "packet_tile_event",
+                "block_event": "packet_block_event",
                 "entity_event": "packet_entity_event",
                 "mob_effect": "packet_mob_effect",
                 "update_attributes": "packet_update_attributes",
-                "player_equipment": "packet_player_equipment",
-                "player_armor_equipment": "packet_player_armor_equipment",
+                "mob_equipment": "packet_mob_equipment",
+                "mob_armor_equipment": "packet_mob_armor_equipment",
                 "interact": "packet_interact",
                 "use_item": "packet_use_item",
                 "player_action": "packet_player_action",
@@ -683,7 +688,7 @@
                 "crafting_data": "packet_crafting_data",
                 "crafting_event": "packet_crafting_event",
                 "adventure_settings": "packet_adventure_settings",
-                "tile_entity_data": "packet_tile_entity_data",
+                "block_entity_data": "packet_block_entity_data",
                 "full_chunk_data": "packet_full_chunk_data",
                 "set_difficulty": "packet_set_difficulty",
                 "player_list": "packet_player_list",
@@ -1253,7 +1258,7 @@
         }
       ]
     ],
-    "packet_tile_event": [
+    "packet_block_event": [
       "container",
       [
         {
@@ -1333,7 +1338,7 @@
         }
       ]
     ],
-    "packet_player_equipment": [
+    "packet_mob_equipment": [
       "container",
       [
         {
@@ -1354,7 +1359,7 @@
         }
       ]
     ],
-    "packet_player_armor_equipment": [
+    "packet_mob_armor_equipment": [
       "container",
       [
         {
@@ -1769,7 +1774,7 @@
         }
       ]
     ],
-    "packet_tile_entity_data": [
+    "packet_block_entity_data": [
       "container",
       [
         {
