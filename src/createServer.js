@@ -105,95 +105,18 @@ function createServer(options) {
 
     client.encryptionEnabled = false;
 
+    let proto = new ProtoDef();
+    proto.addTypes(require("./datatypes/minecraft"));
+    proto.addTypes(require("../data/protocol").types);
+    client.mcpePacketSerializer = new Serializer(proto, 'mcpe_packet');
+
     client.on("mcpe", packet => {
       client.emit(packet.name, packet.params)
     });
-
-
-    client.on("game_login", packet => {
-      var body = packet.body;
-      var body2 = zlib.inflateSync(body);
-      var parsed = dataProto.parsePacketBuffer("data_chain", body2);
-      parsed.data.chain = JSON.parse(parsed.data.chain);
-
-      var clientData = parsed.data.clientData;
-      var chain1 = parsed.data.chain.chain[0];
-      var chain2 = parsed.data.chain.chain[1];
-
-      var decode1 = jwt.decode(chain1, PUBLIC_KEY, 'ES384');
-      var nextKey1 = decode1.identityPublicKey;
-
-      var clientDecode = jwt.decode(clientData, nextKey1, 'ES384');
-      client.randomId = clientDecode.ClientRandomId;
-      client.skinData = clientDecode.SkinData;
-      client.skinId = clientDecode.SkinId;
-
-      var ec = crypto.createECDH('secp384r1');
-      ec.generateKeys();
-
-      client.secretKeyBytes = crypto.createHash('sha256');
-      client.secretKeyBytes.update("SO SECRET VERY SECURE");;
-      client.secretKeyBytes = client.secretKeyBytes.digest();
-
-      let pubKeyServer=writeX509PublicKey(ec.getPublicKey());
-      client.writeMCPE('server_to_client_handshake', {
-        publicKey: pubKeyServer,
-        serverToken: "SO SECRET VERY SECURE" // obviously, this is super secure (it's not, change it)
-      });
-      var decipher = crypto.createDecipheriv('aes-256-cfb8', client.secretKeyBytes, client.secretKeyBytes.slice(0,16));
-      let customPackets=JSON.parse(JSON.stringify(require("../data/protocol")));
-      customPackets['types']['encapsulated_packet'][1][1]['type'][1]['fields']['mcpe_encrypted'] = 'restBuffer';
-      customPackets['types']['encapsulated_packet'][1][0]['type'][1]['mappings']['0xfe'] = 'mcpe_encrypted';
-      client.encapsulatedPacketParser.proto.addTypes(merge(require('raknet').protocol, customPackets).types);
-      client.encryptionEnabled = true;
-
-      client.on("mcpe_encrypted", packet => {
-        decipher.write(packet);
-      });
-
-      client.cipher=crypto.createCipheriv('aes-256-cfb8', client.secretKeyBytes, client.secretKeyBytes.slice(0,16));
-
-
-      const checksumTransform = new Transform({
-        transform(chunk,enc,cb) {
-          const packet=chunk.slice(0,chunk.length-8);
-          const checksum=chunk.slice(chunk.length-8);
-          const computedCheckSum=computeCheckSum(packet,[0,client.receiveCounter],client.secretKeyBytes);
-          assert.equal(checksum.toString("hex"),computedCheckSum.toString("hex"));
-          client.receiveCounter++;
-          if(checksum.toString("hex")==computedCheckSum.toString("hex")) this.push(packet);
-          cb();
-        }
-      });
-      client.addChecksumTransform = new Transform({
-        transform(chunk,enc,cb) {
-          const packet=Buffer.concat([chunk,computeCheckSum(chunk,[0,client.sendCounter],client.secretKeyBytes)]);
-          client.sendCounter++;
-          this.push(packet);
-          cb();
-        }
-      });
-
-
-      decipher.pipe(checksumTransform);
-      const proto=new ProtoDef();
-      proto.addTypes(require("./datatypes/minecraft"));
-      proto.addTypes(require("../data/protocol").types);
-      client.mcpePacketParser=new Parser(proto,"mcpe_packet");
-      client.mcpePacketSerializer=new Serializer(proto,"mcpe_packet");
-      checksumTransform.pipe(client.mcpePacketParser);
-      client.mcpePacketParser.on("data",parsed => {if(parsed.data.name=="batch") parsed.data.name="batch_non_encrypted"; return client.emitPacket(parsed)});
-
-
-      client.mcpePacketSerializer.pipe(client.addChecksumTransform);
-      client.addChecksumTransform.pipe(client.cipher);
-
-      client.cipher.on('data', data => client.writeEncapsulated("mcpe_encrypted", data));
-    });
-
+    
     client.writeMCPE = (name, params) => {
       if(client.encryptionEnabled) {
-        debug("write mcpe",name,params);
+        debug("write mcpe", name, params);
         client.mcpePacketSerializer.write({ name, params });
       }
       else {
