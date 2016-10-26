@@ -23,7 +23,7 @@
     "lodash.merge": "^4.4.0",
     "prismarine-nbt": "^1.0.0",
     "protodef": "^1.2.0",
-    "raknet": "^1.8.0",
+    "raknet": "git+https://github.com/filfat/node-raknet.git",
     "uuid-1345": "^0.99.6"
   },
   "devDependencies": {
