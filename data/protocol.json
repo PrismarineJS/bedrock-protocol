@@ -586,6 +586,9 @@
                                 "0x04":"client_to_server_handshake",
                                 "0x05":"disconnect",
                                 "0x06":"batch",
+                                "0x07": "resource_pack_info",
+                                "0x08": "resource_pack_stack",
+                                "0x09": "resource_pack_client_response",
                                 "0x0a":"text",
                                 "0x0b":"set_time",
                                 "0x0c":"start_game",
@@ -641,7 +644,10 @@
                                 "0x44":"chunk_radius_update",
                                 "0x45":"item_frame_drop_item",
                                 "0x46":"replace_selected_item",
-                                "0x49":"add_item_item"
+                                "0x49":"add_item_item",
+                                "0x4d": "resource_pack_data_info",
+                                "0x4e": "resource_pack_chunk_data",
+                                "0x4f": "resource_pack_chunk_request"
                             }
                         }
                     ]
@@ -659,6 +665,7 @@
                                 "player_status":"packet_player_status",
                                 "disconnect":"packet_disconnect",
                                 "batch":"packet_batch",
+                                "resource_pack_client_response": "packet_resource_pack_client_response",
                                 "text":"packet_text",
                                 "set_time":"packet_set_time",
                                 "start_game":"packet_start_game",
@@ -810,6 +817,21 @@
                 }
             ]
         ],
+
+        "packet_resource_pack_client_response": [
+            "container",
+            [
+                {
+                    "name": "unknownByte",
+                    "type": "i8"
+                },
+                {
+                    "name": "unknownShort",
+                    "type": "i16"
+                }
+            ]
+        ],
+
         "packet_text":[
             "container",
             [
@@ -886,6 +908,26 @@
             "container",
             [
                 {
+                    "name":"entityId",
+                    "type":"i64"
+                },
+                {
+                    "name":"runtimeEntityId",
+                    "type":"i64"
+                },
+                {
+                    "name":"x",
+                    "type":"f32"
+                },
+                {
+                    "name":"y",
+                    "type":"f32"
+                },
+                {
+                    "name":"z",
+                    "type":"f32"
+                },
+                {
                     "name":"seed",
                     "type":"i32"
                 },
@@ -902,8 +944,8 @@
                     "type":"i8"
                 },
                 {
-                    "name":"entityId",
-                    "type":"i64"
+                    "name":"difficulty",
+                    "type":"i8"
                 },
                 {
                     "name":"spawnX",
@@ -918,19 +960,7 @@
                     "type":"i32"
                 },
                 {
-                    "name":"x",
-                    "type":"f32"
-                },
-                {
-                    "name":"y",
-                    "type":"f32"
-                },
-                {
-                    "name":"z",
-                    "type":"f32"
-                },
-                {
-                    "name":"isLoadedInCreative",
+                    "name":"achievementsDisabled",
                     "type":"bool"
                 },
                 {
@@ -940,6 +970,26 @@
                 {
                     "name":"eduMode",
                     "type":"bool"
+                },
+                {
+                    "name":"rainLevel",
+                    "type":"f32"
+                },
+                {
+                    "name":"lightningLevel",
+                    "type":"f32"
+                },
+                {
+                    "name":"enableCommands",
+                    "type":"bool"
+                },
+                {
+                    "name":"requireResourcePack",
+                    "type":"bool"
+                },
+                {
+                    "name":"unknownString1",
+                    "type":"string"
                 },
                 {
                     "name":"worldName",
