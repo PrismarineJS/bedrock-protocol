@@ -775,6 +775,10 @@
                     "type":"i32"
                 },
                 {
+                    "name": "edition",
+                    "type": "i8"
+                },
+                {
                     "name":"body",
                     "type":[
                         "buffer",
