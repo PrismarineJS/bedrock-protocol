@@ -783,7 +783,7 @@
                     "type":[
                         "buffer",
                         {
-                            "countType":"i32"
+                            "countType":"i8"
                         }
                     ]
                 }
