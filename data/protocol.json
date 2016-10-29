@@ -815,7 +815,7 @@
                     "type":[
                         "buffer",
                         {
-                            "countType":"i32"
+                            "countType":"varint"
                         }
                     ]
                 }
@@ -900,7 +900,7 @@
             [
                 {
                     "name":"time",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
                     "name":"started",
@@ -913,43 +913,53 @@
             [
                 {
                     "name":"entityId",
-                    "type":"i64"
+                    "type":"i64",
+                    "comment": "supposed to be varlong"
                 },
                 {
                     "name":"runtimeEntityId",
-                    "type":"i64"
+                    "type":"u64",
+                    "comment": "supposed to be uvarlong"
                 },
                 {
                     "name":"x",
-                    "type":"f32"
+                    "type":"varint"
                 },
                 {
                     "name":"y",
-                    "type":"f32"
+                    "type":"varint"
                 },
                 {
                     "name":"z",
-                    "type":"f32"
+                    "type":"varint"
+                },
+                {
+                    "name":"unknownF1",
+                    "type":"f64"
+                },
+                {
+                    "name":"unknownF2",
+                    "type":"f64"
                 },
                 {
                     "name":"seed",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
                     "name":"dimension",
-                    "type":"i8"
+                    "type":"varint"
                 },
                 {
                     "name":"generator",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
                     "name":"gamemode",
-                    "type":"i8"
+                    "type":"varint"
                 },
                 {
                     "name":"difficulty",
-                    "type":"i8"
+                    "type":"varint"
                 },
                 {
                     "name":"spawnX",
@@ -969,7 +979,7 @@
                 },
                 {
                     "name":"dayCycleStopTime",
-                    "type":"i8"
+                    "type":"varint"
                 },
                 {
                     "name":"eduMode",
@@ -977,11 +987,11 @@
                 },
                 {
                     "name":"rainLevel",
-                    "type":"f32"
+                    "type":"f64"
                 },
                 {
                     "name":"lightningLevel",
-                    "type":"f32"
+                    "type":"f64"
                 },
                 {
                     "name":"enableCommands",
@@ -992,7 +1002,7 @@
                     "type":"bool"
                 },
                 {
-                    "name":"unknownString1",
+                    "name":"levelId",
                     "type":"string"
                 },
                 {
@@ -1850,15 +1860,11 @@
             [
                 {
                     "name":"flags",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
                     "name":"userPermission",
-                    "type":"i32"
-                },
-                {
-                    "name":"globalPermission",
-                    "type":"i32"
+                    "type":"varint"
                 }
             ]
         ],
@@ -1905,11 +1911,11 @@
             [
                 {
                     "name":"chunkX",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
                     "name":"chunkZ",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
                     "name":"order",
@@ -1920,7 +1926,7 @@
                     "type":[
                         "buffer",
                         {
-                            "countType":"i32"
+                            "countType":"varint"
                         }
                     ]
                 }
