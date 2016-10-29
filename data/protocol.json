@@ -783,7 +783,7 @@
                     "type":[
                         "buffer",
                         {
-                            "countType":"i8"
+                            "countType":"varint"
                         }
                     ]
                 }
