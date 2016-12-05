@@ -22,7 +22,7 @@
     "jwt-simple": "^0.5.0",
     "lodash.merge": "^4.4.0",
     "prismarine-nbt": "^1.0.0",
-    "protodef": "git+https://github.com/deathcap/ProtoDef.git#varlong",
+    "protodef": "^1.2.3",
     "raknet": "git+https://github.com/filfat/node-raknet.git",
     "uuid-1345": "^0.99.6"
   },
