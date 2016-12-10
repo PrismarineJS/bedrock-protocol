@@ -355,19 +355,19 @@
                     [
                         {
                             "name":"x",
-                            "type":"i32"
+                            "type":"varint"
                         },
                         {
                             "name":"z",
-                            "type":"i32"
+                            "type":"varint"
                         },
                         {
                             "name":"y",
-                            "type":"i8"
+                            "type":"varint"
                         },
                         {
                             "name":"blockId",
-                            "type":"i8"
+                            "type":"varint"
                         },
                         {
                             "anon":true,
@@ -376,12 +376,12 @@
                                 [
                                     {
                                         "name":"blockData",
-                                        "size":4,
+                                        "size":8,
                                         "signed":false
                                     },
                                     {
                                         "name":"flags",
-                                        "size":4,
+                                        "size":8,
                                         "signed":false
                                     }
                                 ]
@@ -913,12 +913,12 @@
             [
                 {
                     "name":"entityId",
-                    "type":"i64",
+                    "type":"varint",
                     "comment": "supposed to be varlong"
                 },
                 {
                     "name":"runtimeEntityId",
-                    "type":"u64",
+                    "type":"varint",
                     "comment": "supposed to be uvarlong"
                 },
                 {
@@ -1918,10 +1918,6 @@
                     "type":"varint"
                 },
                 {
-                    "name":"order",
-                    "type":"i8"
-                },
-                {
                     "name":"chunkData",
                     "type":[
                         "buffer",
@@ -1937,7 +1933,7 @@
             [
                 {
                     "name":"difficulty",
-                    "type":"i32"
+                    "type":"varint"
                 }
             ]
         ],
@@ -2002,7 +1998,7 @@
             [
                 {
                     "name":"chunkRadius",
-                    "type":"i32"
+                    "type":"varint"
                 }
             ]
         ],
@@ -2011,7 +2007,7 @@
             [
                 {
                     "name":"chunkRadius",
-                    "type":"i32"
+                    "type":"varint"
                 }
             ]
         ],
