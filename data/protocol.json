@@ -640,6 +640,7 @@
                                 "0x3e":"player_list",
                                 "0x3f":"telemetry_event",
                                 "0x40":"spawn_experience_orb",
+                                "0x42":"map_info_request",
                                 "0x43":"request_chunk_radius",
                                 "0x44":"chunk_radius_update",
                                 "0x45":"item_frame_drop_item",
@@ -665,6 +666,7 @@
                                 "player_status":"packet_player_status",
                                 "disconnect":"packet_disconnect",
                                 "batch":"packet_batch",
+                                "resource_pack_info": "packet_resource_pack_info",
                                 "resource_pack_client_response": "packet_resource_pack_client_response",
                                 "text":"packet_text",
                                 "set_time":"packet_set_time",
@@ -713,11 +715,13 @@
                                 "full_chunk_data":"packet_full_chunk_data",
                                 "set_difficulty":"packet_set_difficulty",
                                 "player_list":"packet_player_list",
+                                "map_info_request": "packet_map_info_request",
                                 "request_chunk_radius":"packet_request_chunk_radius",
                                 "chunk_radius_update":"packet_chunk_radius_update",
                                 "transfer":"packet_transfer",
                                 "spawn_experience_orb":"packet_spawn_experience_orb",
-                                "replace_selected_item":"packet_replace_selected_item"
+                                "replace_selected_item":"packet_replace_selected_item",
+                                "resource_pack_data_info": "packet_resource_pack_data_info"
                             }
                         }
                     ]
@@ -821,17 +825,37 @@
                 }
             ]
         ],
-
+        "packet_resource_pack_info": [
+            "container",
+            [
+                {
+                    "name":"mustAccept",
+                    "type":"bool"
+                },
+                {
+                    "name":"behaviourPackLength",
+                    "type":"u16"
+                },
+                {
+                    "name":"resourcePackLength",
+                    "type":"u16"
+                }
+            ]
+        ],
         "packet_resource_pack_client_response": [
             "container",
             [
                 {
-                    "name": "unknownByte",
+                    "name": "status",
                     "type": "i8"
                 },
                 {
-                    "name": "unknownShort",
-                    "type": "i16"
+                    "name": "version",
+                    "type": "string"
+                },
+                {
+                    "name": "size",
+                    "type": "u32"
                 }
             ]
         ],
@@ -904,7 +928,7 @@
                 },
                 {
                     "name":"started",
-                    "type":"i8"
+                    "type":"bool"
                 }
             ]
         ],
@@ -913,25 +937,23 @@
             [
                 {
                     "name":"entityId",
-                    "type":"varint",
-                    "comment": "supposed to be varlong"
+                    "type":"varint"
                 },
                 {
                     "name":"runtimeEntityId",
-                    "type":"varint",
-                    "comment": "supposed to be uvarlong"
+                    "type":"varint"
                 },
                 {
                     "name":"x",
-                    "type":"varint"
+                    "type":"f32"
                 },
                 {
                     "name":"y",
-                    "type":"varint"
+                    "type":"f32"
                 },
                 {
                     "name":"z",
-                    "type":"varint"
+                    "type":"f32"
                 },
                 {
                     "name":"unknownF1",
@@ -963,15 +985,15 @@
                 },
                 {
                     "name":"spawnX",
-                    "type":"i32"
+                    "type":"f32"
                 },
                 {
                     "name":"spawnY",
-                    "type":"i32"
+                    "type":"f32"
                 },
                 {
                     "name":"spawnZ",
-                    "type":"i32"
+                    "type":"f32"
                 },
                 {
                     "name":"achievementsDisabled",
@@ -1211,7 +1233,7 @@
             [
                 {
                     "name":"entityId",
-                    "type":"i64"
+                    "type":"varint"
                 },
                 {
                     "name":"x",
@@ -1226,7 +1248,7 @@
                     "type":"f32"
                 },
                 {
-                    "name":"yaw",
+                    "name":"pitch",
                     "type":"f32"
                 },
                 {
@@ -1234,7 +1256,7 @@
                     "type":"f32"
                 },
                 {
-                    "name":"pitch",
+                    "name":"yaw",
                     "type":"f32"
                 },
                 {
@@ -1243,7 +1265,7 @@
                 },
                 {
                     "name":"onGround",
-                    "type":"i8"
+                    "type":"bool"
                 }
             ]
         ],
@@ -1503,8 +1525,12 @@
                     "type":"blockcoordinates"
                 },
                 {
+                    "name":"unknown",
+                    "type":"varint"
+                },
+                {
                     "name":"face",
-                    "type":"i8"
+                    "type":"varint"
                 },
                 {
                     "name":"facecoordinates",
@@ -1516,7 +1542,7 @@
                 },
                 {
                     "name":"slot",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
                     "name":"item",
@@ -1990,6 +2016,15 @@
                             ]
                         }
                     ]
+                }
+            ]
+        ],
+        "map_info_request": [
+            "container",
+            [
+                {
+                    "name":"mapID",
+                    "type":"varint"
                 }
             ]
         ],
