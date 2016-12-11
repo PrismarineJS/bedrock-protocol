@@ -867,6 +867,7 @@
                     "name":"type",
                     "type":"i8"
                 },
+                
                 {
                     "name":"name",
                     "type":[
@@ -1555,27 +1556,19 @@
             [
                 {
                     "name":"entityId",
-                    "type":"i64"
+                    "type":"varint"
                 },
                 {
                     "name":"actionId",
-                    "type":"i32"
+                    "type":"varint"
                 },
                 {
-                    "name":"x",
-                    "type":"i32"
-                },
-                {
-                    "name":"y",
-                    "type":"i32"
-                },
-                {
-                    "name":"z",
-                    "type":"i32"
+                    "name":"blockcoordinates",
+                    "type":"blockcoordinates"
                 },
                 {
                     "name":"face",
-                    "type":"i32"
+                    "type":"varint"
                 }
             ]
         ],
@@ -1942,6 +1935,10 @@
                 {
                     "name":"chunkZ",
                     "type":"varint"
+                },
+                {
+                    "name":"order",
+                    "type":"i8"
                 },
                 {
                     "name":"chunkData",
