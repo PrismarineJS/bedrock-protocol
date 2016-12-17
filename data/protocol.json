@@ -152,49 +152,50 @@
                                 "0x22": "interact",
                                 "0x23": "use_item",
                                 "0x24": "player_action",
-                                "0x25": "hurt_armor",
-                                "0x26": "set_entity_data",
-                                "0x27": "set_entity_motion",
-                                "0x28": "set_entity_link",
-                                "0x29": "set_health",
-                                "0x2a": "set_spawn_position",
-                                "0x2b": "animate",
-                                "0x2c": "respawn",
-                                "0x2d": "drop_item",
-                                "0x2e": "inventory_action",
-                                "0x2f": "container_open",
-                                "0x30": "container_close",
-                                "0x31": "container_set_slot",
-                                "0x32": "container_set_data",
-                                "0x33": "container_set_content",
-                                "0x34": "crafting_data",
-                                "0x35": "crafting_event",
-                                "0x36": "adventure_settings",
-                                "0x37": "block_entity_data",
-                                "0x38": "player_input",
-                                "0x39": "full_chunk_data",
-                                "0x3a": "set_commands_enabled",
-                                "0x3b": "set_difficulty",
-                                "0x3c": "change_dimension",
-                                "0x3d": "set_player_game_type",
-                                "0x3e": "player_list",
-                                "0x3f": "event",
-                                "0x40": "spawn_experience_orb",
-                                "0x41": "clientbound_map_item_data_",
-                                "0x42": "map_info_request",
-                                "0x43": "request_chunk_radius",
-                                "0x44": "chunk_radius_update",
-                                "0x45": "item_fram_drop_item",
-                                "0x46": "replace_selected_item",
-                                "0x47": "game_rules_changed",
-                                "0x48": "camera",
-                                "0x49": "add_item",
-                                "0x4a": "boss_event",
-                                "0x4b": "available_commands",
-                                "0x4c": "command_step",
-                                "0x4d": "resource_pack_data_info",
-                                "0x4e": "resource_pack_chunk_data",
-                                "0x4f": "resource_pack_chunk_request"
+                                "0x25": "player_fall",
+                                "0x26": "hurt_armor",
+                                "0x27": "set_entity_data",
+                                "0x28": "set_entity_motion",
+                                "0x29": "set_entity_link",
+                                "0x2a": "set_health",
+                                "0x2b": "set_spawn_position",
+                                "0x2c": "animate",
+                                "0x2d": "respawn",
+                                "0x2e": "drop_item",
+                                "0x2f": "inventory_action",
+                                "0x30": "container_open",
+                                "0x31": "container_close",
+                                "0x32": "container_set_slot",
+                                "0x33": "container_set_data",
+                                "0x34": "container_set_content",
+                                "0x35": "crafting_data",
+                                "0x36": "crafting_event",
+                                "0x37": "adventure_settings",
+                                "0x38": "block_entity_data",
+                                "0x39": "player_input",
+                                "0x3a": "full_chunk_data",
+                                "0x3b": "set_commands_enabled",
+                                "0x3c": "set_difficulty",
+                                "0x3d": "change_dimension",
+                                "0x3e": "set_player_game_type",
+                                "0x3f": "player_list",
+                                "0x40": "event",
+                                "0x41": "spawn_experience_orb",
+                                "0x42": "clientbound_map_item_data_",
+                                "0x43": "map_info_request",
+                                "0x44": "request_chunk_radius",
+                                "0x45": "chunk_radius_update",
+                                "0x46": "item_fram_drop_item",
+                                "0x47": "replace_selected_item",
+                                "0x48": "game_rules_changed",
+                                "0x49": "camera",
+                                "0x4a": "add_item",
+                                "0x4b": "boss_event",
+                                "0x4d": "available_commands",
+                                "0x4e": "command_step",
+                                "0x4f": "resource_pack_data_info",
+                                "0x50": "resource_pack_chunk_data",
+                                "0x51": "resource_pack_chunk_request"
                             }
                         }
                     ]
@@ -242,6 +243,7 @@
                                 "interact": "packet_interact",
                                 "use_item": "packet_use_item",
                                 "player_action": "packet_player_action",
+                                "player_fall": "packet_player_fall",
                                 "hurt_armor": "packet_hurt_armor",
                                 "set_entity_data": "packet_set_entity_data",
                                 "set_entity_motion": "packet_set_entity_motion",
@@ -1104,6 +1106,10 @@
                     "type": "varint"
                 },
                 {
+                    "name": "unknown",
+                    "type": "varint"
+                },
+                {
                     "name": "face",
                     "type": "varint"
                 },
@@ -1145,6 +1151,10 @@
                     "type": "varint"
                 }
             ]
+        ],
+        "packet_player_fall": [
+            "container",
+            []
         ],
         "packet_hurt_armor": [
             "container",
@@ -1322,12 +1332,16 @@
                     "type": "varint"
                 },
                 {
-                    "name": "unknown",
+                    "name": "hotbarslot",
                     "type": "varint"
                 },
                 {
                     "name": "item",
                     "type": "varint"
+                },
+                {
+                    "name": "unknown2",
+                    "type": "u8"
                 }
             ]
         ],
@@ -1456,10 +1470,6 @@
                 {
                     "name": "chunk_z",
                     "type": "varint"
-                },
-                {
-                    "name": "order",
-                    "type": "u8"
                 },
                 {
                     "name": "chunk_data",
