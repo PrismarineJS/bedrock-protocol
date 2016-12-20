@@ -20,66 +20,64 @@ batchProto.addType('insideBatch', ['endOfArray', {
 }]);
 
 const PUBLIC_KEY = 'MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8ELkixyLcwlZryUQcu1TvPOmI2B7vX83ndnWRUaXm74wFfa5f/lwQNTfrLVHa2PmenpGI6JhIMUJaWZrjmMj90NoKNFSNBuKdm8rYiXsfaz3K36x/1U26HpG0ZxK/V1V';
-function createServer(options) {
+
+// createServer (object, boolean)
+//
+// Create & launch a MCPE raknet-based server.
+// object: raknet options
+// encryption: enable/disable encryption
+function createServer(options, encryption) {
     options = options || {};
-    var port = options.port != null ?
+    const port = options.port != null ?
         options.port :
         options['server-port'] != null ?
         options['server-port'] :
         19132;
-    var host = options.host || '0.0.0.0';
+    const host = options.host || '0.0.0.0';
 
     options.customPackets = require('../data/protocol');
     options.customTypes = require('./datatypes/minecraft');
-    var server = raknet.createServer(options);
+    let server = raknet.createServer(options);
 
     server.name = options.name || 'Minecraft Server';
-    server.motd = options.motd || 'A Minecraft server';
-    server.maxPlayers = options['max-players'] || 20;
-    server.playerCount = 0;
+    server.motd = options.motd || 'A Minecraft server'; //FIXME
+    server.maxPlayers = options['max-players'] || 20; //FIXME
+    server.playerCount = 0; //FIXME
 
-
+    
     server.on('connection', function(client) {
-
-        client.receiveCounter=0;
-        client.sendCounter=0;
-
-        client.encryptionEnabled = false;
+        client.receiveCounter = 0;
+        client.sendCounter = 0;
+        client.encryptionEnabled = encryption ? encryption : true;
 
         let proto = new ProtoDef();
         proto.addTypes(require('./datatypes/minecraft'));
         proto.addTypes(require('../data/protocol').types);
         client.mcpePacketSerializer = new Serializer(proto, 'mcpe_packet');
-
-        client.on('mcpe', packet => {
-            client.emit(packet.name, packet.params)
-        });
         
         client.writeMCPE = (name, params) => {
-            if (client.encryptionEnabled) {
+            if (client.encryptionEnabled)
                 client.mcpePacketSerializer.write({ name, params });
-            }
-            else {
+            else
                 client.writeEncapsulated('mcpe', { name, params });
-            }
         };
-
         client.writeBatch = function(packets) {
             const payload = zlib.deflateSync(batchProto.createPacketBuffer('insideBatch',
-                packets.map(packet =>
-                    client.mcpePacketSerializer.createPacketBuffer(packet))));
+                packets.map(packet => client.mcpePacketSerializer.createPacketBuffer(packet))));
 
             client.writeMCPE('batch', {
                 payload: payload
             });
         };
 
+        client.on('mcpe', packet => {
+            client.emit(packet.name, packet.params)
+        });
         client.on('batch', function(packet) {
             var buf = zlib.inflateSync(packet.payload);
             var packets = batchProto.parsePacketBuffer('insideBatch', buf).data;
             packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
         });
-
         client.on('game_login', (packet) => {
             try {
                 const dataProto = new ProtoDef();
@@ -95,6 +93,7 @@ function createServer(options) {
                     }]
                 }]]);
 
+                //FIXME: Xbox & Non-Xbox support
                 let body = dataProto.parsePacketBuffer('data_chain', zlib.inflateSync(packet.body)),
                     chain = null,
                     decode = null,
@@ -115,8 +114,9 @@ function createServer(options) {
                     skinData: data.SkinData,
                     skinId: data.SkinId
                 })
-            } catch(err) {
+            } catch (err) {
                 console.log(err);
+                return null;
             }
         });
     });
