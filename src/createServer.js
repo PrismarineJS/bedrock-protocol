@@ -4,18 +4,14 @@ let raknet      = require('raknet'),
     ProtoDef    = require('protodef').ProtoDef,
     Parser      = require('protodef').Parser,
     Serializer  = require('protodef').Serializer,
-    jwt         = require('jwt-simple'),
-    crypto      = require('crypto'),
-    Ber         = require('asn1').Ber,
-    merge       = require('lodash.merge'),
-    assert      = require('assert');
+    jwt         = require('jwt-simple');
 var debug = require('debug')('raknet');
 
-const batchProto = new ProtoDef();
+let batchProto = new ProtoDef();
 batchProto.addTypes(require('./datatypes/minecraft'));
 batchProto.addType('insideBatch', ['endOfArray', {
     'type': ['buffer', {
-        'countType': 'varint'
+        'countType': 'varint',
     }]
 }]);
 
@@ -48,13 +44,22 @@ function createServer(options, encryption) {
     server.on('connection', function(client) {
         client.receiveCounter = 0;
         client.sendCounter = 0;
-        client.encryptionEnabled = encryption ? encryption : true;
+        client.encryptionEnabled = encryption ? encryption : false;
 
         let proto = new ProtoDef();
         proto.addTypes(require('./datatypes/minecraft'));
         proto.addTypes(require('../data/protocol').types);
         client.mcpePacketSerializer = new Serializer(proto, 'mcpe_packet');
         
+        client.on('mcpe', packet => {
+            client.emit(packet.name, packet.params)
+        });
+        client.on('batch', function (packet) {
+            var buf = zlib.inflateSync(packet.payload);
+            var packets = batchProto.parsePacketBuffer('insideBatch', buf).data;
+            packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
+        });
+
         client.writeMCPE = (name, params) => {
             if (client.encryptionEnabled)
                 client.mcpePacketSerializer.write({ name, params });
@@ -70,17 +75,9 @@ function createServer(options, encryption) {
             });
         };
 
-        client.on('mcpe', packet => {
-            client.emit(packet.name, packet.params)
-        });
-        client.on('batch', function(packet) {
-            var buf = zlib.inflateSync(packet.payload);
-            var packets = batchProto.parsePacketBuffer('insideBatch', buf).data;
-            packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
-        });
         client.on('game_login', (packet) => {
             try {
-                const dataProto = new ProtoDef();
+                let dataProto = new ProtoDef();
                 dataProto.addType('data_chain', ['container', [{
                     'name': 'chain',
                     'type': ['pstring', {
@@ -102,7 +99,7 @@ function createServer(options, encryption) {
                 body.data.chain = JSON.parse(body.data.chain);
                 chain = body.data.chain.chain[0];
 
-                decode = jwt.decode(chain, 'MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8ELkixyLcwlZryUQcu1TvPOmI2B7vX83ndnWRUaXm74wFfa5f/lwQNTfrLVHa2PmenpGI6JhIMUJaWZrjmMj90NoKNFSNBuKdm8rYiXsfaz3K36x/1U26HpG0ZxK/V1V', 'ES384');
+                decode = jwt.decode(chain, PUBLIC_KEY, 'ES384');
                 data = jwt.decode(body.data.clientData, decode.identityPublicKey, 'ES384');
 
                 data.SkinData = null;
