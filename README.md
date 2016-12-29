@@ -26,3 +26,7 @@ This project is run by these guys:
   - [Filiph Sandström](https://github.com/filfat)
   - [mhsjlw](https://github.com/mhsjlw)
   - [rom1504](https://github.com/rom1504)
+
+## License
+Licensed under the MIT license.  
+ANY modifications/patches made by Filiph Sandström is licensed under the [ABRMS license](https://gist.github.com/filfat/d2ef7dffb50901064df06609d00f82ec).
