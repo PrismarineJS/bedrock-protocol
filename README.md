@@ -29,4 +29,3 @@ This project is run by these guys:
 
 ## License
 Licensed under the MIT license.  
-ANY modifications/patches made by Filiph Sandström is licensed under the [ABRMS license](https://gist.github.com/filfat/d2ef7dffb50901064df06609d00f82ec).
