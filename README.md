@@ -23,9 +23,9 @@ Then view our `examples` for inspiration!
 ## Contributors
 This project is run by these guys:
 
-  - [Filiph Sandström](https://github.com/filfat)
   - [mhsjlw](https://github.com/mhsjlw)
   - [rom1504](https://github.com/rom1504)
+  - [Filiph Sandström](https://github.com/filfat)
 
 ## License
 Licensed under the MIT license.  
