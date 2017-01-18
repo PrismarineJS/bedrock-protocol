@@ -44,7 +44,7 @@ function createServer(options, encryption) {
     server.on('connection', function(client) {
         client.receiveCounter = 0;
         client.sendCounter = 0;
-        client.encryptionEnabled = encryption ? encryption : false;
+        client.encryptionEnabled = encryption ? true : false;
 
         let proto = new ProtoDef();
         proto.addTypes(require('./datatypes/minecraft'));
@@ -60,22 +60,45 @@ function createServer(options, encryption) {
             packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
         });
 
-        client.writeMCPE = (name, params) => {
-            if (client.encryptionEnabled)
+        // client.writePacket (string, object)
+        // Send data to the client
+        //
+        // string: packet name
+        // object: packet data
+        client.writeMCPE = function (name, params) {
+            if (client.encryptionEnabled) {
                 client.mcpePacketSerializer.write({ name, params });
-            else
+            } else {
                 client.writeEncapsulated('mcpe', { name, params });
+            }
         };
-        client.writeBatch = function(packets) {
+        client.writePacket = client.writeMCPE;
+
+        // client.writeData (array)
+        // Send data to the client
+        //
+        // array: packets to send
+        client.writeBatch = function (packets) {
             const payload = zlib.deflateSync(batchProto.createPacketBuffer('insideBatch',
                 packets.map(packet => client.mcpePacketSerializer.createPacketBuffer(packet))));
 
-            client.writeMCPE('batch', {
+            client.writePacket('batch', {
                 payload: payload
             });
         };
+        client.writeData = client.writeBatch;
 
-        client.on('game_login', (packet) => {
+        // client.writeAll (string, object)
+        // Send data to the client
+        //
+        // string: packet name
+        // object: packet data
+        client.writeAll = function (name, data) {
+            return; //TODO
+            server._writeAll(name, data);
+        };
+
+        client.on('game_login', function (packet) {
             try {
                 let dataProto = new ProtoDef();
                 dataProto.addType('data_chain', ['container', [{
@@ -91,6 +114,7 @@ function createServer(options, encryption) {
                 }]]);
 
                 //FIXME: Xbox & Non-Xbox support
+                console.log(packet);
                 let body = dataProto.parsePacketBuffer('data_chain', zlib.inflateSync(packet.body)),
                     chain = null,
                     decode = null,
