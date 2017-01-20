@@ -80,7 +80,7 @@ function createServer(options, encryption) {
         // array: packets to send
         client.writeBatch = function (packets) {
             const payload = zlib.deflateSync(batchProto.createPacketBuffer('insideBatch',
-                packets.map(packet => client.mcpePacketSerializer.createPacketBuffer(packet))));
+                packets.map(packet => client.mcpePacketSerializer.createPacketBuffer(packets))));
 
             client.writePacket('batch', {
                 payload: payload
