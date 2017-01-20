@@ -17,15 +17,15 @@
             [
                 {
                     "name": "x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "z",
-                    "type": "f32"
+                    "type": "lf32"
                 }
             ]
         ],
@@ -51,15 +51,15 @@
                     [
                         {
                             "name": "x",
-                            "type": "f32"
+                            "type": "lf32"
                         },
                         {
                             "name": "y",
-                            "type": "f32"
+                            "type": "lf32"
                         },
                         {
                             "name": "z",
-                            "type": "f32"
+                            "type": "lf32"
                         },
                         {
                             "name": "yaw",
@@ -543,11 +543,11 @@
                 },
                 {
                     "name": "rain_level",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "lightnig_level",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "enable_commands",
@@ -588,39 +588,39 @@
                 },
                 {
                     "name": "x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "pitch",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "head_yaw",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "yaw",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "item",
@@ -649,35 +649,35 @@
                 },
                 {
                     "name": "x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "yaw",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "pitch",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "attributes",
@@ -719,27 +719,27 @@
                 },
                 {
                     "name": "x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "speed_z",
-                    "type": "f32"
+                    "type": "lf32"
                 }
             ]
         ],
@@ -799,27 +799,27 @@
                 },
                 {
                     "name": "x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "pitch",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "head_yaw",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "yaw",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "mode",
@@ -895,7 +895,7 @@
                 },
                 {
                     "name": "radius",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "records",
@@ -941,15 +941,15 @@
                 },
                 {
                     "name": "x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "data",
@@ -1246,15 +1246,15 @@
             [
                 {
                     "name": "x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "y",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "z",
-                    "type": "f32"
+                    "type": "lf32"
                 }
             ]
         ],
@@ -1442,11 +1442,11 @@
             [
                 {
                     "name": "motion_x",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "motion_z",
-                    "type": "f32"
+                    "type": "lf32"
                 },
                 {
                     "name": "flag1",
