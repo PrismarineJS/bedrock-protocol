@@ -52,10 +52,11 @@ function createServer(options, encryption) {
         client.mcpePacketSerializer = new Serializer(proto, 'mcpe_packet');
         
         client.on('mcpe', packet => {
-            client.emit(packet.name, packet.params)
+            client.emit(packet.name, packet.params);
+            client.emit('debug', packet.name);
         });
-        client.on('batch', function (packet) {
-            var buf = zlib.inflateSync(packet.payload);
+        client.on('batch', function (packets) {
+            var buf = zlib.inflateSync(packets.payload);
             var packets = batchProto.parsePacketBuffer('insideBatch', buf).data;
             packets.forEach(packet => client.readEncapsulatedPacket(Buffer.concat([new Buffer([0xfe]), packet])));
         });
@@ -80,7 +81,7 @@ function createServer(options, encryption) {
         // array: packets to send
         client.writeBatch = function (packets) {
             const payload = zlib.deflateSync(batchProto.createPacketBuffer('insideBatch',
-                packets.map(packets => client.mcpePacketSerializer.createPacketBuffer(packets))));
+                packets.map(packet => client.mcpePacketSerializer.createPacketBuffer(packet))));
 
             client.writePacket('batch', {
                 payload: payload
