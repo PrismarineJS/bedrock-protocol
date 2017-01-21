@@ -10,6 +10,8 @@ batchProto.addTypes(require("./datatypes/minecraft"));
 batchProto.addType("insideBatch",["endOfArray",{"type":["buffer",{"countType":"i32"}]}]);
 
 function createClient(options) {
+  return null; //FIXME
+
   assert.ok(options, 'options is required');
   var port = options.port || 19132;
   var host = options.host || 'localhost';
