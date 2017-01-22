@@ -208,15 +208,15 @@
       [
         {
           "name":"x",
-          "type":"i32"
+          "type":"varint"
         },
         {
           "name":"y",
-          "type":"i32"
+          "type":"varint"
         },
         {
           "name":"z",
-          "type":"i32"
+          "type":"varint"
         }
       ]
     ],
