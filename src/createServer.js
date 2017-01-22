@@ -127,7 +127,6 @@ function createServer(options, encryption) {
                 decode = jwt.decode(chain, PUBLIC_KEY, 'ES384');
                 data = jwt.decode(body.data.clientData, decode.identityPublicKey, 'ES384');
 
-                data.SkinData = null;
                 client.emit('mcpe_login', {
                     protocol: packet.protocol,
                     uuid: (decode.extraData != null) ? decode.extraData.identity : null,
