@@ -12,6 +12,19 @@
         "countType":"li16"
       }
     ],
+    "skin": [
+      "container",
+      [
+        {
+          "name": "skin_type",
+          "type": "string"
+        },
+        {
+          "name": "texture",
+          "type": ["buffer",{"countType":"i16"}]
+        }
+      ]
+    ],
     "rules":[
       "array",
       {
