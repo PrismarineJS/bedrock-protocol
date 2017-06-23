@@ -429,7 +429,7 @@
                 },
                 {
                     "name": "resourcepackids",
-                    "type": "resourcepackids"
+                    "type": "varint"
                 }
             ]
         ],
@@ -1624,7 +1624,20 @@
         ],
         "packet_event": [
             "container",
-            []
+            [
+                {
+                    "name": "entity_id_self",
+                    "type": "varint"
+                },
+                {
+                    "name": "unk1",
+                    "type": "varint"
+                },
+                {
+                    "name": "unk2",
+                    "type": "u8"
+                }
+            ]
         ],
         "packet_spawn_experience_orb": [
             "container",
