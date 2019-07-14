@@ -1,7 +1,7 @@
-pocket-minecraft-protocol [![NPM version](https://img.shields.io/npm/v/pocket-minecraft-protocol.svg)](http://npmjs.com/package/pocket-minecraft-protocol) [![Join the chat at https://gitter.im/mhsjlw/pocket-minecraft-protocol](https://badges.gitter.im/mhsjlw/pocket-minecraft-protocol.svg)](https://gitter.im/mhsjlw/pocket-minecraft-protocol?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+pocket-minecraft-protocol [![NPM version](https://img.shields.io/npm/v/pocket-minecraft-protocol.svg)](http://npmjs.com/package/pocket-minecraft-protocol) [![Join the chat at https://gitter.im/PrismarineJS/pocket-minecraft-protocol](https://badges.gitter.im/PrismarineJS/pocket-minecraft-protocol.svg)](https://gitter.im/PrismarineJS/pocket-minecraft-protocol?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 =========================
 
-> Note: If you're looking for experimental encryption or 1.0.\* support, please see the [1.0](https://github.com/mhsjlw/pocket-minecraft-protocol/tree/1.0) branch
+> Note: **THIS IS NOT USABLE SOFTWARE!** If you're looking for experimental encryption or current support, please see the [1.1](https://github.com/PrismarineJS/pocket-minecraft-protocol/tree/1.1)+ branch
 
 Parse and serialize Minecraft: Pocket Edition packets
 
