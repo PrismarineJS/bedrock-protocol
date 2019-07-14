@@ -552,14 +552,21 @@
                     "name": "player_gamemode",
                     "type": "varint"
                 },
+
                 {
                     "name": "spawn",
                     "type": "vector3"
                 },
+
                 {
-                    "name": "unknown_1",
-                    "type": "vector2"
+                    "name": "pitch",
+                    "type": "lf32"
                 },
+                {
+                    "name": "yaw",
+                    "type": "lf32"
+                },
+
                 {
                     "name": "seed",
                     "type": "varint"
@@ -580,6 +587,7 @@
                     "name": "difficulty",
                     "type": "varint"
                 },
+
                 {
                     "name": "x",
                     "type": "varint"
@@ -592,12 +600,13 @@
                     "name": "z",
                     "type": "varint"
                 },
+
                 {
                     "name": "has_achievements_disabled",
                     "type": "bool"
                 },
                 {
-                    "name": "day_cycle_stop_time",
+                    "name": "time",
                     "type": "varint"
                 },
                 {
@@ -644,10 +653,12 @@
                     "name": "is_texturepacks_required",
                     "type": "bool"
                 },
+
                 {
-                    "name": "gamerules",
-                    "type": "gamerules"
+                    "name": "u8",
+                    "type": "u8"
                 },
+
                 {
                     "name": "bonus_chest",
                     "type": "bool"
@@ -660,10 +671,12 @@
                     "name": "permission_level",
                     "type": "varint"
                 },
+
                 {
                     "name": "server_chunk_tick_range",
                     "type": "i32"
                 },
+
                 {
                     "name": "has_locked_behavior_pack",
                     "type": "bool"
@@ -672,6 +685,7 @@
                     "name": "has_locked_resource_pack",
                     "type": "bool"
                 },
+
                 {
                     "name": "is_from_locked_world_template",
                     "type": "bool"
@@ -688,6 +702,11 @@
                     "name": "is_world_template_option_locked",
                     "type": "bool"
                 },
+                {
+                    "name": "use_v1_villagers",
+                    "type": "bool"
+                },
+
                 {
                     "name": "level_id",
                     "type": "string"
@@ -712,17 +731,18 @@
                     "name": "enchantment_seed",
                     "type": "varint"
                 },
+
                 {
                     "name": "blockstates",
-                    "type": "blockstates"
+                    "type": "u8"
+                },
+                {
+                    "name": "itemtable",
+                    "type": "u8"
                 },
                 {
                     "name": "multiplayer_correlation_id",
                     "type": "string"
-                },
-                {
-                    "name": "unknown2",
-                    "type": "u8"
                 }
             ]
         ],
@@ -737,6 +757,7 @@
                     "name": "username",
                     "type": "string"
                 },
+
                 {
                     "name": "entity_id_self",
                     "type": "varint"
@@ -749,30 +770,16 @@
                     "name": "platform_chat_id",
                     "type": "string"
                 },
+
                 {
-                    "name": "x",
-                    "type": "lf32"
+                    "name": "position",
+                    "type": "vector3"
                 },
                 {
-                    "name": "y",
-                    "type": "lf32"
+                    "name": "motion",
+                    "type": "vector3"
                 },
-                {
-                    "name": "z",
-                    "type": "lf32"
-                },
-                {
-                    "name": "speed_x",
-                    "type": "lf32"
-                },
-                {
-                    "name": "speed_y",
-                    "type": "lf32"
-                },
-                {
-                    "name": "speed_z",
-                    "type": "lf32"
-                },
+
                 {
                     "name": "pitch",
                     "type": "lf32"
@@ -785,14 +792,16 @@
                     "name": "head_yaw",
                     "type": "lf32"
                 },
+
                 {
                     "name": "item",
-                    "type": "varint"
+                    "type": "u8"
                 },
                 {
                     "name": "metadata",
-                    "type": "varint"
+                    "type": "u8"
                 },
+
                 {
                     "name": "flags",
                     "type": "varint"
@@ -813,13 +822,14 @@
                     "name": "custom_stored_permissions",
                     "type": "varint"
                 },
+
                 {
                     "name": "user_id",
                     "type": "i64"
                 },
                 {
                     "name": "links",
-                    "type": "links"
+                    "type": "u8"
                 },
                 {
                     "name": "device_id",
@@ -833,62 +843,6 @@
                 {
                     "name": "entity_id_self",
                     "type": "varint"
-                },
-                {
-                    "name": "runtime_entity_id",
-                    "type": "varint"
-                },
-                {
-                    "name": "entity_type",
-                    "type": "string"
-                },
-                {
-                    "name": "x",
-                    "type": "lf32"
-                },
-                {
-                    "name": "y",
-                    "type": "lf32"
-                },
-                {
-                    "name": "z",
-                    "type": "lf32"
-                },
-                {
-                    "name": "speed_x",
-                    "type": "lf32"
-                },
-                {
-                    "name": "speed_y",
-                    "type": "lf32"
-                },
-                {
-                    "name": "speed_z",
-                    "type": "lf32"
-                },
-                {
-                    "name": "pitch",
-                    "type": "lf32"
-                },
-                {
-                    "name": "yaw",
-                    "type": "lf32"
-                },
-                {
-                    "name": "head_yaw",
-                    "type": "lf32"
-                },
-                {
-                    "name": "attributes",
-                    "type": "varint"
-                },
-                {
-                    "name": "metadata",
-                    "type": "varint"
-                },
-                {
-                    "name": "links",
-                    "type": "links"
                 }
             ]
         ],
@@ -1223,8 +1177,12 @@
             "container",
             [
                 {
+                    "name": "transaction_type",
+                    "type": "varint"
+                },
+                {
                     "name": "transaction",
-                    "type": "transaction"
+                    "type": "varint"
                 }
             ]
         ],
@@ -1684,16 +1642,6 @@
                 {
                     "name": "chunk_z",
                     "type": "varint"
-                },
-                {
-                    "name": "chunk_data",
-                    "type": [
-                        "buffer",
-                        {
-                            "countType": "varint",
-                            "type": "i8"
-                        }
-                    ]
                 }
             ]
         ],
@@ -1755,7 +1703,7 @@
             [
                 {
                     "name": "event_type",
-                    "type": "ushort"
+                    "type": "u8"
                 }
             ]
         ],
@@ -1839,7 +1787,7 @@
             [
                 {
                     "name": "rules",
-                    "type": "gamerules"
+                    "type": "u8"
                 }
             ]
         ],
@@ -2012,16 +1960,6 @@
                 {
                     "name": "compressed_package_size",
                     "type": "u64"
-                },
-                {
-                    "name": "hash",
-                    "type": [
-                        "buffer",
-                        {
-                            "countType": "varint",
-                            "type": "i8"
-                        }
-                    ]
                 }
             ]
         ],
@@ -2043,16 +1981,6 @@
                 {
                     "name": "length",
                     "type": "u32"
-                },
-                {
-                    "name": "payload",
-                    "type": [
-                        "buffer",
-                        {
-                            "countType": "varint",
-                            "type": "i8"
-                        }
-                    ]
                 }
             ]
         ],
@@ -2078,7 +2006,7 @@
                 },
                 {
                     "name": "port",
-                    "type": "ushort"
+                    "type": "u8"
                 }
             ]
         ],
@@ -2188,34 +2116,6 @@
                 },
                 {
                     "name": "old_skin_name",
-                    "type": "string"
-                },
-                {
-                    "name": "skin_data",
-                    "type": [
-                        "buffer",
-                        {
-                            "countType": "varint",
-                            "type": "i8"
-                        }
-                    ]
-                },
-                {
-                    "name": "cape_data",
-                    "type": [
-                        "buffer",
-                        {
-                            "countType": "varint",
-                            "type": "i8"
-                        }
-                    ]
-                },
-                {
-                    "name": "geometry_model",
-                    "type": "string"
-                },
-                {
-                    "name": "geometry_data",
                     "type": "string"
                 }
             ]
@@ -2384,7 +2284,7 @@
             [
                 {
                     "name": "entries",
-                    "type": "scoreentries"
+                    "type": "u8"
                 }
             ]
         ],
@@ -2460,7 +2360,7 @@
             [
                 {
                     "name": "entries",
-                    "type": "scoreboardidentityentries"
+                    "type": "u8"
                 }
             ]
         ],

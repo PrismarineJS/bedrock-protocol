@@ -3,8 +3,6 @@ import zlib from 'zlib';
 import jwt from 'jwt-simple';
 import { ProtoDef, Parser, Serializer } from 'protodef';
 
-let debug = require('debug')('raknet');
-
 let batchProto = new ProtoDef();
 const PUBLIC_KEY = 'MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE8ELkixyLcwlZryUQcu1TvPOmI2B7vX83ndnWRUaXm74wFfa5f/lwQNTfrLVHa2PmenpGI6JhIMUJaWZrjmMj90NoKNFSNBuKdm8rYiXsfaz3K36x/1U26HpG0ZxK/V1V';
 
@@ -89,7 +87,6 @@ function createServer(options, encryption) {
         // string: packet name
         // object: packet data
         client.writeAll = (name, data) => {
-            return; //TODO
             server._writeAll(name, data);
         };
 

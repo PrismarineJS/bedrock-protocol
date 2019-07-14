@@ -22,7 +22,7 @@ server.on('connection', function(client) {
   });
 
   client.on('error', err => {
-    console.log(err.stack);
+    console.error(err);
   });
 
   client.on('end', () => {
