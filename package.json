@@ -21,7 +21,7 @@
     "prismarine-nbt": "^1.0.0",
     "protodef": "^1.2.0",
     "raknet": "^1.7.3",
-    "uuid-1345": "^0.99.6"
+    "uuid-1345": "^1.0.1"
   },
   "devDependencies": {},
   "repository": {
