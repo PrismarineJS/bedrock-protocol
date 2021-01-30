@@ -72,9 +72,9 @@ function createEncryptor(client, iv) {
   // A packet is encrypted via AES256(plaintext + SHA256(send_counter + plaintext + secret_key)[0:8]).
   // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
 
-  const encryptor = new Transform({
+  const addChecksum = new Transform({ // append checksum
     transform(chunk, enc, cb) {
-      console.log('Encryptor called', chunk)
+      console.log('Encryptor: checking checksum', chunk)
       // Here we concat the payload + checksum before the encryption
       const packet = Buffer.concat([chunk, computeCheckSum(chunk, client.sendCounter, client.secretKeyBytes)])
       client.sendCounter++
@@ -84,51 +84,74 @@ function createEncryptor(client, iv) {
   })
 
   // https://stackoverflow.com/q/25971715/11173996
-  // TODO: Fix deflate stream - for some reason using .pipe() doesn't work here
-  // so we deflate it outside the pipe
-  const compressor = Zlib.createDeflateRaw({ level: 7, chunkSize: 1024 * 1024 * 2, flush: Zlib.Z_SYNC_FLUSH })
-  const writableStream = new PassThrough()
+  // TODO: Fix deflate stream - for some reason using .pipe() doesn't work using zlib.createDeflateRaw()
+  // so we define our own compressor transform
+  // const compressor = Zlib.createDeflateRaw({ level: 7, chunkSize: 1024 * 1024 * 2, flush: Zlib.Z_SYNC_FLUSH })
+  const compressor = new Transform({
+    transform(chunk, enc, cb) {
+      Zlib.deflateRaw(chunk, { level: 7 }, (err, res) => {
+        if (err) {
+          console.error(err)
+          throw new Error(`Failed to deflate stream`)
+        }
+        this.push(res)
+        cb()
+      })
+    }
+  })
 
-  writableStream
-    // .pipe(compressor)
-    .pipe(encryptor).pipe(client.cipher).on('data', client.onEncryptedPacket)
+
+  const stream = new PassThrough()
+
+  stream
+    .pipe(compressor)
+    .pipe(addChecksum).pipe(client.cipher).on('data', client.onEncryptedPacket)
 
   return (blob) => {
-    // console.log('ENCRYPTING')
-    Zlib.deflateRaw(blob, { level: 7 }, (err, res) => {
-      if (err) {
-        console.error(err)
-        throw new Error(`Failed to deflate stream`)
-      }
-      writableStream.write(res)
-    })
-    // writableStream.write(blob)
+    stream.write(blob)
   }
 }
+
 
 function createDecryptor(client, iv) {
   client.decipher = createDecipher(client.secretKeyBytes, iv)
   client.receiveCounter = client.receiveCounter || 0n
 
-  const decryptor = new Transform({
+  const verifyChecksum = new Transform({ // verify checksum
     transform(chunk, encoding, cb) {
-      console.log('Got transform', chunk)
+      console.log('Decryptor: checking checksum', chunk)
       const packet = chunk.slice(0, chunk.length - 8);
       const checksum = chunk.slice(chunk.length - 8);
       const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
       console.assert(checksum.toString("hex") == computedCheckSum.toString("hex"), 'checksum mismatch')
       client.receiveCounter++
-      if (checksum.toString("hex") == computedCheckSum.toString("hex")) this.push(packet)
-      else console.log('FAILED', checksum.toString("hex"), computedCheckSum.toString("hex"))
-      // else process.exit(`Checksum mismatch ${checksum.toString("hex")} - ${computedCheckSum.toString("hex")}`) // TODO: remove
+      if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
+        this.push(packet)
+      } else {
+        throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
+      }
+      // console.log('Calling cb')
       cb()
     }
   })
 
-  client.decipher.pipe(decryptor)
-    .pipe(Zlib.createInflateRaw({ chunkSize: 1024 * 1024 * 2 }))
-    .on('data', client.onDecryptedPacket)
-  // .on('end', () => console.log('Finished!'))
+  const inflator = new Transform({
+    transform(chunk, enc, cb) {
+      // console.log('INFLATING')
+      Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buf) => {
+        if (err) throw err
+        this.push(buf)
+        cb()
+      })
+    }
+  })
+
+  client.decipher.pipe(verifyChecksum)
+    .pipe(inflator)
+    // .pipe(Zlib.createInflateRaw({ chunkSize: 1024 * 1024 * 2 }))
+    .on('data', (...args) => client.onDecryptedPacket(...args))
+    .on('end', () => console.log('Decryptor: finish pipeline'))
+
 
   return (blob) => {
     client.decipher.write(blob)
@@ -138,3 +161,17 @@ function createDecryptor(client, iv) {
 module.exports = {
   createCipher, createDecipher, createEncryptor, createDecryptor
 }
+
+function testDecrypt() {
+  const client = {
+    secretKeyBytes: Buffer.from('ZOBpyzki/M8UZv5tiBih048eYOBVPkQE3r5Fl0gmUP4=', 'base64'),
+    onDecryptedPacket: (...data) => console.log('Decrypted', data)
+  }
+  const iv = Buffer.from('ZOBpyzki/M8UZv5tiBih0w==', 'base64')
+
+  const decrypt = createDecryptor(client, iv)
+  console.log('Dec', decrypt(Buffer.from('4B4FCA0C2A4114155D67F8092154AAA5EF', 'hex')))
+  console.log('Dec 2', decrypt(Buffer.from('DF53B9764DB48252FA1AE3AEE4', 'hex')))
+}
+
+// testDecrypt()

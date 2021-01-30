@@ -30,7 +30,7 @@
     "BehaviourPackInfos": [
       "array",
       {
-        "countType": "varint",
+        "countType": "li16",
         "type": [
           "container",
           [
@@ -69,7 +69,7 @@
     "TexturePackInfos": [
       "array",
       {
-        "countType": "varint",
+        "countType": "li16",
         "type": [
           "container",
           [
@@ -2402,11 +2402,11 @@
           "type": "bool"
         },
         {
-          "name": "behaviorpackidversions",
+          "name": "behavior_pack_id_versions",
           "type": "ResourcePackIdVersions"
         },
         {
-          "name": "resourcepackidversions",
+          "name": "resource_pack_id_versions",
           "type": "ResourcePackIdVersions"
         },
         {

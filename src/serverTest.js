@@ -184,6 +184,7 @@ class Player extends EventEmitter {
     if (buffer[0] == 0xfe) { // wrapper
 
       if (this.encryptionEnabled) {
+        // console.log('READING ENCRYPTED PACKET', buffer)
         this.decrypt(buffer.slice(1))
       } else {
         const stream = new BinaryStream(buffer)
@@ -247,8 +248,7 @@ class Server extends EventEmitter {
     const buffer = encapsulated.buffer
     const client = this.clients[this.getAddrHash(inetAddr)]
     if (!client) {
-      console.warn('packet from unknown inet addr', inetAddr.address, inetAddr.port)
-      return
+      throw new Error(`packet from unknown inet addr: ${inetAddr.address}/${inetAddr.port}`)
     }
     client.handle(buffer)
   }
@@ -273,9 +273,8 @@ let server = new Server({
 })
 server.create('0.0.0.0', 19130)
 
-server.on('connect', (data) => {
-  // TODO: send other packets needed to login...
-  const client = data.client
+server.on('connect', ({ client }) => {
+  /** @type {Player} */
   client.on('join', () => {
     console.log('Client joined', client.getData())
 
