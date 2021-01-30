@@ -1,7 +1,7 @@
 {
   "name": "pocket-minecraft-protocol",
-  "version": "2.4.0",
-  "description": "Parse and serialize Minecraft Pocket Edition packets",
+  "version": "3.0.0",
+  "description": "Parse and serialize Minecraft Bedrock Edition packets",
   "main": "index.js",
   "scripts": {
     "build": "babel src --out-dir dist",

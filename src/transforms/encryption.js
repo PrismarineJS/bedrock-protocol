@@ -1,4 +1,4 @@
-const Transform = require('readable-stream').Transform
+const { PassThrough, Transform } = require('readable-stream')
 const crypto = require('crypto')
 const aesjs = require('aes-js')
 const Zlib = require('zlib')
@@ -56,7 +56,7 @@ function computeCheckSum(packetPlaintext, sendCounter, secretKeyBytes) {
   let counter = Buffer.alloc(8)
   // writeLI64(sendCounter, counter, 0);
   counter.writeBigInt64LE(sendCounter, 0)
-  console.log('Send counter' , counter)
+  // console.log('Send counter', counter)
   digest.update(counter);
   digest.update(packetPlaintext);
   digest.update(secretKeyBytes);
@@ -67,7 +67,43 @@ function computeCheckSum(packetPlaintext, sendCounter, secretKeyBytes) {
 
 function createEncryptor(client, iv) {
   client.cipher = createCipher(client.secretKeyBytes, iv)
+  client.sendCounter = client.sendCounter || 0n
 
+  // A packet is encrypted via AES256(plaintext + SHA256(send_counter + plaintext + secret_key)[0:8]).
+  // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
+
+  const encryptor = new Transform({
+    transform(chunk, enc, cb) {
+      console.log('Encryptor called', chunk)
+      // Here we concat the payload + checksum before the encryption
+      const packet = Buffer.concat([chunk, computeCheckSum(chunk, client.sendCounter, client.secretKeyBytes)])
+      client.sendCounter++
+      this.push(packet)
+      cb()
+    }
+  })
+
+  // https://stackoverflow.com/q/25971715/11173996
+  // TODO: Fix deflate stream - for some reason using .pipe() doesn't work here
+  // so we deflate it outside the pipe
+  const compressor = Zlib.createDeflateRaw({ level: 7, chunkSize: 1024 * 1024 * 2, flush: Zlib.Z_SYNC_FLUSH })
+  const writableStream = new PassThrough()
+
+  writableStream
+    // .pipe(compressor)
+    .pipe(encryptor).pipe(client.cipher).on('data', client.onEncryptedPacket)
+
+  return (blob) => {
+    // console.log('ENCRYPTING')
+    Zlib.deflateRaw(blob, { level: 7 }, (err, res) => {
+      if (err) {
+        console.error(err)
+        throw new Error(`Failed to deflate stream`)
+      }
+      writableStream.write(res)
+    })
+    // writableStream.write(blob)
+  }
 }
 
 function createDecryptor(client, iv) {
@@ -80,10 +116,6 @@ function createDecryptor(client, iv) {
       const packet = chunk.slice(0, chunk.length - 8);
       const checksum = chunk.slice(chunk.length - 8);
       const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
-      // const computedCheckSum1 = computeCheckSum(packet, 1n, client.secretKeyBytes)
-      // console.log('Checksums', checksum)
-      // console.log('Checksum1', computedCheckSum)
-      // console.log('Checksum2', computedCheckSum1)
       console.assert(checksum.toString("hex") == computedCheckSum.toString("hex"), 'checksum mismatch')
       client.receiveCounter++
       if (checksum.toString("hex") == computedCheckSum.toString("hex")) this.push(packet)
@@ -96,7 +128,7 @@ function createDecryptor(client, iv) {
   client.decipher.pipe(decryptor)
     .pipe(Zlib.createInflateRaw({ chunkSize: 1024 * 1024 * 2 }))
     .on('data', client.onDecryptedPacket)
-    // .on('end', () => console.log('Finished!'))
+  // .on('end', () => console.log('Finished!'))
 
   return (blob) => {
     client.decipher.write(blob)

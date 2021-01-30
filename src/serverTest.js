@@ -33,6 +33,17 @@ function createDeserializer() {
   return new Parser(proto, 'mcpe_packet');
 }
 
+const PLAY_STATUS = {
+  'LoginSuccess': 0,
+  'LoginFailedClient': 1,
+  'LoginFailedServer': 2,
+  'PlayerSpawn': 3,
+  'LoginFailedInvalidTenant': 4,
+  'LoginFailedVanillaEdu': 5,
+  'LoginFailedEduVanilla': 6,
+  'LoginFailedServerFull': 7
+}
+
 class Player extends EventEmitter {
   constructor(server, connection, options) {
     super()
@@ -41,32 +52,28 @@ class Player extends EventEmitter {
     Encrypt(this, server, options)
   }
 
-  // TODO: Move this to a protodef native type
-  onLogin(packet) {
-    let dataProto = new ProtoDef()
-    dataProto.addType('data_chain', ['container', [{
-      'name': 'chain',
-      'type': ['pstring', {
-        'countType': 'li32'
-      }]
-    }, {
-      'name': 'clientData',
-      'type': ['pstring', {
-        'countType': 'li32'
-      }]
-    }]])
+  getData() {
+    return this.userData
+  }
 
-    //FIXME: Xbox & Non-Xbox support
-    console.log(packet);
-    let pbody = packet.data.params.payload
-    let body = dataProto.parsePacketBuffer('data_chain', pbody)
+  onLogin(packet) {
+    let body = packet.data
     console.log('Body', body)
 
-    fs.writeFileSync('login.json', JSON.stringify(body))
+    const clientVer = body.protocol_version
+    if (this.server.options.version) {
+      if (this.server.options.version < clientVer) {
+        this.sendDisconnectStatus(PLAY_STATUS.LoginFailedClient)
+        return
+      }
+    } else if (clientVer < MIN_VERSION) {
+      this.sendDisconnectStatus(PLAY_STATUS.LoginFailedClient)
+      return
+    }
 
     // Parse login data
-    const authChain = JSON.parse(body.data.chain)
-    const skinChain = body.data.clientData
+    const authChain = JSON.parse(body.params.chain)
+    const skinChain = body.params.client_data
 
     try {
       var { key, userData, chain } = decodeLoginJWT(authChain.chain, skinChain)
@@ -76,29 +83,47 @@ class Player extends EventEmitter {
     }
     console.log('Verified user', 'got pub key', key, userData)
 
-    this.emit('join', {
-      user: userData.extraData
-    })
-    this.emit('server.client_handshake', {
-      key
-    })
+    this.emit('login', { user: userData.extraData }) // emit events for user
+    this.emit('server.client_handshake', { key }) // internal so we start encryption
+
+    this.userData = userData.extraData
+    this.version = clientVer
+  }
+
+  sendDisconnectStatus(play_status) {
+    this.write('play_status', { status: play_status })
+    this.connection.close()
+  }
+
+  // After sending Server to Client Handshake, this handles the client's
+  // Client to Server handshake response. This indicates successful encryption
+  onHandshake() {
+    // https://wiki.vg/Bedrock_Protocol#Play_Status
+    this.write('play_status', { status: PLAY_STATUS.LoginSuccess })
+    this.emit('join')
   }
 
   startEncryption(iv) {
     this.encryptionEnabled = true
 
-    // this.cipher = cipher.createCipher(client.secretKeyBytes, iv)
-    // this.decipher = cipher.createDecipher(client.secretKeyBytes, iv)
-
     this.decrypt = cipher.createDecryptor(this, iv)
-    this.encrypt = cipher.createDecryptor(this, iv)
+    this.encrypt = cipher.createEncryptor(this, iv)
   }
 
-  write(name, params) {
+  write(name, params) { // TODO: Batch
     console.log('Need to encode', name, params)
     const batch = new BatchPacket()
     const packet = this.server.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
+
+    if (this.encryptionEnabled) {
+      this.sendEncryptedBatch(batch)
+    } else {
+      this.sendDecryptedBatch(batch)
+    }
+  }
+
+  sendDecryptedBatch(batch) {
     const buf = batch.encode()
     // send to raknet
     const sendPacket = new EncapsulatedPacket();
@@ -109,29 +134,50 @@ class Player extends EventEmitter {
     this.connection.sendQueue()
   }
 
-  sendDecryptedBatch(batch) {
-
+  sendEncryptedBatch(batch) {
+    const buf = batch.stream.getBuffer()
+    console.log('Sending encrypted batch', batch)
+    this.encrypt(buf)
   }
 
-  sendEncryptedBatch(batch) {
-    
+  // These are callbacks called from encryption.js
+  onEncryptedPacket = (buf) => {
+    console.log('ENC BUF', buf)
+    const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
+    const sendPacket = new EncapsulatedPacket();
+    sendPacket.reliability = 0
+    sendPacket.buffer = packet
+    console.log('Sending wrapped encrypted batch', packet)
+    this.connection.addEncapsulatedToQueue(sendPacket)
   }
 
   onDecryptedPacket = (buf) => {
     console.log('Decrypted', buf)
+
+    const stream = new BinaryStream(buf)
+    const packets = BatchPacket.getPackets(stream)
+
+    for (const packet of packets) {
+      this.readPacket(packet)
+    }
   }
 
   readPacket(packet) {
     console.log('packet', packet)
     const des = this.server.deserializer.parsePacketBuffer(packet)
-    console.log(des)
+    console.log('->', des)
     switch (des.data.name) {
       case 'login':
         console.log(des)
         this.onLogin(des)
+        return
+      case 'client_to_server_handshake':
+        this.onHandshake()
       default:
-        this.emit(des.data.name, des.data.params)
+        console.log('ignoring, unhandled')
     }
+    this.emit(des.data.name, des.data.params)
+
   }
 
   handle(buffer) { // handle encapsulated
@@ -147,29 +193,36 @@ class Player extends EventEmitter {
         console.log('Reading ', packets.length, 'packets')
         for (var packet of packets) {
           this.readPacket(packet)
-        }  
+        }
       }
     }
   }
 }
 
+// Minimum supported version (< will be kicked)
+const MIN_VERSION = 422
+// Currently supported verson
+const CURRENT_VERSION = 422
+
+const defaultServerOptions = {
+  // https://minecraft.gamepedia.com/Protocol_version#Bedrock_Edition_2
+  version: CURRENT_VERSION,
+}
+
 class Server extends EventEmitter {
-  constructor(options = {}) {
-    // const customTypes = require('./datatypes/minecraft')
-    // this.batchProto = new ProtoDef()
-    // this.batchProto.addTypes(customTypes)
-    // this.batchProto.addType('insideBatch', ['endOfArray', {
-    //   'type': ['buffer', {
-    //     'countType': 'varint',
-    //   }]
-    // }])
-
+  constructor(options) {
     super()
-
+    this.options = { ...defaultServerOptions, options }
     this.serializer = createSerializer()
     this.deserializer = createDeserializer()
-
     this.clients = {}
+    this.validateOptions()
+  }
+
+  validateOptions() {
+    if (this.options.version < defaultServerOptions.version) {
+      throw new Error(`Unsupported protocol version < ${defaultServerOptions.version}: ${this.options.version}`)
+    }
   }
 
   getAddrHash(inetAddr) {
@@ -178,7 +231,10 @@ class Server extends EventEmitter {
 
   onOpenConnection = (conn) => {
     console.log('Got connection', conn)
-    this.clients[this.getAddrHash(conn.address)] = new Player(this, conn)
+    const player = new Player(this, conn)
+    this.clients[this.getAddrHash(conn.address)] = player
+
+    this.emit('connect', { client: player })
   }
 
   onCloseConnection = (inetAddr, reason) => {
@@ -197,16 +253,6 @@ class Server extends EventEmitter {
     client.handle(buffer)
   }
 
-  // write(name, params) {
-  //   console.log('Need to encode', name, params)
-  //   const batch = new BatchPacket()
-  //   const packet = this.serializer.createPacketBuffer({ name, params })
-  //   batch.addEncodedPacket(packet)
-  //   const buf = batch.encode()
-  //   // send to raknet
-  //   this.listener.sendBuffer()
-  // }
-
   async create(serverIp, port) {
     this.listener = new Listener(this)
     this.raknet = await this.listener.listen(serverIp, port)
@@ -222,5 +268,22 @@ class Server extends EventEmitter {
   }
 }
 
-let server = new Server()
+let server = new Server({
+
+})
 server.create('0.0.0.0', 19130)
+
+server.on('connect', (data) => {
+  // TODO: send other packets needed to login...
+  const client = data.client
+  client.on('join', () => {
+    console.log('Client joined', client.getData())
+
+    client.write('resource_packs_info', {
+      'must_accept': false,
+      'has_scripts': false,
+      'behaviour_packs': [],
+      'texture_packs': []
+    })
+  })
+})

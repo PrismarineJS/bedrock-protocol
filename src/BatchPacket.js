@@ -44,13 +44,6 @@ class BatchPacket {
     return ret
   }
 
-  encodePayload() {
-  }
-
-  addEncoded(packet) {
-
-  }
-
   addEncodedPacket(packet) {
     this.stream.writeUnsignedVarInt(packet.byteLength)
     this.stream.append(packet)
@@ -71,7 +64,6 @@ class BatchPacket {
   }
 
   static getPackets(stream) {
-    stream.buffer = this.payload
     const packets = []
     while (!stream.feof()) {
       const length = stream.readUnsignedVarInt()

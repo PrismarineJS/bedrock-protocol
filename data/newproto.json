@@ -12,6 +12,12 @@
         "countType": "varint"
       }
     ],
+    "LittleString": [
+      "pstring",
+      {
+        "countType": "li32"
+      }
+    ],
     "varint32": "varint",
     "varint64": "varint",
     "bool": "i8",
@@ -22,74 +28,86 @@
     "MapInfo": "native",
     "nbt": "native",
     "BehaviourPackInfos": [
-      "container",
-      [
-        {
-          "name": "uuid",
-          "type": "string"
-        },
-        {
-          "name": "version",
-          "type": "string"
-        },
-        {
-          "name": "size",
-          "type": "lu64"
-        },
-        {
-          "name": "content_key",
-          "type": "string"
-        },
-        {
-          "name": "sub_pack_name",
-          "type": "string"
-        },
-        {
-          "name": "content_identity",
-          "type": "string"
-        },
-        {
-          "name": "has_scripts",
-          "type": "bool"
-        }
-      ]
+      "array",
+      {
+        "countType": "varint",
+        "type": [
+          "container",
+          [
+            {
+              "name": "uuid",
+              "type": "string"
+            },
+            {
+              "name": "version",
+              "type": "string"
+            },
+            {
+              "name": "size",
+              "type": "lu64"
+            },
+            {
+              "name": "content_key",
+              "type": "string"
+            },
+            {
+              "name": "sub_pack_name",
+              "type": "string"
+            },
+            {
+              "name": "content_identity",
+              "type": "string"
+            },
+            {
+              "name": "has_scripts",
+              "type": "bool"
+            }
+          ]
+        ]
+      }
     ],
     "TexturePackInfos": [
-      "container",
-      [
-        {
-          "name": "uuid",
-          "type": "string"
-        },
-        {
-          "name": "version",
-          "type": "string"
-        },
-        {
-          "name": "size",
-          "type": "lu64"
-        },
-        {
-          "name": "content_key",
-          "type": "string"
-        },
-        {
-          "name": "sub_pack_name",
-          "type": "string"
-        },
-        {
-          "name": "content_identity",
-          "type": "string"
-        },
-        {
-          "name": "has_scripts",
-          "type": "bool"
-        },
-        {
-          "name": "rtx_enabled",
-          "type": "bool"
-        }
-      ]
+      "array",
+      {
+        "countType": "varint",
+        "type": [
+          "container",
+          [
+            {
+              "name": "uuid",
+              "type": "string"
+            },
+            {
+              "name": "version",
+              "type": "string"
+            },
+            {
+              "name": "size",
+              "type": "lu64"
+            },
+            {
+              "name": "content_key",
+              "type": "string"
+            },
+            {
+              "name": "sub_pack_name",
+              "type": "string"
+            },
+            {
+              "name": "content_identity",
+              "type": "string"
+            },
+            {
+              "name": "has_scripts",
+              "type": "bool"
+            },
+            {
+              "name": "rtx_enabled",
+              "type": "bool"
+            }
+          ]
+        ]
+      }
     ],
     "ResourcePackIdVersions": [
       "container",
@@ -2307,8 +2325,16 @@
           "type": "i32"
         },
         {
-          "name": "payload",
-          "type": "ByteArray"
+          "name": "payload_size",
+          "type": "varint"
+        },
+        {
+          "name": "chain",
+          "type": "LittleString"
+        },
+        {
+          "name": "client_data",
+          "type": "LittleString"
         }
       ]
     ],
@@ -2359,11 +2385,11 @@
           "type": "bool"
         },
         {
-          "name": "behahaviorpackinfos",
+          "name": "behaviour_packs",
           "type": "BehaviourPackInfos"
         },
         {
-          "name": "texturepacks",
+          "name": "texture_packs",
           "type": "TexturePackInfos"
         }
       ]
