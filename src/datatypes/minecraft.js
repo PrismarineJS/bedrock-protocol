@@ -1,32 +1,35 @@
-'use strict';
-var nbt = require('prismarine-nbt');
-const UUID = require('uuid-1345');
+var nbt = require('prismarine-nbt')
+const UUID = require('uuid-1345')
+
+const proto = nbt.protos.littleVarint
+// TODO: deal with this:
+var zigzag = require('prismarine-nbt/compiler-zigzag')
 
 function readUUID(buffer, offset) {
-  if(offset+16>buffer.length)
+  if (offset + 16 > buffer.length)
     throw new PartialReadError();
   return {
-    value: UUID.stringify(buffer.slice(offset,16+offset)),
+    value: UUID.stringify(buffer.slice(offset, 16 + offset)),
     size: 16
   };
 }
 
 function writeUUID(value, buffer, offset) {
-  const buf=UUID.parse(value);
-  buf.copy(buffer,offset);
+  const buf = UUID.parse(value);
+  buf.copy(buffer, offset);
   return offset + 16;
 }
 
 function readNbt(buffer, offset) {
-  return nbt.protoLE.read(buffer,offset,"nbt");
+  return proto.read(buffer, offset, "nbt")
 }
 
 function writeNbt(value, buffer, offset) {
-  return nbt.protoLE.write(value,buffer,offset,"nbt");
+  return proto.write(value, buffer, offset, "nbt")
 }
 
 function sizeOfNbt(value) {
-  return nbt.protoLE.sizeOf(value,"nbt");
+  return proto.sizeOf(value, "nbt")
 }
 
 function readEntityMetadata(buffer, offset, _ref) {
@@ -74,7 +77,7 @@ function sizeOfEntityMetadata(value, _ref3) {
 }
 
 function readIpAddress(buffer, offset) {
-  var address = buffer[offset] + '.' + buffer[offset+1] + '.' + buffer[offset+2] + '.' + buffer[offset+3];
+  var address = buffer[offset] + '.' + buffer[offset + 1] + '.' + buffer[offset + 2] + '.' + buffer[offset + 3];
   return {
     size: 4,
     value: address
@@ -84,7 +87,7 @@ function readIpAddress(buffer, offset) {
 function writeIpAddress(value, buffer, offset) {
   var address = value.split('.');
 
-  address.forEach(function(b) {
+  address.forEach(function (b) {
     buffer[offset] = parseInt(b);
     offset++;
   });
@@ -93,10 +96,10 @@ function writeIpAddress(value, buffer, offset) {
 }
 
 function readEndOfArray(buffer, offset, typeArgs) {
-  var type=typeArgs.type;
+  var type = typeArgs.type;
   var cursor = offset;
   var elements = [];
-  while(cursor<buffer.length) {
+  while (cursor < buffer.length) {
     var results = this.read(buffer, cursor, type, {});
     elements.push(results.value);
     cursor += results.size;
@@ -107,19 +110,19 @@ function readEndOfArray(buffer, offset, typeArgs) {
   };
 }
 
-function writeEndOfArray(value, buffer, offset,typeArgs) {
-  var type=typeArgs.type;
+function writeEndOfArray(value, buffer, offset, typeArgs) {
+  var type = typeArgs.type;
   var self = this;
-  value.forEach(function(item) {
+  value.forEach(function (item) {
     offset = self.write(item, buffer, offset, type, {});
   });
   return offset;
 }
 
 function sizeOfEndOfArray(value, typeArgs) {
-  var type=typeArgs.type;
+  var type = typeArgs.type;
   var size = 0;
-  for(var i = 0; i < value.length; ++i) {
+  for (var i = 0; i < value.length; ++i) {
     size += this.sizeOf(value[i], type, {});
   }
   return size;
@@ -130,5 +133,7 @@ module.exports = {
   'nbt': [readNbt, writeNbt, sizeOfNbt],
   'entityMetadataLoop': [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
   'ipAddress': [readIpAddress, writeIpAddress, 4],
-  'endOfArray':[readEndOfArray,writeEndOfArray,sizeOfEndOfArray]
-};
+  'endOfArray': [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],
+  'zigzag32': zigzag.zigzag32,
+  'zigzag64': zigzag.zigzag64
+}
