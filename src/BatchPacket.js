@@ -3,7 +3,7 @@ const Zlib = require('zlib');
 
 const NETWORK_ID = 0xfe
 
-// This is not a MCPE packet, it's a wrapper that contains compressed batched packets
+// This is not a real MCPE packet, it's a wrapper that contains compressed/encrypted batched packets
 class BatchPacket {
 
   constructor(stream) {
@@ -11,10 +11,6 @@ class BatchPacket {
     this.stream = stream || new BinaryStream()
     this.packets = []
     this.compressionLevel = 7
-  }
-
-  init() {
-    
   }
 
   decode() {
@@ -47,7 +43,6 @@ class BatchPacket {
   addEncodedPacket(packet) {
     this.stream.writeUnsignedVarInt(packet.byteLength)
     this.stream.append(packet)
-    // this.payload = Buffer.concat([this.payload, stream.getBuffer()]);
   }
 
   getPackets() {

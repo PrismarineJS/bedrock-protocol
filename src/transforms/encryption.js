@@ -130,14 +130,12 @@ function createDecryptor(client, iv) {
       } else {
         throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
       }
-      // console.log('Calling cb')
       cb()
     }
   })
 
   const inflator = new Transform({
     transform(chunk, enc, cb) {
-      // console.log('INFLATING')
       Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buf) => {
         if (err) throw err
         this.push(buf)

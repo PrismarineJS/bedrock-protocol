@@ -1,10 +1,9 @@
 const JWT = require('jsonwebtoken')
 const crypto = require('crypto')
-const constants = require('./constants')
 const { Ber } = require('asn1')
 const ec_pem = require('ec-pem')
 
-const SALT = 'ABC'
+const SALT = '🧂'
 
 function Encrypt(client, options) {
   function startClientboundEncryption(publicKey) {
@@ -46,25 +45,6 @@ function Encrypt(client, options) {
     // the IV being the first 16 bytes of this secret key.
     const initial = client.secretKeyBytes.slice(0, 16)
     client.startEncryption(initial)
-  }
-
-  function startClientCiphers() {
-
-    var decipher = crypto.createDecipheriv('aes-256-cfb8', client.secretKeyBytes, client.secretKeyBytes.slice(0, 16))
-
-    let customPackets = JSON.parse(JSON.stringify(require("../data/protocol")))
-
-    customPackets['types']['encapsulated_packet'][1][1]['type'][1]['fields']['mcpe_encrypted'] = 'restBuffer'
-    customPackets['types']['encapsulated_packet'][1][0]['type'][1]['mappings']['0xfe'] = 'mcpe_encrypted'
-    client.encapsulatedPacketParser.proto.addTypes(merge(require('raknet').protocol, customPackets).types)
-
-    client.encryptionEnabled = true
-
-    client.on("mcpe_encrypted", packet => {
-      decipher.write(packet);
-    });
-
-    client.cipher = crypto.createCipheriv('aes-256-cfb8', client.secretKeyBytes, client.secretKeyBytes.slice(0, 16));
   }
 
   client.on('server.client_handshake', startClientboundEncryption)
