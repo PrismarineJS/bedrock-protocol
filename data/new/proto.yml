@@ -12,294 +12,11 @@ byterot: native
 MapInfo: native
 nbt: native
 
-!import: types.yaml
-
-mcpe_packet:
-   name: varint =>
-       0x01: login
-       0x02: play_status
-       0x03: server_to_client_handshake
-       0x04: client_to_server_handshake
-       0x05: disconnect
-       0x06: resource_packs_info
-       0x07: resource_pack_stack
-       0x08: resource_pack_client_response
-       0x09: text
-       0x0a: set_time
-       0x0b: start_game
-       0x0c: add_player
-       0x0d: add_entity
-       0x0e: remove_entity
-       0x0f: add_item_entity
-       0x11: take_item_entity
-       0x12: move_entity
-       0x13: move_player
-       0x14: rider_jump
-       0x15: update_block
-       0x16: add_painting
-       0x17: tick_sync
-       0x18: level_sound_event_old
-       0x19: level_event
-       0x1a: block_event
-       0x1b: entity_event
-       0x1c: mob_effect
-       0x1d: update_attributes
-       0x1e: inventory_transaction
-       0x1f: mob_equipment
-       0x20: mob_armor_equipment
-       0x21: interact
-       0x22: block_pick_request
-       0x23: entity_pick_request
-       0x24: player_action
-       0x26: hurt_armor
-       0x27: set_entity_data
-       0x28: set_entity_motion
-       0x29: set_entity_link
-       0x2a: set_health
-       0x2b: set_spawn_position
-       0x2c: animate
-       0x2d: respawn
-       0x2e: container_open
-       0x2f: container_close
-       0x30: player_hotbar
-       0x31: inventory_content
-       0x32: inventory_slot
-       0x33: container_set_data
-       0x34: crafting_data
-       0x35: crafting_event
-       0x36: gui_data_pick_item
-       0x37: adventure_settings
-       0x38: block_entity_data
-       0x39: player_input
-       0x3a: level_chunk
-       0x3b: set_commands_enabled
-       0x3c: set_difficulty
-       0x3d: change_dimension
-       0x3e: set_player_game_type
-       0x3f: player_list
-       0x40: simple_event
-       0x42: spawn_experience_orb
-       0x43: clientbound_map_item_data
-       0x44: map_info_request
-       0x45: request_chunk_radius
-       0x46: chunk_radius_update
-       0x47: item_frame_drop_item
-       0x48: game_rules_changed
-       0x49: camera
-       0x4a: boss_event
-       0x4b: show_credits
-       0x4c: available_commands
-       0x4d: command_request
-       0x4e: command_block_update
-       0x4f: command_output
-       0x50: update_trade
-       0x51: update_equipment
-       0x52: resource_pack_data_info
-       0x53: resource_pack_chunk_data
-       0x54: resource_pack_chunk_request
-       0x55: transfer
-       0x56: play_sound
-       0x57: stop_sound
-       0x58: set_title
-       0x59: add_behavior_tree
-       0x5a: structure_block_update
-       0x5b: show_store_offer
-       0x5c: purchase_receipt
-       0x5d: player_skin
-       0x5e: sub_client_login
-       0x5f: initiate_web_socket_connection
-       0x60: set_last_hurt_by
-       0x61: book_edit
-       0x62: npc_request
-       0x63: photo_transfer
-       0x64: modal_form_request
-       0x65: modal_form_response
-       0x66: server_settings_request
-       0x67: server_settings_response
-       0x68: show_profile
-       0x69: set_default_game_type
-       0x6a: remove_objective
-       0x6b: set_display_objective
-       0x6c: set_score
-       0x6d: lab_table
-       0x6e: update_block_synced
-       0x6f: move_entity_delta
-       0x70: set_scoreboard_identity
-       0x71: set_local_player_as_initialized
-       0x72: update_soft_enum
-       0x73: network_stack_latency
-       0x75: script_custom_event
-       0x76: spawn_particle_effect
-       0x77: available_entity_identifiers
-       0x78: level_sound_event_v2
-       0x79: network_chunk_publisher_update
-       0x7a: biome_definition_list
-       0x7b: level_sound_event
-       0x7c: level_event_generic
-       0x7d: lectern_update
-       0x7e: video_stream_connect
-       0x81: client_cache_status
-       0x82: on_screen_texture_animation
-       0x83: map_create_locked_copy
-       0x84: structure_template_data_export_request
-       0x85: structure_template_data_export_response
-       0x86: update_block_properties
-       0x87: client_cache_blob_status
-       0x88: client_cache_miss_response
-       0x8f: network_settings
-       0x91: creative_content
-       0x92: player_enchant_options
-       0x93: item_stack_request
-       0x94: item_stack_response
-       0x97: update_player_game_type
-       0x9c: packet_violation_warning
-       0xa2: item_component
-       0xa3: filter_text_packet
-   params: name ?
-      if login: packet_login
-      if play_status: packet_play_status
-      if server_to_client_handshake: packet_server_to_client_handshake
-      if client_to_server_handshake: packet_client_to_server_handshake
-      if disconnect: packet_disconnect
-      if resource_packs_info: packet_resource_packs_info
-      if resource_pack_stack: packet_resource_pack_stack
-      if resource_pack_client_response: packet_resource_pack_client_response
-      if text: packet_text
-      if set_time: packet_set_time
-      if start_game: packet_start_game
-      if add_player: packet_add_player
-      if add_entity: packet_add_entity
-      if remove_entity: packet_remove_entity
-      if add_item_entity: packet_add_item_entity
-      if take_item_entity: packet_take_item_entity
-      if move_entity: packet_move_entity
-      if move_player: packet_move_player
-      if rider_jump: packet_rider_jump
-      if update_block: packet_update_block
-      if add_painting: packet_add_painting
-      if tick_sync: packet_tick_sync
-      if level_sound_event_old: packet_level_sound_event_old
-      if level_event: packet_level_event
-      if block_event: packet_block_event
-      if entity_event: packet_entity_event
-      if mob_effect: packet_mob_effect
-      if update_attributes: packet_update_attributes
-      if inventory_transaction: packet_inventory_transaction
-      if mob_equipment: packet_mob_equipment
-      if mob_armor_equipment: packet_mob_armor_equipment
-      if interact: packet_interact
-      if block_pick_request: packet_block_pick_request
-      if entity_pick_request: packet_entity_pick_request
-      if player_action: packet_player_action
-      if hurt_armor: packet_hurt_armor
-      if set_entity_data: packet_set_entity_data
-      if set_entity_motion: packet_set_entity_motion
-      if set_entity_link: packet_set_entity_link
-      if set_health: packet_set_health
-      if set_spawn_position: packet_set_spawn_position
-      if animate: packet_animate
-      if respawn: packet_respawn
-      if container_open: packet_container_open
-      if container_close: packet_container_close
-      if player_hotbar: packet_player_hotbar
-      if inventory_content: packet_inventory_content
-      if inventory_slot: packet_inventory_slot
-      if container_set_data: packet_container_set_data
-      if crafting_data: packet_crafting_data
-      if crafting_event: packet_crafting_event
-      if gui_data_pick_item: packet_gui_data_pick_item
-      if adventure_settings: packet_adventure_settings
-      if block_entity_data: packet_block_entity_data
-      if player_input: packet_player_input
-      if level_chunk: packet_level_chunk
-      if set_commands_enabled: packet_set_commands_enabled
-      if set_difficulty: packet_set_difficulty
-      if change_dimension: packet_change_dimension
-      if set_player_game_type: packet_set_player_game_type
-      if player_list: packet_player_list
-      if simple_event: packet_simple_event
-      if spawn_experience_orb: packet_spawn_experience_orb
-      if clientbound_map_item_data: packet_clientbound_map_item_data
-      if map_info_request: packet_map_info_request
-      if request_chunk_radius: packet_request_chunk_radius
-      if chunk_radius_update: packet_chunk_radius_update
-      if item_frame_drop_item: packet_item_frame_drop_item
-      if game_rules_changed: packet_game_rules_changed
-      if camera: packet_camera
-      if boss_event: packet_boss_event
-      if show_credits: packet_show_credits
-      if available_commands: packet_available_commands
-      if command_request: packet_command_request
-      if command_block_update: packet_command_block_update
-      if command_output: packet_command_output
-      if update_trade: packet_update_trade
-      if update_equipment: packet_update_equipment
-      if resource_pack_data_info: packet_resource_pack_data_info
-      if resource_pack_chunk_data: packet_resource_pack_chunk_data
-      if resource_pack_chunk_request: packet_resource_pack_chunk_request
-      if transfer: packet_transfer
-      if play_sound: packet_play_sound
-      if stop_sound: packet_stop_sound
-      if set_title: packet_set_title
-      if add_behavior_tree: packet_add_behavior_tree
-      if structure_block_update: packet_structure_block_update
-      if show_store_offer: packet_show_store_offer
-      if purchase_receipt: packet_purchase_receipt
-      if player_skin: packet_player_skin
-      if sub_client_login: packet_sub_client_login
-      if initiate_web_socket_connection: packet_initiate_web_socket_connection
-      if set_last_hurt_by: packet_set_last_hurt_by
-      if book_edit: packet_book_edit
-      if npc_request: packet_npc_request
-      if photo_transfer: packet_photo_transfer
-      if modal_form_request: packet_modal_form_request
-      if modal_form_response: packet_modal_form_response
-      if server_settings_request: packet_server_settings_request
-      if server_settings_response: packet_server_settings_response
-      if show_profile: packet_show_profile
-      if set_default_game_type: packet_set_default_game_type
-      if remove_objective: packet_remove_objective
-      if set_display_objective: packet_set_display_objective
-      if set_score: packet_set_score
-      if lab_table: packet_lab_table
-      if update_block_synced: packet_update_block_synced
-      if move_entity_delta: packet_move_entity_delta
-      if set_scoreboard_identity: packet_set_scoreboard_identity
-      if set_local_player_as_initialized: packet_set_local_player_as_initialized
-      if update_soft_enum: packet_update_soft_enum
-      if network_stack_latency: packet_network_stack_latency
-      if script_custom_event: packet_script_custom_event
-      if spawn_particle_effect: packet_spawn_particle_effect
-      if available_entity_identifiers: packet_available_entity_identifiers
-      if level_sound_event_v2: packet_level_sound_event_v2
-      if network_chunk_publisher_update: packet_network_chunk_publisher_update
-      if biome_definition_list: packet_biome_definition_list
-      if level_sound_event: packet_level_sound_event
-      if level_event_generic: packet_level_event_generic
-      if lectern_update: packet_lectern_update
-      if video_stream_connect: packet_video_stream_connect
-      if client_cache_status: packet_client_cache_status
-      if on_screen_texture_animation: packet_on_screen_texture_animation
-      if map_create_locked_copy: packet_map_create_locked_copy
-      if structure_template_data_export_request: packet_structure_template_data_export_request
-      if structure_template_data_export_response: packet_structure_template_data_export_response
-      if update_block_properties: packet_update_block_properties
-      if client_cache_blob_status: packet_client_cache_blob_status
-      if client_cache_miss_response: packet_client_cache_miss_response
-      if network_settings: packet_network_settings
-      if creative_content: packet_creative_content
-      if player_enchant_options: packet_player_enchant_options
-      if item_stack_request: packet_item_stack_request
-      if item_stack_response: packet_item_stack_response
-      if update_player_game_type: packet_update_player_game_type
-      if packet_violation_warning: packet_packet_violation_warning
-      if item_component: packet_item_component
-      if filter_text_packet: packet_filter_text_packet
+!import: packet_map.yml
 
 packet_login:
    !id: 0x01
-   !server: false
-   !client: true
+   !bound: client
    protocol_version: i32
    payload_size: varint
    chain: LittleString
@@ -307,32 +24,27 @@ packet_login:
 
 packet_play_status:
    !id: 0x02
-   !server: true
-   !client: false
+   !bound: server
    status: i32
 
 packet_server_to_client_handshake:
    !id: 0x03
-   !server: true
-   !client: false
+   !bound: server
    token: string
 
 packet_client_to_server_handshake:
    !id: 0x04
-   !server: false
-   !client: true
+   !bound: client
 
 packet_disconnect:
    !id: 0x05
-   !server: true
-   !client: false
+   !bound: server
    hide_disconnect_reason: bool
    message: string
 
 packet_resource_packs_info:
    !id: 0x06
-   !server: true
-   !client: false
+   !bound: server
    must_accept: bool
    has_scripts: bool
    behaviour_packs: BehaviourPackInfos
@@ -340,8 +52,7 @@ packet_resource_packs_info:
 
 packet_resource_pack_stack:
    !id: 0x07
-   !server: true
-   !client: false
+   !bound: server
    must_accept: bool
    behavior_packs: ResourcePackIdVersions
    resource_packs: ResourcePackIdVersions
@@ -351,27 +62,23 @@ packet_resource_pack_stack:
 
 packet_resource_pack_client_response:
    !id: 0x08
-   !server: false
-   !client: true
+   !bound: client
    response_status: u8
    resourcepackids: ResourcePackIds
 
 packet_text:
    !id: 0x09
-   !server: true
-   !client: true
+   !bound: both
    type: u8
 
 packet_set_time:
    !id: 0x0a
-   !server: true
-   !client: false
+   !bound: server
    time: zigzag32
 
 packet_start_game:
    !id: 0x0b
-   !server: true
-   !client: false
+   !bound: server
    entity_id: zigzag64
    runtime_entity_id: varint
    player_gamemode: zigzag32
@@ -434,8 +141,7 @@ packet_start_game:
 
 packet_add_player:
    !id: 0x0c
-   !server: true
-   !client: false
+   !bound: server
    uuid: uuid
    username: string
    entity_id_self: zigzag64
@@ -464,8 +170,7 @@ packet_add_player:
 
 packet_add_entity:
    !id: 0x0d
-   !server: true
-   !client: false
+   !bound: server
    entity_id_self: zigzag64
    runtime_entity_id: varint
    entity_type: string
@@ -484,14 +189,12 @@ packet_add_entity:
 
 packet_remove_entity:
    !id: 0x0e
-   !server: true
-   !client: false
+   !bound: server
    entity_id_self: zigzag64
 
 packet_add_item_entity:
    !id: 0x0f
-   !server: true
-   !client: false
+   !bound: server
    entity_id_self: zigzag64
    runtime_entity_id: varint
    item: Item
@@ -506,15 +209,13 @@ packet_add_item_entity:
 
 packet_take_item_entity:
    !id: 0x11
-   !server: true
-   !client: false
+   !bound: server
    runtime_entity_id: varint
    target: varint
 
 packet_move_entity:
    !id: 0x12
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    flags: u8
    position: vec3f
@@ -522,8 +223,7 @@ packet_move_entity:
 
 packet_move_player:
    !id: 0x13
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    x: lf32
    y: lf32
@@ -537,14 +237,12 @@ packet_move_player:
 
 packet_rider_jump:
    !id: 0x14
-   !server: true
-   !client: true
+   !bound: both
    unknown: zigzag32
 
 packet_update_block:
    !id: 0x15
-   !server: true
-   !client: false
+   !bound: server
    coordinates: BlockCoordinates
    block_runtime_id: varint
    block_priority: varint
@@ -552,8 +250,7 @@ packet_update_block:
 
 packet_add_painting:
    !id: 0x16
-   !server: true
-   !client: false
+   !bound: server
    entity_id_self: zigzag64
    runtime_entity_id: varint
    coordinates: BlockCoordinates
@@ -562,15 +259,13 @@ packet_add_painting:
 
 packet_tick_sync:
    !id: 0x17
-   !server: true
-   !client: true
+   !bound: both
    request_time: li64
    response_time: li64
 
 packet_level_sound_event_old:
    !id: 0x18
-   !server: true
-   !client: true
+   !bound: both
    sound_id: u8
    position: vec3f
    block_id: zigzag32
@@ -580,32 +275,28 @@ packet_level_sound_event_old:
 
 packet_level_event:
    !id: 0x19
-   !server: true
-   !client: false
+   !bound: server
    event_id: zigzag32
    position: vec3f
    data: zigzag32
 
 packet_block_event:
    !id: 0x1a
-   !server: true
-   !client: false
+   !bound: server
    coordinates: BlockCoordinates
    case_1: zigzag32
    case_2: zigzag32
 
 packet_entity_event:
    !id: 0x1b
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    event_id: u8
    data: zigzag32
 
 packet_mob_effect:
    !id: 0x1c
-   !server: true
-   !client: false
+   !bound: server
    runtime_entity_id: varint
    event_id: u8
    effect_id: zigzag32
@@ -615,22 +306,19 @@ packet_mob_effect:
 
 packet_update_attributes:
    !id: 0x1d
-   !server: true
-   !client: false
+   !bound: server
    runtime_entity_id: varint
    attributes: PlayerAttributes
    tick: varint
 
 packet_inventory_transaction:
    !id: 0x1e
-   !server: true
-   !client: true
+   !bound: both
    transaction: Transaction
 
 packet_mob_equipment:
    !id: 0x1f
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    item: Item
    slot: u8
@@ -639,8 +327,7 @@ packet_mob_equipment:
 
 packet_mob_armor_equipment:
    !id: 0x20
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    helmet: Item
    chestplate: Item
@@ -649,15 +336,13 @@ packet_mob_armor_equipment:
 
 packet_interact:
    !id: 0x21
-   !server: true
-   !client: true
+   !bound: both
    action_id: u8
    target_runtime_entity_id: varint
 
 packet_block_pick_request:
    !id: 0x22
-   !server: false
-   !client: true
+   !bound: client
    x: zigzag32
    y: zigzag32
    z: zigzag32
@@ -666,15 +351,13 @@ packet_block_pick_request:
 
 packet_entity_pick_request:
    !id: 0x23
-   !server: false
-   !client: true
+   !bound: client
    runtime_entity_id: lu64
    selected_slot: u8
 
 packet_player_action:
    !id: 0x24
-   !server: false
-   !client: true
+   !bound: client
    runtime_entity_id: varint
    action_id: zigzag32
    coordinates: BlockCoordinates
@@ -682,29 +365,25 @@ packet_player_action:
 
 packet_hurt_armor:
    !id: 0x26
-   !server: true
-   !client: false
+   !bound: server
    health: zigzag32
 
 packet_set_entity_data:
    !id: 0x27
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    metadata: MetadataDictionary
    tick: varint
 
 packet_set_entity_motion:
    !id: 0x28
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    velocity: vec3f
 
 packet_set_entity_link:
    !id: 0x29
-   !server: true
-   !client: false
+   !bound: server
    ridden_id: zigzag64
    rider_id: zigzag64
    link_type: u8
@@ -712,14 +391,12 @@ packet_set_entity_link:
 
 packet_set_health:
    !id: 0x2a
-   !server: true
-   !client: false
+   !bound: server
    health: zigzag32
 
 packet_set_spawn_position:
    !id: 0x2b
-   !server: true
-   !client: false
+   !bound: server
    spawn_type: zigzag32
    coordinates: BlockCoordinates
    dimension: zigzag32
@@ -727,15 +404,13 @@ packet_set_spawn_position:
 
 packet_animate:
    !id: 0x2c
-   !server: true
-   !client: true
+   !bound: both
    action_id: zigzag32
    runtime_entity_id: varint
 
 packet_respawn:
    !id: 0x2d
-   !server: true
-   !client: true
+   !bound: both
    x: lf32
    y: lf32
    z: lf32
@@ -744,8 +419,7 @@ packet_respawn:
 
 packet_container_open:
    !id: 0x2e
-   !server: true
-   !client: false
+   !bound: server
    window_id: u8
    type: u8
    coordinates: BlockCoordinates
@@ -753,30 +427,26 @@ packet_container_open:
 
 packet_container_close:
    !id: 0x2f
-   !server: true
-   !client: true
+   !bound: both
    window_id: u8
    server: bool
 
 packet_player_hotbar:
    !id: 0x30
-   !server: true
-   !client: true
+   !bound: both
    selected_slot: varint
    window_id: u8
    select_slot_: bool
 
 packet_inventory_content:
    !id: 0x31
-   !server: true
-   !client: true
+   !bound: both
    inventory_id: varint
    input: ItemStacks
 
 packet_inventory_slot:
    !id: 0x32
-   !server: true
-   !client: true
+   !bound: both
    inventory_id: varint
    slot: varint
    uniqueid: zigzag32
@@ -784,16 +454,14 @@ packet_inventory_slot:
 
 packet_container_set_data:
    !id: 0x33
-   !server: true
-   !client: false
+   !bound: server
    window_id: u8
    property: zigzag32
    value: zigzag32
 
 packet_crafting_data:
    !id: 0x34
-   !server: true
-   !client: false
+   !bound: server
    recipes: Recipes
    potion_type_recipes: PotionTypeRecipes
    potion_container_recipes: PotionContainerChangeRecipes
@@ -801,8 +469,7 @@ packet_crafting_data:
 
 packet_crafting_event:
    !id: 0x35
-   !server: true
-   !client: true
+   !bound: both
    window_id: u8
    recipe_type: zigzag32
    recipe_id: uuid
@@ -811,13 +478,11 @@ packet_crafting_event:
 
 packet_gui_data_pick_item:
    !id: 0x36
-   !server: true
-   !client: false
+   !bound: server
 
 packet_adventure_settings:
    !id: 0x37
-   !server: true
-   !client: true
+   !bound: both
    flags: varint
    command_permission: varint
    action_permissions: varint
@@ -827,15 +492,13 @@ packet_adventure_settings:
 
 packet_block_entity_data:
    !id: 0x38
-   !server: true
-   !client: true
+   !bound: both
    coordinates: BlockCoordinates
    nbt: nbt
 
 packet_player_input:
    !id: 0x39
-   !server: false
-   !client: true
+   !bound: client
    motion_x: lf32
    motion_z: lf32
    jumping: bool
@@ -843,8 +506,7 @@ packet_player_input:
 
 packet_level_chunk:
    !id: 0x3a
-   !server: true
-   !client: false
+   !bound: server
    chunk_x: zigzag32
    chunk_z: zigzag32
    sub_chunk_count: varint
@@ -852,115 +514,97 @@ packet_level_chunk:
 
 packet_set_commands_enabled:
    !id: 0x3b
-   !server: true
-   !client: false
+   !bound: server
    enabled: bool
 
 packet_set_difficulty:
    !id: 0x3c
-   !server: true
-   !client: false
+   !bound: server
    difficulty: varint
 
 packet_change_dimension:
    !id: 0x3d
-   !server: true
-   !client: false
+   !bound: server
    dimension: zigzag32
    position: vec3f
    respawn: bool
 
 packet_set_player_game_type:
    !id: 0x3e
-   !server: true
-   !client: true
+   !bound: both
    gamemode: zigzag32
 
 packet_player_list:
    !id: 0x3f
-   !server: true
-   !client: false
+   !bound: server
    records: PlayerRecords
 
 packet_simple_event:
    !id: 0x40
-   !server: true
-   !client: false
+   !bound: server
    event_type: lu16
 
 packet_spawn_experience_orb:
    !id: 0x42
-   !server: true
-   !client: false
+   !bound: server
    position: vec3f
    count: zigzag32
 
 packet_clientbound_map_item_data:
    !id: 0x43
-   !server: true
-   !client: false
+   !bound: server
    mapinfo: MapInfo
 
 packet_map_info_request:
    !id: 0x44
-   !server: true
-   !client: true
+   !bound: both
    map_id: zigzag64
 
 packet_request_chunk_radius:
    !id: 0x45
-   !server: true
-   !client: true
+   !bound: both
    chunk_radius: zigzag32
 
 packet_chunk_radius_update:
    !id: 0x46
-   !server: true
-   !client: false
+   !bound: server
    chunk_radius: zigzag32
 
 packet_item_frame_drop_item:
    !id: 0x47
-   !server: true
-   !client: true
+   !bound: both
    coordinates: BlockCoordinates
 
 packet_game_rules_changed:
    !id: 0x48
-   !server: true
-   !client: false
+   !bound: server
    rules: GameRules
 
 packet_camera:
    !id: 0x49
-   !server: true
-   !client: false
+   !bound: server
    unknown1: zigzag64
    unknown2: zigzag64
 
 packet_boss_event:
    !id: 0x4a
-   !server: true
-   !client: false
+   !bound: server
    boss_entity_id: zigzag64
    event_type: varint
 
 packet_show_credits:
    !id: 0x4b
-   !server: true
-   !client: false
+   !bound: server
    runtime_entity_id: varint
    status: zigzag32
 
 packet_available_commands:
    !id: 0x4c
-   !server: true
-   !client: false
+   !bound: server
 
 packet_command_request:
    !id: 0x4d
-   !server: false
-   !client: true
+   !bound: client
    command: string
    command_type: varint
    unknown_uuid: uuid
@@ -969,19 +613,16 @@ packet_command_request:
 
 packet_command_block_update:
    !id: 0x4e
-   !server: false
-   !client: true
+   !bound: client
    is_block: bool
 
 packet_command_output:
    !id: 0x4f
-   !server: true
-   !client: false
+   !bound: server
 
 packet_update_trade:
    !id: 0x50
-   !server: true
-   !client: false
+   !bound: server
    window_id: u8
    window_type: u8
    unknown0: varint
@@ -995,8 +636,7 @@ packet_update_trade:
 
 packet_update_equipment:
    !id: 0x51
-   !server: true
-   !client: false
+   !bound: server
    window_id: u8
    window_type: u8
    unknown: u8
@@ -1005,8 +645,7 @@ packet_update_equipment:
 
 packet_resource_pack_data_info:
    !id: 0x52
-   !server: true
-   !client: false
+   !bound: server
    package_id: string
    max_chunk_size: lu32
    chunk_count: lu32
@@ -1017,8 +656,7 @@ packet_resource_pack_data_info:
 
 packet_resource_pack_chunk_data:
    !id: 0x53
-   !server: true
-   !client: false
+   !bound: server
    package_id: string
    chunk_index: lu32
    progress: lu64
@@ -1026,22 +664,19 @@ packet_resource_pack_chunk_data:
 
 packet_resource_pack_chunk_request:
    !id: 0x54
-   !server: false
-   !client: true
+   !bound: client
    package_id: string
    chunk_index: lu32
 
 packet_transfer:
    !id: 0x55
-   !server: true
-   !client: false
+   !bound: server
    server_address: string
    port: lu16
 
 packet_play_sound:
    !id: 0x56
-   !server: true
-   !client: false
+   !bound: server
    name: string
    coordinates: BlockCoordinates
    volume: lf32
@@ -1049,15 +684,13 @@ packet_play_sound:
 
 packet_stop_sound:
    !id: 0x57
-   !server: true
-   !client: false
+   !bound: server
    name: string
    stop_all: bool
 
 packet_set_title:
    !id: 0x58
-   !server: true
-   !client: false
+   !bound: server
    type: zigzag32
    text: string
    fade_in_time: zigzag32
@@ -1066,31 +699,26 @@ packet_set_title:
 
 packet_add_behavior_tree:
    !id: 0x59
-   !server: true
-   !client: false
+   !bound: server
    behaviortree: string
 
 packet_structure_block_update:
    !id: 0x5a
-   !server: true
-   !client: false
+   !bound: server
 
 packet_show_store_offer:
    !id: 0x5b
-   !server: true
-   !client: false
+   !bound: server
    unknown0: string
    unknown1: bool
 
 packet_purchase_receipt:
    !id: 0x5c
-   !server: false
-   !client: true
+   !bound: client
 
 packet_player_skin:
    !id: 0x5d
-   !server: true
-   !client: true
+   !bound: both
    uuid: uuid
    skin: Skin
    skin_name: string
@@ -1099,30 +727,25 @@ packet_player_skin:
 
 packet_sub_client_login:
    !id: 0x5e
-   !server: true
-   !client: false
+   !bound: server
 
 packet_initiate_web_socket_connection:
    !id: 0x5f
-   !server: true
-   !client: false
+   !bound: server
    server: string
 
 packet_set_last_hurt_by:
    !id: 0x60
-   !server: true
-   !client: false
+   !bound: server
    unknown: varint
 
 packet_book_edit:
    !id: 0x61
-   !server: true
-   !client: false
+   !bound: server
 
 packet_npc_request:
    !id: 0x62
-   !server: true
-   !client: true
+   !bound: both
    runtime_entity_id: varint
    unknown0: u8
    unknown1: string
@@ -1130,60 +753,51 @@ packet_npc_request:
 
 packet_photo_transfer:
    !id: 0x63
-   !server: false
-   !client: true
+   !bound: client
    file_name: string
    image_data: string
    unknown2: string
 
 packet_modal_form_request:
    !id: 0x64
-   !server: true
-   !client: false
+   !bound: server
    form_id: varint
    data: string
 
 packet_modal_form_response:
    !id: 0x65
-   !server: false
-   !client: true
+   !bound: client
    form_id: varint
    data: string
 
 packet_server_settings_request:
    !id: 0x66
-   !server: false
-   !client: true
+   !bound: client
 
 packet_server_settings_response:
    !id: 0x67
-   !server: true
-   !client: false
+   !bound: server
    form_id: varint
    data: string
 
 packet_show_profile:
    !id: 0x68
-   !server: true
-   !client: false
+   !bound: server
    xuid: string
 
 packet_set_default_game_type:
    !id: 0x69
-   !server: true
-   !client: false
+   !bound: server
    gamemode: varint
 
 packet_remove_objective:
    !id: 0x6a
-   !server: true
-   !client: false
+   !bound: server
    objective_name: string
 
 packet_set_display_objective:
    !id: 0x6b
-   !server: true
-   !client: false
+   !bound: server
    display_slot: string
    objective_name: string
    display_name: string
@@ -1192,14 +806,12 @@ packet_set_display_objective:
 
 packet_set_score:
    !id: 0x6c
-   !server: true
-   !client: false
+   !bound: server
    entries: ScoreEntries
 
 packet_lab_table:
    !id: 0x6d
-   !server: true
-   !client: true
+   !bound: both
    useless_byte: u8
    lab_table_x: varint
    lab_table_y: varint
@@ -1208,8 +820,7 @@ packet_lab_table:
 
 packet_update_block_synced:
    !id: 0x6e
-   !server: true
-   !client: false
+   !bound: server
    coordinates: BlockCoordinates
    block_runtime_id: varint
    block_priority: varint
@@ -1219,46 +830,39 @@ packet_update_block_synced:
 
 packet_move_entity_delta:
    !id: 0x6f
-   !server: true
-   !client: false
+   !bound: server
    runtime_entity_id: varint
    flags: lu16
 
 packet_set_scoreboard_identity:
    !id: 0x70
-   !server: true
-   !client: false
+   !bound: server
    entries: ScoreboardIdentityEntries
 
 packet_set_local_player_as_initialized:
    !id: 0x71
-   !server: false
-   !client: true
+   !bound: client
    runtime_entity_id: varint
 
 packet_update_soft_enum:
    !id: 0x72
-   !server: true
-   !client: false
+   !bound: server
 
 packet_network_stack_latency:
    !id: 0x73
-   !server: true
-   !client: true
+   !bound: both
    timestamp: lu64
    unknown_flag: u8
 
 packet_script_custom_event:
    !id: 0x75
-   !server: true
-   !client: true
+   !bound: both
    event_name: string
    event_data: string
 
 packet_spawn_particle_effect:
    !id: 0x76
-   !server: true
-   !client: false
+   !bound: server
    dimension_id: u8
    entity_id: zigzag64
    position: vec3f
@@ -1266,14 +870,12 @@ packet_spawn_particle_effect:
 
 packet_available_entity_identifiers:
    !id: 0x77
-   !server: true
-   !client: false
+   !bound: server
    nbt: nbt
 
 packet_level_sound_event_v2:
    !id: 0x78
-   !server: true
-   !client: true
+   !bound: both
    sound_id: u8
    position: vec3f
    block_id: zigzag32
@@ -1283,21 +885,18 @@ packet_level_sound_event_v2:
 
 packet_network_chunk_publisher_update:
    !id: 0x79
-   !server: true
-   !client: false
+   !bound: server
    coordinates: BlockCoordinates
    radius: varint
 
 packet_biome_definition_list:
    !id: 0x7a
-   !server: true
-   !client: false
+   !bound: server
    nbt: nbt
 
 packet_level_sound_event:
    !id: 0x7b
-   !server: true
-   !client: true
+   !bound: both
    sound_id: varint
    position: vec3f
    block_id: zigzag32
@@ -1307,18 +906,15 @@ packet_level_sound_event:
 
 packet_level_event_generic:
    !id: 0x7c
-   !server: true
-   !client: false
+   !bound: server
 
 packet_lectern_update:
    !id: 0x7d
-   !server: true
-   !client: false
+   !bound: server
 
 packet_video_stream_connect:
    !id: 0x7e
-   !server: true
-   !client: false
+   !bound: server
    server_uri: string
    frame_send_frequency: lf32
    action: u8
@@ -1327,86 +923,71 @@ packet_video_stream_connect:
 
 packet_client_cache_status:
    !id: 0x81
-   !server: true
-   !client: true
+   !bound: both
    enabled: bool
 
 packet_on_screen_texture_animation:
    !id: 0x82
-   !server: true
-   !client: false
+   !bound: server
 
 packet_map_create_locked_copy:
    !id: 0x83
-   !server: true
-   !client: false
+   !bound: server
 
 packet_structure_template_data_export_request:
    !id: 0x84
-   !server: true
-   !client: false
+   !bound: server
 
 packet_structure_template_data_export_response:
    !id: 0x85
-   !server: true
-   !client: false
+   !bound: server
 
 packet_update_block_properties:
    !id: 0x86
-   !server: true
-   !client: false
+   !bound: server
    nbt: nbt
 
 packet_client_cache_blob_status:
    !id: 0x87
-   !server: true
-   !client: false
+   !bound: server
 
 packet_client_cache_miss_response:
    !id: 0x88
-   !server: true
-   !client: false
+   !bound: server
 
 packet_network_settings:
    !id: 0x8f
-   !server: true
-   !client: true
+   !bound: both
    unknown: u8
    compression_threshold: u8
 
 packet_creative_content:
    !id: 0x91
-   !server: true
-   !client: false
+   !bound: server
    items: ItemStacks
 
 packet_player_enchant_options:
    !id: 0x92
-   !server: true
-   !client: false
+   !bound: server
    enchant_options: EnchantOptions
 
 packet_item_stack_request:
    !id: 0x93
-   !server: false
-   !client: true
+   !bound: client
    requests: ItemStackRequests
 
 packet_item_stack_response:
    !id: 0x94
-   !server: true
-   !client: false
+   !bound: server
    responses: ItemStackResponses
 
 packet_update_player_game_type:
    !id: 0x97
-   !server: false
-   !client: true
+   !bound: client
 
 packet_packet_violation_warning:
    !id: 0x9c
-   !server: false
-   !client: true
+   !bound: client
    violation_type: zigzag32
    severity: zigzag32
    packet_id: zigzag32
@@ -1414,13 +995,11 @@ packet_packet_violation_warning:
 
 packet_item_component:
    !id: 0xa2
-   !server: true
-   !client: false
+   !bound: server
    entries: ItemComponentList
 
 packet_filter_text_packet:
    !id: 0xa3
-   !server: true
-   !client: false
+   !bound: server
    text: string
    from_server: bool

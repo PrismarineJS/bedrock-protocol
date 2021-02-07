@@ -2,7 +2,7 @@ const fs = require('fs')
 
 let compile
 try {
-    compile = require('protodef-yaml/compiler')
+    compile = require('protodef-yaml/compiler').compile
 } catch (e) {
     require('child_process').execSync('npx protodef-yaml proto.yml protocol.json')
 }
