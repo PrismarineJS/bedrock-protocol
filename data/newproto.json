@@ -1,23 +1,5 @@
 {
   "types": {
-    "string": [
-      "pstring",
-      {
-        "countType": "varint"
-      }
-    ],
-    "ByteArray": [
-      "buffer",
-      {
-        "countType": "varint"
-      }
-    ],
-    "LittleString": [
-      "pstring",
-      {
-        "countType": "li32"
-      }
-    ],
     "varint32": "varint",
     "varint64": "varint",
     "bool": "native",
@@ -164,11 +146,21 @@
       [
         {
           "name": "name",
-          "type": "varint"
+          "type": "string"
         },
         {
           "name": "type",
-          "type": "varint"
+          "type": [
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "1": "bool",
+                "2": "int",
+                "3": "float"
+              }
+            }
+          ]
         },
         {
           "name": "value",
@@ -177,10 +169,11 @@
             {
               "compareTo": "type",
               "fields": {
-                "1": "bool",
-                "2": "varint",
-                "3": "lf32"
-              }
+                "bool": "bool",
+                "int": "varint",
+                "float": "lf32"
+              },
+              "default": "void"
             }
           ]
         }
@@ -209,13 +202,10 @@
               "fields": {
                 "true": "void",
                 "false": "void"
-              }
+              },
+              "default": "void"
             }
           ]
-        },
-        {
-          "name": "data",
-          "type": "string"
         }
       ]
     ],
@@ -251,7 +241,7 @@
             },
             {
               "name": "runtime_id",
-              "type": "i16"
+              "type": "li16"
             },
             {
               "name": "component_based",
@@ -292,7 +282,7 @@
                         "type": "lu16",
                         "mappings": {
                           "0": "0",
-                          "0xffff": "1"
+                          "65535": "1"
                         }
                       }
                     ]
@@ -442,102 +432,43 @@
           "container",
           [
             {
-              "name": "key",
-              "type": "varint"
-            },
-            {
               "name": "type",
-              "type": "varint"
+              "type": [
+                "mapper",
+                {
+                  "type": "varint",
+                  "mappings": {
+                    "0": "BYTE",
+                    "1": "SHORT",
+                    "2": "INT",
+                    "3": "FLOAT",
+                    "4": "STRING",
+                    "5": "COMPOUND_TAG",
+                    "6": "POS",
+                    "7": "LONG",
+                    "8": "VECTOR3F"
+                  }
+                }
+              ]
             },
             {
-              "anon": true,
+              "name": "value",
               "type": [
                 "switch",
                 {
                   "compareTo": "type",
                   "fields": {
-                    "0": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "i8"
-                        }
-                      ]
-                    ],
-                    "1": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "li16"
-                        }
-                      ]
-                    ],
-                    "2": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "zigzag32"
-                        }
-                      ]
-                    ],
-                    "3": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "lf32"
-                        }
-                      ]
-                    ],
-                    "4": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "string"
-                        }
-                      ]
-                    ],
-                    "5": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "nbt"
-                        }
-                      ]
-                    ],
-                    "6": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "vec3i"
-                        }
-                      ]
-                    ],
-                    "7": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "zigzag64"
-                        }
-                      ]
-                    ],
-                    "8": [
-                      "container",
-                      [
-                        {
-                          "name": "value",
-                          "type": "li32"
-                        }
-                      ]
-                    ]
-                  }
+                    "BYTE": "i8",
+                    "SHORT": "li16",
+                    "INT": "zigzag32",
+                    "FLOAT": "lf32",
+                    "STRING": "string",
+                    "COMPOUND_TAG": "nbt",
+                    "POS": "vec3i",
+                    "LONG": "zigzag64",
+                    "VECTOR3F": "li32"
+                  },
+                  "default": "void"
                 }
               ]
             }
@@ -743,211 +674,113 @@
         {
           "name": "inventory_actions",
           "type": [
-            "switch",
+            "array",
             {
-              "compareTo": "has_network_ids",
-              "fields": {
-                "true": [
-                  "array",
+              "countType": "varint",
+              "type": [
+                "container",
+                [
                   {
-                    "countType": "varint",
+                    "name": "source_type",
                     "type": [
-                      "container",
-                      [
-                        {
-                          "name": "source_type",
-                          "type": [
-                            "mapper",
-                            {
-                              "type": "varint",
-                              "mappings": {
-                                "0": "INV_SOURCE_TYPE_CONTAINER",
-                                "1": "INV_SOURCE_TYPE_GLOBAL",
-                                "2": "INV_SOURCE_TYPE_WORLD_INTERACTION",
-                                "3": "INV_SOURCE_TYPE_CREATIVE",
-                                "100": "INV_SOURCE_TYPE_CRAFT_SLOT",
-                                "99999": "INV_SOURCE_TYPE_CRAFT"
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "anon": true,
-                          "type": [
-                            "switch",
-                            {
-                              "compareTo": "source_type",
-                              "fields": {
-                                "INV_SOURCE_TYPE_CONTAINER": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "inventory_id",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_WORLD_INTERACTION": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "flags",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_CREATIVE": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "inventory_id",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_CRAFT": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "action",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_CRAFT_SLOT": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "action",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ]
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "name": "slot",
-                          "type": "varint"
-                        },
-                        {
-                          "name": "old_item",
-                          "type": "Item"
-                        },
-                        {
-                          "name": "new_item",
-                          "type": "Item"
-                        },
-                        {
-                          "name": "new_item_stack_id",
-                          "type": "zigzag32"
+                      "mapper",
+                      {
+                        "type": "varint",
+                        "mappings": {
+                          "0": "INV_SOURCE_TYPE_CONTAINER",
+                          "1": "INV_SOURCE_TYPE_GLOBAL",
+                          "2": "INV_SOURCE_TYPE_WORLD_INTERACTION",
+                          "3": "INV_SOURCE_TYPE_CREATIVE",
+                          "100": "INV_SOURCE_TYPE_CRAFT_SLOT",
+                          "99999": "INV_SOURCE_TYPE_CRAFT"
                         }
-                      ]
+                      }
                     ]
-                  }
-                ],
-                "false": [
-                  "array",
+                  },
                   {
-                    "countType": "varint",
+                    "anon": true,
                     "type": [
-                      "container",
-                      [
-                        {
-                          "name": "source_type",
-                          "type": [
-                            "mapper",
-                            {
-                              "type": "varint",
-                              "mappings": {
-                                "0": "INV_SOURCE_TYPE_CONTAINER",
-                                "1": "INV_SOURCE_TYPE_GLOBAL",
-                                "2": "INV_SOURCE_TYPE_WORLD_INTERACTION",
-                                "3": "INV_SOURCE_TYPE_CREATIVE",
-                                "100": "INV_SOURCE_TYPE_CRAFT_SLOT",
-                                "99999": "INV_SOURCE_TYPE_CRAFT"
+                      "switch",
+                      {
+                        "compareTo": "source_type",
+                        "fields": {
+                          "INV_SOURCE_TYPE_CONTAINER": [
+                            "container",
+                            [
+                              {
+                                "name": "inventory_id",
+                                "type": "varint"
                               }
-                            }
+                            ]
+                          ],
+                          "INV_SOURCE_TYPE_CREATIVE": [
+                            "container",
+                            [
+                              {
+                                "name": "inventory_id",
+                                "type": "varint"
+                              }
+                            ]
+                          ],
+                          "INV_SOURCE_TYPE_WORLD_INTERACTION": [
+                            "container",
+                            [
+                              {
+                                "name": "flags",
+                                "type": "varint"
+                              }
+                            ]
+                          ],
+                          "INV_SOURCE_TYPE_CRAFT": [
+                            "container",
+                            [
+                              {
+                                "name": "action",
+                                "type": "varint"
+                              }
+                            ]
+                          ],
+                          "INV_SOURCE_TYPE_CRAFT_SLOT": [
+                            "container",
+                            [
+                              {
+                                "name": "action",
+                                "type": "varint"
+                              }
+                            ]
                           ]
                         },
-                        {
-                          "anon": true,
-                          "type": [
-                            "switch",
-                            {
-                              "compareTo": "source_type",
-                              "fields": {
-                                "INV_SOURCE_TYPE_CONTAINER": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "inventory_id",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_WORLD_INTERACTION": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "flags",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_CREATIVE": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "inventory_id",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_CRAFT": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "action",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ],
-                                "INV_SOURCE_TYPE_CRAFT_SLOT": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "action",
-                                      "type": "varint"
-                                    }
-                                  ]
-                                ]
-                              }
-                            }
-                          ]
+                        "default": "void"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "slot",
+                    "type": "varint"
+                  },
+                  {
+                    "name": "old_item",
+                    "type": "Item"
+                  },
+                  {
+                    "name": "new_item",
+                    "type": "Item"
+                  },
+                  {
+                    "name": "new_item_stack_id",
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "../has_network_ids",
+                        "fields": {
+                          "true": "zigzag32"
                         },
-                        {
-                          "name": "slot",
-                          "type": "varint"
-                        },
-                        {
-                          "name": "old_item",
-                          "type": "Item"
-                        },
-                        {
-                          "name": "new_item",
-                          "type": "Item"
-                        },
-                        {
-                          "name": "new_item_stack_id",
-                          "type": "void"
-                        }
-                      ]
+                        "default": "void"
+                      }
                     ]
                   }
                 ]
-              }
+              ]
             }
           ]
         },
@@ -1043,7 +876,8 @@
                     }
                   ]
                 ]
-              }
+              },
+              "default": "void"
             }
           ]
         }
@@ -1348,7 +1182,8 @@
                         }
                       ]
                     ]
-                  }
+                  },
+                  "default": "void"
                 }
               ]
             }
@@ -1381,7 +1216,7 @@
           "type": "string"
         },
         {
-          "name": "skin_resource_pach",
+          "name": "skin_resource_pack",
           "type": "string"
         },
         {
@@ -1551,7 +1386,7 @@
               "type": [
                 "switch",
                 {
-                  "compareTo": "type",
+                  "compareTo": "../type",
                   "fields": {
                     "add": [
                       "container",
@@ -1603,28 +1438,21 @@
                         }
                       ]
                     ]
-                  }
+                  },
+                  "default": "void"
                 }
               ]
             }
           ]
         },
         {
-          "anon": true,
+          "name": "uuid",
           "type": [
             "switch",
             {
               "compareTo": "type",
               "fields": {
-                "add": [
-                  "container",
-                  [
-                    {
-                      "name": "uuid",
-                      "type": "uuid"
-                    }
-                  ]
-                ]
+                "add": "uuid"
               },
               "default": "void"
             }
@@ -1659,139 +1487,98 @@
           ]
         },
         {
-          "anon": true,
+          "name": "entries",
           "type": [
-            "switch",
+            "array",
             {
-              "compareTo": "type",
-              "fields": {
-                "remove": [
-                  "container",
-                  [
-                    {
-                      "name": "entries",
-                      "type": [
-                        "array",
-                        {
-                          "countType": "varint",
-                          "type": [
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "scoreboard_id",
+                    "type": "zigzag64"
+                  },
+                  {
+                    "name": "objective_name",
+                    "type": "string"
+                  },
+                  {
+                    "name": "score",
+                    "type": "li32"
+                  },
+                  {
+                    "anon": true,
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "../type",
+                        "fields": {
+                          "remove": [
                             "container",
                             [
                               {
-                                "name": "scoreboard_id",
-                                "type": "zigzag64"
-                              },
-                              {
-                                "name": "objective_name",
-                                "type": "string"
-                              },
-                              {
-                                "name": "score",
-                                "type": "li32"
+                                "name": "entry_type",
+                                "type": [
+                                  "mapper",
+                                  {
+                                    "type": "i8",
+                                    "mappings": {
+                                      "1": "player",
+                                      "2": "entity",
+                                      "3": "fake_player"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "anon": true,
                                 "type": [
-                                  "container",
-                                  [
-                                    {
-                                      "name": "entry_type",
-                                      "type": [
-                                        "mapper",
-                                        {
-                                          "type": "i8",
-                                          "mappings": {
-                                            "1": "player",
-                                            "2": "entity",
-                                            "3": "fake_player"
+                                  "switch",
+                                  {
+                                    "compareTo": "entry_type",
+                                    "fields": {
+                                      "player": [
+                                        "container",
+                                        [
+                                          {
+                                            "name": "entity_unique_id",
+                                            "type": "zigzag64"
                                           }
-                                        }
+                                        ]
+                                      ],
+                                      "entity": [
+                                        "container",
+                                        [
+                                          {
+                                            "name": "entity_unique_id",
+                                            "type": "zigzag64"
+                                          }
+                                        ]
+                                      ],
+                                      "fake_player": [
+                                        "container",
+                                        [
+                                          {
+                                            "name": "custom_name",
+                                            "type": "string"
+                                          }
+                                        ]
                                       ]
                                     },
-                                    {
-                                      "anon": true,
-                                      "type": [
-                                        "switch",
-                                        {
-                                          "compareTo": "entry_type",
-                                          "fields": {
-                                            "player": [
-                                              "container",
-                                              [
-                                                {
-                                                  "name": "entity_unique_id",
-                                                  "type": "zigzag64"
-                                                }
-                                              ]
-                                            ],
-                                            "entity": [
-                                              "container",
-                                              [
-                                                {
-                                                  "name": "entity_unique_id",
-                                                  "type": "zigzag64"
-                                                }
-                                              ]
-                                            ],
-                                            "fake_player": [
-                                              "container",
-                                              [
-                                                {
-                                                  "name": "custom_name",
-                                                  "type": "string"
-                                                }
-                                              ]
-                                            ]
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  ]
+                                    "default": "void"
+                                  }
                                 ]
                               }
                             ]
                           ]
-                        }
-                      ]
-                    }
-                  ]
-                ],
-                "change": [
-                  "container",
-                  [
-                    {
-                      "name": "entries",
-                      "type": [
-                        "array",
-                        {
-                          "countType": "varint",
-                          "type": [
-                            "container",
-                            [
-                              {
-                                "name": "scoreboard_id",
-                                "type": "zigzag64"
-                              },
-                              {
-                                "name": "objective_name",
-                                "type": "string"
-                              },
-                              {
-                                "name": "score",
-                                "type": "li32"
-                              },
-                              {
-                                "anon": true,
-                                "type": "void"
-                              }
-                            ]
-                          ]
-                        }
-                      ]
-                    }
-                  ]
+                        },
+                        "default": "void"
+                      }
+                    ]
+                  }
                 ]
-              }
+              ]
             }
           ]
         }
@@ -1814,67 +1601,33 @@
           ]
         },
         {
-          "anon": true,
+          "name": "entries",
           "type": [
-            "switch",
+            "array",
             {
-              "compareTo": "type",
-              "fields": {
-                "TYPE_REGISTER_IDENTITY": [
-                  "container",
-                  [
-                    {
-                      "name": "entries",
-                      "type": [
-                        "array",
-                        {
-                          "countType": "varint",
-                          "type": [
-                            "container",
-                            [
-                              {
-                                "name": "scoreboard_id",
-                                "type": "zigzag64"
-                              },
-                              {
-                                "name": "entity_unique_id",
-                                "type": "zigzag64"
-                              }
-                            ]
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                ],
-                "TYPE_CLEAR_IDENTITY": [
-                  "container",
-                  [
-                    {
-                      "name": "entries",
-                      "type": [
-                        "array",
-                        {
-                          "countType": "varint",
-                          "type": [
-                            "container",
-                            [
-                              {
-                                "name": "scoreboard_id",
-                                "type": "zigzag64"
-                              },
-                              {
-                                "anon": true,
-                                "type": "void"
-                              }
-                            ]
-                          ]
-                        }
-                      ]
-                    }
-                  ]
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "scoreboard_id",
+                    "type": "zigzag64"
+                  },
+                  {
+                    "name": "entity_unique_id",
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "../type",
+                        "fields": {
+                          "TYPE_REGISTER_IDENTITY": "zigzag64"
+                        },
+                        "default": "void"
+                      }
+                    ]
+                  }
                 ]
-              }
+              ]
             }
           ]
         }
@@ -2172,7 +1925,8 @@
                                   }
                                 ]
                               ]
-                            }
+                            },
+                            "default": "void"
                           }
                         ]
                       }
@@ -2285,145 +2039,145 @@
             {
               "type": "varint",
               "mappings": {
-                "0x01": "login",
-                "0x02": "play_status",
-                "0x03": "server_to_client_handshake",
-                "0x04": "client_to_server_handshake",
-                "0x05": "disconnect",
-                "0x06": "resource_packs_info",
-                "0x07": "resource_pack_stack",
-                "0x08": "resource_pack_client_response",
-                "0x09": "text",
-                "0x0a": "set_time",
-                "0x0b": "start_game",
-                "0x0c": "add_player",
-                "0x0d": "add_entity",
-                "0x0e": "remove_entity",
-                "0x0f": "add_item_entity",
-                "0x11": "take_item_entity",
-                "0x12": "move_entity",
-                "0x13": "move_player",
-                "0x14": "rider_jump",
-                "0x15": "update_block",
-                "0x16": "add_painting",
-                "0x17": "tick_sync",
-                "0x18": "level_sound_event_old",
-                "0x19": "level_event",
-                "0x1a": "block_event",
-                "0x1b": "entity_event",
-                "0x1c": "mob_effect",
-                "0x1d": "update_attributes",
-                "0x1e": "inventory_transaction",
-                "0x1f": "mob_equipment",
-                "0x20": "mob_armor_equipment",
-                "0x21": "interact",
-                "0x22": "block_pick_request",
-                "0x23": "entity_pick_request",
-                "0x24": "player_action",
-                "0x26": "hurt_armor",
-                "0x27": "set_entity_data",
-                "0x28": "set_entity_motion",
-                "0x29": "set_entity_link",
-                "0x2a": "set_health",
-                "0x2b": "set_spawn_position",
-                "0x2c": "animate",
-                "0x2d": "respawn",
-                "0x2e": "container_open",
-                "0x2f": "container_close",
-                "0x30": "player_hotbar",
-                "0x31": "inventory_content",
-                "0x32": "inventory_slot",
-                "0x33": "container_set_data",
-                "0x34": "crafting_data",
-                "0x35": "crafting_event",
-                "0x36": "gui_data_pick_item",
-                "0x37": "adventure_settings",
-                "0x38": "block_entity_data",
-                "0x39": "player_input",
-                "0x3a": "level_chunk",
-                "0x3b": "set_commands_enabled",
-                "0x3c": "set_difficulty",
-                "0x3d": "change_dimension",
-                "0x3e": "set_player_game_type",
-                "0x3f": "player_list",
-                "0x40": "simple_event",
-                "0x42": "spawn_experience_orb",
-                "0x43": "clientbound_map_item_data_",
-                "0x44": "map_info_request",
-                "0x45": "request_chunk_radius",
-                "0x46": "chunk_radius_update",
-                "0x47": "item_frame_drop_item",
-                "0x48": "game_rules_changed",
-                "0x49": "camera",
-                "0x4a": "boss_event",
-                "0x4b": "show_credits",
-                "0x4c": "available_commands",
-                "0x4d": "command_request",
-                "0x4e": "command_block_update",
-                "0x4f": "command_output",
-                "0x50": "update_trade",
-                "0x51": "update_equipment",
-                "0x52": "resource_pack_data_info",
-                "0x53": "resource_pack_chunk_data",
-                "0x54": "resource_pack_chunk_request",
-                "0x55": "transfer",
-                "0x56": "play_sound",
-                "0x57": "stop_sound",
-                "0x58": "set_title",
-                "0x59": "add_behavior_tree",
-                "0x5a": "structure_block_update",
-                "0x5b": "show_store_offer",
-                "0x5c": "purchase_receipt",
-                "0x5d": "player_skin",
-                "0x5e": "sub_client_login",
-                "0x5f": "initiate_web_socket_connection",
-                "0x60": "set_last_hurt_by",
-                "0x61": "book_edit",
-                "0x62": "npc_request",
-                "0x63": "photo_transfer",
-                "0x64": "modal_form_request",
-                "0x65": "modal_form_response",
-                "0x66": "server_settings_request",
-                "0x67": "server_settings_response",
-                "0x68": "show_profile",
-                "0x69": "set_default_game_type",
-                "0x6a": "remove_objective",
-                "0x6b": "set_display_objective",
-                "0x6c": "set_score",
-                "0x6d": "lab_table",
-                "0x6e": "update_block_synced",
-                "0x6f": "move_entity_delta",
-                "0x70": "set_scoreboard_identity",
-                "0x71": "set_local_player_as_initialized",
-                "0x72": "update_soft_enum",
-                "0x73": "network_stack_latency",
-                "0x75": "script_custom_event",
-                "0x76": "spawn_particle_effect",
-                "0x77": "available_entity_identifiers",
-                "0x78": "level_sound_event_v2",
-                "0x79": "network_chunk_publisher_update",
-                "0x7a": "biome_definition_list",
-                "0x7b": "level_sound_event",
-                "0x7c": "level_event_generic",
-                "0x7d": "lectern_update",
-                "0x7e": "video_stream_connect",
-                "0x81": "client_cache_status",
-                "0x82": "on_screen_texture_animation",
-                "0x83": "map_create_locked_copy",
-                "0x84": "structure_template_data_export_request",
-                "0x85": "structure_template_data_export_response",
-                "0x86": "update_block_properties",
-                "0x87": "client_cache_blob_status",
-                "0x88": "client_cache_miss_response",
-                "0x8f": "network_settings",
-                "0x91": "creative_content",
-                "0x92": "player_enchant_options",
-                "0x93": "item_stack_request",
-                "0x94": "item_stack_response",
-                "0x97": "update_player_game_type",
-                "0x9c": "packet_violation_warning",
-                "0xa2": "item_component",
-                "0xa3": "filter_text_packet"
+                "1": "login",
+                "2": "play_status",
+                "3": "server_to_client_handshake",
+                "4": "client_to_server_handshake",
+                "5": "disconnect",
+                "6": "resource_packs_info",
+                "7": "resource_pack_stack",
+                "8": "resource_pack_client_response",
+                "9": "text",
+                "10": "set_time",
+                "11": "start_game",
+                "12": "add_player",
+                "13": "add_entity",
+                "14": "remove_entity",
+                "15": "add_item_entity",
+                "17": "take_item_entity",
+                "18": "move_entity",
+                "19": "move_player",
+                "20": "rider_jump",
+                "21": "update_block",
+                "22": "add_painting",
+                "23": "tick_sync",
+                "24": "level_sound_event_old",
+                "25": "level_event",
+                "26": "block_event",
+                "27": "entity_event",
+                "28": "mob_effect",
+                "29": "update_attributes",
+                "30": "inventory_transaction",
+                "31": "mob_equipment",
+                "32": "mob_armor_equipment",
+                "33": "interact",
+                "34": "block_pick_request",
+                "35": "entity_pick_request",
+                "36": "player_action",
+                "38": "hurt_armor",
+                "39": "set_entity_data",
+                "40": "set_entity_motion",
+                "41": "set_entity_link",
+                "42": "set_health",
+                "43": "set_spawn_position",
+                "44": "animate",
+                "45": "respawn",
+                "46": "container_open",
+                "47": "container_close",
+                "48": "player_hotbar",
+                "49": "inventory_content",
+                "50": "inventory_slot",
+                "51": "container_set_data",
+                "52": "crafting_data",
+                "53": "crafting_event",
+                "54": "gui_data_pick_item",
+                "55": "adventure_settings",
+                "56": "block_entity_data",
+                "57": "player_input",
+                "58": "level_chunk",
+                "59": "set_commands_enabled",
+                "60": "set_difficulty",
+                "61": "change_dimension",
+                "62": "set_player_game_type",
+                "63": "player_list",
+                "64": "simple_event",
+                "66": "spawn_experience_orb",
+                "67": "clientbound_map_item_data",
+                "68": "map_info_request",
+                "69": "request_chunk_radius",
+                "70": "chunk_radius_update",
+                "71": "item_frame_drop_item",
+                "72": "game_rules_changed",
+                "73": "camera",
+                "74": "boss_event",
+                "75": "show_credits",
+                "76": "available_commands",
+                "77": "command_request",
+                "78": "command_block_update",
+                "79": "command_output",
+                "80": "update_trade",
+                "81": "update_equipment",
+                "82": "resource_pack_data_info",
+                "83": "resource_pack_chunk_data",
+                "84": "resource_pack_chunk_request",
+                "85": "transfer",
+                "86": "play_sound",
+                "87": "stop_sound",
+                "88": "set_title",
+                "89": "add_behavior_tree",
+                "90": "structure_block_update",
+                "91": "show_store_offer",
+                "92": "purchase_receipt",
+                "93": "player_skin",
+                "94": "sub_client_login",
+                "95": "initiate_web_socket_connection",
+                "96": "set_last_hurt_by",
+                "97": "book_edit",
+                "98": "npc_request",
+                "99": "photo_transfer",
+                "100": "modal_form_request",
+                "101": "modal_form_response",
+                "102": "server_settings_request",
+                "103": "server_settings_response",
+                "104": "show_profile",
+                "105": "set_default_game_type",
+                "106": "remove_objective",
+                "107": "set_display_objective",
+                "108": "set_score",
+                "109": "lab_table",
+                "110": "update_block_synced",
+                "111": "move_entity_delta",
+                "112": "set_scoreboard_identity",
+                "113": "set_local_player_as_initialized",
+                "114": "update_soft_enum",
+                "115": "network_stack_latency",
+                "117": "script_custom_event",
+                "118": "spawn_particle_effect",
+                "119": "available_entity_identifiers",
+                "120": "level_sound_event_v2",
+                "121": "network_chunk_publisher_update",
+                "122": "biome_definition_list",
+                "123": "level_sound_event",
+                "124": "level_event_generic",
+                "125": "lectern_update",
+                "126": "video_stream_connect",
+                "129": "client_cache_status",
+                "130": "on_screen_texture_animation",
+                "131": "map_create_locked_copy",
+                "132": "structure_template_data_export_request",
+                "133": "structure_template_data_export_response",
+                "134": "update_block_properties",
+                "135": "client_cache_blob_status",
+                "136": "client_cache_miss_response",
+                "143": "network_settings",
+                "145": "creative_content",
+                "146": "player_enchant_options",
+                "147": "item_stack_request",
+                "148": "item_stack_response",
+                "151": "update_player_game_type",
+                "156": "packet_violation_warning",
+                "162": "item_component",
+                "163": "filter_text_packet"
               }
             }
           ]
@@ -2498,7 +2252,7 @@
                 "player_list": "packet_player_list",
                 "simple_event": "packet_simple_event",
                 "spawn_experience_orb": "packet_spawn_experience_orb",
-                "clientbound_map_item_data_": "packet_clientbound_map_item_data_",
+                "clientbound_map_item_data": "packet_clientbound_map_item_data",
                 "map_info_request": "packet_map_info_request",
                 "request_chunk_radius": "packet_request_chunk_radius",
                 "chunk_radius_update": "packet_chunk_radius_update",
@@ -2574,7 +2328,8 @@
                 "packet_violation_warning": "packet_packet_violation_warning",
                 "item_component": "packet_item_component",
                 "filter_text_packet": "packet_filter_text_packet"
-              }
+              },
+              "default": "void"
             }
           ]
         }
@@ -4029,7 +3784,7 @@
         }
       ]
     ],
-    "packet_clientbound_map_item_data_": [
+    "packet_clientbound_map_item_data": [
       "container",
       [
         {
@@ -4587,7 +4342,15 @@
         }
       ]
     ],
-    "packet_set_score": "ScoreEntries",
+    "packet_set_score": [
+      "container",
+      [
+        {
+          "name": "entries",
+          "type": "ScoreEntries"
+        }
+      ]
+    ],
     "packet_lab_table": [
       "container",
       [
@@ -4983,6 +4746,24 @@
           "type": "bool"
         }
       ]
+    ],
+    "string": [
+      "pstring",
+      {
+        "countType": "varint"
+      }
+    ],
+    "ByteArray": [
+      "buffer",
+      {
+        "countType": "varint"
+      }
+    ],
+    "LittleString": [
+      "pstring",
+      {
+        "countType": "li32"
+      }
     ]
   }
 }
