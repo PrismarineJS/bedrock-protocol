@@ -80,7 +80,18 @@ function decodeLoginJWT(authTokens, skinTokens) {
     return { key, userData: data, skinData }
 }
 
-function test() {
+function encodeLoginJWT(localChain, mojangChain) {
+  const chains = []
+  chains.push(localChain)
+  for (const chain of mojangChain) {
+    chains.push(chain)
+  }
+  return chains
+}
+
+module.exports = { encodeLoginJWT, decodeLoginJWT }
+
+function testServer() {
     const loginPacket = require('./login.json')
 
     // console.log(loginPacket)
@@ -95,10 +106,7 @@ function test() {
     }
 
     console.log('Authed')
-
     // console.log(loginPacket)
 }
 
-module.exports = { decodeLoginJWT }
-
-// test()
+// testServer()

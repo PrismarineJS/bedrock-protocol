@@ -4,15 +4,19 @@ const { Ber } = require('asn1')
 const ec_pem = require('ec-pem')
 
 const SALT = '🧂'
+const curve = 'secp384r1'
 
 function Encrypt(client, options) {
+  client.ecdhKeyPair = crypto.createECDH(curve)
+  client.ecdhKeyPair.generateKeys()
+
+  createClientChain(client)
+
   function startClientboundEncryption(publicKey) {
     console.warn('[encrypt] Pub key base64: ', publicKey)
     const pubKeyBuf = readX509PublicKey(publicKey.key)
 
-    const curve = 'secp384r1'
-    const alice = crypto.createECDH(curve)
-    alice.generateKeys()
+    const alice = client.ecdhKeyPair
     const alicePEM = ec_pem(alice, curve) // https://github.com/nodejs/node/issues/15116#issuecomment-384790125
     const alicePEMPrivate = alicePEM.encodePrivateKey()
     // Shared secret from bob's public key + our private key
@@ -47,7 +51,25 @@ function Encrypt(client, options) {
     client.startEncryption(initial)
   }
 
+  function startServerboundEncryption() {
+
+  }
+
   client.on('server.client_handshake', startClientboundEncryption)
+}
+
+function createClientChain(client) {
+  const alice = client.ecdhKeyPair
+  const alicePEM = ec_pem(alice, curve) // https://github.com/nodejs/node/issues/15116#issuecomment-384790125
+  const alicePEMPrivate = alicePEM.encodePrivateKey()
+  const x509 = writeX509PublicKey(alice.getPublicKey())
+
+  const token = JWT.sign({
+    salt: toBase64(SALT),
+    signedToken: alice.getPublicKey('base64')
+  }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: x509 } })
+
+  client.clientChain = token
 }
 
 function toBase64(string) {
