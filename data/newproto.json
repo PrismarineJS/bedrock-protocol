@@ -2361,7 +2361,22 @@
       [
         {
           "name": "status",
-          "type": "i32"
+          "type": [
+            "mapper",
+            {
+              "type": "i32",
+              "mappings": {
+                "0": "login_success",
+                "1": "failed_client",
+                "2": "failed_spawn",
+                "3": "player_spawn",
+                "4": "failed_invalid_tenant",
+                "5": "failed_vanilla_edu",
+                "6": "failed_edu_vanilla",
+                "7": "failed_server_full"
+              }
+            }
+          ]
         }
       ]
     ],
@@ -2436,7 +2451,7 @@
           "type": "Experiments"
         },
         {
-          "name": "experiments_previously_toggled",
+          "name": "experiments_previously_used",
           "type": "bool"
         }
       ]
@@ -2446,7 +2461,19 @@
       [
         {
           "name": "response_status",
-          "type": "u8"
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "none",
+                "1": "refused",
+                "2": "send_packs",
+                "3": "have_all_packs",
+                "4": "completed"
+              }
+            }
+          ]
         },
         {
           "name": "resourcepackids",
@@ -2459,7 +2486,178 @@
       [
         {
           "name": "type",
-          "type": "u8"
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "raw",
+                "1": "chat",
+                "2": "translation",
+                "3": "popup",
+                "4": "jukebox_popup",
+                "5": "tip",
+                "6": "system",
+                "7": "whisper",
+                "8": "announcement",
+                "9": "json_whisper",
+                "10": "json"
+              }
+            }
+          ]
+        },
+        {
+          "name": "needs_translation",
+          "type": "bool"
+        },
+        {
+          "anon": true,
+          "type": [
+            "switch",
+            {
+              "compareTo": "type",
+              "fields": {
+                "chat": [
+                  "container",
+                  [
+                    {
+                      "name": "sourceName",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "whisper": [
+                  "container",
+                  [
+                    {
+                      "name": "sourceName",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "announcement": [
+                  "container",
+                  [
+                    {
+                      "name": "sourceName",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "raw": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "tip": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "system": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "json_whisper": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "json": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "translation": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    },
+                    {
+                      "name": "paramaters",
+                      "type": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  ]
+                ],
+                "popup": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    },
+                    {
+                      "name": "paramaters",
+                      "type": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  ]
+                ],
+                "jukebox_popup": [
+                  "container",
+                  [
+                    {
+                      "name": "message",
+                      "type": "string"
+                    },
+                    {
+                      "name": "paramaters",
+                      "type": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "xuid",
+          "type": "string"
+        },
+        {
+          "name": "platform_chat_id",
+          "type": "string"
         }
       ]
     ],
@@ -2524,16 +2722,8 @@
           "type": "zigzag32"
         },
         {
-          "name": "x",
-          "type": "zigzag32"
-        },
-        {
-          "name": "y",
-          "type": "varint"
-        },
-        {
-          "name": "z",
-          "type": "zigzag32"
+          "name": "spawn_position",
+          "type": "BlockCoordinates"
         },
         {
           "name": "has_achievements_disabled",
@@ -2600,7 +2790,7 @@
           "type": "Experiments"
         },
         {
-          "name": "experiments_previously_toggled",
+          "name": "experiments_previously_used",
           "type": "bool"
         },
         {
@@ -2684,8 +2874,18 @@
           "type": "bool"
         },
         {
-          "name": "movement_type",
-          "type": "zigzag32"
+          "name": "movement_authority",
+          "type": [
+            "mapper",
+            {
+              "type": "zigzag32",
+              "mappings": {
+                "0": "client",
+                "1": "server",
+                "2": "server_v2_rewind"
+              }
+            }
+          ]
         },
         {
           "name": "current_tick",
@@ -2694,10 +2894,6 @@
         {
           "name": "enchantment_seed",
           "type": "zigzag32"
-        },
-        {
-          "name": "block_palette",
-          "type": "BlockPalette"
         },
         {
           "name": "itemstates",

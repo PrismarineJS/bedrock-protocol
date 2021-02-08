@@ -25,17 +25,6 @@ function createDeserializer() {
   return new Parser(proto, 'mcpe_packet');
 }
 
-const PLAY_STATUS = {
-  'LoginSuccess': 0,
-  'LoginFailedClient': 1,
-  'LoginFailedServer': 2,
-  'PlayerSpawn': 3,
-  'LoginFailedInvalidTenant': 4,
-  'LoginFailedVanillaEdu': 5,
-  'LoginFailedEduVanilla': 6,
-  'LoginFailedServerFull': 7
-}
-
 class Player extends Connection {
   constructor(server, connection, options) {
     super()
@@ -55,11 +44,11 @@ class Player extends Connection {
     const clientVer = body.protocol_version
     if (this.server.options.version) {
       if (this.server.options.version < clientVer) {
-        this.sendDisconnectStatus(PLAY_STATUS.LoginFailedClient)
+        this.sendDisconnectStatus(failed_client)
         return
       }
     } else if (clientVer < MIN_VERSION) {
-      this.sendDisconnectStatus(PLAY_STATUS.LoginFailedClient)
+      this.sendDisconnectStatus(failed_client)
       return
     }
 
@@ -91,7 +80,7 @@ class Player extends Connection {
   // Client to Server handshake response. This indicates successful encryption
   onHandshake() {
     // https://wiki.vg/Bedrock_Protocol#Play_Status
-    this.write('play_status', { status: PLAY_STATUS.LoginSuccess })
+    this.write('play_status', { status: 'login_success' })
     this.emit('join')
   }
 
@@ -181,4 +170,4 @@ class Server extends EventEmitter {
   }
 }
 
-module.exports = { Server, Player, PLAY_STATUS }
+module.exports = { Server, Player }

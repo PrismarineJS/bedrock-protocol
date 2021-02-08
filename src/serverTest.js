@@ -33,7 +33,7 @@ server.on('connect', ({ client }) => {
         'resource_packs': [],
         'game_version': '',
         'experiments': [],
-        'experiments_previously_toggled': false
+        'experiments_previously_used': false
       })
 
       client.once('resource_pack_client_response', async (packet) => {

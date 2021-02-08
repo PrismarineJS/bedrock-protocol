@@ -1,3 +1,5 @@
+!StartDocs: Types
+
 BehaviourPackInfos: []li16
    uuid: string
    version: string
@@ -18,8 +20,11 @@ TexturePackInfos: []li16
    rtx_enabled: bool
 
 ResourcePackIdVersions: []varint
+   # The ID of the resource pack.
    uuid: string
+   # The version of the resource pack.
    version: string
+   # The subpack name of the resource pack.
    name: string
 
 ResourcePackIds: string[]varint
