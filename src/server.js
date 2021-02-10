@@ -12,6 +12,7 @@ class Player extends Connection {
   constructor(server, connection, options) {
     super()
     this.server = server
+    this.serializer = server.serializer
     this.connection = connection
     Encrypt(this, server, options)
   }

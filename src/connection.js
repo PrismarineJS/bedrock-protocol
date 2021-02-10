@@ -16,7 +16,7 @@ class Connection extends EventEmitter {
   write(name, params) { // TODO: Batch
     console.log('Need to encode', name, params)
     const batch = new BatchPacket()
-    const packet = this.server.serializer.createPacketBuffer({ name, params })
+    const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
 
     if (this.encryptionEnabled) {
@@ -86,7 +86,6 @@ class Connection extends EventEmitter {
 
   handle(buffer) { // handle encapsulated
     if (buffer[0] == 0xfe) { // wrapper
-
       if (this.encryptionEnabled) {
         // console.log('READING ENCRYPTED PACKET', buffer)
         this.decrypt(buffer.slice(1))
