@@ -28,7 +28,7 @@
     "jwt-simple": "^0.5.6",
     "lodash.merge": "^4.4.0",
     "prismarine-nbt": "github:extremeheat/prismarine-nbt#le",
-    "protodef": "github:extremeheat/node-protodef#big",
+    "protodef": "github:extremeheat/node-protodef#compiler",
     "raknet": "git+https://github.com/mhsjlw/node-raknet.git#master",
     "uuid-1345": "^0.99.7"
   },

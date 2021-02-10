@@ -42,21 +42,23 @@ server.on('connect', ({ client }) => {
         let ids = 0
         for (var item of CreativeItems) {
           let creativeitem = { runtime_id: items.length }
+          const has_nbt = !!item.nbt_b64
           if (item.id != 0) {
-            const hasNbt = !!item.nbt_b64
             creativeitem.item = { 
               network_id: item.id,
               auxiliary_value: item.damage || 0,
-              has_nbt: hasNbt|0,
-              nbt_version: 1,
+              has_nbt,
+              nbt: {
+                version: 1,
+              },
               blocking_tick: 0,
               can_destroy: [],
               can_place_on: []
             }
-            if (hasNbt) {
+            if (has_nbt) {
               let nbtBuf = Buffer.from(item.nbt_b64, 'base64')
-              let { result } = await NBT.parse(nbtBuf, 'little')
-              creativeitem.item.nbt = result
+              let { parsed } = await NBT.parse(nbtBuf, 'little')
+              creativeitem.item.nbt.nbt = parsed
             }
           }
           items.push(creativeitem)

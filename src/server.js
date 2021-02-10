@@ -1,29 +1,12 @@
 const Listener = require('@jsprismarine/raknet/listener')
-const { ProtoDef, Parser, Serializer } = require('protodef')
 const { EventEmitter } = require('events')
+const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { Encrypt } = require('./auth/encryption')
 const { decodeLoginJWT } = require('./auth/chains')
 const { Connection } = require('./connection')
+const Options = require('./options')
 
-var protocol = require('../data/newproto.json').types;
-
-function createProtocol() {
-  var proto = new ProtoDef();
-  proto.addTypes(require('./datatypes/minecraft'));
-  proto.addTypes(protocol);
-
-  return proto;
-}
-
-function createSerializer() {
-  var proto = createProtocol()
-  return new Serializer(proto, 'mcpe_packet');
-}
-
-function createDeserializer() {
-  var proto = createProtocol()
-  return new Parser(proto, 'mcpe_packet');
-}
+const log = (...args) => console.log(...args)
 
 class Player extends Connection {
   constructor(server, connection, options) {
@@ -102,20 +85,10 @@ class Player extends Connection {
   }
 }
 
-// Minimum supported version (< will be kicked)
-const MIN_VERSION = 422
-// Currently supported verson
-const CURRENT_VERSION = 422
-
-const defaultServerOptions = {
-  // https://minecraft.gamepedia.com/Protocol_version#Bedrock_Edition_2
-  version: CURRENT_VERSION,
-}
-
 class Server extends EventEmitter {
   constructor(options) {
     super()
-    this.options = { ...defaultServerOptions, options }
+    this.options = { ...Options.defaultOptions, options }
     this.serializer = createSerializer()
     this.deserializer = createDeserializer()
     this.clients = {}
@@ -123,8 +96,8 @@ class Server extends EventEmitter {
   }
 
   validateOptions() {
-    if (this.options.version < defaultServerOptions.version) {
-      throw new Error(`Unsupported protocol version < ${defaultServerOptions.version}: ${this.options.version}`)
+    if (this.options.version < Options.MIN_VERSION) {
+      throw new Error(`Unsupported protocol version < ${Options.MIN_VERSION} : ${this.options.version}`)
     }
   }
 
@@ -133,7 +106,7 @@ class Server extends EventEmitter {
   }
 
   onOpenConnection = (conn) => {
-    console.log('Got connection', conn)
+    log('new connection', conn)
     const player = new Player(this, conn)
     this.clients[this.getAddrHash(conn.address)] = player
 
@@ -141,12 +114,12 @@ class Server extends EventEmitter {
   }
 
   onCloseConnection = (inetAddr, reason) => {
-    console.log('Close connection', inetAddr, reason)
+    log('close connection', inetAddr, reason)
     delete this.clients[this.getAddrHash(inetAddr)]
   }
 
   onEncapsulated = (encapsulated, inetAddr) => {
-    console.log('Encapsulated', encapsulated, inetAddr)
+    log(inetAddr.address, ': Encapsulated', encapsulated)
     const buffer = encapsulated.buffer
     const client = this.clients[this.getAddrHash(inetAddr)]
     if (!client) {
@@ -158,7 +131,7 @@ class Server extends EventEmitter {
   async create(serverIp, port) {
     this.listener = new Listener(this)
     this.raknet = await this.listener.listen(serverIp, port)
-    console.log('Listening on', serverIp, port)
+    log('Listening on', serverIp, port)
 
     this.raknet.on('openConnection', this.onOpenConnection)
     this.raknet.on('closeConnection', this.onCloseConnection)

@@ -1,9 +1,9 @@
-!StartDocs: Types
+# !StartDocs: Types
 
 BehaviourPackInfos: []li16
    uuid: string
    version: string
-   size: lu64
+   length: lu64
    content_key: string
    sub_pack_name: string
    content_identity: string
@@ -12,7 +12,7 @@ BehaviourPackInfos: []li16
 TexturePackInfos: []li16
    uuid: string
    version: string
-   size: lu64
+   length: lu64
    content_key: string
    sub_pack_name: string
    content_identity: string
@@ -71,11 +71,11 @@ Item:
       default:
          auxiliary_value: zigzag32
          has_nbt: lu16 =>
-            0xffff: '1'
-            0x0000: '0'
-         _: has_nbt?
-            if 1:
-               nbt_version: u8
+            0xffff: 'true'
+            0x0000: 'false'
+         nbt: has_nbt?
+            if true:
+               version: u8
                nbt: nbt
             default: void
          can_place_on: string[]zigzag32
@@ -150,10 +150,10 @@ BlockCoordinates: # mojang...
    z: zigzag32
 
 PlayerAttributes: []varint
-   min: lf32
-   max: lf32
-   current: lf32
-   default: lf32
+   min_value: lf32
+   max_value: lf32
+   current_value: lf32
+   default_value: lf32
    name: string
 
 Transaction:
@@ -360,11 +360,10 @@ ScoreEntries:
                1: player
                2: entity
                3: fake_player
-            _: entry_type?
-               if player or entity:
-                  entity_unique_id: zigzag64
-               if fake_player:
-                  custom_name: string
+            entity_unique_id: entry_type?
+               if player or entity: zigzag64
+            custom_name: entry_type?
+               if fake_player: string
 
 ScoreboardIdentityEntries:
    type: i8 =>

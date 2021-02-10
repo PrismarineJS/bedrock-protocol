@@ -25,7 +25,7 @@
               "type": "string"
             },
             {
-              "name": "size",
+              "name": "length",
               "type": "lu64"
             },
             {
@@ -64,7 +64,7 @@
               "type": "string"
             },
             {
-              "name": "size",
+              "name": "length",
               "type": "lu64"
             },
             {
@@ -281,24 +281,24 @@
                       {
                         "type": "lu16",
                         "mappings": {
-                          "0": "0",
-                          "65535": "1"
+                          "0": "false",
+                          "65535": "true"
                         }
                       }
                     ]
                   },
                   {
-                    "anon": true,
+                    "name": "nbt",
                     "type": [
                       "switch",
                       {
                         "compareTo": "has_nbt",
                         "fields": {
-                          "1": [
+                          "true": [
                             "container",
                             [
                               {
-                                "name": "nbt_version",
+                                "name": "version",
                                 "type": "u8"
                               },
                               {
@@ -431,6 +431,10 @@
         "type": [
           "container",
           [
+            {
+              "name": "key",
+              "type": "varint"
+            },
             {
               "name": "type",
               "type": [
@@ -576,19 +580,19 @@
           "container",
           [
             {
-              "name": "min",
+              "name": "min_value",
               "type": "lf32"
             },
             {
-              "name": "max",
+              "name": "max_value",
               "type": "lf32"
             },
             {
-              "name": "current",
+              "name": "current_value",
               "type": "lf32"
             },
             {
-              "name": "default",
+              "name": "default_value",
               "type": "lf32"
             },
             {
@@ -771,7 +775,7 @@
                     "type": [
                       "switch",
                       {
-                        "compareTo": "../has_network_ids",
+                        "compareTo": "has_network_ids",
                         "fields": {
                           "true": "zigzag32"
                         },
@@ -1386,7 +1390,7 @@
               "type": [
                 "switch",
                 {
-                  "compareTo": "../type",
+                  "compareTo": "type",
                   "fields": {
                     "add": [
                       "container",
@@ -1512,7 +1516,7 @@
                     "type": [
                       "switch",
                       {
-                        "compareTo": "../type",
+                        "compareTo": "type",
                         "fields": {
                           "remove": [
                             "container",
@@ -1532,39 +1536,27 @@
                                 ]
                               },
                               {
-                                "anon": true,
+                                "name": "entity_unique_id",
                                 "type": [
                                   "switch",
                                   {
                                     "compareTo": "entry_type",
                                     "fields": {
-                                      "player": [
-                                        "container",
-                                        [
-                                          {
-                                            "name": "entity_unique_id",
-                                            "type": "zigzag64"
-                                          }
-                                        ]
-                                      ],
-                                      "entity": [
-                                        "container",
-                                        [
-                                          {
-                                            "name": "entity_unique_id",
-                                            "type": "zigzag64"
-                                          }
-                                        ]
-                                      ],
-                                      "fake_player": [
-                                        "container",
-                                        [
-                                          {
-                                            "name": "custom_name",
-                                            "type": "string"
-                                          }
-                                        ]
-                                      ]
+                                      "player": "zigzag64",
+                                      "entity": "zigzag64"
+                                    },
+                                    "default": "void"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "custom_name",
+                                "type": [
+                                  "switch",
+                                  {
+                                    "compareTo": "entry_type",
+                                    "fields": {
+                                      "fake_player": "string"
                                     },
                                     "default": "void"
                                   }
@@ -1618,7 +1610,7 @@
                     "type": [
                       "switch",
                       {
-                        "compareTo": "../type",
+                        "compareTo": "type",
                         "fields": {
                           "TYPE_REGISTER_IDENTITY": "zigzag64"
                         },
