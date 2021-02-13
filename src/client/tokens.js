@@ -268,7 +268,7 @@ class MinecraftTokenManager {
   }
 
   async getAccessToken(clientPublicKey, xsts) {
-    debug('[mc] authing to minecraft', xsts)
+    debug('[mc] authing to minecraft', clientPublicKey, xsts)
     const getFetchOptions = {
       headers: {
         'Content-Type': 'application/json',

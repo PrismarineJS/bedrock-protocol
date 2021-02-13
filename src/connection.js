@@ -8,7 +8,7 @@ const EncapsulatedPacket = require('@jsprismarine/raknet/protocol/encapsulated_p
 class Connection extends EventEmitter {
   startEncryption(iv) {
     this.encryptionEnabled = true
-
+    console.log('Started encryption', this.sharedSecret, iv)
     this.decrypt = cipher.createDecryptor(this, iv)
     this.encrypt = cipher.createEncryptor(this, iv)
   }
@@ -74,7 +74,7 @@ class Connection extends EventEmitter {
   }
 
   onDecryptedPacket = (buf) => {
-    console.log('Decrypted', buf)
+    console.log('🟢 Decrypted', buf)
 
     const stream = new BinaryStream(buf)
     const packets = BatchPacket.getPackets(stream)

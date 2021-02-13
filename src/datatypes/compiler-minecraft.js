@@ -3,7 +3,7 @@ const minecraft = require('./minecraft')
 
 module.exports = {
   Read: {
-    UUID: ['native', (buffer, offset) => {
+    uuid: ['native', (buffer, offset) => {
       return {
         value: UUID.stringify(buffer.slice(offset, 16 + offset)),
         size: 16
@@ -18,7 +18,7 @@ module.exports = {
     nbt: ['native', minecraft.nbt[0]]
   },
   Write: {
-    UUID: ['native', (value, buffer, offset) => {
+    uuid: ['native', (value, buffer, offset) => {
       const buf = UUID.parse(value)
       buf.copy(buffer, offset)
       return offset + 16
@@ -30,7 +30,7 @@ module.exports = {
     nbt: ['native', minecraft.nbt[1]]
   },
   SizeOf: {
-    UUID: ['native', 16],
+    uuid: ['native', 16],
     restBuffer: ['native', (value) => {
       return value.length
     }],

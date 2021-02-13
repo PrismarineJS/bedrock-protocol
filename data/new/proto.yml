@@ -197,13 +197,13 @@ packet_start_game:
    entity_id: zigzag64
    # The runtime ID of the player. The runtime ID is unique for each world session, 
    # and entities are generally identified in packets using this runtime ID.
-   runtime_entity_id: varint
+   runtime_entity_id: varint64
    player_gamemode: zigzag32
    # The spawn position of the player in the world. In servers this is often the same as the 
    # world's spawn position found below.
    spawn: vec3f
    # The pitch and yaw of the player
-   rotation: vec3f
+   rotation: vec2f
    # The seed used to generate the world. Unlike in Java edition, the seed is a 32bit Integer here.
    seed: zigzag32
    biome_type: li16
@@ -302,8 +302,8 @@ packet_start_game:
    # The version of the game from which Vanilla features will be used.
    # The exact function of this field isn't clear.
    game_version: string
-   limited_world_width_: li32
-   limited_world_length_: li32
+   limited_world_width: li32
+   limited_world_length: li32
    is_new_nether_: bool
    experimental_gameplay_override: bool
    # A base64 encoded world ID that is used to identify the world.
@@ -335,7 +335,7 @@ packet_start_game:
 
    ## This is not sent anymore in protocol versions > 419 (Bedrock Edition v1.16.100)
    ## A list of all blocks registered on the server.
-   ## block_palette: BlockPalette
+   block_palette: BlockPalette
    # A list of all items with their legacy IDs which are available in the game.
    # Failing to send any of the items that are in the game will crash mobile clients.
    itemstates: Itemstates
@@ -525,9 +525,9 @@ packet_mob_effect:
 packet_update_attributes:
    !id: 0x1d
    !bound: server
-   runtime_entity_id: varint
+   runtime_entity_id: varint64
    attributes: PlayerAttributes
-   tick: varint
+   tick: varint64
 
 packet_inventory_transaction:
    !id: 0x1e

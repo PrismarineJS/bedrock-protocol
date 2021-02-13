@@ -4,6 +4,9 @@ const { createDeserializer, createSerializer } = require('./transforms/serialize
 const { Encrypt } = require('./auth/encryption')
 const auth = require('./client/auth')
 const Options = require('./options')
+const fs = require('fs')
+
+const log = console.log
 
 class Client extends Connection {
   constructor(options) {
@@ -41,7 +44,7 @@ class Client extends Connection {
 
     if (this.raknet) return
 
-    this.raknet = new RakClient('localhost', 19132)
+    this.raknet = new RakClient('127.0.0.1', 19132)
     await this.raknet.connect()
 
     this.raknet.on('connecting', () => {
@@ -61,16 +64,17 @@ class Client extends Connection {
   }
 
   sendLogin() {
+    this.createClientChain()
 
     const chain = [
-      this.clientChain, // JWT we generated for auth
+      this.clientIdentityChain, // JWT we generated for auth
       ...this.accessToken // Mojang + Xbox JWT from auth
     ]
 
     const encodedChain = JSON.stringify({ chain })
     const skinChain = JSON.stringify({})
 
-    const bodyLength = skinChain.length + encodedChain.length + 8
+    const bodyLength = this.clientUserChain.length + encodedChain.length + 8
 
     console.log('Auth chain', chain)
 
@@ -78,7 +82,7 @@ class Client extends Connection {
       protocol_version: this.options.version,
       payload_size: bodyLength,
       chain: encodedChain,
-      client_data: skinChain
+      client_data: this.clientUserChain
     })
   }
 
@@ -90,19 +94,31 @@ class Client extends Connection {
     this.emit('join')
   }
 
+  onDisconnectRequest(packet) {
+    // We're talking over UDP, so there is no connection to close, instead
+    // we stop communicating with the server
+    console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
+    process.exit(1)
+  }
+
   readPacket(packet) {
     console.log('packet', packet)
-    const des = this.server.deserializer.parsePacketBuffer(packet)
-    console.log('->', des)
+    const des = this.deserializer.parsePacketBuffer(packet)
+    console.info('->', des)
     switch (des.data.name) {
-      case 'login':
-        console.log(des)
-        this.onLogin(des)
-        return
-      case 'client_to_server_handshake':
-        this.onHandshake()
+      case 'server_to_client_handshake':
+        this.emit('client.server_handshake', des.data.params)
+        break
+      case 'disconnect': // Client kicked
+        this.onDisconnectRequest(des.data.params)
+        break
+      case 'crafting_data':
+        fs.writeFileSync('crafting.json', JSON.stringify(des.data.params, (k,v) => typeof v == 'bigint' ? v.toString() : v))
+        break
+      case 'start_game':
+        fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k,v) => typeof v == 'bigint' ? v.toString() : v))
       default:
-        console.log('ignoring, unhandled')
+        console.log('Sending to listeners')
     }
     this.emit(des.data.name, des.data.params)
 

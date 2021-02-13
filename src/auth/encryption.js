@@ -6,11 +6,11 @@ const ec_pem = require('ec-pem')
 const SALT = '🧂'
 const curve = 'secp384r1'
 
-function Encrypt(client, options) {
+function Encrypt(client, server, options) {
   client.ecdhKeyPair = crypto.createECDH(curve)
   client.ecdhKeyPair.generateKeys()
+  client.clientX509 = writeX509PublicKey(client.ecdhKeyPair.getPublicKey())
 
-  createClientChain(client)
 
   function startClientboundEncryption(publicKey) {
     console.warn('[encrypt] Pub key base64: ', publicKey)
@@ -31,9 +31,11 @@ function Encrypt(client, options) {
     const secretHash = crypto.createHash('sha256')
     secretHash.update(SALT)
     secretHash.update(client.sharedSecret)
+    console.log('---- SHARED SECRET', client.sharedSecret)
+
 
     client.secretKeyBytes = secretHash.digest()
-
+    console.log('Hash', client.secretKeyBytes)
     const x509 = writeX509PublicKey(alice.getPublicKey())
     const token = JWT.sign({
       salt: toBase64(SALT),
@@ -51,30 +53,109 @@ function Encrypt(client, options) {
     client.startEncryption(initial)
   }
 
-  function startServerboundEncryption() {
+  function startServerboundEncryption(token) {
+    console.warn('Starting serverbound encryption', token)
+    const jwt = token?.token
+    if (!jwt) {
+      // TODO: allow connecting to servers without encryption
+      throw Error('Server did not return a valid JWT, cannot start encryption!')
+    }
+    // TODO: Should we do some JWT signature validation here? Seems pointless
+    const alice = client.ecdhKeyPair
+    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64'))
+    const head = JSON.parse(String(header))
+    const body = JSON.parse(String(payload))
+    const serverPublicKey = readX509PublicKey(head.x5u)
+    client.sharedSecret = alice.computeSecret(serverPublicKey)
+    console.log('------ SHARED SECRET', client.sharedSecret)
 
+    const salt = Buffer.from(body.salt, 'base64')
+
+    const secretHash = crypto.createHash('sha256')
+    secretHash.update(salt)
+    secretHash.update(client.sharedSecret)
+
+    client.secretKeyBytes = secretHash.digest()
+    console.log('Hash', client.secretKeyBytes)
+    const initial = client.secretKeyBytes.slice(0, 16)
+    client.startEncryption(initial)
+
+    // It works! First encrypted packet :)
+    client.write('client_to_server_handshake', {})
   }
 
   client.on('server.client_handshake', startClientboundEncryption)
-}
 
-function createClientChain(client) {
-  const alice = client.ecdhKeyPair
-  const alicePEM = ec_pem(alice, curve) // https://github.com/nodejs/node/issues/15116#issuecomment-384790125
-  const alicePEMPrivate = alicePEM.encodePrivateKey()
-  const x509 = writeX509PublicKey(alice.getPublicKey())
+  client.on('client.server_handshake', startServerboundEncryption)
 
-  const token = JWT.sign({
-    salt: toBase64(SALT),
-    signedToken: alice.getPublicKey('base64')
-  }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: x509 } })
+  client.createClientChain = (mojangKey) => {
+    mojangKey = mojangKey || require('./constants').PUBLIC_KEY
+    const alice = client.ecdhKeyPair
+    const alicePEM = ec_pem(alice, curve) // https://github.com/nodejs/node/issues/15116#issuecomment-384790125
+    const alicePEMPrivate = alicePEM.encodePrivateKey()
 
-  client.clientChain = token
+    const token = JWT.sign({
+      identityPublicKey: mojangKey,
+      certificateAuthority: true
+    }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: client.clientX509 } })
+
+    client.clientIdentityChain = token
+    client.createClientUserChain(alicePEMPrivate)
+  }
+
+  client.createClientUserChain = (privateKey) => {
+    let payload = {
+      ServerAddress: options.hostname,
+      ThirdPartyName: client.profile.name,
+      DeviceOS: client.session?.deviceOS || 1,
+      GameVersion: options.version || '1.16.201',
+      ClientRandomId: Date.now(), // TODO make biggeer
+      DeviceId: '2099de18-429a-465a-a49b-fc4710a17bb3', // TODO random
+      LanguageCode: 'en_GB', // TODO locale
+      AnimatedImageData: [],
+      PersonaPieces: [],
+      PieceTintColours: [],
+      SelfSignedId: '78eb38a6-950e-3ab9-b2cf-dd849e343701',
+      SkinId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0',
+      SkinData: 'AAAAAA==',
+      SkinResourcePatch: 'ewogICAiZ2VvbWV0cnkiIDogewogICAgICAiYW5pbWF0ZWRfMTI4eDEyOCIgOiAiZ2VvbWV0cnkuYW5pbWF0ZWRfMTI4eDEyOF9wZXJzb25hLWUxOTk2NzJhOGMxYTg3ZTAtMCIsCiAgICAgICJhbmltYXRlZF9mYWNlIiA6ICJnZW9tZXRyeS5hbmltYXRlZF9mYWNlX3BlcnNvbmEtZTE5OTY3MmE4YzFhODdlMC0wIiwKICAgICAgImRlZmF1bHQiIDogImdlb21ldHJ5LnBlcnNvbmFfZTE5OTY3MmE4YzFhODdlMC0wIgogICB9Cn0K',
+      SkinGeometryData: require('./geom'),
+      "SkinImageHeight": 1,
+      "SkinImageWidth": 1,
+      "ArmSize": "wide",
+      "CapeData": "",
+      "CapeId": "",
+      "CapeImageHeight": 0,
+      "CapeImageWidth": 0,
+      "CapeOnClassicSkin": false,
+      PlatformOfflineId: '',
+      PlatformOnlineId: '', //chat
+      // a bunch of meaningless junk
+      CurrentInputMode: 1,
+      DefaultInputMode: 1,
+      DeviceModel: '',
+      GuiScale: -1,
+      UIProfile: 0,
+      TenantId: '',
+      PremiumSkin: false,
+      PersonaSkin: false,
+      PieceTintColors: [],
+      SkinAnimationData: '',
+      ThirdPartyNameOnly: false,
+      "SkinColor": "#ffffcd96",
+    }
+    payload = require('./logPack.json')
+    const customPayload = options.userData || {}
+    payload = { ...payload, ...customPayload }
+
+    client.clientUserChain = JWT.sign(payload, privateKey,
+      { algorithm: 'ES384', header: { x5u: client.clientX509 } })
+  }
 }
 
 function toBase64(string) {
   return Buffer.from(string).toString('base64')
-} 
+}
 
 function readX509PublicKey(key) {
   var reader = new Ber.Reader(Buffer.from(key, "base64"));

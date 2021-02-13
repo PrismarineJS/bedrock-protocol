@@ -3,7 +3,7 @@
 BehaviourPackInfos: []li16
    uuid: string
    version: string
-   length: lu64
+   size: lu64
    content_key: string
    sub_pack_name: string
    content_identity: string
@@ -12,7 +12,7 @@ BehaviourPackInfos: []li16
 TexturePackInfos: []li16
    uuid: string
    version: string
-   length: lu64
+   size: lu64
    content_key: string
    sub_pack_name: string
    content_identity: string
@@ -27,13 +27,13 @@ ResourcePackIdVersions: []varint
    # The subpack name of the resource pack.
    name: string
 
-ResourcePackIds: string[]varint
+ResourcePackIds: string[]li16
 
 Experiment:
    name: string
    enabled: bool
 
-Experiments: Experiment[]varint
+Experiments: Experiment[]li32
 
 GameRule:
    name: string
@@ -43,7 +43,7 @@ GameRule:
       3: float
    value: type?
       if bool: bool
-      if int: varint
+      if int: zigzag32
       if float: lf32
 
 GameRules: GameRule[]varint
@@ -150,10 +150,10 @@ BlockCoordinates: # mojang...
    z: zigzag32
 
 PlayerAttributes: []varint
-   min_value: lf32
-   max_value: lf32
-   current_value: lf32
-   default_value: lf32
+   min: lf32
+   max: lf32
+   current: lf32
+   default: lf32
    name: string
 
 Transaction:
@@ -190,7 +190,7 @@ Transaction:
       slot: varint
       old_item: Item
       new_item: Item
-      new_item_stack_id: has_network_ids?
+      new_item_stack_id: ../has_network_ids?
          if true:  zigzag32
          default: void
    transaction_data: transaction_type?
@@ -242,7 +242,7 @@ PotionContainerChangeRecipes: []varint
    output_item_id: zigzag32
 
 Recipes: []varint
-   type: varint =>
+   type: zigzag32 =>
       '0': 'shapeless' #'ENTRY_SHAPELESS',
       '1': 'shaped' #'ENTRY_SHAPED',
       '2': 'furnace' # 'ENTRY_FURNACE',
@@ -341,9 +341,6 @@ PlayerRecords:
             is_host: bool
          if remove:
             uuid: uuid
-   uuid: type?
-      if add: uuid
-      default: void
    verified: bool[]$records_count
 
 ScoreEntries:

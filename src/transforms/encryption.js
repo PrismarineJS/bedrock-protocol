@@ -119,28 +119,46 @@ function createDecryptor(client, iv) {
 
   const verifyChecksum = new Transform({ // verify checksum
     transform(chunk, encoding, cb) {
-      console.log('Decryptor: checking checksum', chunk)
+      console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
       const packet = chunk.slice(0, chunk.length - 8);
       const checksum = chunk.slice(chunk.length - 8);
       const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
+      // console.log(computedCheckSum2, computedCheckSum3)
       console.assert(checksum.toString("hex") == computedCheckSum.toString("hex"), 'checksum mismatch')
       client.receiveCounter++
-      if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
+      // if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
         this.push(packet)
-      } else {
-        throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
-      }
+      //   console.log('🔵 Decriphered', checksum)
+
+      //   const inflated = Zlib.inflateRawSync(chunk, {
+      //     chunkSize: 1024 * 1024 * 2
+      //   })
+      //   console.log('🔵 Inflated')
+      //   client.onDecryptedPacket(inflated)
+      // } else {
+      //   // console.log('🔴 Not OK')
+      //   throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
+      // }
       cb()
     }
   })
 
   const inflator = new Transform({
     transform(chunk, enc, cb) {
-      Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buf) => {
-        if (err) throw err
-        this.push(buf)
-        cb()
+      console.log('🔵 Inflating')
+      const inflated = Zlib.inflateRawSync(chunk, {
+        chunkSize: 1024 * 1024 * 2
       })
+      console.log('🔵 Inflated')
+      this.push(inflated)
+      cb()
+
+      // Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buf) => {
+      //   console.log('🔵 INF')
+      //   if (err) throw err
+      //   this.push(buf)
+      //   cb()
+      // })
     }
   })
 
@@ -148,11 +166,24 @@ function createDecryptor(client, iv) {
     .pipe(inflator)
     // .pipe(Zlib.createInflateRaw({ chunkSize: 1024 * 1024 * 2 }))
     .on('data', (...args) => client.onDecryptedPacket(...args))
-    .on('end', () => console.log('Decryptor: finish pipeline'))
+    // .on('end', () => console.log('Decryptor: finish pipeline'))
 
+  // Not sure why, but sending two packets to the decryption pipe before
+  // the other is completed breaks the checksum check.
+  // TODO: Refactor the logic here to be async so we can await a promise
+  // queue
+  let decQ = []
+  setInterval(() => {
+    if (decQ.length) {
+      let pak = decQ.shift()
+      console.log('🟡 DECRYPTING', pak)
+      client.decipher.write(pak)
+    }
+  }, 500)
 
   return (blob) => {
-    client.decipher.write(blob)
+    decQ.push(blob)
+    // client.decipher.write(blob)
   }
 }
 

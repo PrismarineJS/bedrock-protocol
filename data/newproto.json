@@ -25,7 +25,7 @@
               "type": "string"
             },
             {
-              "name": "length",
+              "name": "size",
               "type": "lu64"
             },
             {
@@ -64,7 +64,7 @@
               "type": "string"
             },
             {
-              "name": "length",
+              "name": "size",
               "type": "lu64"
             },
             {
@@ -117,7 +117,7 @@
     "ResourcePackIds": [
       "array",
       {
-        "countType": "varint",
+        "countType": "li16",
         "type": "string"
       }
     ],
@@ -137,7 +137,7 @@
     "Experiments": [
       "array",
       {
-        "countType": "varint",
+        "countType": "li32",
         "type": "Experiment"
       }
     ],
@@ -170,7 +170,7 @@
               "compareTo": "type",
               "fields": {
                 "bool": "bool",
-                "int": "varint",
+                "int": "zigzag32",
                 "float": "lf32"
               },
               "default": "void"
@@ -580,19 +580,19 @@
           "container",
           [
             {
-              "name": "min_value",
+              "name": "min",
               "type": "lf32"
             },
             {
-              "name": "max_value",
+              "name": "max",
               "type": "lf32"
             },
             {
-              "name": "current_value",
+              "name": "current",
               "type": "lf32"
             },
             {
-              "name": "default_value",
+              "name": "default",
               "type": "lf32"
             },
             {
@@ -775,7 +775,7 @@
                     "type": [
                       "switch",
                       {
-                        "compareTo": "has_network_ids",
+                        "compareTo": "../has_network_ids",
                         "fields": {
                           "true": "zigzag32"
                         },
@@ -1010,7 +1010,7 @@
               "type": [
                 "mapper",
                 {
-                  "type": "varint",
+                  "type": "zigzag32",
                   "mappings": {
                     "0": "shapeless",
                     "1": "shaped",
@@ -1446,19 +1446,6 @@
                   "default": "void"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "name": "uuid",
-          "type": [
-            "switch",
-            {
-              "compareTo": "type",
-              "fields": {
-                "add": "uuid"
-              },
-              "default": "void"
             }
           ]
         },
@@ -2671,7 +2658,7 @@
         },
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "player_gamemode",
@@ -2683,7 +2670,7 @@
         },
         {
           "name": "rotation",
-          "type": "vec3f"
+          "type": "vec2f"
         },
         {
           "name": "seed",
@@ -2834,11 +2821,11 @@
           "type": "string"
         },
         {
-          "name": "limited_world_width_",
+          "name": "limited_world_width",
           "type": "li32"
         },
         {
-          "name": "limited_world_length_",
+          "name": "limited_world_length",
           "type": "li32"
         },
         {
@@ -2886,6 +2873,10 @@
         {
           "name": "enchantment_seed",
           "type": "zigzag32"
+        },
+        {
+          "name": "block_palette",
+          "type": "BlockPalette"
         },
         {
           "name": "itemstates",
@@ -3390,7 +3381,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "attributes",
@@ -3398,7 +3389,7 @@
         },
         {
           "name": "tick",
-          "type": "varint"
+          "type": "varint64"
         }
       ]
     ],

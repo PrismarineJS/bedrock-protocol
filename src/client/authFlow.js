@@ -109,7 +109,9 @@ class MsAuthFlow {
   }
 
   async getMinecraftToken (publicKey) {
-    if (await this.mca.verifyTokens()) {
+    // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
+    // is this even a good idea to cache?
+    if (await this.mca.verifyTokens() && false) {
       debug('[mc] Using existing tokens')
       return this.mca.getCachedAccessToken().chain
     } else {
@@ -118,7 +120,8 @@ class MsAuthFlow {
       return await retry(async () => {
         const xsts = await this.getXboxToken()
         debug('[xbl] xsts data', xsts)
-        return this.mca.getAccessToken(publicKey, xsts).chain
+        const token = await this.mca.getAccessToken(publicKey, xsts)
+        return token.chain
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
   }
