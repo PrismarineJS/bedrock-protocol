@@ -40,7 +40,7 @@ nbt: native
 
 packet_login:
    !id: 0x01
-   !bound: client
+   !bound: server
    protocol_version: i32
    # The combined size of the `chain` and `client_data`
    payload_size: varint
@@ -52,7 +52,7 @@ packet_login:
 
 packet_play_status:
    !id: 0x02
-   !bound: server
+   !bound: client
    status: i32 =>
       # Sent after Login has been successfully decoded and the player has logged in
       0: login_success
@@ -74,7 +74,7 @@ packet_play_status:
 
 packet_server_to_client_handshake:
    !id: 0x03
-   !bound: server
+   !bound: client
    # Contains the salt to complete the Diffie-Hellman key exchange
    token: string
 
@@ -85,12 +85,12 @@ packet_server_to_client_handshake:
 # It has no fields.
 packet_client_to_server_handshake:
    !id: 0x04
-   !bound: client
+   !bound: server
 
 # Sent by the server to disconnect a client.
 packet_disconnect:
    !id: 0x05
-   !bound: server
+   !bound: client
    # Specifies if the disconnection screen should be hidden when the client is disconnected, 
    # meaning it will be sent directly to the main menu.
    hide_disconnect_reason: bool
@@ -100,7 +100,7 @@ packet_disconnect:
 
 packet_resource_packs_info:
    !id: 0x06
-   !bound: server
+   !bound: client
    # If the resource pack requires the client accept it.
    must_accept: bool
    # If scripting is enabled.
@@ -114,7 +114,7 @@ packet_resource_packs_info:
 
 packet_resource_pack_stack:
    !id: 0x07
-   !bound: server
+   !bound: client
    # If the resource pack must be accepted for the player to join the server.
    must_accept: bool
    # [inline]
@@ -127,7 +127,7 @@ packet_resource_pack_stack:
 
 packet_resource_pack_client_response:
    !id: 0x08
-   !bound: client
+   !bound: server
    response_status: u8 =>
       0: none
       1: refused
@@ -144,6 +144,8 @@ packet_resource_pack_client_response:
 packet_text:
    !id: 0x09
    !bound: both
+   # TextType is the type of the text sent. When a client sends this to the server, it should always be
+   # TextTypeChat. If the server sends it, it may be one of the other text types above.
    type: u8 =>
       0: raw
       1: chat
@@ -162,7 +164,7 @@ packet_text:
    needs_translation: bool
    _: type?
       if chat or whisper or announcement:
-         sourceName: string
+         source_name: string
       if raw or tip or system or json_whisper or json:
          message: string
       if translation or popup or jukebox_popup:
@@ -182,7 +184,7 @@ packet_text:
 # of synchronizing time between server and client.
 packet_set_time:
    !id: 0x0a
-   !bound: server
+   !bound: client
    # Time is the current time. The time is not limited to 24000 (time of day), but continues 
    # progressing after that.
    time: zigzag32
@@ -190,7 +192,7 @@ packet_set_time:
 # Sent by the server to send information about the world the player will be spawned in.
 packet_start_game:
    !id: 0x0b
-   !bound: server
+   !bound: client
    # The unique ID of the player. The unique ID is a value that remains consistent across
    # different sessions of the same world, but most unofficial servers simply fill the
    # runtime ID of the entity out for this field.
@@ -344,9 +346,10 @@ packet_start_game:
    multiplayer_correlation_id: string
    server_authoritative_inventory: bool
 
+
 packet_add_player:
    !id: 0x0c
-   !bound: server
+   !bound: client
    # UUID is the UUID of the player. It is the same UUID that the client sent in the
    # Login packet at the start of the session. A player with this UUID must exist
    # in the player list (built up using the Player List packet) for it to show up in-game.
@@ -388,7 +391,7 @@ packet_add_player:
 
 packet_add_entity:
    !id: 0x0d
-   !bound: server
+   !bound: client
    entity_id_self: zigzag64
    runtime_entity_id: varint
    entity_type: string
@@ -407,12 +410,12 @@ packet_add_entity:
 
 packet_remove_entity:
    !id: 0x0e
-   !bound: server
+   !bound: client
    entity_id_self: zigzag64
 
 packet_add_item_entity:
    !id: 0x0f
-   !bound: server
+   !bound: client
    entity_id_self: zigzag64
    runtime_entity_id: varint
    item: Item
@@ -427,7 +430,7 @@ packet_add_item_entity:
 
 packet_take_item_entity:
    !id: 0x11
-   !bound: server
+   !bound: client
    runtime_entity_id: varint
    target: varint
 
@@ -460,7 +463,7 @@ packet_rider_jump:
 
 packet_update_block:
    !id: 0x15
-   !bound: server
+   !bound: client
    coordinates: BlockCoordinates
    block_runtime_id: varint
    block_priority: varint
@@ -468,7 +471,7 @@ packet_update_block:
 
 packet_add_painting:
    !id: 0x16
-   !bound: server
+   !bound: client
    entity_id_self: zigzag64
    runtime_entity_id: varint
    coordinates: BlockCoordinates
@@ -493,28 +496,153 @@ packet_level_sound_event_old:
 
 packet_level_event:
    !id: 0x19
-   !bound: server
-   event_id: zigzag32
+   !bound: client
+   event: zigzag32 =>
+      1000: sound_click  
+      1001: sound_click_fail  
+      1002: sound_shoot  
+      1003: sound_door  
+      1004: sound_fizz  
+      1005: sound_ignite  
+      1007: sound_ghast  
+      1008: sound_ghast_shoot  
+      1009: sound_blaze_shoot  
+      1010: sound_door_bump  
+      1012: sound_door_crash  
+      1018: sound_enderman_teleport  
+      1020: sound_anvil_break  
+      1021: sound_anvil_use  
+      1022: sound_anvil_fall  
+      1030: sound_pop  
+      1032: sound_portal  
+      1040: sound_itemframe_add_item  
+      1041: sound_itemframe_remove  
+      1042: sound_itemframe_place  
+      1043: sound_itemframe_remove_item  
+      1044: sound_itemframe_rotate_item  
+      1050: sound_camera  
+      1051: sound_orb  
+      1052: sound_totem  
+      1060: sound_armor_stand_break  
+      1061: sound_armor_stand_hit  
+      1062: sound_armor_stand_fall  
+      1063: sound_armor_stand_place  
+      2000: particle_shoot   #TODO: check 2000-2017
+      2001: particle_destroy  
+      2002: particle_splash  
+      2003: particle_eye_despawn  
+      2004: particle_spawn  
+      2006: guardian_curse  
+      2008: particle_block_force_field  
+      2009: particle_projectile_hit  
+      2013: particle_enderman_teleport  
+      2014: particle_punch_block  
+      3001: start_rain  
+      3002: start_thunder  
+      3003: stop_rain  
+      3004: stop_thunder  
+      3005: pause_game   #data: 1 to pause, 0 to resume
+      3006: pause_game_no_screen   #data: 1 to pause, 0 to resume - same effect as normal pause but without screen
+      3007: set_game_speed   #x coordinate of pos = scale factor (default 1.0)
+      3500: redstone_trigger  
+      3501: cauldron_explode  
+      3502: cauldron_dye_armor  
+      3503: cauldron_clean_armor  
+      3504: cauldron_fill_potion  
+      3505: cauldron_take_potion  
+      3506: cauldron_fill_water  
+      3507: cauldron_take_water  
+      3508: cauldron_add_dye  
+      3509: cauldron_clean_banner  
+      3600: block_start_break  
+      3601: block_stop_break  
+      4000: set_data  
+      9800: players_sleeping  
+      0x4000: add_particle_mask
    position: vec3f
    data: zigzag32
 
 packet_block_event:
    !id: 0x1a
-   !bound: server
-   coordinates: BlockCoordinates
-   case_1: zigzag32
-   case_2: zigzag32
+   !bound: client
+   # Position is the position of the block that an event occurred at.
+   position: BlockCoordinates
+   # EventType is the type of the block event. 
+   # The event type decides the way the event data that follows is used
+   type: zigzag32 =>
+      0: sound
+      1: change_state
+   # EventData holds event type specific data. For chests for example,
+   # opening the chest means the data must be 1
+   data: zigzag32
 
 packet_entity_event:
    !id: 0x1b
    !bound: both
    runtime_entity_id: varint
-   event_id: u8
+   event_id: u8 =>
+      1: jump 
+      2: hurt_animation 
+      3: death_animation 
+      4: arm_swing 
+      5: stop_attack 
+      6: tame_fail 
+      7: tame_success 
+      8: shake_wet 
+      9: use_item 
+      10: eat_grass_animation 
+      11: fish_hook_bubble 
+      12: fish_hook_position 
+      13: fish_hook_hook 
+      14: fish_hook_tease 
+      15: squid_ink_cloud 
+      16: zombie_villager_cure 
+      18: respawn 
+      19: iron_golem_offer_flower 
+      20: iron_golem_withdraw_flower 
+      21: love_particles  #breeding
+      22: villager_angry 
+      23: villager_happy 
+      24: witch_spell_particles 
+      25: firework_particles 
+      26: in_love_particles 
+      27: silverfish_spawn_animation 
+      28: guardian_attack 
+      29: witch_drink_potion 
+      30: witch_throw_potion 
+      31: minecart_tnt_prime_fuse 
+      32: creeper_prime_fuse 
+      33: air_supply_expired 
+      34: player_add_xp_levels 
+      35: elder_guardian_curse 
+      36: agent_arm_swing 
+      37: ender_dragon_death 
+      38: dust_particles  #not sure what this is
+      39: arrow_shake 
+
+      57: eating_item 
+
+      60: baby_animal_feed  #green particles, like bonemeal on crops
+      61: death_smoke_cloud 
+      62: complete_trade 
+      63: remove_leash  #data 1 = cut leash
+
+      65: consume_totem 
+      66: player_check_treasure_hunter_achievement  #mojang...
+      67: entity_spawn  #used for MinecraftEventing stuff, not needed
+      68: dragon_puke  #they call this puke particles
+      69: item_entity_merge 
+      70: start_swim 
+      71: balloon_pop 
+      72: treasure_hunt 
+      73: agent_summon 
+      74: charged_crossbow 
+      75: fall 
    data: zigzag32
 
 packet_mob_effect:
    !id: 0x1c
-   !bound: server
+   !bound: client
    runtime_entity_id: varint
    event_id: u8
    effect_id: zigzag32
@@ -524,7 +652,7 @@ packet_mob_effect:
 
 packet_update_attributes:
    !id: 0x1d
-   !bound: server
+   !bound: client
    runtime_entity_id: varint64
    attributes: PlayerAttributes
    tick: varint64
@@ -560,7 +688,7 @@ packet_interact:
 
 packet_block_pick_request:
    !id: 0x22
-   !bound: client
+   !bound: server
    x: zigzag32
    y: zigzag32
    z: zigzag32
@@ -569,21 +697,59 @@ packet_block_pick_request:
 
 packet_entity_pick_request:
    !id: 0x23
-   !bound: client
+   !bound: server
    runtime_entity_id: lu64
    selected_slot: u8
 
+# PlayerAction is sent by the client when it executes any action, for example starting to sprint, swim,
+# starting the breaking of a block, dropping an item, etc.
 packet_player_action:
    !id: 0x24
-   !bound: client
+   !bound: server
+   # EntityRuntimeID is the runtime ID of the player. The runtime ID is unique for each world session, and
+   # entities are generally identified in packets using this runtime ID.
    runtime_entity_id: varint
-   action_id: zigzag32
-   coordinates: BlockCoordinates
+   # ActionType is the ID of the action that was executed by the player. It is one of the constants that may
+   # be found above.
+   action: zigzag32 =>
+      0: start_break
+      1: abort_break
+      2: stop_break
+      3: get_updated_block
+      4: drop_item
+      5: start_sleeping
+      6: stop_sleeping
+      7: respawn
+      8: jump
+      9: start_sprint
+      10: stop_sprint
+      11: start_sneak
+      12: stop_sneak
+      13: creative_player_destroy_block
+      # sent when spawning in a different dimension to tell the server we spawned
+      14: dimension_change_ack
+      15: start_glide
+      16: stop_glide
+      17: build_denied
+      18: continue_break
+      19: change_skin
+      # no longer used
+      20: set_enchatnment_seed
+      21: swimming
+      22: stop_swimming
+      23: start_spin_attack
+      24: stop_spin_attack
+      25: ineract_block
+   # BlockPosition is the position of the target block, if the action with the ActionType set concerned a
+   # block. If that is not the case, the block position will be zero.
+   position: BlockCoordinates
+   # BlockFace is the face of the target block that was touched. If the action with the ActionType set
+   # concerned a block. If not, the face is always 0.
    face: zigzag32
 
 packet_hurt_armor:
    !id: 0x26
-   !bound: server
+   !bound: client
    health: zigzag32
 
 packet_set_entity_data:
@@ -601,7 +767,7 @@ packet_set_entity_motion:
 
 packet_set_entity_link:
    !id: 0x29
-   !bound: server
+   !bound: client
    ridden_id: zigzag64
    rider_id: zigzag64
    link_type: u8
@@ -609,12 +775,12 @@ packet_set_entity_link:
 
 packet_set_health:
    !id: 0x2a
-   !bound: server
+   !bound: client
    health: zigzag32
 
 packet_set_spawn_position:
    !id: 0x2b
-   !bound: server
+   !bound: client
    spawn_type: zigzag32
    coordinates: BlockCoordinates
    dimension: zigzag32
@@ -637,7 +803,7 @@ packet_respawn:
 
 packet_container_open:
    !id: 0x2e
-   !bound: server
+   !bound: client
    window_id: u8
    type: u8
    coordinates: BlockCoordinates
@@ -672,14 +838,14 @@ packet_inventory_slot:
 
 packet_container_set_data:
    !id: 0x33
-   !bound: server
+   !bound: client
    window_id: u8
    property: zigzag32
    value: zigzag32
 
 packet_crafting_data:
    !id: 0x34
-   !bound: server
+   !bound: client
    recipes: Recipes
    potion_type_recipes: PotionTypeRecipes
    potion_container_recipes: PotionContainerChangeRecipes
@@ -696,7 +862,7 @@ packet_crafting_event:
 
 packet_gui_data_pick_item:
    !id: 0x36
-   !bound: server
+   !bound: client
 
 packet_adventure_settings:
    !id: 0x37
@@ -711,12 +877,12 @@ packet_adventure_settings:
 packet_block_entity_data:
    !id: 0x38
    !bound: both
-   coordinates: BlockCoordinates
+   position: BlockCoordinates
    nbt: nbt
 
 packet_player_input:
    !id: 0x39
-   !bound: client
+   !bound: server
    motion_x: lf32
    motion_z: lf32
    jumping: bool
@@ -724,25 +890,25 @@ packet_player_input:
 
 packet_level_chunk:
    !id: 0x3a
-   !bound: server
-   chunk_x: zigzag32
-   chunk_z: zigzag32
+   !bound: client
+   x: zigzag32
+   z: zigzag32
    sub_chunk_count: varint
    column: Chunks
 
 packet_set_commands_enabled:
    !id: 0x3b
-   !bound: server
+   !bound: client
    enabled: bool
 
 packet_set_difficulty:
    !id: 0x3c
-   !bound: server
+   !bound: client
    difficulty: varint
 
 packet_change_dimension:
    !id: 0x3d
-   !bound: server
+   !bound: client
    dimension: zigzag32
    position: vec3f
    respawn: bool
@@ -754,23 +920,23 @@ packet_set_player_game_type:
 
 packet_player_list:
    !id: 0x3f
-   !bound: server
+   !bound: client
    records: PlayerRecords
 
 packet_simple_event:
    !id: 0x40
-   !bound: server
+   !bound: client
    event_type: lu16
 
 packet_spawn_experience_orb:
    !id: 0x42
-   !bound: server
+   !bound: client
    position: vec3f
    count: zigzag32
 
 packet_clientbound_map_item_data:
    !id: 0x43
-   !bound: server
+   !bound: client
    mapinfo: MapInfo
 
 packet_map_info_request:
@@ -785,7 +951,7 @@ packet_request_chunk_radius:
 
 packet_chunk_radius_update:
    !id: 0x46
-   !bound: server
+   !bound: client
    chunk_radius: zigzag32
 
 packet_item_frame_drop_item:
@@ -795,52 +961,137 @@ packet_item_frame_drop_item:
 
 packet_game_rules_changed:
    !id: 0x48
-   !bound: server
+   !bound: client
    rules: GameRules
 
 packet_camera:
    !id: 0x49
-   !bound: server
+   !bound: client
    unknown1: zigzag64
    unknown2: zigzag64
 
 packet_boss_event:
    !id: 0x4a
-   !bound: server
+   !bound: both
    boss_entity_id: zigzag64
-   event_type: varint
+   type: varint =>
+      # S2C: Shows the boss-bar to the player.
+      0: show_bar
+      # C2S: Registers a player to a boss fight.
+      1: register_player
+      # S2C: Removes the boss-bar from the client.
+      2: hide_bar
+      # C2S: Unregisters a player from a boss fight.
+      3: unregister_player
+      # S2C: Sets the bar percentage.
+      4: set_bar_progress
+      # S2C: Sets title of the bar.
+      5: set_bar_title
+      # S2C: darkens the sky
+      6: update_properties
+      # S2C: Not implemented :( Intended to alter bar appearance, but these currently produce no effect on client-side whatsoever.
+      7: texture
+   _: type?
+      if register_player or unregister_player:
+         player_id: zigzag64
+      if show:
+         title: string
+         bar_progress: lf32
+      if update_properties:
+         darkness_factor: li16
+      if texture:
+         color: varint
+         overlay: varint
+      if set_bar_progress:
+         bar_progress: lf32
+      if set_bar_title:
+         title: string
 
 packet_show_credits:
    !id: 0x4b
-   !bound: server
+   !bound: client
    runtime_entity_id: varint
    status: zigzag32
 
 packet_available_commands:
    !id: 0x4c
-   !bound: server
+   !bound: client
+   # enum_values: string[]varint
+   # suffixes: string[]varint
+   # enums: []varint
+   #    name: string
+   #    # The length of the array below
+   #    values_len: varint
+   #    # Not read from stream: instead calculated from the `values_len` field
+   #    # If the values_len < 0xff => byte
+   #    # If the values_len < 0xffff => short
+   #    # If the values_len < 0xffffff => int
+   #    enum_typex: u8 =>
+   #       0: byte
+   #       1: short
+   #       2: int
+   #    valuex: []varint
+   #       # S: bool
+   #       ix: ../enum_typex?
+   #          if byte: u8
+   #          if short: lu16
+   #          if int: lu32
 
+# CommandRequest is sent by the client to request the execution of a server-side command. Although some
+# servers support sending commands using the Text packet, this packet is guaranteed to have the correct
+# result.
 packet_command_request:
    !id: 0x4d
-   !bound: client
+   !bound: server
+   # CommandLine is the raw entered command line. The client does no parsing of the command line by itself
+   # (unlike it did in the early stages), but lets the server do that.
    command: string
-   command_type: varint
-   unknown_uuid: uuid
-   request_id: string
-   unknown: bool
+   # Origin holds information about the command sender that will be returnd back in the command response
+   origin: CommandOrigin
+   # Internal specifies if the command request internal. Setting it to false seems to work and the usage of
+   # this field is not known.
+   interval: bool
+
 
 packet_command_block_update:
    !id: 0x4e
-   !bound: client
+   !bound: server
    is_block: bool
 
 packet_command_output:
    !id: 0x4f
-   !bound: server
+   !bound: client
+   # CommandOrigin is the data specifying the origin of the command. In other words, the source that the
+   # command request was from, such as the player itself or a websocket server. The client forwards the
+   # messages in this packet to the right origin, depending on what is sent here.
+   origin: CommandOrigin
+   # OutputType specifies the type of output that is sent. The OutputType sent by vanilla games appears to
+   # be 3, which seems to work.
+   output_type: i8
+   # SuccessCount is the amount of times that a command was executed successfully as a result of the command
+   # that was requested. For servers, this is usually a rather meaningless fields, but for vanilla, this is
+   # applicable for commands created with Functions.
+   success_count: varint
+   # OutputMessages is a list of all output messages that should be sent to the player. Whether they are
+   # shown or not, depends on the type of the messages.
+   output: []varint
+      # Success indicates if the output message was one of a successful command execution. If set to true, the
+      # output message is by default coloured white, whereas if set to false, the message is by default
+      # coloured red.
+      success: bool
+      # Message is the message that is sent to the client in the chat window. It may either be simply a
+      # message or a translated built-in string like 'commands.tp.success.coordinates', combined with specific
+      # parameters below.
+      message_id: string
+      # Parameters is a list of parameters that serve to supply the message sent with additional information,
+      # such as the position that a player was teleported to or the effect that was applied to an entity.
+      # These parameters only apply for the Minecraft built-in command output.
+      paramaters: string[]varint
+
 
 packet_update_trade:
    !id: 0x50
-   !bound: server
+   !bound: client
    window_id: u8
    window_type: u8
    unknown0: varint
@@ -854,7 +1105,7 @@ packet_update_trade:
 
 packet_update_equipment:
    !id: 0x51
-   !bound: server
+   !bound: client
    window_id: u8
    window_type: u8
    unknown: u8
@@ -863,7 +1114,7 @@ packet_update_equipment:
 
 packet_resource_pack_data_info:
    !id: 0x52
-   !bound: server
+   !bound: client
    package_id: string
    max_chunk_size: lu32
    chunk_count: lu32
@@ -874,7 +1125,7 @@ packet_resource_pack_data_info:
 
 packet_resource_pack_chunk_data:
    !id: 0x53
-   !bound: server
+   !bound: client
    package_id: string
    chunk_index: lu32
    progress: lu64
@@ -882,19 +1133,19 @@ packet_resource_pack_chunk_data:
 
 packet_resource_pack_chunk_request:
    !id: 0x54
-   !bound: client
+   !bound: server
    package_id: string
    chunk_index: lu32
 
 packet_transfer:
    !id: 0x55
-   !bound: server
+   !bound: client
    server_address: string
    port: lu16
 
 packet_play_sound:
    !id: 0x56
-   !bound: server
+   !bound: client
    name: string
    coordinates: BlockCoordinates
    volume: lf32
@@ -902,13 +1153,13 @@ packet_play_sound:
 
 packet_stop_sound:
    !id: 0x57
-   !bound: server
+   !bound: client
    name: string
    stop_all: bool
 
 packet_set_title:
    !id: 0x58
-   !bound: server
+   !bound: client
    type: zigzag32
    text: string
    fade_in_time: zigzag32
@@ -917,22 +1168,22 @@ packet_set_title:
 
 packet_add_behavior_tree:
    !id: 0x59
-   !bound: server
+   !bound: client
    behaviortree: string
 
 packet_structure_block_update:
    !id: 0x5a
-   !bound: server
+   !bound: client
 
 packet_show_store_offer:
    !id: 0x5b
-   !bound: server
+   !bound: client
    unknown0: string
    unknown1: bool
 
 packet_purchase_receipt:
    !id: 0x5c
-   !bound: client
+   !bound: server
 
 packet_player_skin:
    !id: 0x5d
@@ -945,21 +1196,43 @@ packet_player_skin:
 
 packet_sub_client_login:
    !id: 0x5e
-   !bound: server
+   !bound: client
 
 packet_initiate_web_socket_connection:
    !id: 0x5f
-   !bound: server
+   !bound: client
    server: string
 
 packet_set_last_hurt_by:
    !id: 0x60
-   !bound: server
+   !bound: client
    unknown: varint
 
 packet_book_edit:
    !id: 0x61
-   !bound: server
+   !bound: client
+   type: u8 =>
+      0: replace_page
+      1: add_page
+      2: delete_page
+      3: swap_pages
+      4: sign
+   slot: u8
+   _: type?
+      if replace_page or add_page:
+         page_number: u8
+         text: string
+         photo_name: string
+      if delete_page:
+         page_number: u8
+      if swap_pages:
+         page1: u8
+         page2: u8
+      if sign:
+         title: string
+         author: string
+         xuid: string
+
 
 packet_npc_request:
    !id: 0x62
@@ -971,51 +1244,51 @@ packet_npc_request:
 
 packet_photo_transfer:
    !id: 0x63
-   !bound: client
+   !bound: server
    file_name: string
    image_data: string
    unknown2: string
 
 packet_modal_form_request:
    !id: 0x64
-   !bound: server
+   !bound: client
    form_id: varint
    data: string
 
 packet_modal_form_response:
    !id: 0x65
-   !bound: client
+   !bound: server
    form_id: varint
    data: string
 
 packet_server_settings_request:
    !id: 0x66
-   !bound: client
+   !bound: server
 
 packet_server_settings_response:
    !id: 0x67
-   !bound: server
+   !bound: client
    form_id: varint
    data: string
 
 packet_show_profile:
    !id: 0x68
-   !bound: server
+   !bound: client
    xuid: string
 
 packet_set_default_game_type:
    !id: 0x69
-   !bound: server
+   !bound: client
    gamemode: varint
 
 packet_remove_objective:
    !id: 0x6a
-   !bound: server
+   !bound: client
    objective_name: string
 
 packet_set_display_objective:
    !id: 0x6b
-   !bound: server
+   !bound: client
    display_slot: string
    objective_name: string
    display_name: string
@@ -1024,7 +1297,7 @@ packet_set_display_objective:
 
 packet_set_score:
    !id: 0x6c
-   !bound: server
+   !bound: client
    entries: ScoreEntries
 
 packet_lab_table:
@@ -1038,7 +1311,7 @@ packet_lab_table:
 
 packet_update_block_synced:
    !id: 0x6e
-   !bound: server
+   !bound: client
    coordinates: BlockCoordinates
    block_runtime_id: varint
    block_priority: varint
@@ -1048,23 +1321,23 @@ packet_update_block_synced:
 
 packet_move_entity_delta:
    !id: 0x6f
-   !bound: server
+   !bound: client
    runtime_entity_id: varint
    flags: lu16
 
 packet_set_scoreboard_identity:
    !id: 0x70
-   !bound: server
+   !bound: client
    entries: ScoreboardIdentityEntries
 
 packet_set_local_player_as_initialized:
    !id: 0x71
-   !bound: client
+   !bound: server
    runtime_entity_id: varint
 
 packet_update_soft_enum:
    !id: 0x72
-   !bound: server
+   !bound: client
 
 packet_network_stack_latency:
    !id: 0x73
@@ -1080,7 +1353,7 @@ packet_script_custom_event:
 
 packet_spawn_particle_effect:
    !id: 0x76
-   !bound: server
+   !bound: client
    dimension_id: u8
    entity_id: zigzag64
    position: vec3f
@@ -1088,7 +1361,7 @@ packet_spawn_particle_effect:
 
 packet_available_entity_identifiers:
    !id: 0x77
-   !bound: server
+   !bound: client
    nbt: nbt
 
 packet_level_sound_event_v2:
@@ -1103,13 +1376,13 @@ packet_level_sound_event_v2:
 
 packet_network_chunk_publisher_update:
    !id: 0x79
-   !bound: server
+   !bound: client
    coordinates: BlockCoordinates
    radius: varint
 
 packet_biome_definition_list:
    !id: 0x7a
-   !bound: server
+   !bound: client
    nbt: nbt
 
 packet_level_sound_event:
@@ -1124,15 +1397,15 @@ packet_level_sound_event:
 
 packet_level_event_generic:
    !id: 0x7c
-   !bound: server
+   !bound: client
 
 packet_lectern_update:
    !id: 0x7d
-   !bound: server
+   !bound: client
 
 packet_video_stream_connect:
    !id: 0x7e
-   !bound: server
+   !bound: client
    server_uri: string
    frame_send_frequency: lf32
    action: u8
@@ -1146,32 +1419,32 @@ packet_client_cache_status:
 
 packet_on_screen_texture_animation:
    !id: 0x82
-   !bound: server
+   !bound: client
 
 packet_map_create_locked_copy:
    !id: 0x83
-   !bound: server
+   !bound: client
 
 packet_structure_template_data_export_request:
    !id: 0x84
-   !bound: server
+   !bound: client
 
 packet_structure_template_data_export_response:
    !id: 0x85
-   !bound: server
+   !bound: client
 
 packet_update_block_properties:
    !id: 0x86
-   !bound: server
+   !bound: client
    nbt: nbt
 
 packet_client_cache_blob_status:
    !id: 0x87
-   !bound: server
+   !bound: client
 
 packet_client_cache_miss_response:
    !id: 0x88
-   !bound: server
+   !bound: client
 
 packet_network_settings:
    !id: 0x8f
@@ -1181,31 +1454,31 @@ packet_network_settings:
 
 packet_creative_content:
    !id: 0x91
-   !bound: server
+   !bound: client
    items: ItemStacks
 
 packet_player_enchant_options:
    !id: 0x92
-   !bound: server
+   !bound: client
    enchant_options: EnchantOptions
 
 packet_item_stack_request:
    !id: 0x93
-   !bound: client
+   !bound: server
    requests: ItemStackRequests
 
 packet_item_stack_response:
    !id: 0x94
-   !bound: server
+   !bound: client
    responses: ItemStackResponses
 
 packet_update_player_game_type:
    !id: 0x97
-   !bound: client
+   !bound: server
 
 packet_packet_violation_warning:
    !id: 0x9c
-   !bound: client
+   !bound: server
    violation_type: zigzag32
    severity: zigzag32
    packet_id: zigzag32
@@ -1213,11 +1486,11 @@ packet_packet_violation_warning:
 
 packet_item_component:
    !id: 0xa2
-   !bound: server
+   !bound: client
    entries: ItemComponentList
 
 packet_filter_text_packet:
    !id: 0xa3
-   !bound: server
+   !bound: client
    text: string
    from_server: bool

@@ -104,27 +104,146 @@ vec2f:
    z: lf32
 
 MetadataDictionary: []varint
-   key: varint
+   # https://github.com/pmmp/PocketMine-MP/blob/stable/src/pocketmine/entity/Entity.php#L101
+   key: varint =>
+      0: index
+      1: health #int (minecart/boat)
+      2: variant #int
+      3: color #byte
+      4: nametag #string
+      5: owner_eid #long
+      6: target_eid #long
+      7: air #short
+      8: potion_color #int (ARGB!)
+      9: potion_ambient #byte
+      10: jump_duration #long
+      11: hurt_time #int (minecart/boat)
+      12: hurt_direction #int (minecart/boat)
+      13: paddle_time_left #float
+      14: paddle_time_right #float
+      15: experience_value #int (xp orb)
+      16: minecart_display_block #int (id | (data << 16))
+      17: minecart_display_offset #int
+      18: minecart_has_display #byte (must be 1 for minecart to show block inside)
+      20: old_swell
+      21: swell_dir
+      22: charge_amount
+      23: enderman_held_runtime_id #short
+      24: entity_age #short
+      26: player_flags
+      27: player_index
+      28: player_bed_position #block coords
+      29: fireball_power_x #float
+      30: fireball_power_y
+      31: fireball_power_z
+      32: aux_power
+      33: fish_x
+      34: fish_z
+      35: fish_angle
+      36: potion_aux_value #short
+      37: lead_holder_eid #long
+      38: scale
+      39: interactive_tag #string
+      40: npc_skin_id #string
+      41: url_tag #string
+      42: max_airdata_max_air
+      43: mark_variant #int
+      44: container_type #byte
+      45: container_base_size #int
+      46: container_extra_slots_per_strength #int
+      47: block_target
+      48: wither_invulnerable_ticks #int
+      49: wither_target_1 #long
+      50: wither_target_2 #long
+      51: wither_target_3 #long
+      52: aerial_attack
+      53: boundingbox_width
+      54: boundingbox_height
+      55: fuse_length
+      56: rider_seat_position #vector3f
+      57: rider_rotation_locked #byte
+      58: rider_max_rotation #float
+      59: rider_min_rotation #float
+      60: area_effect_cloud_radius #float
+      61: area_effect_cloud_waiting #int
+      62: area_effect_cloud_particle_id #int
+      63: shulker_peek_id #int
+      64: shulker_attach_face #byte
+      65: shulker_attached #short
+      66: shulker_attach_pos
+      67: trading_player_eid #long
+      68: trading_career
+      69: has_command_block
+      70: command_block_command #string
+      71: command_block_last_output #string
+      72: command_block_track_output #byte
+      73: controlling_rider_seat_number #byte
+      74: strength #int
+      75: max_strength #int
+      76: spell_casting_color #int
+      77: limited_life
+      78: armor_stand_pose_index # int
+      79: ender_crystal_time_offset # int
+      80: always_show_nametag # byte
+      81: color_2 # byte
+      82: name_author
+      83: score_tag #String
+      84: balloon_attached_entity # long
+      85: pufferfish_size
+      86: bubble_time
+      87: agent
+      88: sitting_amount
+      89: sitting_amount_previous
+      90: eating_counter
+      91: flags_extended
+      92: laying_amount
+      93: laying_amount_previous
+      94: duration
+      95: spawn_time
+      96: change_rate
+      97: change_on_pickup
+      98: pickup_count
+      99: interact_text
+      100: trade_tier
+      101: max_trade_tier
+      102: trade_experience
+      103: skin_id
+      104: spawning_frames
+      105: command_block_tick_delay
+      106: command_block_execute_on_first_tick
+      107: ambient_sound_interval
+      108: ambient_sound_interval_range
+      109: ambient_sound_event_name
+      110: fall_damage_multiplier
+      111: name_raw_text
+      112: can_ride_target
+      113: low_tier_cured_discount
+      114: high_tier_cured_discount
+      115: nearby_cured_discount
+      116: nearby_cured_discount_timestamp
+      117: hitbox
+      118: is_buoyant
+      119: buoyancy_data
    type: varint =>
-      0: BYTE
-      1: SHORT
-      2: INT
-      3: FLOAT
-      4: STRING
-      5: COMPOUND_TAG
-      6: POS
-      7: LONG
-      8: VECTOR3F
+      0: byte
+      1: short
+      2: int
+      3: float
+      4: string
+      5: compound
+      6: vec3i
+      7: long
+      8: vec3f
    value: type?
-      if BYTE: i8
-      if SHORT: li16
-      if INT: zigzag32
-      if FLOAT: lf32
-      if STRING: string
-      if COMPOUND_TAG: nbt
-      if POS: vec3i
-      if LONG: zigzag64
-      if VECTOR3F: li32
+      if byte: i8
+      if short: li16
+      if int: zigzag32
+      if float: lf32
+      if string: string
+      if compound: nbt
+      if vec3i: vec3i
+      if long: zigzag64
+      if vec3f: vec3f
 
 Links: []varint
    ridden_entity_id: zigzag64
@@ -456,3 +575,36 @@ ItemStackResponses: []varint
 ItemComponentList: []varint
    name: string
    nbt: nbt
+
+CommandOrigin:
+   # Origin is one of the values above that specifies the origin of the command. The origin may change,
+   # depending on what part of the client actually called the command. The command may be issued by a
+   # websocket server, for example.
+   type: varint =>
+      0: player
+      1: block
+      2: minecart_block
+      3: dev_console
+      4: test
+      5: automation_player
+      6: client_automation
+      7: dedicated_server
+      8: entity
+      9: virtual
+      10: game_argument
+      11: entity_server
+   # UUID is the UUID of the command called. This UUID is a bit odd as it is not specified by the server. It
+   # is not clear what exactly this UUID is meant to identify, but it is unique for each command called.
+   uuid: uuid
+   # RequestID is an ID that identifies the request of the client. The server should send a CommandOrigin
+   # with the same request ID to ensure it can be matched with the request by the caller of the command.
+   # This is especially important for websocket servers and it seems that this field is only non-empty for
+   # these websocket servers.
+   request_id: string
+   # PlayerUniqueID is an ID that identifies the player, the same as the one found in the AdventureSettings
+   # packet. Filling it out with 0 seems to work.
+   # PlayerUniqueID is only written if Origin is CommandOriginDevConsole or CommandOriginTest.
+   player_entity_id: type?
+      if dev_console or test:
+         player_entity_id: zigzag64
+
