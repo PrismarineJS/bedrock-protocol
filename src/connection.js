@@ -87,7 +87,7 @@ class Connection extends EventEmitter {
   handle(buffer) { // handle encapsulated
     if (buffer[0] == 0xfe) { // wrapper
       if (this.encryptionEnabled) {
-        // console.log('READING ENCRYPTED PACKET', buffer)
+        console.log('Reading encrypted packet', buffer)
         this.decrypt(buffer.slice(1))
       } else {
         const stream = new BinaryStream(buffer)
@@ -100,6 +100,7 @@ class Connection extends EventEmitter {
         }
       }
     }
+    console.log('[client] procesed ', buffer)
   }
 }
 

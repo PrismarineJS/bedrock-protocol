@@ -126,47 +126,28 @@ function createDecryptor(client, iv) {
       // console.log(computedCheckSum2, computedCheckSum3)
       console.assert(checksum.toString("hex") == computedCheckSum.toString("hex"), 'checksum mismatch')
       client.receiveCounter++
-      // if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
-        this.push(packet)
-      //   console.log('🔵 Decriphered', checksum)
 
-      //   const inflated = Zlib.inflateRawSync(chunk, {
-      //     chunkSize: 1024 * 1024 * 2
-      //   })
-      //   console.log('🔵 Inflated')
-      //   client.onDecryptedPacket(inflated)
-      // } else {
-      //   // console.log('🔴 Not OK')
-      //   throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
-      // }
-      cb()
-    }
-  })
-
-  const inflator = new Transform({
-    transform(chunk, enc, cb) {
-      console.log('🔵 Inflating')
       const inflated = Zlib.inflateRawSync(chunk, {
         chunkSize: 1024 * 1024 * 2
       })
-      console.log('🔵 Inflated')
-      this.push(inflated)
-      cb()
 
-      // Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buf) => {
-      //   console.log('🔵 INF')
-      //   if (err) throw err
-      //   this.push(buf)
-      //   cb()
-      // })
+      if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
+         this.push(packet)
+        console.log('🔵 Decriphered', checksum)
+ 
+        console.log('🔵 Inflated')
+        client.onDecryptedPacket(inflated)
+      } else {
+        console.log(`🔴 Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
+        client.onDecryptedPacket(inflated) // allow it anyway
+        // throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
+      }
+      cb()
     }
   })
 
+
   client.decipher.pipe(verifyChecksum)
-    .pipe(inflator)
-    // .pipe(Zlib.createInflateRaw({ chunkSize: 1024 * 1024 * 2 }))
-    .on('data', (...args) => client.onDecryptedPacket(...args))
-    // .on('end', () => console.log('Decryptor: finish pipeline'))
 
   // Not sure why, but sending two packets to the decryption pipe before
   // the other is completed breaks the checksum check.

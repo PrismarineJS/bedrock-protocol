@@ -31,11 +31,10 @@ function Encrypt(client, server, options) {
     const secretHash = crypto.createHash('sha256')
     secretHash.update(SALT)
     secretHash.update(client.sharedSecret)
-    console.log('---- SHARED SECRET', client.sharedSecret)
-
+    console.log('[encrypt] Shared secret', client.sharedSecret)
 
     client.secretKeyBytes = secretHash.digest()
-    console.log('Hash', client.secretKeyBytes)
+    console.log('[encrypt] Shared hash', client.secretKeyBytes)
     const x509 = writeX509PublicKey(alice.getPublicKey())
     const token = JWT.sign({
       salt: toBase64(SALT),
@@ -54,7 +53,7 @@ function Encrypt(client, server, options) {
   }
 
   function startServerboundEncryption(token) {
-    console.warn('Starting serverbound encryption', token)
+    console.warn('[encrypt] Starting serverbound encryption', token)
     const jwt = token?.token
     if (!jwt) {
       // TODO: allow connecting to servers without encryption
@@ -67,7 +66,7 @@ function Encrypt(client, server, options) {
     const body = JSON.parse(String(payload))
     const serverPublicKey = readX509PublicKey(head.x5u)
     client.sharedSecret = alice.computeSecret(serverPublicKey)
-    console.log('------ SHARED SECRET', client.sharedSecret)
+    console.log('[encrypt] Shared secret', client.sharedSecret)
 
     const salt = Buffer.from(body.salt, 'base64')
 
@@ -76,7 +75,7 @@ function Encrypt(client, server, options) {
     secretHash.update(client.sharedSecret)
 
     client.secretKeyBytes = secretHash.digest()
-    console.log('Hash', client.secretKeyBytes)
+    console.log('[encrypt] Shared hash', client.secretKeyBytes)
     const initial = client.secretKeyBytes.slice(0, 16)
     client.startEncryption(initial)
 

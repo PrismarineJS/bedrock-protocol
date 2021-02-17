@@ -1,11 +1,7 @@
 const JWT = require('jsonwebtoken')
 const constants = require('./constants')
-const fs = require('fs')
-const { decode } = require('jwt-simple')
-// import jwt from 'jwt-simple';
-// const jwt = require('jwt-simple')
 
-// 💗 web archive
+// Refer to the docs:
 // https://web.archive.org/web/20180917171505if_/https://confluence.yawk.at/display/PEPROTOCOL/Game+Packets#GamePackets-Login
 
 function mcPubKeyToPem(mcPubKeyBuffer) {

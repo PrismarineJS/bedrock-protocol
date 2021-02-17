@@ -34,7 +34,7 @@ class Client extends Connection {
   }
 
   onEncapsulated = (encapsulated, inetAddr) => {
-    log(inetAddr.address, ': Encapsulated', encapsulated)
+    // log(inetAddr.address, ': Encapsulated', encapsulated)
     const buffer = encapsulated.buffer
     this.handle(buffer)
   }
@@ -102,9 +102,11 @@ class Client extends Connection {
   }
 
   readPacket(packet) {
-    console.log('packet', packet)
+    // console.log('packet', packet)
     const des = this.deserializer.parsePacketBuffer(packet)
-    console.info('->', des)
+    console.log('->',des)
+    const pakData = { name: des.data.name, params: des.data.params }
+    // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
     switch (des.data.name) {
       case 'server_to_client_handshake':
         this.emit('client.server_handshake', des.data.params)
@@ -118,7 +120,7 @@ class Client extends Connection {
       case 'start_game':
         fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k,v) => typeof v == 'bigint' ? v.toString() : v))
       default:
-        console.log('Sending to listeners')
+        // console.log('Sending to listeners')
     }
     this.emit(des.data.name, des.data.params)
 
