@@ -18,9 +18,9 @@ fs.unlinkSync('./protocol.json') //remove temp file
 function createProtocol() {
     const compiler = new ProtoDefCompiler()
     const protocol = require('../newproto.json').types
-    compiler.addTypesToCompile(protocol)
     compiler.addTypes(require('../../src/datatypes/compiler-minecraft'))
     compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
+    compiler.addTypesToCompile(protocol)
 
     fs.writeFileSync('../read.js', 'module.exports = ' + compiler.readCompiler.generate())
     fs.writeFileSync('../write.js', 'module.exports = ' + compiler.writeCompiler.generate())

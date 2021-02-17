@@ -110,8 +110,61 @@ function test() {
     console.log(JSON.stringify(d))
   }
 
+  async function availableCommands() {
+    var avaliable = {
+      enum_values: ['true', 'false'],
+      suffixes: ['L'],
+      enums: [
+        {
+          name: 'Boolean',
+          values_len: 2,
+          values: [0, 1]
+        }
+      ],
+      command_data: [
+        {
+          name: 'give',
+          description: 'Gives you items',
+          flags: 0,
+          permission_level: 0,
+          alias: -1,
+          overloads: [
+            [
+              { paramater_name: 'player id', paramater_type: 2, optional: false, flags: { "collapse_enum": 1 } }
+            ],
+            [
+              { paramater_name: 'item id', paramater_type: 2, optional: false, flags: 0 },
+            ]
+          ],
+        },
+        {
+          name: 'xp',
+          description: 'Gives you xp',
+          flags: 0, permission_level: 0, alias: -1,
+          overloads: [
+            [{ paramater_name: 'player id', paramater_type: 2, optional: false, flags: 0 }]
+          ]
+        }
+      ],
+      enum_constraints: [
+        {
+          value_index: 2, enum_index: 3, constraints: [
+            { constraint: 'cheats_enabled' }
+          ]
+        },
+      ],
+      dynamic_enums: [
+        { name: 'Hello', values: ['yolo', 'yee'] }
+      ]
+    }
 
-  creativeTst()
+    var s = write('available_commands', avaliable)
+    var d = read(s).data.params
+    console.log(JSON.stringify(d, null, 2))
+  }
+
+  // creativeTst()
+  availableCommands()
 }
 
 if (!module.parent) {

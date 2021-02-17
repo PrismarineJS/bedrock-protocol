@@ -1013,29 +1013,83 @@ packet_show_credits:
    runtime_entity_id: varint
    status: zigzag32
 
+# This packet sends a list of commands to the client. Commands can have
+# arguments, and some of those arguments can have 'enum' values, which are a list of possible
+# values for the argument. The serialization is rather complex and involves palettes like chunks.
+## In bedrock-protocol, listen to on('client.commands') for a simpler representation
 packet_available_commands:
    !id: 0x4c
    !bound: client
-   # enum_values: string[]varint
-   # suffixes: string[]varint
-   # enums: []varint
-   #    name: string
-   #    # The length of the array below
-   #    values_len: varint
-   #    # Not read from stream: instead calculated from the `values_len` field
-   #    # If the values_len < 0xff => byte
-   #    # If the values_len < 0xffff => short
-   #    # If the values_len < 0xffffff => int
-   #    enum_typex: u8 =>
-   #       0: byte
-   #       1: short
-   #       2: int
-   #    valuex: []varint
-   #       # S: bool
-   #       ix: ../enum_typex?
-   #          if byte: u8
-   #          if short: lu16
-   #          if int: lu32
+   # Here all the enum values for all of the possible commands are stored to one array palette
+   enum_values: string[]varint
+   # Integer paramaters may sometimes have a prefix, such as the XP command:
+   # /xp <amount: int> [player: target] <- here, the xp command gives experience points
+   # /xp <amount: int>L [player: target] <- here, the xp command gives experience levels
+   # This is the palette of suffixes
+   suffixes: string[]varint
+   # The list of enum objects
+   enums: []varint
+      # The name of the enum
+      name: string
+      # The length of the array below
+      values_len: varint
+      # Not read from stream: instead calculated from the `values_len` field
+      # If the values_len < 0xff => byte
+      # If the values_len < 0xffff => short
+      # If the values_len < 0xffffff => int
+      _enum_type: '["enum_size_based_on_values_len"]'
+      # The values in the enum 
+      values: []$values_len
+         # The indexes to value in the palette
+         _: ../_enum_type?
+            if byte: u8
+            if short: lu16
+            if int: lu32
+   command_data: []varint
+      name: string
+      description: string
+      flags: u8
+      permission_level: u8
+      alias: li32
+      # The list of overload paramaters for this command
+      overloads: []varint
+         # Each of the paramaters gets an array of posible overloads
+         _: []varint
+            # The name of the paramater shown to the user (the `amount` in `/xp <amount: int>`)
+            paramater_name: string   
+            # Bitfield: If FLAG_ENUM is set, the lower 16 bits act as an index to enums array
+            # If FLAG_SUFFIX is set, the lower 16 bits act as an index to the suffix palette
+            # and the client interperts the type as just `int` as in the example above
+            paramater_type: li32
+            # Is this paramater required?
+            optional: bool
+            # Additinal options for this command (thanks macroshaft...)
+            flags: CommandFlags
+   # There are two types of enums: static enums which cannot be changed after sending AvaliableCommands,
+   # (unless you resend the whole packet) and 'soft' or 'dynamic' enums like below which is an array
+   # that can be updated with the UpdateSoftEnum packet
+   dynamic_enums: []varint
+      name: string
+      values: string[]varint
+   enum_constraints: []varint
+      value_index: li32
+      enum_index: li32
+      constraints: []varint
+         constraint: u8 =>
+            0: cheats_enabled
+
+# ParamOptionCollapseEnum specifies if the enum (only if the Type is actually an enum type. If not,
+# setting this to true has no effect) should be collapsed. This means that the options of the enum are
+# never shown in the actual usage of the command, but only as auto-completion, like it automatically does
+# with enums that have a big amount of options. To illustrate, it can make
+# <false|true|yes|no> <$Name: bool>.
+CommandFlags: [ "bitfield", [
+   { "name": "unused", "size": 1, "signed": false },
+   { "name": "collapse_enum", "size": 1, "signed": false },
+   { "name": "has_semantic_constraint", "size": 1, "signed": false }
+]]
+
+# enum_size_based_on_values_len: native
 
 # CommandRequest is sent by the client to request the execution of a server-side command. Although some
 # servers support sending commands using the Text packet, this packet is guaranteed to have the correct

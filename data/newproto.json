@@ -4518,7 +4518,223 @@
     ],
     "packet_available_commands": [
       "container",
-      []
+      [
+        {
+          "name": "enum_values",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "suffixes",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "enums",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "name",
+                    "type": "string"
+                  },
+                  {
+                    "name": "values_len",
+                    "type": "varint"
+                  },
+                  {
+                    "name": "_enum_type",
+                    "type": [
+                      "enum_size_based_on_values_len"
+                    ]
+                  },
+                  {
+                    "name": "values",
+                    "type": [
+                      "array",
+                      {
+                        "count": "values_len",
+                        "type": [
+                          "switch",
+                          {
+                            "compareTo": "../_enum_type",
+                            "fields": {
+                              "byte": "u8",
+                              "short": "lu16",
+                              "int": "lu32"
+                            },
+                            "default": "void"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "name": "command_data",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "name",
+                    "type": "string"
+                  },
+                  {
+                    "name": "description",
+                    "type": "string"
+                  },
+                  {
+                    "name": "flags",
+                    "type": "u8"
+                  },
+                  {
+                    "name": "permission_level",
+                    "type": "u8"
+                  },
+                  {
+                    "name": "alias",
+                    "type": "li32"
+                  },
+                  {
+                    "name": "overloads",
+                    "type": [
+                      "array",
+                      {
+                        "countType": "varint",
+                        "type": [
+                          "array",
+                          {
+                            "countType": "varint",
+                            "type": [
+                              "container",
+                              [
+                                {
+                                  "name": "paramater_name",
+                                  "type": "string"
+                                },
+                                {
+                                  "name": "paramater_type",
+                                  "type": "li32"
+                                },
+                                {
+                                  "name": "optional",
+                                  "type": "bool"
+                                },
+                                {
+                                  "name": "flags",
+                                  "type": "CommandFlags"
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "name": "dynamic_enums",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "name",
+                    "type": "string"
+                  },
+                  {
+                    "name": "values",
+                    "type": [
+                      "array",
+                      {
+                        "countType": "varint",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "name": "enum_constraints",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "value_index",
+                    "type": "li32"
+                  },
+                  {
+                    "name": "enum_index",
+                    "type": "li32"
+                  },
+                  {
+                    "name": "constraints",
+                    "type": [
+                      "array",
+                      {
+                        "countType": "varint",
+                        "type": [
+                          "container",
+                          [
+                            {
+                              "name": "constraint",
+                              "type": [
+                                "mapper",
+                                {
+                                  "type": "u8",
+                                  "mappings": {
+                                    "0": "cheats_enabled"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      ]
     ],
     "packet_command_request": [
       "container",
@@ -5546,6 +5762,26 @@
       {
         "countType": "li32"
       }
+    ],
+    "CommandFlags": [
+      "bitfield",
+      [
+        {
+          "name": "unused",
+          "size": 1,
+          "signed": false
+        },
+        {
+          "name": "collapse_enum",
+          "size": 1,
+          "signed": false
+        },
+        {
+          "name": "has_semantic_constraint",
+          "size": 1,
+          "signed": false
+        }
+      ]
     ]
   }
 }
