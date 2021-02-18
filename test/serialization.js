@@ -1,3 +1,4 @@
+const fs = require('fs')
 const { createDeserializer, createSerializer } = require('../src/transforms/serializer')
 
 function test() {
@@ -163,8 +164,17 @@ function test() {
     console.log(JSON.stringify(d, null, 2))
   }
 
+  async function avaliableCmd() {
+    const buffer = Buffer.from(fs.readFileSync('./serialization/available_commands.txt', 'utf8'), 'hex')
+    const readed = read(buffer)
+    const recipes = readed.data.params.enums
+    console.log('read', recipes)
+    fs.writeFileSync('commands.json', JSON.stringify(readed.data,null,2))
+  }
+
   // creativeTst()
-  availableCommands()
+  // availableCommands()
+  // avaliableCmd()
 }
 
 if (!module.parent) {

@@ -1,4 +1,4 @@
-process.env.DEBUG = 'minecraft-protocol raknet'
+// process.env.DEBUG = 'minecraft-protocol raknet'
 const { Client } = require('./client')
 
 // console.log = () => 

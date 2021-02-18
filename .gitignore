@@ -2,3 +2,6 @@ node_modules/
 npm-debug.log
 __*
 data/*.js
+src/**/*.json
+src/*.txt
+dist/

@@ -1,10 +1,11 @@
-const RakClient = require('@jsprismarine/raknet/client')
+const RakClient = require('jsp-raknet/client')
 const { Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const ConnWorker = require('./ConnWorker')
 const { Encrypt } = require('./auth/encryption')
 const auth = require('./client/auth')
 const Options = require('./options')
+const debug = require('debug')('minecraft-protocol')
 const fs = require('fs')
 
 const log = console.log
@@ -93,7 +94,7 @@ class Client extends Connection {
 
     const bodyLength = this.clientUserChain.length + encodedChain.length + 8
 
-    console.log('Auth chain', chain)
+    debug('Auth chain', chain)
 
     this.write('login', {
       protocol_version: this.options.version,
@@ -121,9 +122,15 @@ class Client extends Connection {
   readPacket(packet) {
     // console.log('packet', packet)
     const des = this.deserializer.parsePacketBuffer(packet)
-    console.log('->', des)
     const pakData = { name: des.data.name, params: des.data.params }
+    console.log('->', pakData.name, serialize(pakData.params).slice(0, 100))
     // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
+    try {
+      if (!fs.existsSync(`./packets/${pakData.name}.json`)) {
+        fs.writeFileSync(`./packets/${pakData.name}.json`, serialize(pakData.params, 2))
+        fs.writeFileSync(`./packets/${pakData.name}.txt`, packet.toString('hex'))
+      }
+    } catch {}
     switch (des.data.name) {
       case 'server_to_client_handshake':
         this.emit('client.server_handshake', des.data.params)
@@ -142,6 +149,10 @@ class Client extends Connection {
     this.emit(des.data.name, des.data.params)
 
   }
+}
+
+function serialize(obj = {}, fmt) {
+  return JSON.stringify(obj, (k, v) => typeof v == 'bigint' ? v.toString() : v, fmt)
 }
 
 module.exports = { Client }

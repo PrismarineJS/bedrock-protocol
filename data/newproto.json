@@ -2912,7 +2912,7 @@
           "type": "bool"
         },
         {
-          "name": "edu_product_uuid_",
+          "name": "edu_product_uuid",
           "type": "string"
         },
         {
@@ -3020,7 +3020,7 @@
           "type": "li32"
         },
         {
-          "name": "is_new_nether_",
+          "name": "is_new_nether",
           "type": "bool"
         },
         {
@@ -4060,7 +4060,7 @@
           "type": "u8"
         },
         {
-          "name": "select_slot_",
+          "name": "select_slot",
           "type": "bool"
         }
       ]
@@ -4520,11 +4520,21 @@
       "container",
       [
         {
+          "name": "values_len",
+          "type": "varint"
+        },
+        {
+          "name": "_enum_type",
+          "type": [
+            "enum_size_based_on_values_len"
+          ]
+        },
+        {
           "name": "enum_values",
           "type": [
             "array",
             {
-              "countType": "varint",
+              "count": "values_len",
               "type": "string"
             }
           ]
@@ -4553,21 +4563,11 @@
                     "type": "string"
                   },
                   {
-                    "name": "values_len",
-                    "type": "varint"
-                  },
-                  {
-                    "name": "_enum_type",
-                    "type": [
-                      "enum_size_based_on_values_len"
-                    ]
-                  },
-                  {
                     "name": "values",
                     "type": [
                       "array",
                       {
-                        "count": "values_len",
+                        "countType": "varint",
                         "type": [
                           "switch",
                           {
@@ -4635,15 +4635,50 @@
                                   "type": "string"
                                 },
                                 {
-                                  "name": "paramater_type",
-                                  "type": "li32"
+                                  "name": "value_type",
+                                  "type": [
+                                    "mapper",
+                                    {
+                                      "type": "lu16",
+                                      "mappings": {
+                                        "1": "int",
+                                        "2": "float",
+                                        "3": "value",
+                                        "4": "wildcard_int",
+                                        "5": "operator",
+                                        "6": "target",
+                                        "14": "file_path",
+                                        "29": "string",
+                                        "37": "position",
+                                        "41": "message",
+                                        "43": "raw_text",
+                                        "46": "json",
+                                        "53": "command"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "name": "enum_type",
+                                  "type": [
+                                    "mapper",
+                                    {
+                                      "type": "lu16",
+                                      "mappings": {
+                                        "16": "valid",
+                                        "32": "enum",
+                                        "256": "suffixed",
+                                        "1024": "soft_enum"
+                                      }
+                                    }
+                                  ]
                                 },
                                 {
                                   "name": "optional",
                                   "type": "bool"
                                 },
                                 {
-                                  "name": "flags",
+                                  "name": "options",
                                   "type": "CommandFlags"
                                 }
                               ]
@@ -5768,16 +5803,16 @@
       [
         {
           "name": "unused",
+          "size": 6,
+          "signed": false
+        },
+        {
+          "name": "has_semantic_constraint",
           "size": 1,
           "signed": false
         },
         {
           "name": "collapse_enum",
-          "size": 1,
-          "signed": false
-        },
-        {
-          "name": "has_semantic_constraint",
           "size": 1,
           "signed": false
         }

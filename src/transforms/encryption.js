@@ -74,7 +74,7 @@ function createEncryptor(client, iv) {
 
   const addChecksum = new Transform({ // append checksum
     transform(chunk, enc, cb) {
-      console.log('Encryptor: checking checksum', chunk)
+      // console.log('Encryptor: checking checksum', chunk)
       // Here we concat the payload + checksum before the encryption
       const packet = Buffer.concat([chunk, computeCheckSum(chunk, client.sendCounter, client.secretKeyBytes)])
       client.sendCounter++
@@ -118,7 +118,7 @@ function createDecryptor(client, iv) {
   client.receiveCounter = client.receiveCounter || 0n
 
   function verify(chunk) {
-    console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
+    // console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
 
     // First try to zlib decompress, then see how much bytes get read
     const { buffer, engine } = Zlib.inflateRawSync(chunk, {
@@ -142,62 +142,20 @@ function createDecryptor(client, iv) {
       throw new Error('Decrypted packet is missing checksum')
     }
 
-    console.log('Inflated', inflatedLen, chunk.length, extraneousLen, chunk.toString('hex'))
-
     const packet = chunk.slice(0, inflatedLen);
     const checksum = chunk.slice(inflatedLen, inflatedLen + 8);
-    console.log("packet, checksum", packet, checksum)
     const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
-    // // console.log(computedCheckSum2, computedCheckSum3)
-    // console.assert(checksum.toString("hex") == computedCheckSum.toString("hex"), 'checksum mismatch')
     client.receiveCounter++
 
-
-    // // const infLen = Zlib.inflateRawSync(chunk, {
-    // //   chunkSize: 1024 * 1024 * 2,
-    // //   info: true
-    // // })
-    // console.log('infLen', engine)
-
-    // const cReadLen = engine.bytesRead
-    // const diff = chunk.length - cReadLen
-    // const newPacket = chunk.slice(0, cReadLen)
-    // const newExpectedSum = chunk.slice(cReadLen, cReadLen+8)
-    // const newComputedChecksum = computeCheckSum(newPacket, client.receiveCounter - 1n, client.secretKeyBytes)
-    // if (diff > 8) {
-    //   const remaining = chunk.slice(cReadLen + 8)
-    //   console.log('Extraneous bytes:', remaining.toString('hex'))
-    //   const inflated2 = Zlib.inflateRawSync(remaining, {
-    //     // info: true
-    //   })
-    //   console.log('inflated', inflated2.toString('hex'))
-    // }
-    // console.log('New', newExpectedSum, newComputedChecksum)
-
-    // console.log('Decrypted len ', chunk.length, buffer.length, engine.bytesRead)
-
     if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
-      console.log('🔵 Inflated')
       client.onDecryptedPacket(buffer)
-      // client.emit('decrypted', inflated)
     } else {
-      console.log(`🔴 Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
-
-      // const sums = []
-      // for (var i = 0n; i < 20n; i++) {
-      //   sums.push(computeCheckSum(packet, i, client.secretKeyBytes).toString('hex'))
-      // }
-      // console.log('Tried', sums)
-
-      // client.onDecryptedPacket(inflated) // allow it anyway
-      // client.emit('decrypted', inflated)
+      console.log('Inflated', inflatedLen, chunk.length, extraneousLen, chunk.toString('hex'))
       throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
     }
   }
 
-  client.decipher.on('data', (buffer) => {
-    verify(buffer)
-  })
+  client.decipher.on('data', verify)
 
   return (blob) => {
     client.decipher.write(blob)

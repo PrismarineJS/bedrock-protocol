@@ -240,7 +240,7 @@ packet_start_game:
    # Specifies if the world has education edition features enabled, such as the blocks or entities
    # specific to education edition.
    has_edu_features_enabled: bool
-   edu_product_uuid_: string
+   edu_product_uuid: string
    # The level specifying the Intensity of the rain falling. When set to 0, no rain falls at all.
    rain_level: lf32
    lightning_level: lf32
@@ -306,7 +306,7 @@ packet_start_game:
    game_version: string
    limited_world_width: li32
    limited_world_length: li32
-   is_new_nether_: bool
+   is_new_nether: bool
    experimental_gameplay_override: bool
    # A base64 encoded world ID that is used to identify the world.
    level_id: string
@@ -820,7 +820,7 @@ packet_player_hotbar:
    !bound: both
    selected_slot: varint
    window_id: u8
-   select_slot_: bool
+   select_slot: bool
 
 packet_inventory_content:
    !id: 0x31
@@ -1020,8 +1020,15 @@ packet_show_credits:
 packet_available_commands:
    !id: 0x4c
    !bound: client
+   # The length of the enums for all the command paramaters in this packet
+   values_len: varint
+   # Not read from stream: instead calculated from the `values_len` field
+   # If the values_len < 0xff => byte
+   # If the values_len < 0xffff => short
+   # If the values_len < 0xffffff => int
+   _enum_type: '["enum_size_based_on_values_len"]'
    # Here all the enum values for all of the possible commands are stored to one array palette
-   enum_values: string[]varint
+   enum_values: string[]$values_len
    # Integer paramaters may sometimes have a prefix, such as the XP command:
    # /xp <amount: int> [player: target] <- here, the xp command gives experience points
    # /xp <amount: int>L [player: target] <- here, the xp command gives experience levels
@@ -1031,15 +1038,8 @@ packet_available_commands:
    enums: []varint
       # The name of the enum
       name: string
-      # The length of the array below
-      values_len: varint
-      # Not read from stream: instead calculated from the `values_len` field
-      # If the values_len < 0xff => byte
-      # If the values_len < 0xffff => short
-      # If the values_len < 0xffffff => int
-      _enum_type: '["enum_size_based_on_values_len"]'
       # The values in the enum 
-      values: []$values_len
+      values: []varint
          # The indexes to value in the palette
          _: ../_enum_type?
             if byte: u8
@@ -1056,15 +1056,31 @@ packet_available_commands:
          # Each of the paramaters gets an array of posible overloads
          _: []varint
             # The name of the paramater shown to the user (the `amount` in `/xp <amount: int>`)
-            paramater_name: string   
-            # Bitfield: If FLAG_ENUM is set, the lower 16 bits act as an index to enums array
-            # If FLAG_SUFFIX is set, the lower 16 bits act as an index to the suffix palette
-            # and the client interperts the type as just `int` as in the example above
-            paramater_type: li32
+            paramater_name: string
+            value_type: lu16 =>
+               1: int
+               2: float
+               3: value
+               4: wildcard_int
+               5: operator
+               6: target
+               14: file_path
+               29: string
+               37: position
+               41: message
+               43: raw_text
+               46: json
+               53: command
+            # In MC, this + prior field are combined to one 32bit bitfield
+            enum_type: lu16 =>
+               0x10: valid
+               0x20: enum
+               0x100: suffixed
+               0x400: soft_enum
             # Is this paramater required?
             optional: bool
             # Additinal options for this command (thanks macroshaft...)
-            flags: CommandFlags
+            options: CommandFlags
    # There are two types of enums: static enums which cannot be changed after sending AvaliableCommands,
    # (unless you resend the whole packet) and 'soft' or 'dynamic' enums like below which is an array
    # that can be updated with the UpdateSoftEnum packet
@@ -1084,9 +1100,9 @@ packet_available_commands:
 # with enums that have a big amount of options. To illustrate, it can make
 # <false|true|yes|no> <$Name: bool>.
 CommandFlags: [ "bitfield", [
-   { "name": "unused", "size": 1, "signed": false },
-   { "name": "collapse_enum", "size": 1, "signed": false },
-   { "name": "has_semantic_constraint", "size": 1, "signed": false }
+   { "name": "unused", "size": 6, "signed": false }, # 6 unused upper bits
+   { "name": "has_semantic_constraint", "size": 1, "signed": false },
+   { "name": "collapse_enum", "size": 1, "signed": false }
 ]]
 
 # enum_size_based_on_values_len: native

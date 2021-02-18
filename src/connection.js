@@ -80,7 +80,7 @@ class Connection extends EventEmitter {
   }
 
   onDecryptedPacket = (buf) => {
-    console.log('🟢 Decrypted', buf)
+    // console.log('🟢 Decrypted', buf)
 
     const stream = new BinaryStream(buf)
     const packets = BatchPacket.getPackets(stream)
@@ -93,7 +93,6 @@ class Connection extends EventEmitter {
   handle(buffer) { // handle encapsulated
     if (buffer[0] == 0xfe) { // wrapper
       if (this.encryptionEnabled) {
-        console.trace('Reading encrypted packet', buffer.toString('hex'))
         this.decrypt(buffer.slice(1))
       } else {
         const stream = new BinaryStream(buffer)
@@ -106,7 +105,7 @@ class Connection extends EventEmitter {
         }
       }
     }
-    console.log('[client] handled incoming ', buffer)
+    // console.log('[client] handled incoming ', buffer)
   }
 }
 
