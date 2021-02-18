@@ -61,7 +61,7 @@ function computeCheckSum(packetPlaintext, sendCounter, secretKeyBytes) {
   digest.update(packetPlaintext);
   digest.update(secretKeyBytes);
   let hash = digest.digest();
-
+  // console.log('Hash', hash.toString('hex'))
   return hash.slice(0, 8);
 }
 
@@ -117,54 +117,90 @@ function createDecryptor(client, iv) {
   client.decipher = createDecipher(client.secretKeyBytes, iv)
   client.receiveCounter = client.receiveCounter || 0n
 
-  const verifyChecksum = new Transform({ // verify checksum
-    transform(chunk, encoding, cb) {
-      console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
-      const packet = chunk.slice(0, chunk.length - 8);
-      const checksum = chunk.slice(chunk.length - 8);
-      const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
-      // console.log(computedCheckSum2, computedCheckSum3)
-      console.assert(checksum.toString("hex") == computedCheckSum.toString("hex"), 'checksum mismatch')
-      client.receiveCounter++
+  function verify(chunk) {
+    console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
 
-      const inflated = Zlib.inflateRawSync(chunk, {
-        chunkSize: 1024 * 1024 * 2
-      })
+    // First try to zlib decompress, then see how much bytes get read
+    const { buffer, engine } = Zlib.inflateRawSync(chunk, {
+      chunkSize: 1024 * 1024 * 2,
+      info: true
+    })
 
-      if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
-         this.push(packet)
-        console.log('🔵 Decriphered', checksum)
- 
-        console.log('🔵 Inflated')
-        client.onDecryptedPacket(inflated)
-      } else {
-        console.log(`🔴 Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
-        client.onDecryptedPacket(inflated) // allow it anyway
-        // throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
-      }
-      cb()
+    // Holds how much bytes we read, also where the checksum (should) start
+    const inflatedLen = engine.bytesRead
+    // It appears that mc sends extra bytes past the checksum. I don't think this is a raknet
+    // issue (as we are able to decipher properly, zlib works and should also have a checksum) so 
+    // there needs to be more investigation done. If you know what's wrong here, please make an issue :)
+    const extraneousLen = chunk.length - inflatedLen - 8
+    if (extraneousLen > 0) { // Extra bytes
+      // Info for debugging, todo: use debug()
+      const extraneousBytes = chunk.slice(inflatedLen + 8)
+      console.debug('Extraneous bytes!', extraneousLen, extraneousBytes.toString('hex'))
+    } else if (extraneousLen < 0) {
+      // No checksum or decompression failed
+      console.warn('Failed to decrypt', chunk.toString('hex'))
+      throw new Error('Decrypted packet is missing checksum')
     }
+
+    console.log('Inflated', inflatedLen, chunk.length, extraneousLen, chunk.toString('hex'))
+
+    const packet = chunk.slice(0, inflatedLen);
+    const checksum = chunk.slice(inflatedLen, inflatedLen + 8);
+    console.log("packet, checksum", packet, checksum)
+    const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
+    // // console.log(computedCheckSum2, computedCheckSum3)
+    // console.assert(checksum.toString("hex") == computedCheckSum.toString("hex"), 'checksum mismatch')
+    client.receiveCounter++
+
+
+    // // const infLen = Zlib.inflateRawSync(chunk, {
+    // //   chunkSize: 1024 * 1024 * 2,
+    // //   info: true
+    // // })
+    // console.log('infLen', engine)
+
+    // const cReadLen = engine.bytesRead
+    // const diff = chunk.length - cReadLen
+    // const newPacket = chunk.slice(0, cReadLen)
+    // const newExpectedSum = chunk.slice(cReadLen, cReadLen+8)
+    // const newComputedChecksum = computeCheckSum(newPacket, client.receiveCounter - 1n, client.secretKeyBytes)
+    // if (diff > 8) {
+    //   const remaining = chunk.slice(cReadLen + 8)
+    //   console.log('Extraneous bytes:', remaining.toString('hex'))
+    //   const inflated2 = Zlib.inflateRawSync(remaining, {
+    //     // info: true
+    //   })
+    //   console.log('inflated', inflated2.toString('hex'))
+    // }
+    // console.log('New', newExpectedSum, newComputedChecksum)
+
+    // console.log('Decrypted len ', chunk.length, buffer.length, engine.bytesRead)
+
+    if (checksum.toString("hex") == computedCheckSum.toString("hex")) {
+      console.log('🔵 Inflated')
+      client.onDecryptedPacket(buffer)
+      // client.emit('decrypted', inflated)
+    } else {
+      console.log(`🔴 Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
+
+      // const sums = []
+      // for (var i = 0n; i < 20n; i++) {
+      //   sums.push(computeCheckSum(packet, i, client.secretKeyBytes).toString('hex'))
+      // }
+      // console.log('Tried', sums)
+
+      // client.onDecryptedPacket(inflated) // allow it anyway
+      // client.emit('decrypted', inflated)
+      throw Error(`Checksum mismatch ${checksum.toString("hex")} != ${computedCheckSum.toString("hex")}`)
+    }
+  }
+
+  client.decipher.on('data', (buffer) => {
+    verify(buffer)
   })
 
-
-  client.decipher.pipe(verifyChecksum)
-
-  // Not sure why, but sending two packets to the decryption pipe before
-  // the other is completed breaks the checksum check.
-  // TODO: Refactor the logic here to be async so we can await a promise
-  // queue
-  let decQ = []
-  setInterval(() => {
-    if (decQ.length) {
-      let pak = decQ.shift()
-      console.log('🟡 DECRYPTING', pak)
-      client.decipher.write(pak)
-    }
-  }, 500)
-
   return (blob) => {
-    decQ.push(blob)
-    // client.decipher.write(blob)
+    client.decipher.write(blob)
   }
 }
 

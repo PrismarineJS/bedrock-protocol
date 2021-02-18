@@ -36,7 +36,6 @@ async function postAuthenticate (client, options, chains) {
   client.username = profile.name
   client.accessToken = chains
   client.emit('session', profile)
-  client.connect()
 }
 
 /**
