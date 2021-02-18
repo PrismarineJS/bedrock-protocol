@@ -1,5 +1,5 @@
 const BinaryStream = require('@jsprismarine/jsbinaryutils').default
-const BatchPacket = require('./BatchPacket')
+const BatchPacket = require('./datatypes/BatchPacket')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
 const EncapsulatedPacket = require('@jsprismarine/raknet/protocol/encapsulated_packet')
@@ -48,12 +48,7 @@ class Connection extends EventEmitter {
   sendDecryptedBatch(batch) {
     const buf = batch.encode()
     // send to raknet
-    const sendPacket = new EncapsulatedPacket();
-    sendPacket.reliability = 0;
-    sendPacket.buffer = buf
-
-    this.connection.addEncapsulatedToQueue(sendPacket)
-    this.connection.sendQueue()
+    this.sendMCPE(buf, true)
   }
 
   sendEncryptedBatch(batch) {
@@ -62,15 +57,26 @@ class Connection extends EventEmitter {
     this.encrypt(buf)
   }
 
+  sendMCPE(buffer, immediate) {
+    if (this.worker) {
+      console.log('-> buf', buffer)
+      this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
+    } else {
+      const sendPacket = new EncapsulatedPacket();
+      sendPacket.reliability = 0
+      sendPacket.buffer = buffer
+      this.connection.addEncapsulatedToQueue(sendPacket)
+      if (immediate) this.connection.sendQueue()
+    }
+  }
+
   // These are callbacks called from encryption.js
   onEncryptedPacket = (buf) => {
     console.log('ENC BUF', buf)
     const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
-    const sendPacket = new EncapsulatedPacket();
-    sendPacket.reliability = 0
-    sendPacket.buffer = packet
+
     console.log('Sending wrapped encrypted batch', packet)
-    this.connection.addEncapsulatedToQueue(sendPacket)
+    this.sendMCPE(packet)
   }
 
   onDecryptedPacket = (buf) => {
@@ -87,7 +93,7 @@ class Connection extends EventEmitter {
   handle(buffer) { // handle encapsulated
     if (buffer[0] == 0xfe) { // wrapper
       if (this.encryptionEnabled) {
-        console.log('Reading encrypted packet', buffer)
+        console.trace('Reading encrypted packet', buffer.toString('hex'))
         this.decrypt(buffer.slice(1))
       } else {
         const stream = new BinaryStream(buffer)
@@ -100,7 +106,7 @@ class Connection extends EventEmitter {
         }
       }
     }
-    console.log('[client] procesed ', buffer)
+    console.log('[client] handled incoming ', buffer)
   }
 }
 

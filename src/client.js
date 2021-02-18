@@ -1,12 +1,14 @@
 const RakClient = require('@jsprismarine/raknet/client')
 const { Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
+const ConnWorker = require('./ConnWorker')
 const { Encrypt } = require('./auth/encryption')
 const auth = require('./client/auth')
 const Options = require('./options')
 const fs = require('fs')
 
 const log = console.log
+const useWorkers = true
 
 class Client extends Connection {
   constructor(options) {
@@ -25,6 +27,7 @@ class Client extends Connection {
     }
 
     this.on('session', this.connect)
+    // this.on('decrypted', this.onDecryptedPacket)
   }
 
   validateOptions() {
@@ -35,32 +38,46 @@ class Client extends Connection {
 
   onEncapsulated = (encapsulated, inetAddr) => {
     // log(inetAddr.address, ': Encapsulated', encapsulated)
-    const buffer = encapsulated.buffer
+    const buffer = Buffer.from(encapsulated.buffer)
     this.handle(buffer)
   }
 
   connect = async (sessionData) => {
-    console.log('Got session data', sessionData)
+    if (useWorkers) {
+      this.worker = ConnWorker.connect('127.0.0.1', 19132)
+      this.worker.on('message', (evt) => {
+        switch (evt.type) {
+          case 'connected':
+            this.sendLogin()
+            break
+          case 'encapsulated':
+            this.onEncapsulated(...evt.args)
+            break
+        }
+      })
 
-    if (this.raknet) return
+    } else {
+      if (this.raknet) return
 
-    this.raknet = new RakClient('127.0.0.1', 19132)
-    await this.raknet.connect()
+      this.raknet = new RakClient('127.0.0.1', 19132)
+      await this.raknet.connect()
 
-    this.raknet.on('connecting', () => {
-      // console.log(`[client] connecting to ${hostname}/${port}`)
-    })
-    this.raknet.on('connected', (connection) => {
-      console.log(`[client] connected!`)
-      this.connection = connection
-      this.sendLogin()
-    })
+      this.raknet.on('connecting', () => {
+        // console.log(`[client] connecting to ${hostname}/${port}`)
+      })
+      this.raknet.on('connected', (connection) => {
+        console.log(`[client] connected!`)
+        this.connection = connection
+        this.sendLogin()
+      })
 
-    this.raknet.on('encapsulated', this.onEncapsulated)
+      this.raknet.on('encapsulated', this.onEncapsulated)
 
-    this.raknet.on('raw', (buffer, inetAddr) => {
-      console.log('Raw packet', buffer, inetAddr)
-    })
+      this.raknet.on('raw', (buffer, inetAddr) => {
+        console.log('Raw packet', buffer, inetAddr)
+      })
+    }
+
   }
 
   sendLogin() {
@@ -104,7 +121,7 @@ class Client extends Connection {
   readPacket(packet) {
     // console.log('packet', packet)
     const des = this.deserializer.parsePacketBuffer(packet)
-    console.log('->',des)
+    console.log('->', des)
     const pakData = { name: des.data.name, params: des.data.params }
     // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
     switch (des.data.name) {
@@ -115,12 +132,12 @@ class Client extends Connection {
         this.onDisconnectRequest(des.data.params)
         break
       case 'crafting_data':
-        fs.writeFileSync('crafting.json', JSON.stringify(des.data.params, (k,v) => typeof v == 'bigint' ? v.toString() : v))
+        fs.writeFileSync('crafting.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
         break
       case 'start_game':
-        fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k,v) => typeof v == 'bigint' ? v.toString() : v))
+        fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
       default:
-        // console.log('Sending to listeners')
+      // console.log('Sending to listeners')
     }
     this.emit(des.data.name, des.data.params)
 
