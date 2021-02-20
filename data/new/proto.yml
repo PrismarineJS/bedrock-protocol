@@ -230,7 +230,7 @@ packet_start_game:
    # Defines if achievements are disabled in the world. The client crashes if this value is set 
    # to true while the player's or the world's game mode is creative, and it's recommended to simply
    # always set this to false as a server.
-   has_achievements_disabled: bool
+   achievements_disabled: bool
    # The time at which the day cycle was locked if the day cycle is disabled using the respective
    # game rule. The client will maIntain this time as Boolean as the day cycle is disabled.
    day_cycle_stop_time: zigzag32
@@ -239,7 +239,7 @@ packet_start_game:
    edu_offer: zigzag32
    # Specifies if the world has education edition features enabled, such as the blocks or entities
    # specific to education edition.
-   has_edu_features_enabled: bool
+   edu_features_enabled: bool
    edu_product_uuid: string
    # The level specifying the Intensity of the rain falling. When set to 0, no rain falls at all.
    rain_level: lf32
@@ -459,7 +459,7 @@ packet_move_player:
 packet_rider_jump:
    !id: 0x14
    !bound: both
-   unknown: zigzag32
+   jump_strength: zigzag32
 
 packet_update_block:
    !id: 0x15
@@ -765,13 +765,12 @@ packet_set_entity_motion:
    runtime_entity_id: varint
    velocity: vec3f
 
+# SetActorLink is sent by the server to initiate an entity link client-side, meaning one entity will start
+# riding another.
 packet_set_entity_link:
    !id: 0x29
    !bound: client
-   ridden_id: zigzag64
-   rider_id: zigzag64
-   link_type: u8
-   unknown: u8
+   link: Link
 
 packet_set_health:
    !id: 0x2a
@@ -781,10 +780,12 @@ packet_set_health:
 packet_set_spawn_position:
    !id: 0x2b
    !bound: client
-   spawn_type: zigzag32
-   coordinates: BlockCoordinates
+   spawn_type: zigzag32 =>
+      0: player
+      1: world
+   player_position: BlockCoordinates
    dimension: zigzag32
-   unknown_coordinates: BlockCoordinates
+   world_position: BlockCoordinates
 
 packet_animate:
    !id: 0x2c
@@ -888,13 +889,37 @@ packet_player_input:
    jumping: bool
    sneaking: bool
 
+
+# LevelChunk is sent by the server to provide the client with a chunk of a world data (16xYx16 blocks).
+# Typically a certain amount of chunks is sent to the client before sending it the spawn PlayStatus packet,
+# so that the client spawns in a loaded world.
 packet_level_chunk:
    !id: 0x3a
    !bound: client
+   # ChunkX is the X coordinate of the chunk sent. (To translate a block's X to a chunk's X: x >> 4)
    x: zigzag32
+   # ChunkZ is the Z coordinate of the chunk sent. (To translate a block's Z to a chunk's Z: z >> 4)
    z: zigzag32
+   # SubChunkCount is the amount of sub chunks that are part of the chunk sent. Depending on if the cache
+   # is enabled, a list of blob hashes will be sent, or, if disabled, the sub chunk data.
    sub_chunk_count: varint
-   column: Chunks
+   # CacheEnabled specifies if the client blob cache should be enabled. This system is based on hashes of
+   # blobs which are consistent and saved by the client in combination with that blob, so that the server
+   # does not have to send the same chunk multiple times. If the client does not yet have a blob with the hash sent,
+   # it will send a ClientCacheBlobStatus packet containing the hashes is does not have the data of.
+   cache_enabled: bool
+   blobs: cache_enabled?
+      if true:
+         # BlobHashes is a list of all blob hashes used in the chunk. It is composed of SubChunkCount + 1 hashes,
+         # with the first SubChunkCount hashes being those of the sub chunks and the last one that of the biome
+         # of the chunk.
+         # If CacheEnabled is set to false, BlobHashes can be left empty.
+         hashes: lu64[]varint
+   # RawPayload is a serialised string of chunk data. The data held depends on if CacheEnabled is set to
+   # true. If set to false, the payload is composed of multiple sub-chunks, each of which carry a version
+   # which indicates the way they are serialised, followed by biomes, border blocks and tile entities. If
+   # CacheEnabled is true, the payload consists out of the border blocks and tile entities only.
+   payload: string
 
 packet_set_commands_enabled:
    !id: 0x3b
@@ -964,11 +989,17 @@ packet_game_rules_changed:
    !bound: client
    rules: GameRules
 
+# Camera is sent by the server to use an Education Edition camera on a player. It produces an image
+# client-side.
 packet_camera:
    !id: 0x49
    !bound: client
-   unknown1: zigzag64
-   unknown2: zigzag64
+   # CameraEntityUniqueID is the unique ID of the camera entity from which the picture was taken.
+   camera_entity_unique_id: zigzag64
+   # TargetPlayerUniqueID is the unique ID of the target player. The unique ID is a value that remains
+   # consistent across different sessions of the same world, but most servers simply fill the runtime ID of
+   # the player out for this field.
+   target_player_unique_id: zigzag64
 
 packet_boss_event:
    !id: 0x4a
@@ -1071,6 +1102,97 @@ packet_available_commands:
                43: raw_text
                46: json
                53: command
+               # 15: unknown15
+               # 16: unknown16
+               # 125: unknown125
+               # 126: unknown126
+               # 22: unknown22
+               # 10: unknown10
+               # 39: unknown39
+               # 18: unknown18
+               # 20: unknown20
+               # 19: unknown19
+               # 7: unknown7
+               # 23: unknown23
+               # 24: unknown24
+               # 13: unknown13
+               # 25: unknown25
+               # 40: unknown40
+               # 56: unknown56
+               # 26: unknown26
+               # 27: unknown27
+               # 28: unknown28
+               # 31: unknown31
+               # 30: unknown30
+               # 0: unknown0
+               # 32: unknown32
+               # 49: unknown49
+               # 12: unknown12
+               # 35: unknown35
+               # 36: unknown36
+               # 38: unknown38
+               # 44: unknown44
+               # 47: unknown47
+               # 45: unknown45
+               # 48: unknown48
+               # 55: unknown55
+               # 54: unknown54
+               # 50: unknown50
+               # 51: unknown51
+               # 52: unknown52
+               # 9: unknown9
+               # 123: unknown123
+               # 57: unknown57
+               # 58: unknown58
+               # 59: unknown59
+               # 60: unknown60
+               # 61: unknown61
+               # 63: unknown63
+               # 75: unknown75
+               # 64: unknown64
+               # 67: unknown67
+               # 66: unknown66
+               # 73: unknown73
+               # 72: unknown72
+               # 74: unknown74
+               # 62: unknown62
+               # 68: unknown68
+               # 69: unknown69
+               # 65: unknown65
+               # 70: unknown70
+               # 71: unknown71
+               # 76: unknown76
+               # 77: unknown77
+               # 79: unknown79
+               # 78: unknown78
+               # 80: unknown80
+               # 81: unknown81
+               # 82: unknown82
+               # 83: unknown83
+               # 84: unknown84
+               # 87: unknown87
+               # 88: unknown88
+               # 92: unknown92
+               # 89: unknown89
+               # 90: unknown90
+               # 91: unknown91
+               # 93: unknown93
+               # 95: unknown95
+               # 94: unknown94
+               # 98: unknown98
+               # 96: unknown96
+               # 97: unknown97
+               # 99: unknown99
+               # 100: unknown100
+               # 101: unknown101
+               # 102: unknown102
+               # 103: unknown103
+               # 104: unknown104
+               # 105: unknown105
+               # 106: unknown106
+               # 107: unknown107
+               # 108: unknown108
+               # 124: unknown124
             # In MC, this + prior field are combined to one 32bit bitfield
             enum_type: lu16 =>
                0x10: valid
@@ -1159,28 +1281,64 @@ packet_command_output:
       paramaters: string[]varint
 
 
+# UpdateTrade is sent by the server to update the trades offered by a villager to a player. It is sent at the
+# moment that a player interacts with a villager.
 packet_update_trade:
    !id: 0x50
    !bound: client
+   # WindowID is the ID that identifies the trading window that the client currently has opened.
    window_id: u8
+   # WindowType is an identifier specifying the type of the window opened. In vanilla, it appears this is
+   # always filled out with 15.
    window_type: u8
-   unknown0: varint
-   unknown1: varint
-   unknown2: varint
-   is_willing: bool
-   trader_entity_id: zigzag64
-   player_entity_id: zigzag64
+   # Size is the amount of trading options that the villager has.
+   size: varint
+   # TradeTier is the tier of the villager that the player is trading with. The tier starts at 0 with a
+   # first two offers being available, after which two additional offers are unlocked each time the tier
+   # becomes one higher.
+   trade_tier: varint
+   # VillagerUniqueID is the unique ID of the villager entity that the player is trading with. The
+   # TradeTier sent above applies to this villager.
+   villager_unique_id: varint64
+   # EntityUniqueID is the unique ID of the entity (usually a player) for which the trades are updated. The
+   # updated trades may apply only to this entity.
+   entity_unique_id: varint64
+   # DisplayName is the name displayed at the top of the trading UI. It is usually used to represent the
+   # profession of the villager in the UI.
    display_name: string
-   nbt: nbt
+   # NewTradeUI specifies if the villager should be using the new trade UI (The one added in 1.11.) rather
+   # than the old one. This should usually be set to true.
+   new_trading_ui: bool
+   # Trading based on Minecraft economy - specifies if the prices of the villager's offers are modified by an increase in
+   # demand for the item. (A mechanic added in 1.11.) Buying more of the same item will increase the price
+   # of that particular item.
+   # https://minecraft.gamepedia.com/Trading#Economics
+   economic_trades: bool
+   # NBT serialised compound of offers that the villager has.
+   offers: nbt
 
+# UpdateEquip is sent by the server to the client upon opening a horse inventory. It is used to set the
+# content of the inventory and specify additional properties, such as the items that are allowed to be put
+# in slots of the inventory.
 packet_update_equipment:
    !id: 0x51
    !bound: client
+   # WindowID is the identifier associated with the window that the UpdateEquip packet concerns. It is the
+   # ID sent for the horse inventory that was opened before this packet was sent.
    window_id: u8
+   # WindowType is the type of the window that was opened. Generally, this is the type of a horse inventory,
+   # as the packet is specifically made for that.
    window_type: u8
-   unknown: u8
+   # Size is the size of the horse inventory that should be opened. A bigger size does, in fact, change the
+   # amount of slots displayed.
+   size: u8
+   # EntityUniqueID is the unique ID of the entity whose equipment was 'updated' to the player. It is
+   # typically the horse entity that had its inventory opened.
    entity_id: zigzag64
-   nbt: nbt
+   # `inventory` is a network NBT serialised compound holding the content of the inventory of
+   # the entity (the equipment) and additional data such as the allowed items for a particular slot, used to
+   # make sure only saddles can be put in the saddle slot etc.
+   inventory: nbt
 
 packet_resource_pack_data_info:
    !id: 0x52
@@ -1508,19 +1666,35 @@ packet_update_block_properties:
    !bound: client
    nbt: nbt
 
+# ClientCacheBlobStatus is part of the blob cache protocol. It is sent by the client to let the server know
+# what blobs it needs and which blobs it already has, in an ACK type system.
 packet_client_cache_blob_status:
    !id: 0x87
    !bound: client
+   # A list of blob hashes that the client does not have a blob available for. The server
+   # should send the blobs matching these hashes as soon as possible.
+   missing: lu64[]varint
+   # A list of hashes that the client does have a cached blob for. Server doesn't need to send.
+   have: lu64[]varint
 
+# ClientCacheMissResponse is part of the blob cache protocol. It is sent by the server in response to a
+# ClientCacheBlobStatus packet and contains the blob data of all blobs that the client acknowledged not to
+# have yet.
 packet_client_cache_miss_response:
    !id: 0x88
    !bound: client
+   blobs: Blob[]varint
 
+
+# NetworkSettings is sent by the server to update a variety of network settings. These settings modify the
+# way packets are sent over the network stack.
 packet_network_settings:
    !id: 0x8f
    !bound: both
-   unknown: u8
-   compression_threshold: u8
+   # CompressionThreshold is the minimum size of a packet that is compressed when sent. If the size of a
+   # packet is under this value, it is not compressed.
+   # When set to 0, all packets will be left uncompressed.
+   compression_threshold: u16
 
 packet_creative_content:
    !id: 0x91

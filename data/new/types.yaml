@@ -48,12 +48,15 @@ GameRule:
 
 GameRules: GameRule[]varint
 
-Chunks:
-   cache_enabled: bool
-   _: cache_enabled?
-      if true: void # TODO
-      if false: void
-   
+# CacheBlob represents a blob as used in the client side blob cache protocol. It holds a hash of its data and
+# the full data of it.
+Blob:
+   # Hash is the hash of the blob. The hash is computed using xxHash, and must be deterministic for the same
+   # chunk data.
+   hash: lu64
+   # Payload is the data of the blob. When sent, the client will associate the Hash of the blob with the
+   # Payload in it.
+   payload: string
 
 BlockPalette: []varint
    name: string
@@ -245,12 +248,14 @@ MetadataDictionary: []varint
       if long: zigzag64
       if vec3f: vec3f
 
-Links: []varint
+Link:
    ridden_entity_id: zigzag64
    rider_entity_id: zigzag64
    type: u8
    immediate: bool
    rider_initiated: bool
+
+Links: Link[]varint
 
 EntityAttributes: []varint
    name: string
@@ -276,7 +281,16 @@ PlayerAttributes: []varint
    name: string
 
 Transaction:
+   # LegacyRequestID is an ID that is only non-zero at times when sent by the client. The server should
+   # always send 0 for this. When this field is not 0, the LegacySetItemSlots slice below will have values
+   # in it.
+   # LegacyRequestID ties in with the ItemStackResponse packet. If this field is non-0, the server should
+   # respond with an ItemStackResponse packet. Some inventory actions such as dropping an item out of the
+   # hotbar are still one using this packet, and the ItemStackResponse packet needs to tie in with it.
    legacy_request_id: zigzag32
+   # `legacy_transactions` are only present if the LegacyRequestID is non-zero. These item slots inform the
+   # server of the slots that were changed during the inventory transaction, and the server should send
+   # back an ItemStackResponse packet with these slots present in it. (Or false with no slots, if rejected.)
    legacy_transactions: legacy_request_id?
       if 0: void
       default: []varint
@@ -284,37 +298,37 @@ Transaction:
          changed_slots: []varint
             slot_id: u8
    transaction_type: varint =>
-      0: TYPE_NORMAL
-      1: TYPE_INVENTORY_MISMATCH
-      2: TYPE_ITEM_USE
-      3: TYPE_ITEM_USE_ON_ENTITY
-      4: TYPE_ITEM_RELEASE
-   has_network_ids: bool
+      0: normal
+      1: inventory_mismatch
+      2: item_use
+      3: item_use_on_entity
+      4: item_release
+   network_ids: bool
    inventory_actions: []varint
       source_type: varint =>
-         "0": "INV_SOURCE_TYPE_CONTAINER"
-         "1": "INV_SOURCE_TYPE_GLOBAL"
-         "2": "INV_SOURCE_TYPE_WORLD_INTERACTION"
-         "3": "INV_SOURCE_TYPE_CREATIVE"
-         "100": "INV_SOURCE_TYPE_CRAFT_SLOT"
-         "99999": "INV_SOURCE_TYPE_CRAFT"
+         0: container
+         1: global
+         2: world_interaction
+         3: creative
+         100: craft_slot
+         99999: craft
       _: source_type?
-         if INV_SOURCE_TYPE_CONTAINER or INV_SOURCE_TYPE_CREATIVE:
+         if container or creative:
             inventory_id: varint
-         if INV_SOURCE_TYPE_WORLD_INTERACTION:
+         if world_interaction:
             flags: varint
-         if INV_SOURCE_TYPE_CRAFT or INV_SOURCE_TYPE_CRAFT_SLOT:
+         if craft or craft_slot:
             action: varint
          default: void
       slot: varint
       old_item: Item
       new_item: Item
-      new_item_stack_id: ../has_network_ids?
+      new_item_stack_id: ../network_ids?
          if true:  zigzag32
          default: void
    transaction_data: transaction_type?
-      if TYPE_NORMAL or TYPE_INVENTORY_MISMATCH: void
-      if TYPE_ITEM_USE:
+      if normal or inventory_mismatch: void
+      if item_use:
          action_type: varint
          face: varint
          hotbar_slot: varint
@@ -322,14 +336,14 @@ Transaction:
          player_pos: vec3f
          click_pos: vec3f
          block_runtime_id: varint
-      if TYPE_ITEM_USE_ON_ENTITY:
+      if item_use_on_entity:
          entity_runtime_id: varint64
          action_type: varint
          hotbar_slot: zigzag32
          item_in_hand: Item
          player_pos: vec3f
          click_pos: vec3f        
-      if TYPE_ITEM_RELEASE:
+      if item_release:
          action_type: varint
          hotbar_slot: zigzag32
          item_in_hand: Item
@@ -369,11 +383,11 @@ Recipes: []varint
       # `furnace`, except it has an input item with a specific metadata value, instead of any metadata value.
       '3': 'furnace_with_metadata' # 'ENTRY_FURNACE_DATA', // has metadata
       '4': 'multi' #'ENTRY_MULTI', //TODO
-      '5': 'shapeless' #'ENTRY_SHULKER_BOX', //TODO
-      '6': 'shapeless' #'ENTRY_SHAPELESS_CHEMISTRY', //TODO
-      '7': 'shaped' #'ENTRY_SHAPED_CHEMISTRY', //TODO
+      '5': 'shulker_box' #'ENTRY_SHULKER_BOX', //TODO
+      '6': 'shapeless_chemistry' #'ENTRY_SHAPELESS_CHEMISTRY', //TODO
+      '7': 'shaped_chemistry' #'ENTRY_SHAPED_CHEMISTRY', //TODO
    recipe: type?
-      if shapeless:
+      if shapeless or shulker_box or shapeless_chemistry:
          recipe_id: string
          input: RecipeIngredient[]varint
          output: Item[]varint
@@ -381,7 +395,7 @@ Recipes: []varint
          block: string
          priority: zigzag32
          network_id: zigzag32
-      if shaped:
+      if shaped or shaped_chemistry:
          recipe_id: string
          width: zigzag32
          height: zigzag32

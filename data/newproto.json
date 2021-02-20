@@ -186,26 +186,16 @@
         "type": "GameRule"
       }
     ],
-    "Chunks": [
+    "Blob": [
       "container",
       [
         {
-          "name": "cache_enabled",
-          "type": "bool"
+          "name": "hash",
+          "type": "lu64"
         },
         {
-          "anon": true,
-          "type": [
-            "switch",
-            {
-              "compareTo": "cache_enabled",
-              "fields": {
-                "true": "void",
-                "false": "void"
-              },
-              "default": "void"
-            }
-          ]
+          "name": "payload",
+          "type": "string"
         }
       ]
     ],
@@ -605,35 +595,36 @@
         ]
       }
     ],
+    "Link": [
+      "container",
+      [
+        {
+          "name": "ridden_entity_id",
+          "type": "zigzag64"
+        },
+        {
+          "name": "rider_entity_id",
+          "type": "zigzag64"
+        },
+        {
+          "name": "type",
+          "type": "u8"
+        },
+        {
+          "name": "immediate",
+          "type": "bool"
+        },
+        {
+          "name": "rider_initiated",
+          "type": "bool"
+        }
+      ]
+    ],
     "Links": [
       "array",
       {
         "countType": "varint",
-        "type": [
-          "container",
-          [
-            {
-              "name": "ridden_entity_id",
-              "type": "zigzag64"
-            },
-            {
-              "name": "rider_entity_id",
-              "type": "zigzag64"
-            },
-            {
-              "name": "type",
-              "type": "u8"
-            },
-            {
-              "name": "immediate",
-              "type": "bool"
-            },
-            {
-              "name": "rider_initiated",
-              "type": "bool"
-            }
-          ]
-        ]
+        "type": "Link"
       }
     ],
     "EntityAttributes": [
@@ -787,17 +778,17 @@
             {
               "type": "varint",
               "mappings": {
-                "0": "TYPE_NORMAL",
-                "1": "TYPE_INVENTORY_MISMATCH",
-                "2": "TYPE_ITEM_USE",
-                "3": "TYPE_ITEM_USE_ON_ENTITY",
-                "4": "TYPE_ITEM_RELEASE"
+                "0": "normal",
+                "1": "inventory_mismatch",
+                "2": "item_use",
+                "3": "item_use_on_entity",
+                "4": "item_release"
               }
             }
           ]
         },
         {
-          "name": "has_network_ids",
+          "name": "network_ids",
           "type": "bool"
         },
         {
@@ -816,12 +807,12 @@
                       {
                         "type": "varint",
                         "mappings": {
-                          "0": "INV_SOURCE_TYPE_CONTAINER",
-                          "1": "INV_SOURCE_TYPE_GLOBAL",
-                          "2": "INV_SOURCE_TYPE_WORLD_INTERACTION",
-                          "3": "INV_SOURCE_TYPE_CREATIVE",
-                          "100": "INV_SOURCE_TYPE_CRAFT_SLOT",
-                          "99999": "INV_SOURCE_TYPE_CRAFT"
+                          "0": "container",
+                          "1": "global",
+                          "2": "world_interaction",
+                          "3": "creative",
+                          "100": "craft_slot",
+                          "99999": "craft"
                         }
                       }
                     ]
@@ -833,7 +824,7 @@
                       {
                         "compareTo": "source_type",
                         "fields": {
-                          "INV_SOURCE_TYPE_CONTAINER": [
+                          "container": [
                             "container",
                             [
                               {
@@ -842,7 +833,7 @@
                               }
                             ]
                           ],
-                          "INV_SOURCE_TYPE_CREATIVE": [
+                          "creative": [
                             "container",
                             [
                               {
@@ -851,7 +842,7 @@
                               }
                             ]
                           ],
-                          "INV_SOURCE_TYPE_WORLD_INTERACTION": [
+                          "world_interaction": [
                             "container",
                             [
                               {
@@ -860,7 +851,7 @@
                               }
                             ]
                           ],
-                          "INV_SOURCE_TYPE_CRAFT": [
+                          "craft": [
                             "container",
                             [
                               {
@@ -869,7 +860,7 @@
                               }
                             ]
                           ],
-                          "INV_SOURCE_TYPE_CRAFT_SLOT": [
+                          "craft_slot": [
                             "container",
                             [
                               {
@@ -900,7 +891,7 @@
                     "type": [
                       "switch",
                       {
-                        "compareTo": "../has_network_ids",
+                        "compareTo": "../network_ids",
                         "fields": {
                           "true": "zigzag32"
                         },
@@ -920,9 +911,9 @@
             {
               "compareTo": "transaction_type",
               "fields": {
-                "TYPE_NORMAL": "void",
-                "TYPE_INVENTORY_MISMATCH": "void",
-                "TYPE_ITEM_USE": [
+                "normal": "void",
+                "inventory_mismatch": "void",
+                "item_use": [
                   "container",
                   [
                     {
@@ -955,7 +946,7 @@
                     }
                   ]
                 ],
-                "TYPE_ITEM_USE_ON_ENTITY": [
+                "item_use_on_entity": [
                   "container",
                   [
                     {
@@ -984,7 +975,7 @@
                     }
                   ]
                 ],
-                "TYPE_ITEM_RELEASE": [
+                "item_release": [
                   "container",
                   [
                     {
@@ -1142,9 +1133,9 @@
                     "2": "furnace",
                     "3": "furnace_with_metadata",
                     "4": "multi",
-                    "5": "shapeless",
-                    "6": "shapeless",
-                    "7": "shaped"
+                    "5": "shulker_box",
+                    "6": "shapeless_chemistry",
+                    "7": "shaped_chemistry"
                   }
                 }
               ]
@@ -1201,7 +1192,156 @@
                         }
                       ]
                     ],
+                    "shulker_box": [
+                      "container",
+                      [
+                        {
+                          "name": "recipe_id",
+                          "type": "string"
+                        },
+                        {
+                          "name": "input",
+                          "type": [
+                            "array",
+                            {
+                              "countType": "varint",
+                              "type": "RecipeIngredient"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "output",
+                          "type": [
+                            "array",
+                            {
+                              "countType": "varint",
+                              "type": "Item"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "uuid",
+                          "type": "uuid"
+                        },
+                        {
+                          "name": "block",
+                          "type": "string"
+                        },
+                        {
+                          "name": "priority",
+                          "type": "zigzag32"
+                        },
+                        {
+                          "name": "network_id",
+                          "type": "zigzag32"
+                        }
+                      ]
+                    ],
+                    "shapeless_chemistry": [
+                      "container",
+                      [
+                        {
+                          "name": "recipe_id",
+                          "type": "string"
+                        },
+                        {
+                          "name": "input",
+                          "type": [
+                            "array",
+                            {
+                              "countType": "varint",
+                              "type": "RecipeIngredient"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "output",
+                          "type": [
+                            "array",
+                            {
+                              "countType": "varint",
+                              "type": "Item"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "uuid",
+                          "type": "uuid"
+                        },
+                        {
+                          "name": "block",
+                          "type": "string"
+                        },
+                        {
+                          "name": "priority",
+                          "type": "zigzag32"
+                        },
+                        {
+                          "name": "network_id",
+                          "type": "zigzag32"
+                        }
+                      ]
+                    ],
                     "shaped": [
+                      "container",
+                      [
+                        {
+                          "name": "recipe_id",
+                          "type": "string"
+                        },
+                        {
+                          "name": "width",
+                          "type": "zigzag32"
+                        },
+                        {
+                          "name": "height",
+                          "type": "zigzag32"
+                        },
+                        {
+                          "name": "input",
+                          "type": [
+                            "array",
+                            {
+                              "count": "width",
+                              "type": [
+                                "array",
+                                {
+                                  "count": "height",
+                                  "type": "RecipeIngredient"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "output",
+                          "type": [
+                            "array",
+                            {
+                              "countType": "varint",
+                              "type": "Item"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "uuid",
+                          "type": "uuid"
+                        },
+                        {
+                          "name": "block",
+                          "type": "string"
+                        },
+                        {
+                          "name": "priority",
+                          "type": "zigzag32"
+                        },
+                        {
+                          "name": "network_id",
+                          "type": "zigzag32"
+                        }
+                      ]
+                    ],
+                    "shaped_chemistry": [
                       "container",
                       [
                         {
@@ -2896,7 +3036,7 @@
           "type": "BlockCoordinates"
         },
         {
-          "name": "has_achievements_disabled",
+          "name": "achievements_disabled",
           "type": "bool"
         },
         {
@@ -2908,7 +3048,7 @@
           "type": "zigzag32"
         },
         {
-          "name": "has_edu_features_enabled",
+          "name": "edu_features_enabled",
           "type": "bool"
         },
         {
@@ -3394,7 +3534,7 @@
       "container",
       [
         {
-          "name": "unknown",
+          "name": "jump_strength",
           "type": "zigzag32"
         }
       ]
@@ -3929,20 +4069,8 @@
       "container",
       [
         {
-          "name": "ridden_id",
-          "type": "zigzag64"
-        },
-        {
-          "name": "rider_id",
-          "type": "zigzag64"
-        },
-        {
-          "name": "link_type",
-          "type": "u8"
-        },
-        {
-          "name": "unknown",
-          "type": "u8"
+          "name": "link",
+          "type": "Link"
         }
       ]
     ],
@@ -3960,10 +4088,19 @@
       [
         {
           "name": "spawn_type",
-          "type": "zigzag32"
+          "type": [
+            "mapper",
+            {
+              "type": "zigzag32",
+              "mappings": {
+                "0": "player",
+                "1": "world"
+              }
+            }
+          ]
         },
         {
-          "name": "coordinates",
+          "name": "player_position",
           "type": "BlockCoordinates"
         },
         {
@@ -3971,7 +4108,7 @@
           "type": "zigzag32"
         },
         {
-          "name": "unknown_coordinates",
+          "name": "world_position",
           "type": "BlockCoordinates"
         }
       ]
@@ -4245,8 +4382,39 @@
           "type": "varint"
         },
         {
-          "name": "column",
-          "type": "Chunks"
+          "name": "cache_enabled",
+          "type": "bool"
+        },
+        {
+          "name": "blobs",
+          "type": [
+            "switch",
+            {
+              "compareTo": "cache_enabled",
+              "fields": {
+                "true": [
+                  "container",
+                  [
+                    {
+                      "name": "hashes",
+                      "type": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "lu64"
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "payload",
+          "type": "string"
         }
       ]
     ],
@@ -4383,11 +4551,11 @@
       "container",
       [
         {
-          "name": "unknown1",
+          "name": "camera_entity_unique_id",
           "type": "zigzag64"
         },
         {
-          "name": "unknown2",
+          "name": "target_player_unique_id",
           "type": "zigzag64"
         }
       ]
@@ -4858,35 +5026,35 @@
           "type": "u8"
         },
         {
-          "name": "unknown0",
+          "name": "size",
           "type": "varint"
         },
         {
-          "name": "unknown1",
+          "name": "trade_tier",
           "type": "varint"
         },
         {
-          "name": "unknown2",
-          "type": "varint"
+          "name": "villager_unique_id",
+          "type": "varint64"
         },
         {
-          "name": "is_willing",
-          "type": "bool"
-        },
-        {
-          "name": "trader_entity_id",
-          "type": "zigzag64"
-        },
-        {
-          "name": "player_entity_id",
-          "type": "zigzag64"
+          "name": "entity_unique_id",
+          "type": "varint64"
         },
         {
           "name": "display_name",
           "type": "string"
         },
         {
-          "name": "nbt",
+          "name": "new_trading_ui",
+          "type": "bool"
+        },
+        {
+          "name": "economic_trades",
+          "type": "bool"
+        },
+        {
+          "name": "offers",
           "type": "nbt"
         }
       ]
@@ -4903,7 +5071,7 @@
           "type": "u8"
         },
         {
-          "name": "unknown",
+          "name": "size",
           "type": "u8"
         },
         {
@@ -4911,7 +5079,7 @@
           "type": "zigzag64"
         },
         {
-          "name": "nbt",
+          "name": "inventory",
           "type": "nbt"
         }
       ]
@@ -5678,22 +5846,50 @@
     ],
     "packet_client_cache_blob_status": [
       "container",
-      []
+      [
+        {
+          "name": "missing",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "lu64"
+            }
+          ]
+        },
+        {
+          "name": "have",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "lu64"
+            }
+          ]
+        }
+      ]
     ],
     "packet_client_cache_miss_response": [
       "container",
-      []
+      [
+        {
+          "name": "blobs",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "Blob"
+            }
+          ]
+        }
+      ]
     ],
     "packet_network_settings": [
       "container",
       [
         {
-          "name": "unknown",
-          "type": "u8"
-        },
-        {
           "name": "compression_threshold",
-          "type": "u8"
+          "type": "u16"
         }
       ]
     ],
