@@ -1,4 +1,4 @@
-const RakClient = require('@jsprismarine/raknet/client')
+const RakClient = require('jsp-raknet/client')
 const { Worker, isMainThread, parentPort } = require('worker_threads')
 const EncapsulatedPacket = require('@jsprismarine/raknet/protocol/encapsulated_packet')
 

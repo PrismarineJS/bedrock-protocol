@@ -2,8 +2,8 @@ const BinaryStream = require('@jsprismarine/jsbinaryutils').default
 const BatchPacket = require('./datatypes/BatchPacket')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
-const EncapsulatedPacket = require('@jsprismarine/raknet/protocol/encapsulated_packet')
-
+const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
+const debug = require('debug')('minecraft-protocol')
 
 class Connection extends EventEmitter {
   startEncryption(iv) {
@@ -15,8 +15,10 @@ class Connection extends EventEmitter {
 
   write(name, params) { // TODO: Batch
     console.log('Need to encode', name, params)
+    // console.log('<-', name)
     const batch = new BatchPacket()
     const packet = this.serializer.createPacketBuffer({ name, params })
+    console.log('Sending buf', packet.toString('hex'))
     batch.addEncodedPacket(packet)
 
     if (this.encryptionEnabled) {
@@ -45,6 +47,19 @@ class Connection extends EventEmitter {
     }
   }
 
+  /**
+   * Sends a MCPE packet buffer
+   */
+  sendBuffer(buffer) {
+    const batch = new BatchPacket()
+    batch.addEncodedPacket(buffer)
+    if (this.encryptionEnabled) {
+      this.sendEncryptedBatch(batch)
+    } else {
+      this.sendDecryptedBatch(batch)
+    }
+  }
+
   sendDecryptedBatch(batch) {
     const buf = batch.encode()
     // send to raknet
@@ -53,10 +68,11 @@ class Connection extends EventEmitter {
 
   sendEncryptedBatch(batch) {
     const buf = batch.stream.getBuffer()
-    console.log('Sending encrypted batch', batch)
+    debug('Sending encrypted batch', batch)
     this.encrypt(buf)
   }
 
+  // TODO: Rename this to sendEncapsulated
   sendMCPE(buffer, immediate) {
     if (this.worker) {
       console.log('-> buf', buffer)
