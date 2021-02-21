@@ -28,6 +28,7 @@ class Client extends Connection {
     }
 
     this.on('session', this.connect)
+    this.startQueue()
     // this.on('decrypted', this.onDecryptedPacket)
   }
 
@@ -102,14 +103,6 @@ class Client extends Connection {
       chain: encodedChain,
       client_data: this.clientUserChain
     })
-  }
-
-  // After sending Server to Client Handshake, this handles the client's
-  // Client to Server handshake response. This indicates successful encryption
-  onHandshake() {
-    // https://wiki.vg/Bedrock_Protocol#Play_Status
-    this.write('play_status', { status: PLAY_STATUS.LoginSuccess })
-    this.emit('join')
   }
 
   onDisconnectRequest(packet) {

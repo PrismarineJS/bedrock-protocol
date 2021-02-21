@@ -18,7 +18,7 @@ class Connection extends EventEmitter {
     // console.log('<-', name)
     const batch = new BatchPacket()
     const packet = this.serializer.createPacketBuffer({ name, params })
-    console.log('Sending buf', packet.toString('hex'))
+    // console.log('Sending buf', packet.toString('hex').)
     batch.addEncodedPacket(packet)
 
     if (this.encryptionEnabled) {
@@ -26,6 +26,33 @@ class Connection extends EventEmitter {
     } else {
       this.sendDecryptedBatch(batch)
     }
+  }
+
+  queue(name, params) {
+    console.log('<- ', name)
+    const packet = this.serializer.createPacketBuffer({ name, params })
+    this.q.push(packet)
+  }
+
+  startQueue() {
+    this.q = []
+    this.loop = setInterval(() => {
+      if (this.q.length) {
+        //TODO: can we just build Batch before the queue loop?
+        const batch = new BatchPacket()
+        // For now, we're over conservative so send max 3 packets
+        // per batch and hold the rest for the next tick
+        for (let i = 0; i < 3 && i < this.q.length; i++) {
+          const packet = this.q.shift()
+          batch.addEncodedPacket(packet)
+        }
+        if (this.encryptionEnabled) {
+          this.sendEncryptedBatch(batch)
+        } else {
+          this.sendDecryptedBatch(batch)
+        }
+      }
+    }, 100)
   }
 
   writeRaw(name, buffer) { // skip protodef serializaion
@@ -37,7 +64,6 @@ class Connection extends EventEmitter {
       stream.writeUnsignedVarInt(0x7a)
       stream.append(buffer)
       batch.addEncodedPacket(stream.getBuffer())
-      // console.log('----- SENDING BIOME DEFINITIONS')
     }
 
     if (this.encryptionEnabled) {
@@ -50,13 +76,17 @@ class Connection extends EventEmitter {
   /**
    * Sends a MCPE packet buffer
    */
-  sendBuffer(buffer) {
-    const batch = new BatchPacket()
-    batch.addEncodedPacket(buffer)
-    if (this.encryptionEnabled) {
-      this.sendEncryptedBatch(batch)
+  sendBuffer(buffer, immediate = false) {
+    if (immediate) {
+      const batch = new BatchPacket()
+      batch.addEncodedPacket(buffer)
+      if (this.encryptionEnabled) {
+        this.sendEncryptedBatch(batch)
+      } else {
+        this.sendDecryptedBatch(batch)
+      }
     } else {
-      this.sendDecryptedBatch(batch)
+      this.q.push(buffer)
     }
   }
 
@@ -78,7 +108,7 @@ class Connection extends EventEmitter {
       console.log('-> buf', buffer)
       this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
     } else {
-      const sendPacket = new EncapsulatedPacket();
+      const sendPacket = new EncapsulatedPacket()
       sendPacket.reliability = 0
       sendPacket.buffer = buffer
       this.connection.addEncapsulatedToQueue(sendPacket)
