@@ -200,7 +200,18 @@ packet_start_game:
    # The runtime ID of the player. The runtime ID is unique for each world session, 
    # and entities are generally identified in packets using this runtime ID.
    runtime_entity_id: varint64
-   player_gamemode: zigzag32
+   # PlayerGameMode is the game mode the player currently has. It is a value from 0-4, with 0 being
+   # survival mode, 1 being creative mode, 2 being adventure mode, 3 being survival spectator and 4 being
+   # creative spectator.
+   # This field may be set to 5 to make the client fall back to the game mode set in the WorldGameMode
+   # field.
+   player_gamemode: zigzag32 =>
+      0: survival
+      1: creative
+      2: adventure
+      3: survival_spectator
+      4: creative_spectator
+      5: fallback  
    # The spawn position of the player in the world. In servers this is often the same as the 
    # world's spawn position found below.
    spawn: vec3f
@@ -680,11 +691,25 @@ packet_mob_armor_equipment:
    leggings: Item
    boots: Item
 
+# Interact is sent by the client when it interacts with another entity in some way. It used to be used for
+# normal entity and block interaction, but this is no longer the case now.
 packet_interact:
    !id: 0x21
    !bound: both
-   action_id: u8
+   # Action type is the ID of the action that was executed by the player. It is one of the constants that
+   # may be found above.
+   action_id: u8 =>
+      3: leave_vehicle
+      4: mouse_over_entity
+      6: open_inventory
+   # TargetEntityRuntimeID is the runtime ID of the entity that the player interacted with. This is empty
+   # for the InteractActionOpenInventory action type.
    target_runtime_entity_id: varint
+   # Position associated with the ActionType above. For the InteractActionMouseOverEntity, this is the
+   # position relative to the entity moused over over which the player hovered with its mouse/touch. For the
+   # InteractActionLeaveVehicle, this is the position that the player spawns at after leaving the vehicle.
+   position: action_id ?
+      if mouse_over_entity or leave_vehicle: vec3f
 
 packet_block_pick_request:
    !id: 0x22
@@ -865,15 +890,74 @@ packet_gui_data_pick_item:
    !id: 0x36
    !bound: client
 
+
+# AdventureSettings is sent by the server to update game-play related features, in particular permissions to
+# access these features for the client. It includes allowing the player to fly, build and mine, and attack
+# entities. Most of these flags should be checked server-side instead of using this packet only.
+# The client may also send this packet to the server when it updates one of these settings through the
+# in-game settings interface. The server should verify if the player actually has permission to update those
+# settings.
 packet_adventure_settings:
    !id: 0x37
    !bound: both
-   flags: varint
-   command_permission: varint
-   action_permissions: varint
-   permission_level: varint
+   # Flags is a set of flags that specify certain properties of the player, such as whether or not it can
+   # fly and/or move through blocks. It is one of the AdventureFlag constants above.
+   flags: AdventureFlags
+   # CommandPermissionLevel is a permission level that specifies the kind of commands that the player is
+   # allowed to use.
+   command_permission: varint32 =>
+      0: normal
+      1: operator
+      2: host
+      3: automation
+      4: admin
+   # ActionPermissions is, much like Flags, a set of flags that specify actions that the player is allowed
+   # to undertake, such as whether it is allowed to edit blocks, open doors etc. It is a combination of the
+   # ActionPermission constants above.
+   action_permissions: ActionPermissions
+   # PermissionLevel is the permission level of the player as it shows up in the player list built up using
+   # the PlayerList packet. It is one of the PermissionLevel constants above.
+   permission_level: varint =>
+      0: visitor
+      1: member
+      2: operator
+      3: custom
+   # Custom permissions
    custom_stored_permissions: varint
+   # PlayerUniqueID is a unique identifier of the player. It appears it is not required to fill this field
+   # out with a correct value. Simply writing 0 seems to work.
    user_id: li64
+
+AdventureFlags: [ "bitflags",
+   {
+      "type": "varint",
+      "flags": {
+         "world_immutable": 1,
+         "no_pvp": 2,
+         "auto_jump": 0x20,
+         "allow_flight": 0x40,
+         "no_clip": 0x80,
+         "world_builder": 0x100,
+         "flying": 0x200,
+         "muted": 0x400
+      }
+   }
+]
+
+ActionPermissions: [ "bitflags",
+   {
+      "type": "varint",
+      "flags": {
+         "build_and_mine": 0x10001,
+         "doors_and_switches": 0x10002,
+         "open_containers": 0x10004,
+         "attack_players": 0x10008,
+         "attack_mobs": 0x10010,
+         "operator": 0x10020,
+         "teleport": 0x10080,
+      }
+   }
+]
 
 packet_block_entity_data:
    !id: 0x38
@@ -1547,21 +1631,61 @@ packet_update_block_synced:
    unknown0: varint
    unknown1: varint
 
+# MoveActorDelta is sent by the server to move an entity. The packet is specifically optimised to save as
+# much space as possible, by only writing non-zero fields.
+# As of 1.16.100, this packet no longer actually contains any deltas.
 packet_move_entity_delta:
    !id: 0x6f
    !bound: client
-   runtime_entity_id: varint
-   flags: lu16
+   # EntityRuntimeID is the runtime ID of the entity that is being moved. The packet works provided a
+   # non-player entity with this runtime ID is present.
+   runtime_entity_id: varint64
+   # Flags is a list of flags that specify what data is in the packet.
+   flags: DeltaMoveFlags
+   x: flags.has_x?
+      if true: lf32
+   y: flags.has_y?
+      if true: lf32
+   z: flags.has_z?
+      if true: lf32
+   rot_x: flags.has_rot_x?
+      if true: u8 # TODO: * implement ByteFloat
+   rot_y: flags.has_rot_y?
+      if true: u8
+   rot_z: flags.has_rot_z?
+      if true: u8
+
+DeltaMoveFlags: [ "bitflags",
+   {
+      "type": "lu16",
+      "flags": {
+         "has_x": 0x01,
+         "has_y": 0x02,
+         "has_z": 0x04,
+         "has_rot_x": 0x08,
+         "has_rot_y": 0x10,
+         "has_rot_z": 0x20,
+         "on_ground": 0x40,
+         "teleport": 0x80,
+         "force_move": 0x100
+      }
+   }
+]
 
 packet_set_scoreboard_identity:
    !id: 0x70
    !bound: client
    entries: ScoreboardIdentityEntries
 
+# SetLocalPlayerAsInitialised is sent by the client in response to a PlayStatus packet with the status set
+# to spawn. The packet marks the moment at which the client is fully initialised and can receive any packet
+# without discarding it.
 packet_set_local_player_as_initialized:
    !id: 0x71
    !bound: server
-   runtime_entity_id: varint
+   # EntityRuntimeID is the entity runtime ID the player was assigned earlier in the login sequence in the
+   # StartGame packet.
+   runtime_entity_id: varint64
 
 packet_update_soft_enum:
    !id: 0x72

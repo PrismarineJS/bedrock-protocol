@@ -46,17 +46,69 @@ Write.nbt = ['native', minecraft.nbt[1]]
 SizeOf.nbt = ['native', minecraft.nbt[2]]
 
 /**
+ * Bits
+ */
+// nvm,
+// Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
+  // return compiler.wrapCode(`
+  //   const { value, size } = ${compiler.callType('buffer, offset', type)}
+  //   const val = {}
+  //   for (let i = 0; i < size; i++) {
+  //     const hi = (value >> i) & 1
+  //     if ()
+  //     const v = value & 
+  //     if (flags[i]) 
+  //   }
+  // `
+// }]
+
+Read.bitflags = ['parametrizable', (compiler, { type, flags }) => { 
+  return compiler.wrapCode(`
+    const { value: _value, size } = ${compiler.callType(type, 'offset')}
+    const value = { _value }
+    const flags = ${JSON.stringify(flags)}
+    for (const key in flags) {
+      value[key] = (_value & flags[key]) == flags[key]
+    }
+    return { value, size }
+  `.trim())
+}]
+
+
+Write.bitflags = ['parametrizable', (compiler, { type, flags }) => { 
+  return compiler.wrapCode(`
+    const flags = ${JSON.stringify(flags)}
+    let val = value._value
+    for (const key in flags) {
+      if (value[key]) val |= flags[key]
+    }
+    return (ctx.${type})(val, buffer, offset)
+  `.trim())
+}]
+
+SizeOf.bitflags = ['parametrizable', (compiler, { type, flags }) => { 
+  return compiler.wrapCode(`
+    const flags = ${JSON.stringify(flags)}
+    let val = value._value
+    for (const key in flags) {
+      if (value[key]) val |= flags[key]
+    }
+    return (ctx.${type})(val)
+  `.trim())
+}]
+
+/**
  * Command Packet
  * - used for determining the size of the following enum
  */
-Read.enum_size_based_on_values_len = ['parametrizable', (compiler, array) => {
+Read.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   return compiler.wrapCode(js(() => {
     if (values_len <= 0xff) return { value: 'byte', size: 0 }
     if (values_len <= 0xffff) return { value: 'short', size: 0 }
     if (values_len <= 0xffffff) return { value: 'int', size: 0 }
   }))
 }]
-Write.enum_size_based_on_values_len = ['parametrizable', (compiler, array) => {
+Write.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   return str(() => {
     if (value.values_len <= 0xff) _enum_type = 'byte'
     else if (value.values_len <= 0xffff) _enum_type = 'short'
@@ -64,7 +116,7 @@ Write.enum_size_based_on_values_len = ['parametrizable', (compiler, array) => {
     return offset
   })
 }]
-SizeOf.enum_size_based_on_values_len = ['parametrizable', (compiler, array) => {
+SizeOf.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   return str(() => { 
     if (value.values_len <= 0xff) _enum_type = 'byte'
     else if (value.values_len <= 0xffff) _enum_type = 'short'

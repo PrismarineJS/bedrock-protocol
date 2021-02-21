@@ -918,7 +918,21 @@
                   [
                     {
                       "name": "action_type",
-                      "type": "varint"
+                      "type": [
+                        "mapper",
+                        {
+                          "type": "varint",
+                          "mappings": {
+                            "0": "click_block",
+                            "1": "click_air",
+                            "2": "break_block"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "block_position",
+                      "type": "BlockCoordinates"
                     },
                     {
                       "name": "face",
@@ -929,7 +943,7 @@
                       "type": "varint"
                     },
                     {
-                      "name": "item_in_hand",
+                      "name": "held_item",
                       "type": "Item"
                     },
                     {
@@ -955,14 +969,23 @@
                     },
                     {
                       "name": "action_type",
-                      "type": "varint"
+                      "type": [
+                        "mapper",
+                        {
+                          "type": "varint",
+                          "mappings": {
+                            "0": "interact",
+                            "1": "attack"
+                          }
+                        }
+                      ]
                     },
                     {
                       "name": "hotbar_slot",
                       "type": "zigzag32"
                     },
                     {
-                      "name": "item_in_hand",
+                      "name": "held_item",
                       "type": "Item"
                     },
                     {
@@ -980,14 +1003,23 @@
                   [
                     {
                       "name": "action_type",
-                      "type": "varint"
+                      "type": [
+                        "mapper",
+                        {
+                          "type": "varint",
+                          "mappings": {
+                            "0": "release",
+                            "1": "consume"
+                          }
+                        }
+                      ]
                     },
                     {
                       "name": "hotbar_slot",
                       "type": "zigzag32"
                     },
                     {
-                      "name": "item_in_hand",
+                      "name": "held_item",
                       "type": "Item"
                     },
                     {
@@ -2993,7 +3025,20 @@
         },
         {
           "name": "player_gamemode",
-          "type": "zigzag32"
+          "type": [
+            "mapper",
+            {
+              "type": "zigzag32",
+              "mappings": {
+                "0": "survival",
+                "1": "creative",
+                "2": "adventure",
+                "3": "survival_spectator",
+                "4": "creative_spectator",
+                "5": "fallback"
+              }
+            }
+          ]
         },
         {
           "name": "spawn",
@@ -3926,11 +3971,35 @@
       [
         {
           "name": "action_id",
-          "type": "u8"
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "3": "leave_vehicle",
+                "4": "mouse_over_entity",
+                "6": "open_inventory"
+              }
+            }
+          ]
         },
         {
           "name": "target_runtime_entity_id",
           "type": "varint"
+        },
+        {
+          "name": "position",
+          "type": [
+            "switch",
+            {
+              "compareTo": "action_id",
+              "fields": {
+                "mouse_over_entity": "vec3f",
+                "leave_vehicle": "vec3f"
+              },
+              "default": "void"
+            }
+          ]
         }
       ]
     ],
@@ -4308,19 +4377,42 @@
       [
         {
           "name": "flags",
-          "type": "varint"
+          "type": "AdventureFlags"
         },
         {
           "name": "command_permission",
-          "type": "varint"
+          "type": [
+            "mapper",
+            {
+              "type": "varint32",
+              "mappings": {
+                "0": "normal",
+                "1": "operator",
+                "2": "host",
+                "3": "automation",
+                "4": "admin"
+              }
+            }
+          ]
         },
         {
           "name": "action_permissions",
-          "type": "varint"
+          "type": "ActionPermissions"
         },
         {
           "name": "permission_level",
-          "type": "varint"
+          "type": [
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "visitor",
+                "1": "member",
+                "2": "operator",
+                "3": "custom"
+              }
+            }
+          ]
         },
         {
           "name": "custom_stored_permissions",
@@ -5611,11 +5703,89 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "flags",
-          "type": "lu16"
+          "type": "DeltaMoveFlags"
+        },
+        {
+          "name": "x",
+          "type": [
+            "switch",
+            {
+              "compareTo": "flags.has_x",
+              "fields": {
+                "true": "lf32"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "y",
+          "type": [
+            "switch",
+            {
+              "compareTo": "flags.has_y",
+              "fields": {
+                "true": "lf32"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "z",
+          "type": [
+            "switch",
+            {
+              "compareTo": "flags.has_z",
+              "fields": {
+                "true": "lf32"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "rot_x",
+          "type": [
+            "switch",
+            {
+              "compareTo": "flags.has_rot_x",
+              "fields": {
+                "true": "u8"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "rot_y",
+          "type": [
+            "switch",
+            {
+              "compareTo": "flags.has_rot_y",
+              "fields": {
+                "true": "u8"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "rot_z",
+          "type": [
+            "switch",
+            {
+              "compareTo": "flags.has_rot_z",
+              "fields": {
+                "true": "u8"
+              },
+              "default": "void"
+            }
+          ]
         }
       ]
     ],
@@ -5633,7 +5803,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         }
       ]
     ],
@@ -5994,6 +6164,37 @@
         "countType": "li32"
       }
     ],
+    "AdventureFlags": [
+      "bitflags",
+      {
+        "type": "varint",
+        "flags": {
+          "world_immutable": 1,
+          "no_pvp": 2,
+          "auto_jump": 32,
+          "allow_flight": 64,
+          "no_clip": 128,
+          "world_builder": 256,
+          "flying": 512,
+          "muted": 1024
+        }
+      }
+    ],
+    "ActionPermissions": [
+      "bitflags",
+      {
+        "type": "varint",
+        "flags": {
+          "build_and_mine": 65537,
+          "doors_and_switches": 65538,
+          "open_containers": 65540,
+          "attack_players": 65544,
+          "attack_mobs": 65552,
+          "operator": 65568,
+          "teleport": 65664
+        }
+      }
+    ],
     "CommandFlags": [
       "bitfield",
       [
@@ -6013,6 +6214,23 @@
           "signed": false
         }
       ]
+    ],
+    "DeltaMoveFlags": [
+      "bitflags",
+      {
+        "type": "lu16",
+        "flags": {
+          "has_x": 1,
+          "has_y": 2,
+          "has_z": 4,
+          "has_rot_x": 8,
+          "has_rot_y": 16,
+          "has_rot_z": 32,
+          "on_ground": 64,
+          "teleport": 128,
+          "force_move": 256
+        }
+      }
     ]
   }
 }
