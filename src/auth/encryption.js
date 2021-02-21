@@ -11,7 +11,6 @@ function Encrypt(client, server, options) {
   client.ecdhKeyPair.generateKeys()
   client.clientX509 = writeX509PublicKey(client.ecdhKeyPair.getPublicKey())
 
-
   function startClientboundEncryption(publicKey) {
     console.warn('[encrypt] Pub key base64: ', publicKey)
     const pubKeyBuf = readX509PublicKey(publicKey.key)

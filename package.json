@@ -28,6 +28,7 @@
     "debug": "^4.3.1",
     "ec-pem": "^0.18.0",
     "jsonwebtoken": "^8.5.1",
+    "jsp-raknet": "github:extremeheat/raknet#client",
     "jwt-simple": "^0.5.6",
     "lodash.merge": "^4.4.0",
     "minecraft-folder-path": "^1.1.0",

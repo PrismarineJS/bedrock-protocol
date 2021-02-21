@@ -5,12 +5,17 @@ const NETWORK_ID = 0xfe
 
 // This is not a real MCPE packet, it's a wrapper that contains compressed/encrypted batched packets
 class BatchPacket {
-
   constructor(stream) {
+    // Shared
     this.payload = Buffer.alloc(0)
     this.stream = stream || new BinaryStream()
+
+    // Decoding
     this.packets = []
+
+    // Encoding
     this.compressionLevel = 7
+    this.count = 0
   }
 
   decode() {
@@ -43,6 +48,7 @@ class BatchPacket {
   addEncodedPacket(packet) {
     this.stream.writeUnsignedVarInt(packet.byteLength)
     this.stream.append(packet)
+    this.count++
   }
 
   getPackets() {
