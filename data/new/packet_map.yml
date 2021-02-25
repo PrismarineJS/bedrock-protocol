@@ -1,4 +1,3 @@
-
 !import: types.yaml
 mcpe_packet:
    name: varint =>
@@ -64,6 +63,7 @@ mcpe_packet:
       0x3e: set_player_game_type
       0x3f: player_list
       0x40: simple_event
+      0x41: event
       0x42: spawn_experience_orb
       0x43: clientbound_map_item_data
       0x44: map_info_request
@@ -141,6 +141,7 @@ mcpe_packet:
       0x9c: packet_violation_warning
       0xa2: item_component
       0xa3: filter_text_packet
+
    params: name ?
       if login: packet_login
       if play_status: packet_play_status
@@ -204,6 +205,7 @@ mcpe_packet:
       if set_player_game_type: packet_set_player_game_type
       if player_list: packet_player_list
       if simple_event: packet_simple_event
+      if event: packet_event
       if spawn_experience_orb: packet_spawn_experience_orb
       if clientbound_map_item_data: packet_clientbound_map_item_data
       if map_info_request: packet_map_info_request

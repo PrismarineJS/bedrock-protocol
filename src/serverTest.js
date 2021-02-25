@@ -54,6 +54,7 @@ server.on('connect', ({ client }) => {
       client.queue('player_list', require('./packets/player_list.json'))
       client.queue('start_game', require('./packets/start_game.json'))
       client.queue('item_component', {"entries":[]})
+      client.queue('set_spawn_position', require('./packets/set_spawn_position.json'))
       client.queue('set_time', { time: 5433771 })
       client.queue('set_difficulty', { difficulty: 1 })
       client.queue('set_commands_enabled', { enabled: true })
@@ -64,23 +65,27 @@ server.on('connect', ({ client }) => {
 
       client.queue('update_attributes', require('./packets/update_attributes.json'))
       client.queue('creative_content', require('./packets/creative_content.json'))
+      client.queue('inventory_content', require('./packets/inventory_content.json'))
       client.queue('player_hotbar', {"selected_slot":3,"window_id":0,"select_slot":true})
 
       client.queue('crafting_data', require('./packets/crafting_data.json'))
       client.queue('available_commands', require('./packets/available_commands.json'))
+      client.queue('chunk_radius_update', {"chunk_radius":5})
+
+      client.queue('set_entity_data', require('./packets/set_entity_data.json'))
 
       client.queue('game_rules_changed', require('./packets/game_rules_changed.json'))
       client.queue('respawn', {"x":646.9405517578125,"y":65.62001037597656,"z":77.86255645751953,"state":0,"runtime_entity_id":0})
 
-      // for (const file of fs.readdirSync('chunks')) {
-      //   const buffer = Buffer.from(fs.readFileSync('./chunks/' + file, 'utf8'), 'hex')
-      //   // console.log('Sending chunk', chunk)
-      //   client.sendBuffer(buffer)
-      // }
-
-      for (const chunk of chunks) {
-        client.queue('level_chunk', chunk)
+      for (const file of fs.readdirSync('chunks')) {
+        const buffer = Buffer.from(fs.readFileSync('./chunks/' + file, 'utf8'), 'hex')
+        // console.log('Sending chunk', chunk)
+        client.sendBuffer(buffer)
       }
+
+      // for (const chunk of chunks) {
+      //   client.queue('level_chunk', chunk)
+      // }
 
       setInterval(() => {
         client.write('network_chunk_publisher_update', {"coordinates":{"x":646,"y":130,"z":77},"radius":64})
@@ -90,6 +95,14 @@ server.on('connect', ({ client }) => {
       setTimeout(() => {
         client.write('play_status', { status: 'player_spawn' })
       }, 8000)
+
+      // Respond to tick synchronization packets
+      client.on('tick_sync', ({ request_time }) => {
+        client.queue('tick_sync', {
+          request_time,
+          response_time: BigInt(Date.now())
+        })
+      })
     })
   })
 })
@@ -101,7 +114,7 @@ async function sleep(ms) {
 }
 
 // CHUNKS
-const { ChunkColumn, Version } = require('bedrock-provider')
+// const { ChunkColumn, Version } = require('bedrock-provider')
 const mcData = require('minecraft-data')('1.16')
 var chunks = []
 async function buildChunks() {
@@ -133,4 +146,4 @@ async function buildChunks() {
   // console.log('Chunks',chunks)
 }
 
-buildChunks()
+// buildChunks()

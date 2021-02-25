@@ -2371,6 +2371,156 @@
         }
       ]
     ],
+    "WindowType": [
+      "mapper",
+      {
+        "type": "u8",
+        "mappings": {
+          "0": "container",
+          "1": "workbench",
+          "2": "furnace",
+          "3": "enchantment",
+          "4": "brewing_stand",
+          "5": "anvil",
+          "6": "dispenser",
+          "7": "dropper",
+          "8": "hopper",
+          "9": "cauldron",
+          "10": "minecart_chest",
+          "11": "minecart_hopper",
+          "12": "horse",
+          "13": "beacon",
+          "14": "structure_editor",
+          "15": "trading",
+          "16": "command_block",
+          "17": "jukebox",
+          "18": "armor",
+          "19": "hand",
+          "20": "compound_creator",
+          "21": "element_constructor",
+          "22": "material_reducer",
+          "23": "lab_table",
+          "24": "loom",
+          "25": "lectern",
+          "26": "grindstone",
+          "27": "blast_furnace",
+          "28": "smoker",
+          "29": "stonecutter",
+          "30": "cartography",
+          "31": "hud",
+          "32": "jigsaw_editor",
+          "33": "smithing_table"
+        }
+      }
+    ],
+    "LegacyEntityType": [
+      "mapper",
+      {
+        "type": "li32",
+        "mappings": {
+          "10": "chicken",
+          "11": "cow",
+          "12": "pig",
+          "13": "sheep",
+          "14": "wolf",
+          "15": "villager",
+          "16": "mooshroom",
+          "17": "squid",
+          "18": "rabbit",
+          "19": "bat",
+          "20": "iron_golem",
+          "21": "snow_golem",
+          "22": "ocelot",
+          "23": "horse",
+          "24": "donkey",
+          "25": "mule",
+          "26": "skeleton_horse",
+          "27": "zombie_horse",
+          "28": "polar_bear",
+          "29": "llama",
+          "30": "parrot",
+          "31": "dolphin",
+          "32": "zombie",
+          "33": "creeper",
+          "34": "skeleton",
+          "35": "spider",
+          "36": "zombie_pigman",
+          "37": "slime",
+          "38": "enderman",
+          "39": "silverfish",
+          "40": "cave_spider",
+          "41": "ghast",
+          "42": "magma_cube",
+          "43": "blaze",
+          "44": "zombie_villager",
+          "45": "witch",
+          "46": "stray",
+          "47": "husk",
+          "48": "wither_skeleton",
+          "49": "guardian",
+          "50": "elder_guardian",
+          "51": "npc",
+          "52": "wither",
+          "53": "ender_dragon",
+          "54": "shulker",
+          "55": "endermite",
+          "56": "agent",
+          "57": "vindicator",
+          "58": "phantom",
+          "61": "armor_stand",
+          "62": "tripod_camera",
+          "63": "player",
+          "64": "item",
+          "65": "tnt",
+          "66": "falling_block",
+          "67": "moving_block",
+          "68": "xp_bottle",
+          "69": "xp_orb",
+          "70": "eye_of_ender_signal",
+          "71": "ender_crystal",
+          "72": "fireworks_rocket",
+          "73": "thrown_trident",
+          "74": "turtle",
+          "75": "cat",
+          "76": "shulker_bullet",
+          "77": "fishing_hook",
+          "78": "chalkboard",
+          "79": "dragon_fireball",
+          "80": "arrow",
+          "81": "snowball",
+          "82": "egg",
+          "83": "painting",
+          "84": "minecart",
+          "85": "fireball",
+          "86": "splash_potion",
+          "87": "ender_pearl",
+          "88": "leash_knot",
+          "89": "wither_skull",
+          "90": "boat",
+          "91": "wither_skull_dangerous",
+          "93": "lightning_bolt",
+          "94": "small_fireball",
+          "95": "area_effect_cloud",
+          "96": "hopper_minecart",
+          "97": "tnt_minecart",
+          "98": "chest_minecart",
+          "100": "command_block_minecart",
+          "101": "lingering_potion",
+          "102": "llama_spit",
+          "103": "evocation_fang",
+          "104": "evocation_illager",
+          "105": "vex",
+          "106": "ice_bomb",
+          "107": "balloon",
+          "108": "pufferfish",
+          "109": "salmon",
+          "110": "drowned",
+          "111": "tropicalfish",
+          "112": "cod",
+          "113": "panda"
+        }
+      }
+    ],
     "mcpe_packet": [
       "container",
       [
@@ -2443,6 +2593,7 @@
                 "62": "set_player_game_type",
                 "63": "player_list",
                 "64": "simple_event",
+                "65": "event",
                 "66": "spawn_experience_orb",
                 "67": "clientbound_map_item_data",
                 "68": "map_info_request",
@@ -2593,6 +2744,7 @@
                 "set_player_game_type": "packet_set_player_game_type",
                 "player_list": "packet_player_list",
                 "simple_event": "packet_simple_event",
+                "event": "packet_event",
                 "spawn_experience_orb": "packet_spawn_experience_orb",
                 "clientbound_map_item_data": "packet_clientbound_map_item_data",
                 "map_info_request": "packet_map_info_request",
@@ -3534,20 +3686,12 @@
       "container",
       [
         {
-          "name": "runtime_entity_id",
+          "name": "runtime_id",
           "type": "varint"
         },
         {
-          "name": "x",
-          "type": "lf32"
-        },
-        {
-          "name": "y",
-          "type": "lf32"
-        },
-        {
-          "name": "z",
-          "type": "lf32"
+          "name": "position",
+          "type": "vec3f"
         },
         {
           "name": "pitch",
@@ -3563,15 +3707,67 @@
         },
         {
           "name": "mode",
-          "type": "u8"
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "normal",
+                "1": "reset",
+                "2": "teleport",
+                "3": "rotation"
+              }
+            }
+          ]
         },
         {
           "name": "on_ground",
           "type": "bool"
         },
         {
-          "name": "other_runtime_entity_id",
+          "name": "ridden_runtime_id",
           "type": "varint"
+        },
+        {
+          "anon": true,
+          "type": [
+            "switch",
+            {
+              "compareTo": "mode",
+              "fields": {
+                "teleport": [
+                  "container",
+                  [
+                    {
+                      "name": "teleport_cause",
+                      "type": [
+                        "mapper",
+                        {
+                          "type": "li32",
+                          "mappings": {
+                            "0": "unknown",
+                            "1": "projectile",
+                            "2": "chorus_fruit",
+                            "3": "command",
+                            "4": "behavior"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "source_entity_type",
+                      "type": "LegacyEntityType"
+                    }
+                  ]
+                ]
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "tick",
+          "type": "varint64"
         }
       ]
     ],
@@ -4572,6 +4768,48 @@
         }
       ]
     ],
+    "packet_event": [
+      "container",
+      [
+        {
+          "name": "runtime_id",
+          "type": "varint64"
+        },
+        {
+          "name": "event_type",
+          "type": [
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "achievement_awarded",
+                "1": "entity_interact",
+                "2": "portal_built",
+                "3": "portal_used",
+                "4": "mob_killed",
+                "5": "cauldron_used",
+                "6": "player_death",
+                "7": "boss_killed",
+                "8": "agent_command",
+                "9": "agent_created",
+                "10": "pattern_removed",
+                "11": "commaned_executed",
+                "12": "fish_bucketed",
+                "13": "mob_born",
+                "14": "pet_died",
+                "15": "cauldron_block_used",
+                "16": "composter_block_used",
+                "17": "bell_block_used"
+              }
+            }
+          ]
+        },
+        {
+          "name": "use_player_id",
+          "type": "u8"
+        }
+      ]
+    ],
     "packet_spawn_experience_orb": [
       "container",
       [
@@ -5115,7 +5353,7 @@
         },
         {
           "name": "window_type",
-          "type": "u8"
+          "type": "WindowType"
         },
         {
           "name": "size",
@@ -5160,7 +5398,7 @@
         },
         {
           "name": "window_type",
-          "type": "u8"
+          "type": "WindowType"
         },
         {
           "name": "size",

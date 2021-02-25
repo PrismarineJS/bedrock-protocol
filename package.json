@@ -4,6 +4,7 @@
   "description": "Parse and serialize Minecraft Bedrock Edition packets",
   "main": "index.js",
   "scripts": {
+    "build": "cd data/new && node compile.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

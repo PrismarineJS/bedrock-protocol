@@ -453,19 +453,52 @@ packet_move_entity:
    position: vec3f
    rotation: Rotation
 
+# MovePlayer is sent by players to send their movement to the server, and by the server to update the
+# movement of player entities to other players.
 packet_move_player:
    !id: 0x13
    !bound: both
-   runtime_entity_id: varint
-   x: lf32
-   y: lf32
-   z: lf32
+   # EntityRuntimeID is the runtime ID of the player. The runtime ID is unique for each world session, and
+   # entities are generally identified in packets using this runtime ID.
+   runtime_id: varint
+   # Position is the position to spawn the player on. If the player is on a distance that the viewer cannot
+   # see it, the player will still show up if the viewer moves closer.
+   position: vec3f
+   # Pitch is the vertical rotation of the player. Facing straight forward yields a pitch of 0. Pitch is
+   # measured in degrees.
    pitch: lf32
+   # Yaw is the horizontal rotation of the player. Yaw is also measured in degrees
    yaw: lf32
+   # HeadYaw is the same as Yaw, except that it applies specifically to the head of the player. A different
+   # value for HeadYaw than Yaw means that the player will have its head turned
    head_yaw: lf32
-   mode: u8
+   # Mode is the mode of the movement. It specifies the way the player's movement should be shown to other
+   # players. It is one of the constants below.
+   mode: u8 =>
+      0: normal
+      1: reset
+      2: teleport
+      3: rotation
+   # OnGround specifies if the player is considered on the ground. Note that proxies or hacked clients could
+   # fake this to always be true, so it should not be taken for granted.
    on_ground: bool
-   other_runtime_entity_id: varint
+   # RiddenEntityRuntimeID is the runtime ID of the entity that the player might currently be riding. If not
+   # riding, this should be left 0.
+   ridden_runtime_id: varint
+   teleport: mode ?
+      if teleport:
+         # TeleportCause is written only if Mode is MoveModeTeleport. It specifies the cause of the teleportation,
+         # which is one of the constants above.
+         cause: li32 =>
+            0: unknown
+            1: projectile
+            2: chorus_fruit
+            3: command
+            4: behavior
+         # TeleportSourceEntityType is the entity type that caused the teleportation, for example an ender pearl.
+         # TODO: is this still a integer and not a string?
+         source_entity_type: LegacyEntityType
+   tick: varint64
 
 packet_rider_jump:
    !id: 0x14
@@ -489,10 +522,20 @@ packet_add_painting:
    direction: zigzag32
    title: string
 
+# TickSync is sent by the client and the server to maintain a synchronized, server-authoritative tick between
+# the client and the server. The client sends this packet first, and the server should reply with another one
+# of these packets, including the response time.
 packet_tick_sync:
    !id: 0x17
    !bound: both
+   # ClientRequestTimestamp is the timestamp on which the client sent this packet to the server. The server
+   # should fill out that same value when replying.
+   # The ClientRequestTimestamp is always 0
    request_time: li64
+   # ServerReceptionTimestamp is the timestamp on which the server received the packet sent by the client.
+   # When the packet is sent by the client, this value is 0.
+   # ServerReceptionTimestamp is generally the current tick of the server. It isn't an actual timestamp, as
+   # the field implies
    response_time: li64
 
 packet_level_sound_event_old:
@@ -1037,6 +1080,33 @@ packet_simple_event:
    !bound: client
    event_type: lu16
 
+# Event is sent by the server to send an event with additional data. It is typically sent to the client for
+# telemetry reasons, much like the SimpleEvent packet.
+packet_event:
+   !id: 0x41
+   !bound: client
+   runtime_id: varint64
+   event_type: varint =>
+      0: achievement_awarded 
+      1: entity_interact 
+      2: portal_built 
+      3: portal_used 
+      4: mob_killed 
+      5: cauldron_used 
+      6: player_death 
+      7: boss_killed 
+      8: agent_command 
+      9: agent_created 
+      10: banner_pattern_removed
+      11: commaned_executed 
+      12: fish_bucketed 
+      13: mob_born 
+      14: pet_died 
+      15: cauldron_block_used 
+      16: composter_block_used 
+      17: bell_block_used 
+   use_player_id: u8
+
 packet_spawn_experience_orb:
    !id: 0x42
    !bound: client
@@ -1374,7 +1444,7 @@ packet_update_trade:
    window_id: u8
    # WindowType is an identifier specifying the type of the window opened. In vanilla, it appears this is
    # always filled out with 15.
-   window_type: u8
+   window_type: WindowType
    # Size is the amount of trading options that the villager has.
    size: varint
    # TradeTier is the tier of the villager that the player is trading with. The tier starts at 0 with a
@@ -1412,7 +1482,7 @@ packet_update_equipment:
    window_id: u8
    # WindowType is the type of the window that was opened. Generally, this is the type of a horse inventory,
    # as the packet is specifically made for that.
-   window_type: u8
+   window_type: WindowType
    # Size is the size of the horse inventory that should be opened. A bigger size does, in fact, change the
    # amount of slots displayed.
    size: u8
