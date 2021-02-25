@@ -4506,7 +4506,7 @@
         },
         {
           "name": "payload",
-          "type": "string"
+          "type": "ByteArray"
         }
       ]
     ],

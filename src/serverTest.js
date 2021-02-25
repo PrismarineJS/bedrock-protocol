@@ -4,6 +4,7 @@ const CreativeItems = require('../data/creativeitems.json')
 const NBT = require('prismarine-nbt')
 const fs = require('fs')
 
+
 let server = new Server({
 
 })
@@ -38,45 +39,7 @@ server.on('connect', ({ client }) => {
       })
 
       client.once('resource_pack_client_response', async (packet) => {
-        // ran = true
-        // let items = []
-        // let ids = 0
-        // for (var item of CreativeItems) {
-        //   let creativeitem = { runtime_id: items.length }
-        //   const has_nbt = !!item.nbt_b64
-        //   if (item.id != 0) {
-        //     creativeitem.item = { 
-        //       network_id: item.id,
-        //       auxiliary_value: item.damage || 0,
-        //       has_nbt,
-        //       nbt: {
-        //         version: 1,
-        //       },
-        //       blocking_tick: 0,
-        //       can_destroy: [],
-        //       can_place_on: []
-        //     }
-        //     if (has_nbt) {
-        //       let nbtBuf = Buffer.from(item.nbt_b64, 'base64')
-        //       let { parsed } = await NBT.parse(nbtBuf, 'little')
-        //       creativeitem.item.nbt.nbt = parsed
-        //     }
-        //   }
-        //   items.push(creativeitem)
-        //   // console.log(creativeitem)
-        // }
-
-        // console.log(items, ids)
-
-        // client.write('creative_content', { items })
-        // wait a bit just for easier debugging
-        // setTimeout(() => {
-        //   const biomeDefs = fs.readFileSync('../data/biome_definitions.nbt')
-        //   client.writeRaw('biome_definition_list', biomeDefs)
-
-        //     // TODO: send chunks so we can spawn player
-        // }, 1000)
-
+        
       })
 
       client.write('network_settings', {
@@ -109,10 +72,14 @@ server.on('connect', ({ client }) => {
       client.queue('game_rules_changed', require('./packets/game_rules_changed.json'))
       client.queue('respawn', {"x":646.9405517578125,"y":65.62001037597656,"z":77.86255645751953,"state":0,"runtime_entity_id":0})
 
-      for (const file of fs.readdirSync('chunks')) {
-        const buffer = Buffer.from(fs.readFileSync('./chunks/' + file, 'utf8'), 'hex')
-        // console.log('Sending chunk', chunk)
-        client.sendBuffer(buffer)
+      // for (const file of fs.readdirSync('chunks')) {
+      //   const buffer = Buffer.from(fs.readFileSync('./chunks/' + file, 'utf8'), 'hex')
+      //   // console.log('Sending chunk', chunk)
+      //   client.sendBuffer(buffer)
+      // }
+
+      for (const chunk of chunks) {
+        client.queue('level_chunk', chunk)
       }
 
       setInterval(() => {
@@ -132,3 +99,38 @@ async function sleep(ms) {
     setTimeout(() => { res() }, ms)
   })
 }
+
+// CHUNKS
+const { ChunkColumn, Version } = require('bedrock-provider')
+const mcData = require('minecraft-data')('1.16')
+var chunks = []
+async function buildChunks() {
+  // "x": 40,
+  // "z": 4,
+  
+  const stone = mcData.blocksByName.stone
+
+  for (var cx = 35; cx < 45; cx++) {
+    for (var cz = 0; cz < 8; cz++) {
+      const column = new ChunkColumn(Version.v1_2_0_bis, x, z)
+      for (var x = 0; x < 16; x++) {
+        for (var y = 0; y < 60; y++) {
+          for (var z = 0; z < 16; z++) {
+            column.setBlock(x,y,z,stone)
+          }
+        }
+      }
+
+      const ser = await column.networkEncodeNoCache()
+
+      chunks.push({
+        x:cx, z:cz, sub_chunk_count: column.sectionsLen, cache_enabled: false,
+        blobs: [], payload: ser
+      })
+    }
+  }
+
+  // console.log('Chunks',chunks)
+}
+
+buildChunks()

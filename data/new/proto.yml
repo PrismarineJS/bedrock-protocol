@@ -1003,7 +1003,7 @@ packet_level_chunk:
    # true. If set to false, the payload is composed of multiple sub-chunks, each of which carry a version
    # which indicates the way they are serialised, followed by biomes, border blocks and tile entities. If
    # CacheEnabled is true, the payload consists out of the border blocks and tile entities only.
-   payload: string
+   payload: ByteArray
 
 packet_set_commands_enabled:
    !id: 0x3b

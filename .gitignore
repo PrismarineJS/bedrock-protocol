@@ -3,5 +3,5 @@ npm-debug.log
 __*
 data/*.js
 src/**/*.json
-src/*.txt
+src/**/*.txt
 dist/
