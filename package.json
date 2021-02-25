@@ -4,7 +4,6 @@
   "description": "Parse and serialize Minecraft Bedrock Edition packets",
   "main": "index.js",
   "scripts": {
-    "build": "babel src --out-dir dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -15,34 +14,22 @@
   "license": "MIT",
   "dependencies": {
     "@azure/msal-node": "^1.0.0-beta.6",
-    "@babel/core": "^7.5.4",
-    "@babel/preset-env": "^7.5.4",
-    "@babel/preset-typescript": "^7.3.3",
-    "@babel/register": "^7.4.4",
     "@jsprismarine/jsbinaryutils": "^2.1.8",
-    "@jsprismarine/raknet": "github:extremeheat/raknet#client",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "aes-js": "^3.1.2",
     "asn1": "^0.2.4",
     "bedrock-provider": "github:extremeheat/bedrock-provider",
-    "bn.js": "^4.11.4",
     "debug": "^4.3.1",
     "ec-pem": "^0.18.0",
     "jsonwebtoken": "^8.5.1",
     "jsp-raknet": "github:extremeheat/raknet#client",
-    "jwt-simple": "^0.5.6",
-    "lodash.merge": "^4.4.0",
     "minecraft-folder-path": "^1.1.0",
     "prismarine-nbt": "github:extremeheat/prismarine-nbt#le",
     "protodef": "github:extremeheat/node-protodef#compiler",
-    "raknet": "git+https://github.com/mhsjlw/node-raknet.git#master",
     "uuid-1345": "^0.99.7"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.0",
-    "buffer-equal": "^1.0.0",
-    "mocha": "^2.5.3",
-    "pre-commit": "^1.2.2"
+    "mocha": "^2.5.3"
   },
   "repository": {
     "type": "git",
@@ -51,8 +38,5 @@
   "bugs": {
     "url": "https://github.com/mhsjlw/pocket-minecraft-protocol/issues"
   },
-  "homepage": "https://github.com/mhsjlw/pocket-minecraft-protocol#readme",
-  "pre-commit": [
-    "build"
-  ]
+  "homepage": "https://github.com/mhsjlw/pocket-minecraft-protocol#readme"
 }
