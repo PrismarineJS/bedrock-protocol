@@ -124,6 +124,8 @@ mcpe_packet:
       0x7c: level_event_generic
       0x7d: lectern_update
       0x7e: video_stream_connect
+      0x7f: add_ecs_entity
+      0x80: remove_ecs_entity
       0x81: client_cache_status
       0x82: on_screen_texture_animation
       0x83: map_create_locked_copy
@@ -132,12 +134,21 @@ mcpe_packet:
       0x86: update_block_properties
       0x87: client_cache_blob_status
       0x88: client_cache_miss_response
+      0x89: education_settings
+      0x8b: multiplayer_settings
+      0x8c: settings_command
+      0x8d: anvil_damage
+      0x8e: completed_using_item
       0x8f: network_settings
+      0x90: player_auth_input
       0x91: creative_content
       0x92: player_enchant_options
       0x93: item_stack_request
       0x94: item_stack_response
+      0x95: player_armor_damage
       0x97: update_player_game_type
+      0x9a: position_tracking_db_request
+      0x99: position_tracking_db_broadcast
       0x9c: packet_violation_warning
       0xa2: item_component
       0xa3: filter_text_packet
@@ -266,6 +277,8 @@ mcpe_packet:
       if level_event_generic: packet_level_event_generic
       if lectern_update: packet_lectern_update
       if video_stream_connect: packet_video_stream_connect
+      if add_ecs_entity: packet_add_ecs_entity
+      if remove_ecs_entity: packet_remove_ecs_entity
       if client_cache_status: packet_client_cache_status
       if on_screen_texture_animation: packet_on_screen_texture_animation
       if map_create_locked_copy: packet_map_create_locked_copy
@@ -274,12 +287,21 @@ mcpe_packet:
       if update_block_properties: packet_update_block_properties
       if client_cache_blob_status: packet_client_cache_blob_status
       if client_cache_miss_response: packet_client_cache_miss_response
+      if education_settings: packet_education_settings
+      if multiplayer_settings: packet_multiplayer_settings
+      if settings_command: packet_settings_command
+      if anvil_damage: packet_anvil_damage
+      if completed_using_item: packet_completed_using_item
       if network_settings: packet_network_settings
+      if player_auth_input: packet_player_auth_input
       if creative_content: packet_creative_content
       if player_enchant_options: packet_player_enchant_options
       if item_stack_request: packet_item_stack_request
       if item_stack_response: packet_item_stack_response
+      if player_armor_damage: packet_player_armor_damage
       if update_player_game_type: packet_update_player_game_type
+      if position_tracking_db_request: packet_position_tracking_db_request
+      if position_tracking_db_broadcast: packet_position_tracking_db_broadcast
       if packet_violation_warning: packet_packet_violation_warning
       if item_component: packet_item_component
       if filter_text_packet: packet_filter_text_packet

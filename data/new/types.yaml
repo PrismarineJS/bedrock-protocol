@@ -35,6 +35,14 @@ Experiment:
 
 Experiments: Experiment[]li32
 
+GameMode: zigzag32 =>
+   0: survival
+   1: creative
+   2: adventure
+   3: survival_spectator
+   4: creative_spectator
+   5: fallback  
+
 GameRule:
    name: string
    type: varint =>
@@ -638,7 +646,9 @@ ItemStackResponses: []varint
          custom_name: string
 
 ItemComponentList: []varint
+   # Name is the name of the item, which is a name like 'minecraft:stick'.
    name: string
+   # Data is a map containing the components and properties of the item.
    nbt: nbt
 
 CommandOrigin:

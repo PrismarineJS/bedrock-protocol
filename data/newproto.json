@@ -141,6 +141,20 @@
         "type": "Experiment"
       }
     ],
+    "GameMode": [
+      "mapper",
+      {
+        "type": "zigzag32",
+        "mappings": {
+          "0": "survival",
+          "1": "creative",
+          "2": "adventure",
+          "3": "survival_spectator",
+          "4": "creative_spectator",
+          "5": "fallback"
+        }
+      }
+    ],
     "GameRule": [
       "container",
       [
@@ -2654,6 +2668,8 @@
                 "124": "level_event_generic",
                 "125": "lectern_update",
                 "126": "video_stream_connect",
+                "127": "add_ecs_entity",
+                "128": "remove_ecs_entity",
                 "129": "client_cache_status",
                 "130": "on_screen_texture_animation",
                 "131": "map_create_locked_copy",
@@ -2662,12 +2678,21 @@
                 "134": "update_block_properties",
                 "135": "client_cache_blob_status",
                 "136": "client_cache_miss_response",
+                "137": "education_settings",
+                "139": "multiplayer_settings",
+                "140": "settings_command",
+                "141": "anvil_damage",
+                "142": "completed_using_item",
                 "143": "network_settings",
+                "144": "player_auth_input",
                 "145": "creative_content",
                 "146": "player_enchant_options",
                 "147": "item_stack_request",
                 "148": "item_stack_response",
+                "149": "player_armor_damage",
                 "151": "update_player_game_type",
+                "153": "position_tracking_db_broadcast",
+                "154": "position_tracking_db_request",
                 "156": "packet_violation_warning",
                 "162": "item_component",
                 "163": "filter_text_packet"
@@ -2805,6 +2830,8 @@
                 "level_event_generic": "packet_level_event_generic",
                 "lectern_update": "packet_lectern_update",
                 "video_stream_connect": "packet_video_stream_connect",
+                "add_ecs_entity": "packet_add_ecs_entity",
+                "remove_ecs_entity": "packet_remove_ecs_entity",
                 "client_cache_status": "packet_client_cache_status",
                 "on_screen_texture_animation": "packet_on_screen_texture_animation",
                 "map_create_locked_copy": "packet_map_create_locked_copy",
@@ -2813,12 +2840,21 @@
                 "update_block_properties": "packet_update_block_properties",
                 "client_cache_blob_status": "packet_client_cache_blob_status",
                 "client_cache_miss_response": "packet_client_cache_miss_response",
+                "education_settings": "packet_education_settings",
+                "multiplayer_settings": "packet_multiplayer_settings",
+                "settings_command": "packet_settings_command",
+                "anvil_damage": "packet_anvil_damage",
+                "completed_using_item": "packet_completed_using_item",
                 "network_settings": "packet_network_settings",
+                "player_auth_input": "packet_player_auth_input",
                 "creative_content": "packet_creative_content",
                 "player_enchant_options": "packet_player_enchant_options",
                 "item_stack_request": "packet_item_stack_request",
                 "item_stack_response": "packet_item_stack_response",
+                "player_armor_damage": "packet_player_armor_damage",
                 "update_player_game_type": "packet_update_player_game_type",
+                "position_tracking_db_request": "packet_position_tracking_db_request",
+                "position_tracking_db_broadcast": "packet_position_tracking_db_broadcast",
                 "packet_violation_warning": "packet_packet_violation_warning",
                 "item_component": "packet_item_component",
                 "filter_text_packet": "packet_filter_text_packet"
@@ -3177,20 +3213,7 @@
         },
         {
           "name": "player_gamemode",
-          "type": [
-            "mapper",
-            {
-              "type": "zigzag32",
-              "mappings": {
-                "0": "survival",
-                "1": "creative",
-                "2": "adventure",
-                "3": "survival_spectator",
-                "4": "creative_spectator",
-                "5": "fallback"
-              }
-            }
-          ]
+          "type": "GameMode"
         },
         {
           "name": "spawn",
@@ -3221,8 +3244,8 @@
           "type": "zigzag32"
         },
         {
-          "name": "gamemode",
-          "type": "zigzag32"
+          "name": "world_gamemode",
+          "type": "GameMode"
         },
         {
           "name": "difficulty",
@@ -3729,7 +3752,7 @@
           "type": "varint"
         },
         {
-          "anon": true,
+          "name": "teleport",
           "type": [
             "switch",
             {
@@ -3739,7 +3762,7 @@
                   "container",
                   [
                     {
-                      "name": "teleport_cause",
+                      "name": "cause",
                       "type": [
                         "mapper",
                         {
@@ -4746,7 +4769,7 @@
       [
         {
           "name": "gamemode",
-          "type": "zigzag32"
+          "type": "GameMode"
         }
       ]
     ],
@@ -4792,7 +4815,7 @@
                 "7": "boss_killed",
                 "8": "agent_command",
                 "9": "agent_created",
-                "10": "pattern_removed",
+                "10": "banner_pattern_removed",
                 "11": "commaned_executed",
                 "12": "fish_bucketed",
                 "13": "mob_born",
@@ -5835,7 +5858,7 @@
       [
         {
           "name": "gamemode",
-          "type": "varint"
+          "type": "GameMode"
         }
       ]
     ],
@@ -6218,6 +6241,24 @@
         }
       ]
     ],
+    "packet_add_ecs_entity": [
+      "container",
+      [
+        {
+          "name": "network_id",
+          "type": "varint64"
+        }
+      ]
+    ],
+    "packet_remove_ecs_entity": [
+      "container",
+      [
+        {
+          "name": "network_id",
+          "type": "varint64"
+        }
+      ]
+    ],
     "packet_client_cache_status": [
       "container",
       [
@@ -6292,12 +6333,216 @@
         }
       ]
     ],
+    "packet_education_settings": [
+      "container",
+      [
+        {
+          "name": "CodeBuilderDefaultURI",
+          "type": "string"
+        },
+        {
+          "name": "CodeBuilderTitle",
+          "type": "string"
+        },
+        {
+          "name": "CanResizeCodeBuilder",
+          "type": "bool"
+        },
+        {
+          "name": "HasOverrideURI",
+          "type": "bool"
+        },
+        {
+          "name": "OverrideURI",
+          "type": [
+            "switch",
+            {
+              "compareTo": "HasOverrideURI",
+              "fields": {
+                "true": "string"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "HasQuiz",
+          "type": "bool"
+        }
+      ]
+    ],
+    "packet_multiplayer_settings": [
+      "container",
+      [
+        {
+          "name": "action_type",
+          "type": [
+            "mapper",
+            {
+              "type": "zigzag32",
+              "mappings": {
+                "0": "enable_multiplayer",
+                "1": "disable_multiplayer",
+                "2": "refresh_join_code"
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    "packet_settings_command": [
+      "container",
+      [
+        {
+          "name": "command_line",
+          "type": "string"
+        },
+        {
+          "name": "suppress_output",
+          "type": "bool"
+        }
+      ]
+    ],
+    "packet_anvil_damage": [
+      "container",
+      [
+        {
+          "name": "damage",
+          "type": "u8"
+        },
+        {
+          "name": "position",
+          "type": "BlockCoordinates"
+        }
+      ]
+    ],
+    "packet_completed_using_item": [
+      "container",
+      [
+        {
+          "name": "used_item_id",
+          "type": "li16"
+        },
+        {
+          "name": "use_method",
+          "type": [
+            "mapper",
+            {
+              "type": "li32",
+              "mappings": {
+                "0": "equip_armor",
+                "1": "eat",
+                "2": "attack",
+                "3": "consume",
+                "4": "throw",
+                "5": "shoot",
+                "6": "place",
+                "7": "fill_bottle",
+                "8": "fill_bucket",
+                "9": "pour_bucket",
+                "10": "use_tool",
+                "11": "interact",
+                "12": "retrieved",
+                "13": "dyed",
+                "14": "traded"
+              }
+            }
+          ]
+        }
+      ]
+    ],
     "packet_network_settings": [
       "container",
       [
         {
           "name": "compression_threshold",
           "type": "u16"
+        }
+      ]
+    ],
+    "packet_player_auth_input": [
+      "container",
+      [
+        {
+          "name": "pitch",
+          "type": "lf32"
+        },
+        {
+          "name": "yaw",
+          "type": "lf32"
+        },
+        {
+          "name": "position",
+          "type": "vec3f"
+        },
+        {
+          "name": "move_vector",
+          "type": "vec2f"
+        },
+        {
+          "name": "head_yaw",
+          "type": "lf32"
+        },
+        {
+          "name": "input_data",
+          "type": "InputFlag"
+        },
+        {
+          "name": "input_mode",
+          "type": [
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "mouse",
+                "1": "touch",
+                "2": "game_pad",
+                "3": "motion_controller"
+              }
+            }
+          ]
+        },
+        {
+          "name": "play_mode",
+          "type": [
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "normal",
+                "1": "teaser",
+                "2": "screen",
+                "3": "viewer",
+                "4": "reality",
+                "5": "placement",
+                "6": "living_room",
+                "7": "exit_level",
+                "8": "exit_level_living_room",
+                "9": "num_modes"
+              }
+            }
+          ]
+        },
+        {
+          "name": "gaze_direction",
+          "type": [
+            "switch",
+            {
+              "compareTo": "play_mode",
+              "fields": {
+                "reality": "vec3f"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "tick",
+          "type": "varint64"
+        },
+        {
+          "name": "delta",
+          "type": "vec3f"
         }
       ]
     ],
@@ -6337,20 +6582,156 @@
         }
       ]
     ],
+    "packet_player_armor_damage": [
+      "container",
+      [
+        {
+          "name": "type",
+          "type": "ArmorDamageType"
+        },
+        {
+          "name": "helmet_damage",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type.head",
+              "fields": {
+                "true": "zigzag32"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "chestplate_damage",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type.chest",
+              "fields": {
+                "true": "zigzag32"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "leggings_damage",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type.legs",
+              "fields": {
+                "true": "zigzag32"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "boots_damage",
+          "type": [
+            "switch",
+            {
+              "compareTo": "types.feet",
+              "fields": {
+                "true": "zigzag32"
+              },
+              "default": "void"
+            }
+          ]
+        }
+      ]
+    ],
     "packet_update_player_game_type": [
       "container",
-      []
+      [
+        {
+          "name": "gamemode",
+          "type": "GameMode"
+        },
+        {
+          "name": "player_unique_id",
+          "type": "zigzag64"
+        }
+      ]
+    ],
+    "packet_position_tracking_db_request": [
+      "container",
+      [
+        {
+          "name": "action",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "query"
+              }
+            }
+          ]
+        },
+        {
+          "name": "tracking_id",
+          "type": "zigzag32"
+        }
+      ]
+    ],
+    "packet_position_tracking_db_broadcast": [
+      "container",
+      [
+        {
+          "name": "broadcast_action",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "update",
+                "1": "destory",
+                "2": "not_found"
+              }
+            }
+          ]
+        },
+        {
+          "name": "tracking_id",
+          "type": "zigzag32"
+        },
+        {
+          "name": "nbt",
+          "type": "nbt"
+        }
+      ]
     ],
     "packet_packet_violation_warning": [
       "container",
       [
         {
           "name": "violation_type",
-          "type": "zigzag32"
+          "type": [
+            "mapper",
+            {
+              "type": "zigzag32",
+              "mappings": {
+                "0": "malformed"
+              }
+            }
+          ]
         },
         {
           "name": "severity",
-          "type": "zigzag32"
+          "type": [
+            "mapper",
+            {
+              "type": "zigzag32",
+              "mappings": {
+                "0": "warning",
+                "1": "final_warning",
+                "2": "terminating"
+              }
+            }
+          ]
         },
         {
           "name": "packet_id",
@@ -6467,6 +6848,51 @@
           "on_ground": 64,
           "teleport": 128,
           "force_move": 256
+        }
+      }
+    ],
+    "InputFlag": [
+      "bitflags",
+      {
+        "type": "varint64",
+        "flags": {
+          "ascend": 1,
+          "descend": 2,
+          "north_jump": 4,
+          "jump_down": 8,
+          "sprint_down": 16,
+          "change_height": 32,
+          "jumping": 64,
+          "auto_jumping_in_water": 128,
+          "sneaking": 256,
+          "sneak_down": 512,
+          "up": 1024,
+          "down": 2048,
+          "left": 4096,
+          "right": 8192,
+          "up_left": 16384,
+          "up_right": 32768,
+          "want_up": 65536,
+          "want_down": 131072,
+          "want_down_slow": 262144,
+          "want_up_slow": 524288,
+          "sprinting": 1048576,
+          "ascend_scaffolding": 2097152,
+          "descend_scaffolding": 4194304,
+          "sneak_toggle_down": 8388608,
+          "persist_sneak": 16777216
+        }
+      }
+    ],
+    "ArmorDamageType": [
+      "bitflags",
+      {
+        "type": "u8",
+        "flags": {
+          "head": 1,
+          "chest": 2,
+          "legs": 4,
+          "feet": 8
         }
       }
     ]
