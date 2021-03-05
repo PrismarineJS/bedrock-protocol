@@ -1,4 +1,4 @@
-// process.env.DEBUG = 'minecraft-protocol raknet'
+process.env.DEBUG = 'minecraft-protocol raknet'
 const { Server } = require('./server')
 const CreativeItems = require('../data/creativeitems.json')
 const NBT = require('prismarine-nbt')

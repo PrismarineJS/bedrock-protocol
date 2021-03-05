@@ -1,6 +1,7 @@
 const RakClient = require('jsp-raknet/client')
 const { Worker, isMainThread, parentPort } = require('worker_threads')
 const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
+const Reliability = require('jsp-raknet/protocol/reliability')
 
 function connect(hostname, port) {
   if (isMainThread) {
@@ -49,7 +50,7 @@ function main() {
       console.log('SEND' , globalThis.raknetConnection, evt.packet)
 
       const sendPacket = new EncapsulatedPacket()
-      sendPacket.reliability = 0
+      sendPacket.reliability = Reliability.ReliableOrdered
       sendPacket.buffer = evt.packet
 
       globalThis.raknetConnection?.addEncapsulatedToQueue(sendPacket)

@@ -11,15 +11,20 @@ const ClientStatus = {
 }
 
 class Player extends Connection {
-  constructor(server, connection, options) {
+  constructor(server, connection) {
     super()
     this.server = server
     this.serializer = server.serializer
+    this.deserializer = server.deserializer
+    // console.log('serializer/des',this.serializer,this.deserializer)
     this.connection = connection
-    Encrypt(this, server, options)
+    this.options = server.options
+    Encrypt(this, server, this.options)
 
     this.startQueue()
     this.status = ClientStatus.Authenticating
+    this.inLog = (...args) => console.info('S ->', ...args)
+    this.outLog = (...args) => console.info('S <-', ...args)
   }
 
   getData() {
@@ -103,7 +108,7 @@ class Player extends Connection {
       throw e
     }
 
-    console.log('->', des)
+    console.log('-> S', des)
     switch (des.data.name) {
       case 'login':
         console.log(des)

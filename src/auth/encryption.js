@@ -80,6 +80,7 @@ function Encrypt(client, server, options) {
 
     // It works! First encrypted packet :)
     client.write('client_to_server_handshake', {})
+    this.emit('join')
   }
 
   client.on('server.client_handshake', startClientboundEncryption)

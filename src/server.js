@@ -9,11 +9,14 @@ const debug = require('debug')('minecraft-protocol')
 class Server extends EventEmitter {
   constructor(options) {
     super()
-    this.options = { ...Options.defaultOptions, options }
+    this.options = { ...Options.defaultOptions, ...options }
     this.serializer = createSerializer()
     this.deserializer = createDeserializer()
     this.clients = {}
+    this.clientCount = 0
     this.validateOptions()
+    this.inLog = (...args) => console.debug('S', ...args)
+    this.outLog = (...args) => console.debug('S', ...args)
   }
 
   validateOptions() {
@@ -26,13 +29,14 @@ class Server extends EventEmitter {
     debug('new connection', conn)
     const player = new Player(this, conn)
     this.clients[hash(conn.address)] = player
-
+    this.clientCount++
     this.emit('connect', { client: player })
   }
 
   onCloseConnection = (inetAddr, reason) => {
     debug('close connection', inetAddr, reason)
     delete this.clients[hash(inetAddr)]
+    this.clientCount--
   }
 
   onEncapsulated = (encapsulated, inetAddr) => {
@@ -45,7 +49,7 @@ class Server extends EventEmitter {
     client.handle(buffer)
   }
 
-  async create(serverIp, port) {
+  async create(serverIp = this.options.hostname, port = this.options.port) {
     this.listener = new Listener(this)
     this.raknet = await this.listener.listen(serverIp, port)
     console.debug('Listening on', serverIp, port)

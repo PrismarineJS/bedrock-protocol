@@ -8,13 +8,16 @@ const Options = require('./options')
 const debug = require('debug')('minecraft-protocol')
 const fs = require('fs')
 
-const log = console.log
 const useWorkers = true
 
 class Client extends Connection {
+  /**
+   * 
+   * @param {{ version: number, hostname: string, port: number }} options 
+   */
   constructor(options) {
     super()
-    this.options = { ...Options.defaultOptions, options }
+    this.options = { ...Options.defaultOptions, ...options }
     this.serializer = createSerializer()
     this.deserializer = createDeserializer()
     this.validateOptions()
@@ -29,10 +32,14 @@ class Client extends Connection {
 
     this.on('session', this.connect)
     this.startQueue()
+    this.inLog = (...args) => console.info('C ->', ...args)
+    this.outLog = (...args) => console.info('C <-', ...args)
     // this.on('decrypted', this.onDecryptedPacket)
   }
 
   validateOptions() {
+    // console.log('Options', this.options)
+    if (!this.options.hostname || this.options.port == null) throw Error('Invalid hostname/port')
     if (this.options.version < Options.MIN_VERSION) {
       throw new Error(`Unsupported protocol version < ${Options.MIN_VERSION} : ${this.options.version}`)
     }
@@ -45,8 +52,10 @@ class Client extends Connection {
   }
 
   connect = async (sessionData) => {
+    const hostname = this.options.hostname || '127.0.0.1'
+    const port = this.options.port || 19132
     if (useWorkers) {
-      this.worker = ConnWorker.connect('127.0.0.1', 19132)
+      this.worker = ConnWorker.connect(hostname, port)
       this.worker.on('message', (evt) => {
         switch (evt.type) {
           case 'connected':
@@ -103,6 +112,7 @@ class Client extends Connection {
       chain: encodedChain,
       client_data: this.clientUserChain
     })
+    this.emit('loggingIn')
   }
 
   onDisconnectRequest(packet) {
@@ -112,11 +122,11 @@ class Client extends Connection {
     process.exit(1)
   }
 
+  close() {
+    console.warn('Close not implemented!!')
+  }
+
   tryRencode(name, params, actual) {
-    if (name == 'level_chunk') {
-      console.log("Skipping chunk validation, it's broken right now")
-      return
-    }
     const packet = this.serializer.createPacketBuffer({ name, params })
 
     console.assert(packet.toString('hex') == actual.toString('hex'))
@@ -138,7 +148,7 @@ class Client extends Connection {
     // console.log('packet', packet)
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
-    console.log('->', pakData.name, serialize(pakData.params).slice(0, 100))
+    this.inLog('-> C', pakData.name, serialize(pakData.params).slice(0, 100))
 
     // No idea what this exotic 0xA0 packet is, it's not implemented anywhere
     // and seems empty. Possible gibberish from the raknet impl

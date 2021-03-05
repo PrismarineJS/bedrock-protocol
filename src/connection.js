@@ -3,19 +3,24 @@ const BatchPacket = require('./datatypes/BatchPacket')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
 const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
+const Reliability = require('jsp-raknet/protocol/reliability')
+
 const debug = require('debug')('minecraft-protocol')
 
 class Connection extends EventEmitter {
   startEncryption(iv) {
     this.encryptionEnabled = true
-    console.log('Started encryption', this.sharedSecret, iv)
+    this.inLog('Started encryption', this.sharedSecret, iv)
     this.decrypt = cipher.createDecryptor(this, iv)
     this.encrypt = cipher.createEncryptor(this, iv)
+    this.q2 = []
   }
 
   write(name, params) { // TODO: Batch
-    console.log('Need to encode', name, params)
-    // console.log('<-', name)
+    // console.log('Need to encode', name, params)
+    var s = this.connect ? 'C' : 'S'
+    if (this.downQ) s += 'P'
+    this.outLog('<- ' + s, name)
     const batch = new BatchPacket()
     const packet = this.serializer.createPacketBuffer({ name, params })
     // console.log('Sending buf', packet.toString('hex').)
@@ -29,9 +34,10 @@ class Connection extends EventEmitter {
   }
 
   queue(name, params) {
-    console.log('<- ', name)
+    this.outLog('Q <- ', name)
     const packet = this.serializer.createPacketBuffer({ name, params })
     this.q.push(packet)
+    this.q2.push(name)
   }
 
   startQueue() {
@@ -40,9 +46,10 @@ class Connection extends EventEmitter {
       if (this.q.length) {
         //TODO: can we just build Batch before the queue loop?
         const batch = new BatchPacket()
+        this.outLog('<- BATCH', this.q2)
         // For now, we're over conservative so send max 3 packets
         // per batch and hold the rest for the next tick
-        for (let i = 0; i < 3 && i < this.q.length; i++) {
+        for (let i = 0; /*i < 10 &&*/ i < this.q.length; i++) {
           const packet = this.q.shift()
           batch.addEncodedPacket(packet)
         }
@@ -51,6 +58,7 @@ class Connection extends EventEmitter {
         } else {
           this.sendDecryptedBatch(batch)
         }
+        this.q2 = []
       }
     }, 100)
   }
@@ -105,11 +113,11 @@ class Connection extends EventEmitter {
   // TODO: Rename this to sendEncapsulated
   sendMCPE(buffer, immediate) {
     if (this.worker) {
-      console.log('-> buf', buffer)
+      this.outLog('-> buf', buffer)
       this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
     } else {
       const sendPacket = new EncapsulatedPacket()
-      sendPacket.reliability = 0
+      sendPacket.reliability = Reliability.ReliableOrdered
       sendPacket.buffer = buffer
       this.connection.addEncapsulatedToQueue(sendPacket)
       if (immediate) this.connection.sendQueue()
@@ -118,10 +126,10 @@ class Connection extends EventEmitter {
 
   // These are callbacks called from encryption.js
   onEncryptedPacket = (buf) => {
-    console.log('ENC BUF', buf)
+    this.outLog('ENC BUF', buf)
     const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
 
-    console.log('Sending wrapped encrypted batch', packet)
+    this.outLog('Sending wrapped encrypted batch', packet)
     this.sendMCPE(packet)
   }
 
@@ -145,7 +153,7 @@ class Connection extends EventEmitter {
         const batch = new BatchPacket(stream)
         batch.decode()
         const packets = batch.getPackets()
-        console.log('Reading ', packets.length, 'packets')
+        this.inLog('Reading ', packets.length, 'packets')
         for (var packet of packets) {
           this.readPacket(packet)
         }
