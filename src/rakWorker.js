@@ -16,7 +16,6 @@ var raknet
 function main() {
   parentPort.on('message', (evt) => {
     if (evt.type == 'connect') {
-      console.warn('-------- ', evt)
       const { hostname, port } =evt
       raknet = new RakClient(hostname, port)
 

@@ -72,43 +72,24 @@ function createEncryptor(client, iv) {
   // A packet is encrypted via AES256(plaintext + SHA256(send_counter + plaintext + secret_key)[0:8]).
   // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
 
-  const addChecksum = new Transform({ // append checksum
-    transform(chunk, enc, cb) {
-      // console.log('Encryptor: checking checksum', chunk)
-      // Here we concat the payload + checksum before the encryption
-      const packet = Buffer.concat([chunk, computeCheckSum(chunk, client.sendCounter, client.secretKeyBytes)])
-      client.sendCounter++
-      this.push(packet)
-      cb()
-    }
-  })
+  function process(chunk) {
+    const buffer =  Zlib.deflateRawSync(chunk, { level: 7 })
+    // client.outLog('🟡 Compressed', buffer, client.sendCounter)
+    const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
+    client.sendCounter++
+    // client.outLog('writing to cipher...', packet, client.secretKeyBytes, iv)
+    client.cipher.write(packet)
+  }
 
-  // https://stackoverflow.com/q/25971715/11173996
-  // TODO: Fix deflate stream - for some reason using .pipe() doesn't work using zlib.createDeflateRaw()
-  // so we define our own compressor transform
-  // const compressor = Zlib.createDeflateRaw({ level: 7, chunkSize: 1024 * 1024 * 2, flush: Zlib.Z_SYNC_FLUSH })
-  const compressor = new Transform({
-    transform(chunk, enc, cb) {
-      Zlib.deflateRaw(chunk, { level: 7 }, (err, res) => {
-        if (err) {
-          console.error(err)
-          throw new Error(`Failed to deflate stream`)
-        }
-        this.push(res)
-        cb()
-      })
-    }
-  })
+  // const stream = new PassThrough()
 
+  client.cipher.on('data', client.onEncryptedPacket)
 
-  const stream = new PassThrough()
-
-  stream
-    .pipe(compressor)
-    .pipe(addChecksum).pipe(client.cipher).on('data', client.onEncryptedPacket)
 
   return (blob) => {
-    stream.write(blob)
+    client.outLog(client.options ? 'C':'S', '🟡 Encrypting', blob)
+    // stream.write(blob)
+    process(blob)
   }
 }
 
@@ -119,7 +100,7 @@ function createDecryptor(client, iv) {
 
   function verify(chunk) {
     // console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
-
+    // client.outLog('🔵 Inflating', chunk)
     // First try to zlib decompress, then see how much bytes get read
     const { buffer, engine } = Zlib.inflateRawSync(chunk, {
       chunkSize: 1024 * 1024 * 2,
@@ -158,6 +139,8 @@ function createDecryptor(client, iv) {
   client.decipher.on('data', verify)
 
   return (blob) => {
+    // client.inLog(client.options ? 'C':'S', ' 🔵 Decrypting', client.receiveCounter, blob)
+    // client.inLog('Using shared key', client.secretKeyBytes, iv)
     client.decipher.write(blob)
   }
 }

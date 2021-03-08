@@ -1,5 +1,5 @@
 process.env.DEBUG = 'minecraft-protocol raknet'
-const { Server } = require('./server')
+const { Server } = require('../src/server')
 const CreativeItems = require('../data/creativeitems.json')
 const NBT = require('prismarine-nbt')
 const fs = require('fs')
@@ -50,35 +50,35 @@ server.on('connect', ({ client }) => {
         client.queue('inventory_slot', {"inventory_id":120,"slot":i,"uniqueid":0,"item":{"network_id":0}})
       }
 
-      client.queue('inventory_transaction', require('./packets/inventory_transaction.json'))
-      client.queue('player_list', require('./packets/player_list.json'))
-      client.queue('start_game', require('./packets/start_game.json'))
+      client.queue('inventory_transaction', require('../src/packets/inventory_transaction.json'))
+      client.queue('player_list', require('../src/packets/player_list.json'))
+      client.queue('start_game', require('../src/packets/start_game.json'))
       client.queue('item_component', {"entries":[]})
-      client.queue('set_spawn_position', require('./packets/set_spawn_position.json'))
+      client.queue('set_spawn_position', require('../src/packets/set_spawn_position.json'))
       client.queue('set_time', { time: 5433771 })
       client.queue('set_difficulty', { difficulty: 1 })
       client.queue('set_commands_enabled', { enabled: true })
-      client.queue('adventure_settings', require('./packets/adventure_settings.json'))
+      client.queue('adventure_settings', require('../src/packets/adventure_settings.json'))
       
-      client.queue('biome_definition_list', require('./packets/biome_definition_list.json'))
-      client.queue('available_entity_identifiers', require('./packets/available_entity_identifiers.json'))
+      client.queue('biome_definition_list', require('../src/packets/biome_definition_list.json'))
+      client.queue('available_entity_identifiers', require('../src/packets/available_entity_identifiers.json'))
 
-      client.queue('update_attributes', require('./packets/update_attributes.json'))
-      client.queue('creative_content', require('./packets/creative_content.json'))
-      client.queue('inventory_content', require('./packets/inventory_content.json'))
+      client.queue('update_attributes', require('../src/packets/update_attributes.json'))
+      client.queue('creative_content', require('../src/packets/creative_content.json'))
+      client.queue('inventory_content', require('../src/packets/inventory_content.json'))
       client.queue('player_hotbar', {"selected_slot":3,"window_id":0,"select_slot":true})
 
-      client.queue('crafting_data', require('./packets/crafting_data.json'))
-      client.queue('available_commands', require('./packets/available_commands.json'))
+      client.queue('crafting_data', require('../src/packets/crafting_data.json'))
+      client.queue('available_commands', require('../src/packets/available_commands.json'))
       client.queue('chunk_radius_update', {"chunk_radius":5})
 
-      client.queue('set_entity_data', require('./packets/set_entity_data.json'))
+      client.queue('set_entity_data', require('../src/packets/set_entity_data.json'))
 
-      client.queue('game_rules_changed', require('./packets/game_rules_changed.json'))
+      client.queue('game_rules_changed', require('../src/packets/game_rules_changed.json'))
       client.queue('respawn', {"x":646.9405517578125,"y":65.62001037597656,"z":77.86255645751953,"state":0,"runtime_entity_id":0})
 
-      for (const file of fs.readdirSync('chunks')) {
-        const buffer = Buffer.from(fs.readFileSync('./chunks/' + file, 'utf8'), 'hex')
+      for (const file of fs.readdirSync('../src/chunks')) {
+        const buffer = Buffer.from(fs.readFileSync('../src/chunks/' + file, 'utf8'), 'hex')
         // console.log('Sending chunk', chunk)
         client.sendBuffer(buffer)
       }

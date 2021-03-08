@@ -1,20 +1,14 @@
-const RakClient = require('jsp-raknet/client')
+const fs = require('fs')
+const debug = require('debug')('minecraft-protocol')
 const { Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
-const ConnWorker = require('./ConnWorker')
 const { Encrypt } = require('./auth/encryption')
 const auth = require('./client/auth')
 const Options = require('./options')
-const debug = require('debug')('minecraft-protocol')
-const fs = require('fs')
-
-const useWorkers = true
+const { RakClient } = require('./Rak')
 
 class Client extends Connection {
-  /**
-   * 
-   * @param {{ version: number, hostname: string, port: number }} options 
-   */
+  /** @param {{ version: number, hostname: string, port: number }} options */
   constructor(options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
@@ -54,41 +48,11 @@ class Client extends Connection {
   connect = async (sessionData) => {
     const hostname = this.options.hostname || '127.0.0.1'
     const port = this.options.port || 19132
-    if (useWorkers) {
-      this.worker = ConnWorker.connect(hostname, port)
-      this.worker.on('message', (evt) => {
-        switch (evt.type) {
-          case 'connected':
-            this.sendLogin()
-            break
-          case 'encapsulated':
-            this.onEncapsulated(...evt.args)
-            break
-        }
-      })
 
-    } else {
-      if (this.raknet) return
-
-      this.raknet = new RakClient('127.0.0.1', 19132)
-      await this.raknet.connect()
-
-      this.raknet.on('connecting', () => {
-        // console.log(`[client] connecting to ${hostname}/${port}`)
-      })
-      this.raknet.on('connected', (connection) => {
-        console.log(`[client] connected!`)
-        this.connection = connection
-        this.sendLogin()
-      })
-
-      this.raknet.on('encapsulated', this.onEncapsulated)
-
-      this.raknet.on('raw', (buffer, inetAddr) => {
-        console.log('Raw packet', buffer, inetAddr)
-      })
-    }
-
+    this.connection = new RakClient({ useWorkers: true, hostname, port })
+    this.connection.onConnected = () => this.sendLogin()
+    this.connection.onEncapsulated = this.onEncapsulated
+    this.connection.connect()
   }
 
   sendLogin() {
@@ -100,7 +64,7 @@ class Client extends Connection {
     ]
 
     const encodedChain = JSON.stringify({ chain })
-    const skinChain = JSON.stringify({})
+    // const skinChain = JSON.stringify({})
 
     const bodyLength = this.clientUserChain.length + encodedChain.length + 8
 

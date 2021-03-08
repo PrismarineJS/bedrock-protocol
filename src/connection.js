@@ -2,7 +2,6 @@ const BinaryStream = require('@jsprismarine/jsbinaryutils').default
 const BatchPacket = require('./datatypes/BatchPacket')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
-const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
 const Reliability = require('jsp-raknet/protocol/reliability')
 
 const debug = require('debug')('minecraft-protocol')
@@ -112,16 +111,17 @@ class Connection extends EventEmitter {
 
   // TODO: Rename this to sendEncapsulated
   sendMCPE(buffer, immediate) {
-    if (this.worker) {
-      this.outLog('-> buf', buffer)
-      this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
-    } else {
-      const sendPacket = new EncapsulatedPacket()
-      sendPacket.reliability = Reliability.ReliableOrdered
-      sendPacket.buffer = buffer
-      this.connection.addEncapsulatedToQueue(sendPacket)
-      if (immediate) this.connection.sendQueue()
-    }
+    this.connection.sendReliable(buffer, immediate)
+    // if (this.worker) {
+    //   this.outLog('-> buf', buffer)
+    //   this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
+    // } else {
+    //   const sendPacket = new EncapsulatedPacket()
+    //   sendPacket.reliability = Reliability.ReliableOrdered
+    //   sendPacket.buffer = buffer
+    //   this.connection.addEncapsulatedToQueue(sendPacket)
+    //   if (immediate) this.connection.sendQueue()
+    // }
   }
 
   // These are callbacks called from encryption.js

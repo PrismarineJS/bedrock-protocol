@@ -27,6 +27,7 @@
     "minecraft-folder-path": "^1.1.0",
     "prismarine-nbt": "github:extremeheat/prismarine-nbt#le",
     "protodef": "github:extremeheat/node-protodef#compiler",
+    "raknet-native": "^0.0.4",
     "uuid-1345": "^0.99.7"
   },
   "devDependencies": {

@@ -1,12 +1,12 @@
 process.env.DEBUG = 'minecraft-protocol raknet'
-const { Client } = require('./client')
+const { Client } = require('../src/client')
 const fs = require('fs')
 // console.log = () => 
 
 async function test() {
   const client = new Client({
     hostname: '127.0.0.1',
-    port: 19130
+    port: 19132
   })
 
   client.once('resource_packs_info', (packet) => {
