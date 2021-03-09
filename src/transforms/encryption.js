@@ -87,7 +87,7 @@ function createEncryptor(client, iv) {
 
 
   return (blob) => {
-    client.outLog(client.options ? 'C':'S', '🟡 Encrypting', blob)
+    // client.outLog(client.options ? 'C':'S', '🟡 Encrypting', client.sendCounter, blob)
     // stream.write(blob)
     process(blob)
   }

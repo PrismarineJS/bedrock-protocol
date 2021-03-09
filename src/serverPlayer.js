@@ -90,6 +90,7 @@ class Player extends Connection {
   // After sending Server to Client Handshake, this handles the client's
   // Client to Server handshake response. This indicates successful encryption
   onHandshake() {
+    // this.outLog('Sending login success!', this.status)
     // https://wiki.vg/Bedrock_Protocol#Play_Status
     this.write('play_status', { status: 'login_success' })
     this.status = ClientStatus.Initializing

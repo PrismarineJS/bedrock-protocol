@@ -57,7 +57,8 @@ class RakNativeServer extends EventEmitter {
     this.onEncapsulated = () => {}
     this.raknet = new Server(options.hostname, options.port, {
       maxConnections: options.maxConnections || 3,
-      minecraft: { message: new McPingMessage().toString() }
+      minecraft: { },
+      message: new McPingMessage().toBuffer()
     })
     
     this.raknet.on('openConnection', (client) => {

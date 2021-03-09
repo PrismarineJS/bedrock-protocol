@@ -2204,6 +2204,87 @@ packet_packet_violation_warning:
    # ViolationContext holds a description on the violation of the packet.
    reason: string
 
+
+# MotionPredictionHints is sent by the server to the client. There is a predictive movement component for
+# entities. This packet fills the "history" of that component and entity movement is computed based on the
+# points. Vanilla sends this packet instead of the SetActorMotion packet when 'spatial optimisations' are
+# enabled.
+packet_motion_prediction_hints:
+   !id: 0x9d
+   !bound: client
+   # EntityRuntimeID is the runtime ID of the entity whose velocity is sent to the client.
+   entity_runtime_id: varint64
+   # Velocity is the server-calculated velocity of the entity at the point of sending the packet.
+   velocity: vec3f
+   # OnGround specifies if the server currently thinks the entity is on the ground.
+   on_ground: bool
+
+
+# AnimateEntity is sent by the server to animate an entity client-side. It may be used to play a single
+# animation, or to activate a controller which can start a sequence of animations based on different
+# conditions specified in an animation controller.
+# Much of the documentation of this packet can be found at
+# https://minecraft.gamepedia.com/Bedrock_Edition_beta_animation_documentation.
+packet_animate_entity:
+   !id: 0x9e
+   !bound: client
+   # Animation is the name of a single animation to start playing.
+   animation: string
+   # NextState is the first state to start with. These states are declared in animation controllers (which,
+   # in themselves, are animations too). These states in turn may have animations and transitions to move to
+   # a next state.
+   next_state: string
+   # StopCondition is a MoLang expression that specifies when the animation should be stopped.
+   stop_condition: string
+   # Controller is the animation controller that is used to manage animations. These controllers decide when
+   # to play which animation.
+   controller: string
+   # BlendOutTime does not currently seem to be used.
+   blend_out_time: lf32
+   # EntityRuntimeIDs is list of runtime IDs of entities that the animation should be applied to.
+   runtime_entity_ids: varint64[]varint
+
+# CameraShake is sent by the server to make the camera shake client-side. This feature was added for map-
+# making partners.
+packet_camera_shake:
+   !id: 0x9f
+   !bound: client
+   # Intensity is the intensity of the shaking. The client limits this value to 4, so anything higher may
+   # not work.
+   intensity: lf32
+   # Duration is the number of seconds the camera will shake for.
+   duration: lf32
+   # Type is the type of shake, and is one of the constants listed above. The different type affects how
+   # the shake looks in game.
+   type: u8
+
+# PlayerFog is sent by the server to render the different fogs in the Stack. The types of fog are controlled
+# by resource packs to change how they are rendered, and the ability to create custom fog.
+packet_player_fog:
+   !id: 0xa0
+   !bound: client
+   # Stack is a list of fog identifiers to be sent to the client. Examples of fog identifiers are
+   # "minecraft:fog_ocean" and "minecraft:fog_hell".
+   stack: string[]varint
+
+
+# CorrectPlayerMovePrediction is sent by the server if and only if StartGame.ServerAuthoritativeMovementMode
+# is set to AuthoritativeMovementModeServerWithRewind. The packet is used to correct movement at a specific
+# point in time.
+packet_correct_player_move_prediction:
+   !id: 0xa1
+   !bound: client
+   # Position is the position that the player is supposed to be at at the tick written in the field below.
+   # The client will change its current position based on movement after that tick starting from the
+   # Position.
+   position: vec3f
+   # Delta is the change in position compared to what the client sent as its position at that specific tick.
+   delta: vec3f
+   # OnGround specifies if the player was on the ground at the time of the tick below.
+   on_ground: bool
+   # Tick is the tick of the movement which was corrected by this packet.
+   tick: varint64
+
 # ItemComponent is sent by the server to attach client-side components to a custom item.
 packet_item_component:
    !id: 0xa2
@@ -2221,3 +2302,4 @@ packet_filter_text_packet:
    text: string
    # FromServer indicates if the packet was sent by the server or not.
    from_server: bool
+

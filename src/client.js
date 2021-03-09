@@ -112,7 +112,7 @@ class Client extends Connection {
     // console.log('packet', packet)
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
-    this.inLog('-> C', pakData.name, serialize(pakData.params).slice(0, 100))
+    this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100)*/)
 
     // No idea what this exotic 0xA0 packet is, it's not implemented anywhere
     // and seems empty. Possible gibberish from the raknet impl
@@ -149,7 +149,7 @@ class Client extends Connection {
         fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
         break
       case 'level_chunk':
-        fs.writeFileSync(`./chunks/chunk-${chunks++}.txt`, packet.toString('hex'))
+        // fs.writeFileSync(`./chunks/chunk-${chunks++}.txt`, packet.toString('hex'))
         break
       default:
       // console.log('Sending to listeners')

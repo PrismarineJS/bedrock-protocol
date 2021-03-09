@@ -150,6 +150,11 @@ mcpe_packet:
       0x9a: position_tracking_db_request
       0x99: position_tracking_db_broadcast
       0x9c: packet_violation_warning
+      0x9d: motion_prediction_hints
+      0x9e: animate_entity
+      0x9f: camera_shake
+      0xa0: player_fog
+      0xa1: correct_player_move_prediction
       0xa2: item_component
       0xa3: filter_text_packet
 
@@ -303,5 +308,10 @@ mcpe_packet:
       if position_tracking_db_request: packet_position_tracking_db_request
       if position_tracking_db_broadcast: packet_position_tracking_db_broadcast
       if packet_violation_warning: packet_packet_violation_warning
+      if motion_prediction_hints: packet_motion_prediction_hints
+      if animate_entity: packet_animate_entity
+      if camera_shake: packet_camera_shake
+      if player_fog: packet_player_fog
+      if correct_player_move_prediction: packet_correct_player_move_prediction
       if item_component: packet_item_component
       if filter_text_packet: packet_filter_text_packet

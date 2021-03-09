@@ -19,7 +19,7 @@ class Connection extends EventEmitter {
     // console.log('Need to encode', name, params)
     var s = this.connect ? 'C' : 'S'
     if (this.downQ) s += 'P'
-    this.outLog('<- ' + s, name)
+    this.outLog('NB <- ' + s, name,params)
     const batch = new BatchPacket()
     const packet = this.serializer.createPacketBuffer({ name, params })
     // console.log('Sending buf', packet.toString('hex').)
@@ -33,8 +33,13 @@ class Connection extends EventEmitter {
   }
 
   queue(name, params) {
-    this.outLog('Q <- ', name)
+    this.outLog('Q <- ', name, params)
     const packet = this.serializer.createPacketBuffer({ name, params })
+    if (name == 'level_chunk') {
+      // Skip queue
+      this.sendMCPE(packet)
+      return
+    }
     this.q.push(packet)
     this.q2.push(name)
   }
@@ -48,16 +53,19 @@ class Connection extends EventEmitter {
         this.outLog('<- BATCH', this.q2)
         // For now, we're over conservative so send max 3 packets
         // per batch and hold the rest for the next tick
-        for (let i = 0; /*i < 10 &&*/ i < this.q.length; i++) {
+        const sending = []
+        for (let i = 0; i < 3 && i < this.q.length; i++) {
           const packet = this.q.shift()
+          sending.push(this.q2.shift())
           batch.addEncodedPacket(packet)
         }
+        // console.warn('~~ Sending', sending)
         if (this.encryptionEnabled) {
           this.sendEncryptedBatch(batch)
         } else {
           this.sendDecryptedBatch(batch)
         }
-        this.q2 = []
+        // this.q2 = []
       }
     }, 100)
   }
@@ -162,5 +170,7 @@ class Connection extends EventEmitter {
     // console.log('[client] handled incoming ', buffer)
   }
 }
-
+function serialize(obj = {}, fmt) {
+  return JSON.stringify(obj, (k, v) => typeof v == 'bigint' ? v.toString() : v, fmt)
+}
 module.exports = { Connection }
