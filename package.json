@@ -1,9 +1,10 @@
 {
   "name": "pocket-minecraft-protocol",
-  "version": "2.2.3",
-  "description": "Parse and serialize Minecraft PE packets",
+  "version": "3.0.0",
+  "description": "Parse and serialize Minecraft Bedrock Edition packets",
   "main": "index.js",
   "scripts": {
+    "build": "cd data/new && node compile.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -11,19 +12,27 @@
     "pocket-edition",
     "protocol"
   ],
-  "author": "mhsjlw <mhsjlw@aol.com>",
-  "contributors": [
-    "rom1504"
-  ],
   "license": "MIT",
   "dependencies": {
-    "minecraft-data": "^2.4.0",
-    "prismarine-nbt": "^1.0.0",
-    "protodef": "^1.2.0",
-    "raknet": "^1.7.3",
-    "uuid-1345": "^1.0.1"
+    "@azure/msal-node": "^1.0.0-beta.6",
+    "@jsprismarine/jsbinaryutils": "^2.1.8",
+    "@xboxreplay/xboxlive-auth": "^3.3.3",
+    "aes-js": "^3.1.2",
+    "asn1": "^0.2.4",
+    "bedrock-provider": "github:extremeheat/bedrock-provider",
+    "debug": "^4.3.1",
+    "ec-pem": "^0.18.0",
+    "jsonwebtoken": "^8.5.1",
+    "jsp-raknet": "github:extremeheat/raknet#client",
+    "minecraft-folder-path": "^1.1.0",
+    "prismarine-nbt": "^1.5.0",
+    "protodef": "github:extremeheat/node-protodef#compiler",
+    "raknet-native": "^0.1.0",
+    "uuid-1345": "^0.99.7"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mhsjlw/pocket-minecraft-protocol.git"

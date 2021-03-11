@@ -1,3 +1,4 @@
+'use strict';
 var mcpe = require('../');
 var Parser = require('protodef').Parser;
 

@@ -1,2 +1,8 @@
 node_modules/
 npm-debug.log
+package-lock.json
+__*
+data/*.js
+src/**/*.json
+src/**/*.txt
+dist/

@@ -7,7 +7,7 @@ Parse and serialize Minecraft: Pocket Edition packets
 
 ## Features
 
-  * Supports Minecraft PE `0.14.3`
+  * Supports Minecraft Pocket Edition `1.0`
   * Pure JavaScript
   * Easily send and listen for any packet
   * RakNet support through [node-raknet](https://github.com/mhsjlw/node-raknet)
@@ -24,3 +24,7 @@ This project is run by these guys:
 
   - [mhsjlw](https://github.com/mhsjlw)
   - [rom1504](https://github.com/rom1504)
+  - [Filiph Sandström](https://github.com/filfat)
+
+## License
+Licensed under the MIT license.  

@@ -1,29 +1,52 @@
-var ProtoDef = require('protodef').ProtoDef;
-var Serializer = require('protodef').Serializer;
-var Parser = require('protodef').Parser;
-
-var protocol = require('minecraft-data')('pe_0.14').protocol;
+const { ProtoDefCompiler, CompiledProtodef } = require('protodef').Compiler
+const { FullPacketParser, Serializer } = require('protodef')
 
 function createProtocol() {
-  var proto = new ProtoDef();
-  proto.addTypes(require('../datatypes/minecraft'));
-  proto.addTypes(protocol);
+  const protocol = require('../../data/newproto.json').types
+  console.log('Proto', protocol)
+  var compiler = new ProtoDefCompiler()
+  compiler.addTypesToCompile(protocol)
+  compiler.addTypes(require('../datatypes/compiler-minecraft'))
+  compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
 
-  return proto;
+  const compiledProto = compiler.compileProtoDefSync()
+  return compiledProto
+}
+
+
+function getProtocol() {
+  const compiler = new ProtoDefCompiler()
+  compiler.addTypes(require('../datatypes/compiler-minecraft'))
+  compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
+
+  const compile = (compiler, file) => {
+    global.native = compiler.native // eslint-disable-line
+    const { PartialReadError } = require('protodef/src/utils') // eslint-disable-line
+    return require(file)() // eslint-disable-line
+  }
+
+  return new CompiledProtodef(
+    compile(compiler.sizeOfCompiler, '../../data/size.js'),
+    compile(compiler.writeCompiler, '../../data/write.js'),
+    compile(compiler.readCompiler, '../../data/read.js')
+    // compiler.sizeOfCompiler.compile(fs.readFileSync(__dirname + '/../../data/size.js', 'utf-8')),
+    // compiler.writeCompiler.compile(fs.readFileSync(__dirname + '/../../data/write.js', 'utf-8')),
+    // compiler.readCompiler.compile(fs.readFileSync(__dirname + '/../../data/read.js', 'utf-8'))
+  )
 }
 
 function createSerializer() {
-  var proto = createProtocol();
-  return new Serializer(proto, 'packet');
+  var proto = getProtocol()
+  return new Serializer(proto, 'mcpe_packet');
 }
 
 function createDeserializer() {
-  var proto = createProtocol();
-  return new Parser(proto, 'packet');
+  var proto = getProtocol()
+  return new FullPacketParser(proto, 'mcpe_packet');
 }
 
 module.exports = {
   createDeserializer: createDeserializer,
   createSerializer: createSerializer,
   createProtocol: createProtocol
-};
+}

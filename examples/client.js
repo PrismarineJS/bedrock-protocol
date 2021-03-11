@@ -1,3 +1,4 @@
+'use strict';
 var pmp = require('../');
 
 if(process.argv.length !=5) {
@@ -15,7 +16,7 @@ client.on('mcpe', packet => console.log(packet));
 
 client.on('set_spawn_position', () => {
   client.writeMCPE('request_chunk_radius', {
-    chunk_radius:8
+    chunkRadius:8
   });
 });
 

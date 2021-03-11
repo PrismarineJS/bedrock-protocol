@@ -1,3 +1,7 @@
+## 2.4.0
+* Update to version 1.12.0
+* Add option to provide protocol.json
+
 ## 2.2.3
 * fix the use item packet
 
