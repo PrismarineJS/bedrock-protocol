@@ -1,4 +1,4 @@
-function sizeOfVarLong(value) {
+function sizeOfVarLong (value) {
   if (typeof value.valueOf() === 'object') {
     value = (BigInt(value[0]) << 32n) | BigInt(value[1])
   } else if (typeof value !== 'bigint') value = BigInt(value)
@@ -14,7 +14,7 @@ function sizeOfVarLong(value) {
 /**
  * Reads a 64-bit VarInt as a BigInt
  */
-function readVarLong(buffer, offset) {
+function readVarLong (buffer, offset) {
   let result = BigInt(0)
   let shift = 0n
   let cursor = offset
@@ -39,7 +39,7 @@ function readVarLong(buffer, offset) {
 /**
  * Writes a zigzag encoded 64-bit VarInt as a BigInt
  */
-function writeVarLong(value, buffer, offset) {
+function writeVarLong (value, buffer, offset) {
   // if an array, turn it into a BigInt
   if (typeof value.valueOf() === 'object') {
     value = BigInt.asIntN(64, (BigInt(value[0]) << 32n)) | BigInt(value[1])

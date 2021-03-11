@@ -1,9 +1,9 @@
 module.exports = {
-  sleep(ms) {
+  sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   },
 
-  waitFor(cb, withTimeout) {
+  waitFor (cb, withTimeout) {
     return Promise.race([
       new Promise((res, rej) => cb(res)),
       sleep(withTimeout)

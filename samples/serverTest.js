@@ -1,16 +1,12 @@
 process.env.DEBUG = 'minecraft-protocol raknet'
 const { Server } = require('../src/server')
-const CreativeItems = require('../data/creativeitems.json')
-const NBT = require('prismarine-nbt')
+// const CreativeItems = require('../data/creativeitems.json')
 const fs = require('fs')
 
-
-let server = new Server({
+const server = new Server({
 
 })
 server.create('0.0.0.0', 19132)
-
-let ran = false
 
 server.on('connect', ({ client }) => {
   /** @type {Player} */
@@ -20,26 +16,26 @@ server.on('connect', ({ client }) => {
     // ResourcePacksInfo is sent by the server to inform the client on what resource packs the server has. It
     // sends a list of the resource packs it has and basic information on them like the version and description.
     client.write('resource_packs_info', {
-      'must_accept': false,
-      'has_scripts': false,
-      'behaviour_packs': [],
-      'texture_packs': []
+      must_accept: false,
+      has_scripts: false,
+      behaviour_packs: [],
+      texture_packs: []
     })
 
     client.once('resource_pack_client_response', async (packet) => {
       // ResourcePackStack is sent by the server to send the order in which resource packs and behaviour packs
       // should be applied (and downloaded) by the client.
       client.write('resource_pack_stack', {
-        'must_accept': false,
-        'behavior_packs': [],
-        'resource_packs': [],
-        'game_version': '',
-        'experiments': [],
-        'experiments_previously_used': false
+        must_accept: false,
+        behavior_packs: [],
+        resource_packs: [],
+        game_version: '',
+        experiments: [],
+        experiments_previously_used: false
       })
 
       client.once('resource_pack_client_response', async (packet) => {
-        
+
       })
 
       client.write('network_settings', {
@@ -47,35 +43,35 @@ server.on('connect', ({ client }) => {
       })
 
       for (let i = 0; i < 3; i++) {
-        client.queue('inventory_slot', {"inventory_id":120,"slot":i,"uniqueid":0,"item":{"network_id":0}})
+        client.queue('inventory_slot', { inventory_id: 120, slot: i, uniqueid: 0, item: { network_id: 0 } })
       }
 
       client.queue('inventory_transaction', require('../src/packets/inventory_transaction.json'))
       client.queue('player_list', require('../src/packets/player_list.json'))
       client.queue('start_game', require('../src/packets/start_game.json'))
-      client.queue('item_component', {"entries":[]})
+      client.queue('item_component', { entries: [] })
       client.queue('set_spawn_position', require('../src/packets/set_spawn_position.json'))
       client.queue('set_time', { time: 5433771 })
       client.queue('set_difficulty', { difficulty: 1 })
       client.queue('set_commands_enabled', { enabled: true })
       client.queue('adventure_settings', require('../src/packets/adventure_settings.json'))
-      
+
       client.queue('biome_definition_list', require('../src/packets/biome_definition_list.json'))
       client.queue('available_entity_identifiers', require('../src/packets/available_entity_identifiers.json'))
 
       client.queue('update_attributes', require('../src/packets/update_attributes.json'))
       client.queue('creative_content', require('../src/packets/creative_content.json'))
       client.queue('inventory_content', require('../src/packets/inventory_content.json'))
-      client.queue('player_hotbar', {"selected_slot":3,"window_id":0,"select_slot":true})
+      client.queue('player_hotbar', { selected_slot: 3, window_id: 0, select_slot: true })
 
       client.queue('crafting_data', require('../src/packets/crafting_data.json'))
       client.queue('available_commands', require('../src/packets/available_commands.json'))
-      client.queue('chunk_radius_update', {"chunk_radius":5})
+      client.queue('chunk_radius_update', { chunk_radius: 5 })
 
       client.queue('set_entity_data', require('../src/packets/set_entity_data.json'))
 
       client.queue('game_rules_changed', require('../src/packets/game_rules_changed.json'))
-      client.queue('respawn', {"x":646.9405517578125,"y":65.62001037597656,"z":77.86255645751953,"state":0,"runtime_entity_id":0})
+      client.queue('respawn', { x: 646.9405517578125, y: 65.62001037597656, z: 77.86255645751953, state: 0, runtime_entity_id: 0 })
 
       for (const file of fs.readdirSync('../src/chunks')) {
         const buffer = Buffer.from(fs.readFileSync('../src/chunks/' + file, 'utf8'), 'hex')
@@ -88,9 +84,8 @@ server.on('connect', ({ client }) => {
       // }
 
       setInterval(() => {
-        client.write('network_chunk_publisher_update', {"coordinates":{"x":646,"y":130,"z":77},"radius":64})
+        client.write('network_chunk_publisher_update', { coordinates: { x: 646, y: 130, z: 77 }, radius: 64 })
       }, 9500)
-
 
       setTimeout(() => {
         client.write('play_status', { status: 'player_spawn' })
@@ -107,29 +102,23 @@ server.on('connect', ({ client }) => {
   })
 })
 
-async function sleep(ms) {
-  return new Promise(res => {
-    setTimeout(() => { res() }, ms)
-  })
-}
-
 // CHUNKS
 // const { ChunkColumn, Version } = require('bedrock-provider')
 const mcData = require('minecraft-data')('1.16')
-var chunks = []
-async function buildChunks() {
+const chunks = []
+async function buildChunks () {
   // "x": 40,
   // "z": 4,
-  
+
   const stone = mcData.blocksByName.stone
 
-  for (var cx = 35; cx < 45; cx++) {
-    for (var cz = 0; cz < 8; cz++) {
+  for (let cx = 35; cx < 45; cx++) {
+    for (let cz = 0; cz < 8; cz++) {
       const column = new ChunkColumn(Version.v1_2_0_bis, x, z)
       for (var x = 0; x < 16; x++) {
-        for (var y = 0; y < 60; y++) {
+        for (let y = 0; y < 60; y++) {
           for (var z = 0; z < 16; z++) {
-            column.setBlock(x,y,z,stone)
+            column.setBlock(x, y, z, stone)
           }
         }
       }
@@ -137,8 +126,12 @@ async function buildChunks() {
       const ser = await column.networkEncodeNoCache()
 
       chunks.push({
-        x:cx, z:cz, sub_chunk_count: column.sectionsLen, cache_enabled: false,
-        blobs: [], payload: ser
+        x: cx,
+        z: cz,
+        sub_chunk_count: column.sectionsLen,
+        cache_enabled: false,
+        blobs: [],
+        payload: ser
       })
     }
   }

@@ -11,7 +11,7 @@ const ClientStatus = {
 }
 
 class Player extends Connection {
-  constructor(server, connection) {
+  constructor (server, connection) {
     super()
     this.server = server
     this.serializer = server.serializer
@@ -27,12 +27,12 @@ class Player extends Connection {
     this.outLog = (...args) => console.info('S <-', ...args)
   }
 
-  getData() {
+  getData () {
     return this.userData
   }
 
-  onLogin(packet) {
-    let body = packet.data
+  onLogin (packet) {
+    const body = packet.data
     debug('Body', body)
     this.emit('loggingIn', body)
 
@@ -66,12 +66,11 @@ class Player extends Connection {
     this.version = clientVer
   }
 
-
   /**
    * Disconnects a client before it has joined
-   * @param {string} play_status 
+   * @param {string} play_status
    */
-  sendDisconnectStatus(play_status) {
+  sendDisconnectStatus (play_status) {
     this.write('play_status', { status: play_status })
     this.connection.close()
   }
@@ -79,7 +78,7 @@ class Player extends Connection {
   /**
    * Disconnects a client after it has joined
    */
-  disconnect(reason, hide = false) {
+  disconnect (reason, hide = false) {
     this.write('disconnect', {
       hide_disconnect_screen: hide,
       message: reason
@@ -89,7 +88,7 @@ class Player extends Connection {
 
   // After sending Server to Client Handshake, this handles the client's
   // Client to Server handshake response. This indicates successful encryption
-  onHandshake() {
+  onHandshake () {
     // this.outLog('Sending login success!', this.status)
     // https://wiki.vg/Bedrock_Protocol#Play_Status
     this.write('play_status', { status: 'login_success' })
@@ -97,7 +96,7 @@ class Player extends Connection {
     this.emit('join')
   }
 
-  readPacket(packet) {
+  readPacket (packet) {
     // console.log('packet', packet)
     try {
       var des = this.server.deserializer.parsePacketBuffer(packet)

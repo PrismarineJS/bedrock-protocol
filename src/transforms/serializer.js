@@ -1,10 +1,10 @@
 const { ProtoDefCompiler, CompiledProtodef } = require('protodef').Compiler
 const { FullPacketParser, Serializer } = require('protodef')
 
-function createProtocol() {
+function createProtocol () {
   const protocol = require('../../data/newproto.json').types
   console.log('Proto', protocol)
-  var compiler = new ProtoDefCompiler()
+  const compiler = new ProtoDefCompiler()
   compiler.addTypesToCompile(protocol)
   compiler.addTypes(require('../datatypes/compiler-minecraft'))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
@@ -13,8 +13,7 @@ function createProtocol() {
   return compiledProto
 }
 
-
-function getProtocol() {
+function getProtocol () {
   const compiler = new ProtoDefCompiler()
   compiler.addTypes(require('../datatypes/compiler-minecraft'))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
@@ -35,14 +34,14 @@ function getProtocol() {
   )
 }
 
-function createSerializer() {
-  var proto = getProtocol()
-  return new Serializer(proto, 'mcpe_packet');
+function createSerializer () {
+  const proto = getProtocol()
+  return new Serializer(proto, 'mcpe_packet')
 }
 
-function createDeserializer() {
-  var proto = getProtocol()
-  return new FullPacketParser(proto, 'mcpe_packet');
+function createDeserializer () {
+  const proto = getProtocol()
+  return new FullPacketParser(proto, 'mcpe_packet')
 }
 
 module.exports = {

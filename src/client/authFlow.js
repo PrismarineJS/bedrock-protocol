@@ -13,7 +13,7 @@ const msalConfig = {
     // the minecraft client:
     // clientId: "000000004C12AE6F",
     clientId: '389b1b32-b5d5-43b2-bddc-84ce938d6737', // token from https://github.com/microsoft/Office365APIEditor
-    authority: 'https://login.microsoftonline.com/consumers',
+    authority: 'https://login.microsoftonline.com/consumers'
   }
 }
 

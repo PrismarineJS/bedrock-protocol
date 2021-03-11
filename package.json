@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "cd data/new && node compile.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "npm run build",
+    "test": "mocha",
+    "pretest": "npm run lint",
+    "lint": "standard",
+    "fix": "standard --fix"
   },
   "keywords": [
     "minecraft",
@@ -26,12 +30,14 @@
     "jsp-raknet": "github:extremeheat/raknet#client",
     "minecraft-folder-path": "^1.1.0",
     "prismarine-nbt": "^1.5.0",
-    "protodef": "github:extremeheat/node-protodef#compiler",
+    "protodef": "^1.10.0",
     "raknet-native": "^0.1.0",
     "uuid-1345": "^0.99.7"
   },
   "devDependencies": {
-    "mocha": "^2.5.3"
+    "buffer-equal": "^1.0.0",
+    "mocha": "^2.5.3",
+    "standard": "^16.0.3"
   },
   "repository": {
     "type": "git",

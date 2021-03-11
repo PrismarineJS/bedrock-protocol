@@ -4,60 +4,60 @@ const constants = require('./constants')
 const { Ber } = require('asn1')
 const ec_pem = require('ec-pem')
 
-function readX509PublicKey(key) {
-    var reader = new Ber.Reader(Buffer.from(key, "base64"));
-    reader.readSequence();
-    reader.readSequence();
-    reader.readOID(); // Hey, I'm an elliptic curve
-    reader.readOID(); // This contains the curve type, could be useful
-    return Buffer.from(reader.readString(Ber.BitString, true)).slice(1);
+function readX509PublicKey (key) {
+  const reader = new Ber.Reader(Buffer.from(key, 'base64'))
+  reader.readSequence()
+  reader.readSequence()
+  reader.readOID() // Hey, I'm an elliptic curve
+  reader.readOID() // This contains the curve type, could be useful
+  return Buffer.from(reader.readString(Ber.BitString, true)).slice(1)
 }
 
-function writeX509PublicKey(key) {
-    var writer = new Ber.Writer();
-    writer.startSequence();
-    writer.startSequence();
-    writer.writeOID("1.2.840.10045.2.1");
-    writer.writeOID("1.3.132.0.34");
-    writer.endSequence();
-    writer.writeBuffer(Buffer.concat([Buffer.from([0x00]), key]), Ber.BitString);
-    writer.endSequence();
-    return writer.buffer.toString("base64");
+function writeX509PublicKey (key) {
+  const writer = new Ber.Writer()
+  writer.startSequence()
+  writer.startSequence()
+  writer.writeOID('1.2.840.10045.2.1')
+  writer.writeOID('1.3.132.0.34')
+  writer.endSequence()
+  writer.writeBuffer(Buffer.concat([Buffer.from([0x00]), key]), Ber.BitString)
+  writer.endSequence()
+  return writer.buffer.toString('base64')
 }
 
-function test(pubKey = constants.PUBLIC_KEY) {
-    const publicKey = readX509PublicKey(pubKey)
-    const curve = 'secp384r1'
-    const alice = crypto.createECDH(curve)
-    const aliceKey = alice.generateKeys()
-    const alicePEM = ec_pem(alice, curve)
-    const alicePEMPrivate = alicePEM.encodePrivateKey()
-    const alicePEMPublic = alicePEM.encodePublicKey()
-    const aliceSecret = alice.computeSecret(publicKey, null, 'hex')
-    console.log('Alice private key PEM', alicePEMPrivate)
-    console.log('Alice public key PEM', alicePEMPublic)
-    console.log('Alice public key', alice.getPublicKey('hex'))
-    console.log('Alice secret key', aliceSecret)
+function test (pubKey = constants.PUBLIC_KEY) {
+  const publicKey = readX509PublicKey(pubKey)
+  const curve = 'secp384r1'
+  const alice = crypto.createECDH(curve)
+  const aliceKey = alice.generateKeys()
+  const alicePEM = ec_pem(alice, curve)
+  const alicePEMPrivate = alicePEM.encodePrivateKey()
+  const alicePEMPublic = alicePEM.encodePublicKey()
+  const aliceSecret = alice.computeSecret(publicKey, null, 'hex')
+  console.log('Alice private key PEM', alicePEMPrivate)
+  console.log('Alice public key PEM', alicePEMPublic)
+  console.log('Alice public key', alice.getPublicKey('hex'))
+  console.log('Alice secret key', aliceSecret)
 
-    // Test signing manually
-    const sign = crypto.createSign('RSA-SHA256')
-    sign.write('🧂')
-    sign.end()
-    const sig = sign.sign(alicePEMPrivate, 'hex')
-    console.log('Signature', sig)
+  // Test signing manually
+  const sign = crypto.createSign('RSA-SHA256')
+  sign.write('🧂')
+  sign.end()
+  const sig = sign.sign(alicePEMPrivate, 'hex')
+  console.log('Signature', sig)
 
-    // Test JWT sign+verify
-    const x509 = writeX509PublicKey(alice.getPublicKey())
-    const token = JWT.sign({
-        salt: 'HELLO',
-        signedToken: alice.getPublicKey('base64')
-    }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: x509 } })
-    console.log('Encoded JWT', token)
-    // send the jwt to the client...
+  // Test JWT sign+verify
+  const x509 = writeX509PublicKey(alice.getPublicKey())
+  const token = JWT.sign({
+    salt: 'HELLO',
+    signedToken: alice.getPublicKey('base64')
+  }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: x509 } })
+  console.log('Encoded JWT', token)
+  // send the jwt to the client...
 
-    const verified = JWT.verify(token, alicePEMPublic, { algorithms: 'ES384' })
-    console.log('Decoded JWT', verified)
-    // Good
+  const verified = JWT.verify(token, alicePEMPublic, { algorithms: 'ES384' })
+  console.log('Decoded JWT', verified)
+  // Good
 }
 
 /**

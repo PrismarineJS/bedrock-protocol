@@ -6,12 +6,12 @@ const ec_pem = require('ec-pem')
 const SALT = '🧂'
 const curve = 'secp384r1'
 
-function Encrypt(client, server, options) {
+function Encrypt (client, server, options) {
   client.ecdhKeyPair = crypto.createECDH(curve)
   client.ecdhKeyPair.generateKeys()
   client.clientX509 = writeX509PublicKey(client.ecdhKeyPair.getPublicKey())
 
-  function startClientboundEncryption(publicKey) {
+  function startClientboundEncryption (publicKey) {
     console.warn('[encrypt] Pub key base64: ', publicKey)
     const pubKeyBuf = readX509PublicKey(publicKey.key)
 
@@ -24,7 +24,7 @@ function Encrypt(client, server, options) {
     // Secret hash we use for packet encryption:
     // From the public key of the remote and the private key
     // of the local, a shared secret is generated using ECDH.
-    // The secret key bytes are then computed as 
+    // The secret key bytes are then computed as
     // sha256(server_token + shared_secret). These secret key
     //  bytes are 32 bytes long.
     const secretHash = crypto.createHash('sha256')
@@ -45,13 +45,13 @@ function Encrypt(client, server, options) {
     })
 
     // The encryption scheme is AES/CFB8/NoPadding with the
-    // secret key being the result of the sha256 above and 
+    // secret key being the result of the sha256 above and
     // the IV being the first 16 bytes of this secret key.
     const initial = client.secretKeyBytes.slice(0, 16)
     client.startEncryption(initial)
   }
 
-  function startServerboundEncryption(token) {
+  function startServerboundEncryption (token) {
     console.warn('[encrypt] Starting serverbound encryption', token)
     const jwt = token?.token
     if (!jwt) {
@@ -119,16 +119,16 @@ function Encrypt(client, server, options) {
       SkinData: 'AAAAAA==',
       SkinResourcePatch: 'ewogICAiZ2VvbWV0cnkiIDogewogICAgICAiYW5pbWF0ZWRfMTI4eDEyOCIgOiAiZ2VvbWV0cnkuYW5pbWF0ZWRfMTI4eDEyOF9wZXJzb25hLWUxOTk2NzJhOGMxYTg3ZTAtMCIsCiAgICAgICJhbmltYXRlZF9mYWNlIiA6ICJnZW9tZXRyeS5hbmltYXRlZF9mYWNlX3BlcnNvbmEtZTE5OTY3MmE4YzFhODdlMC0wIiwKICAgICAgImRlZmF1bHQiIDogImdlb21ldHJ5LnBlcnNvbmFfZTE5OTY3MmE4YzFhODdlMC0wIgogICB9Cn0K',
       SkinGeometryData: require('./geom'),
-      "SkinImageHeight": 1,
-      "SkinImageWidth": 1,
-      "ArmSize": "wide",
-      "CapeData": "",
-      "CapeId": "",
-      "CapeImageHeight": 0,
-      "CapeImageWidth": 0,
-      "CapeOnClassicSkin": false,
+      SkinImageHeight: 1,
+      SkinImageWidth: 1,
+      ArmSize: 'wide',
+      CapeData: '',
+      CapeId: '',
+      CapeImageHeight: 0,
+      CapeImageWidth: 0,
+      CapeOnClassicSkin: false,
       PlatformOfflineId: '',
-      PlatformOnlineId: '', //chat
+      PlatformOnlineId: '', // chat
       // a bunch of meaningless junk
       CurrentInputMode: 1,
       DefaultInputMode: 1,
@@ -141,7 +141,7 @@ function Encrypt(client, server, options) {
       PieceTintColors: [],
       SkinAnimationData: '',
       ThirdPartyNameOnly: false,
-      "SkinColor": "#ffffcd96",
+      SkinColor: '#ffffcd96'
     }
     payload = require('./logPack.json')
     const customPayload = options.userData || {}
@@ -152,29 +152,29 @@ function Encrypt(client, server, options) {
   }
 }
 
-function toBase64(string) {
+function toBase64 (string) {
   return Buffer.from(string).toString('base64')
 }
 
-function readX509PublicKey(key) {
-  var reader = new Ber.Reader(Buffer.from(key, "base64"));
-  reader.readSequence();
-  reader.readSequence();
-  reader.readOID(); // Hey, I'm an elliptic curve
-  reader.readOID(); // This contains the curve type, could be useful
-  return Buffer.from(reader.readString(Ber.BitString, true)).slice(1);
+function readX509PublicKey (key) {
+  const reader = new Ber.Reader(Buffer.from(key, 'base64'))
+  reader.readSequence()
+  reader.readSequence()
+  reader.readOID() // Hey, I'm an elliptic curve
+  reader.readOID() // This contains the curve type, could be useful
+  return Buffer.from(reader.readString(Ber.BitString, true)).slice(1)
 }
 
-function writeX509PublicKey(key) {
-  var writer = new Ber.Writer();
-  writer.startSequence();
-  writer.startSequence();
-  writer.writeOID("1.2.840.10045.2.1");
-  writer.writeOID("1.3.132.0.34");
-  writer.endSequence();
-  writer.writeBuffer(Buffer.concat([Buffer.from([0x00]), key]), Ber.BitString);
-  writer.endSequence();
-  return writer.buffer.toString("base64");
+function writeX509PublicKey (key) {
+  const writer = new Ber.Writer()
+  writer.startSequence()
+  writer.startSequence()
+  writer.writeOID('1.2.840.10045.2.1')
+  writer.writeOID('1.3.132.0.34')
+  writer.endSequence()
+  writer.writeBuffer(Buffer.concat([Buffer.from([0x00]), key]), Ber.BitString)
+  writer.endSequence()
+  return writer.buffer.toString('base64')
 }
 
 module.exports = {

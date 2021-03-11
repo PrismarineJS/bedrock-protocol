@@ -28,7 +28,7 @@ async function postAuthenticate (client, options, chains) {
   // - Kashalls
   const profile = {
     name: xboxProfile?.extraData?.displayName || 'Player',
-    uuid: xboxProfile?.extraData?.identity || 'adfcf5ca-206c-404a-aec4-f59fff264c9b', //random
+    uuid: xboxProfile?.extraData?.identity || 'adfcf5ca-206c-404a-aec4-f59fff264c9b', // random
     xuid: xboxProfile?.extraData?.XUID || 0
   }
 
@@ -88,10 +88,10 @@ async function msaTest () {
   // MsAuthFlow.resetTokenCaches()
 
   await authenticateDeviceCode({
-    connect(...args) {
+    connect (...args) {
       console.log('Connecting', args)
     },
-    emit(...e) {
+    emit (...e) {
       console.log('Event', e)
     }
   }, {})
