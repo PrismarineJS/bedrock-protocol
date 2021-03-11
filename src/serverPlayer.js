@@ -16,7 +16,6 @@ class Player extends Connection {
     this.server = server
     this.serializer = server.serializer
     this.deserializer = server.deserializer
-    // console.log('serializer/des',this.serializer,this.deserializer)
     this.connection = connection
     this.options = server.options
     Encrypt(this, server, this.options)
@@ -33,7 +32,7 @@ class Player extends Connection {
 
   onLogin(packet) {
     let body = packet.data
-    debug('Body', body)
+    // debug('Login body', body)
     this.emit('loggingIn', body)
 
     const clientVer = body.protocol_version
@@ -55,6 +54,7 @@ class Player extends Connection {
       var { key, userData, chain } = decodeLoginJWT(authChain.chain, skinChain)
     } catch (e) {
       console.error(e)
+      // TODO: disconnect user
       throw new Error('Failed to verify user')
     }
     console.log('Verified user', 'got pub key', key, userData)
@@ -65,7 +65,6 @@ class Player extends Connection {
     this.userData = userData.extraData
     this.version = clientVer
   }
-
 
   /**
    * Disconnects a client before it has joined

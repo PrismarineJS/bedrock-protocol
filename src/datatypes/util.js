@@ -8,5 +8,9 @@ module.exports = {
       new Promise((res, rej) => cb(res)),
       sleep(withTimeout)
     ])
+  },
+
+  serialize(obj = {}, fmt) {
+    return JSON.stringify(obj, (k, v) => typeof v == 'bigint' ? v.toString() : v, fmt)
   }
 }

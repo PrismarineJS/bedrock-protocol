@@ -1,11 +1,14 @@
 const fs = require('fs')
 const debug = require('debug')('minecraft-protocol')
+const auth = require('./client/auth')
+const Options = require('./options')
 const { Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { Encrypt } = require('./auth/encryption')
-const auth = require('./client/auth')
-const Options = require('./options')
 const { RakClient } = require('./Rak')
+const { serialize } = require('./datatypes/util')
+
+const debugging = false
 
 class Client extends Connection {
   /** @param {{ version: number, hostname: string, port: number }} options */
@@ -28,11 +31,9 @@ class Client extends Connection {
     this.startQueue()
     this.inLog = (...args) => console.info('C ->', ...args)
     this.outLog = (...args) => console.info('C <-', ...args)
-    // this.on('decrypted', this.onDecryptedPacket)
   }
 
   validateOptions() {
-    // console.log('Options', this.options)
     if (!this.options.hostname || this.options.port == null) throw Error('Invalid hostname/port')
     if (this.options.version < Options.MIN_VERSION) {
       throw new Error(`Unsupported protocol version < ${Options.MIN_VERSION} : ${this.options.version}`)
@@ -40,14 +41,13 @@ class Client extends Connection {
   }
 
   onEncapsulated = (encapsulated, inetAddr) => {
-    // log(inetAddr.address, ': Encapsulated', encapsulated)
     const buffer = Buffer.from(encapsulated.buffer)
     this.handle(buffer)
   }
 
   connect = async (sessionData) => {
-    const hostname = this.options.hostname || '127.0.0.1'
-    const port = this.options.port || 19132
+    const hostname = this.options.hostname
+    const port = this.options.port
 
     this.connection = new RakClient({ useWorkers: true, hostname, port })
     this.connection.onConnected = () => this.sendLogin()
@@ -64,7 +64,6 @@ class Client extends Connection {
     ]
 
     const encodedChain = JSON.stringify({ chain })
-    // const skinChain = JSON.stringify({})
 
     const bodyLength = this.clientUserChain.length + encodedChain.length + 8
 
@@ -83,7 +82,7 @@ class Client extends Connection {
     // We're talking over UDP, so there is no connection to close, instead
     // we stop communicating with the server
     console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
-    process.exit(1)
+    process.exit(1) // TODO: handle
   }
 
   close() {
@@ -109,32 +108,27 @@ class Client extends Connection {
   }
 
   readPacket(packet) {
-    // console.log('packet', packet)
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
     this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100)*/)
 
-    // No idea what this exotic 0xA0 packet is, it's not implemented anywhere
-    // and seems empty. Possible gibberish from the raknet impl
-    if (pakData.name == '160' || !pakData.name) { // eslint-ignore-line
-      console.warn('?? Ignoring extraneous packet ', des)
-      return
-    }
-
-    // Packet verifying (decode + re-encode + match test)
-    if (pakData.name) {
-      this.tryRencode(pakData.name, pakData.params, packet)
-    }
-
-    // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
-    // Packet dumping
-    try {
-      if (!fs.existsSync(`./packets/${pakData.name}.json`)) {
-        fs.writeFileSync(`./packets/${pakData.name}.json`, serialize(pakData.params, 2))
-        fs.writeFileSync(`./packets/${pakData.name}.txt`, packet.toString('hex'))
+    if (debugging) {
+      // Packet verifying (decode + re-encode + match test)
+      if (pakData.name) {
+        this.tryRencode(pakData.name, pakData.params, packet)
       }
-    } catch { }
 
+      // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
+      // Packet dumping
+      try {
+        if (!fs.existsSync(`./packets/${pakData.name}.json`)) {
+          fs.writeFileSync(`./packets/${pakData.name}.json`, serialize(pakData.params, 2))
+          fs.writeFileSync(`./packets/${pakData.name}.txt`, packet.toString('hex'))
+        }
+      } catch { }
+    }
+
+    // Abstract some boilerplate before sending to listeners
     switch (des.data.name) {
       case 'server_to_client_handshake':
         this.emit('client.server_handshake', des.data.params)
@@ -142,27 +136,22 @@ class Client extends Connection {
       case 'disconnect': // Client kicked
         this.onDisconnectRequest(des.data.params)
         break
-      case 'crafting_data':
-        fs.writeFileSync('crafting.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
-        break
-      case 'start_game':
-        fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
-        break
-      case 'level_chunk':
-        // fs.writeFileSync(`./chunks/chunk-${chunks++}.txt`, packet.toString('hex'))
-        break
+      // case 'crafting_data':
+      //   fs.writeFileSync('crafting.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
+      //   break
+      // case 'start_game':
+      //   fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
+      //   break
+      // case 'level_chunk':
+      //   // fs.writeFileSync(`./chunks/chunk-${chunks++}.txt`, packet.toString('hex'))
+      //   break
       default:
       // console.log('Sending to listeners')
     }
+
+    // Emit packet
     this.emit(des.data.name, des.data.params)
-
   }
-}
-
-var chunks = 0;
-
-function serialize(obj = {}, fmt) {
-  return JSON.stringify(obj, (k, v) => typeof v == 'bigint' ? v.toString() : v, fmt)
 }
 
 module.exports = { Client }

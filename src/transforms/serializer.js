@@ -29,9 +29,6 @@ function getProtocol() {
     compile(compiler.sizeOfCompiler, '../../data/size.js'),
     compile(compiler.writeCompiler, '../../data/write.js'),
     compile(compiler.readCompiler, '../../data/read.js')
-    // compiler.sizeOfCompiler.compile(fs.readFileSync(__dirname + '/../../data/size.js', 'utf-8')),
-    // compiler.writeCompiler.compile(fs.readFileSync(__dirname + '/../../data/write.js', 'utf-8')),
-    // compiler.readCompiler.compile(fs.readFileSync(__dirname + '/../../data/read.js', 'utf-8'))
   )
 }
 

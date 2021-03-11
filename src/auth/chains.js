@@ -52,6 +52,8 @@ function verifyAuth(chain) {
             console.log('verified with mojang key!', x5u)            
         }
 
+        // TODO: Handle `didVerify` = false
+
         pubKey = decoded.identityPublicKey ? mcPubKeyToPem(decoded.identityPublicKey) : x5u
         finalKey = decoded.identityPublicKey || finalKey // non pem
         data = { ...data, ...decoded }
@@ -87,22 +89,22 @@ function encodeLoginJWT(localChain, mojangChain) {
 
 module.exports = { encodeLoginJWT, decodeLoginJWT }
 
-function testServer() {
-    const loginPacket = require('./login.json')
+// function testServer() {
+//     const loginPacket = require('./login.json')
 
-    // console.log(loginPacket)
-    const authChains = JSON.parse(loginPacket.data.chain)
-    const skinChain = loginPacket.data.clientData
+//     // console.log(loginPacket)
+//     const authChains = JSON.parse(loginPacket.data.chain)
+//     const skinChain = loginPacket.data.clientData
 
-    try {
-        var { data, chain } = decodeLoginJWT(authChains.chain, skinChain)
-    } catch (e) {
-        console.error(e)
-        throw new Error('Failed to verify user')
-    }
+//     try {
+//         var { data, chain } = decodeLoginJWT(authChains.chain, skinChain)
+//     } catch (e) {
+//         console.error(e)
+//         throw new Error('Failed to verify user')
+//     }
 
-    console.log('Authed')
-    // console.log(loginPacket)
-}
+//     console.log('Authed')
+//     // console.log(loginPacket)
+// }
 
-// testServer()
+// // testServer()

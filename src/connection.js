@@ -2,11 +2,26 @@ const BinaryStream = require('@jsprismarine/jsbinaryutils').default
 const BatchPacket = require('./datatypes/BatchPacket')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
-const Reliability = require('jsp-raknet/protocol/reliability')
-
+const Versions = require('./options')
 const debug = require('debug')('minecraft-protocol')
 
 class Connection extends EventEmitter {
+  versionLessThan(version) {
+    if (typeof version === 'string') {
+      return Versions[version] < this.options.version
+    } else {
+      return version < this.options.version
+    }
+  }
+
+  versionGreaterThan(version) {
+    if (typeof version === 'string') {
+      return Versions[version] > this.options.version
+    } else {
+      return version > this.options.version
+    }
+  }
+
   startEncryption(iv) {
     this.encryptionEnabled = true
     this.inLog('Started encryption', this.sharedSecret, iv)
@@ -15,14 +30,10 @@ class Connection extends EventEmitter {
     this.q2 = []
   }
 
-  write(name, params) { // TODO: Batch
-    // console.log('Need to encode', name, params)
-    var s = this.connect ? 'C' : 'S'
-    if (this.downQ) s += 'P'
-    this.outLog('NB <- ' + s, name,params)
+  write(name, params) {
+    this.outLog('sending', name, params)
     const batch = new BatchPacket()
     const packet = this.serializer.createPacketBuffer({ name, params })
-    // console.log('Sending buf', packet.toString('hex').)
     batch.addEncodedPacket(packet)
 
     if (this.encryptionEnabled) {
@@ -51,8 +62,6 @@ class Connection extends EventEmitter {
         //TODO: can we just build Batch before the queue loop?
         const batch = new BatchPacket()
         this.outLog('<- BATCH', this.q2)
-        // For now, we're over conservative so send max 3 packets
-        // per batch and hold the rest for the next tick
         const sending = []
         for (let i = 0; i < this.q.length; i++) {
           const packet = this.q.shift()
@@ -65,28 +74,10 @@ class Connection extends EventEmitter {
         } else {
           this.sendDecryptedBatch(batch)
         }
-        // this.q2 = []
       }
     }, 20)
   }
 
-  writeRaw(name, buffer) { // skip protodef serializaion
-    // temporary hard coded stuff
-    const batch = new BatchPacket()
-    if (name == 'biome_definition_list') {
-      // so we can send nbt straight from file without parsing
-      const stream = new BinaryStream()
-      stream.writeUnsignedVarInt(0x7a)
-      stream.append(buffer)
-      batch.addEncodedPacket(stream.getBuffer())
-    }
-
-    if (this.encryptionEnabled) {
-      this.sendEncryptedBatch(batch)
-    } else {
-      this.sendDecryptedBatch(batch)
-    }
-  }
 
   /**
    * Sends a MCPE packet buffer
@@ -121,21 +112,11 @@ class Connection extends EventEmitter {
   // TODO: Rename this to sendEncapsulated
   sendMCPE(buffer, immediate) {
     this.connection.sendReliable(buffer, immediate)
-    // if (this.worker) {
-    //   this.outLog('-> buf', buffer)
-    //   this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
-    // } else {
-    //   const sendPacket = new EncapsulatedPacket()
-    //   sendPacket.reliability = Reliability.ReliableOrdered
-    //   sendPacket.buffer = buffer
-    //   this.connection.addEncapsulatedToQueue(sendPacket)
-    //   if (immediate) this.connection.sendQueue()
-    // }
   }
 
   // These are callbacks called from encryption.js
   onEncryptedPacket = (buf) => {
-    this.outLog('ENC BUF', buf)
+    this.outLog('Enc buf', buf)
     const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
 
     this.outLog('Sending wrapped encrypted batch', packet)
@@ -143,8 +124,6 @@ class Connection extends EventEmitter {
   }
 
   onDecryptedPacket = (buf) => {
-    // console.log('🟢 Decrypted', buf)
-
     const stream = new BinaryStream(buf)
     const packets = BatchPacket.getPackets(stream)
 
@@ -168,10 +147,7 @@ class Connection extends EventEmitter {
         }
       }
     }
-    // console.log('[client] handled incoming ', buffer)
   }
 }
-function serialize(obj = {}, fmt) {
-  return JSON.stringify(obj, (k, v) => typeof v == 'bigint' ? v.toString() : v, fmt)
-}
+
 module.exports = { Connection }

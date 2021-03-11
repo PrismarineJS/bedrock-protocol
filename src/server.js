@@ -39,7 +39,7 @@ class Server extends EventEmitter {
   }
 
   onEncapsulated = (buffer, address) => {
-    debug(address, 'Encapsulated', buffer)
+    this.inLog('encapsulated', address, buffer)
     const client = this.clients[address]
     if (!client) {
       throw new Error(`packet from unknown inet addr: ${address}`)
@@ -56,7 +56,5 @@ class Server extends EventEmitter {
     this.raknet.onEncapsulated = this.onEncapsulated
   }
 }
-
-const hash = (inetAddr) => inetAddr.address + '/' + inetAddr.port
 
 module.exports = { Server }

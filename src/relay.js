@@ -4,6 +4,7 @@ const { Client } = require("./client")
 const { Server } = require("./server")
 const { Player } = require("./serverPlayer")
 const debug = require('debug')('minecraft-protocol relay')
+const { serialize } = require('./datatypes/util')
 
 /** @typedef {{ hostname: string, port: number, auth: 'client' | 'server' | null, destination?: { hostname: string, port: number } }} Options  */
 
@@ -67,7 +68,6 @@ class RelayPlayer extends Player {
         console.warn('Old', packet.toString('hex'))
         console.log('Failed to re-encode', name, params)
         process.exit(1)
-        throw Error('re-encoding fail for' + name + ' - ' + JSON.stringify(params))
       }
     }
 
@@ -159,7 +159,7 @@ class Relay extends Server {
     client.once('join', () => { // Intercept once handshaking done
       ds.upstream = client
       ds.flushUpQueue()
-      console.log('UPSTREAM HAS JOINED')
+      console.log('Connected to upstream server')
       client.readPacket = (packet) => ds.readUpstream(packet)
     })
     this.upstreams.set(clientAddr.hash, client)
@@ -167,7 +167,7 @@ class Relay extends Server {
 
   closeUpstreamConnection(clientAddr) {
     const up = this.upstreams.get(clientAddr.hash)
-    if (!up) throw Error(`unable to close non-existant connection ${clientAddr.hash}`)
+    if (!up) throw Error(`unable to close non-open connection ${clientAddr.hash}`)
     up.close()
     this.upstreams.delete(clientAddr.hash)
     debug('relay closed connection', clientAddr)
@@ -188,43 +188,5 @@ class Relay extends Server {
   }
 }
 
-function serialize(obj = {}, fmt) {
-  return JSON.stringify(obj, (k, v) => typeof v == 'bigint' ? v.toString() : v, fmt)
-}
-
-function createRelay() {
-  console.log('Creating relay')
-  /**
-   * Example to create a non-transparent proxy (or 'Relay') connection to destination server
-   * In Relay we de-code and re-encode packets
-   */
-  const relay = new Relay({
-    /* Hostname and port for clients to listen to */
-    hostname: '0.0.0.0',
-    port: 19130,
-    /**
-     * Who does the authentication
-     * If set to `client`, all connecting clients will be sent a message with a link to authenticate
-     * If set to `server`, the server will authenticate and only one client will be able to join
-     * (Default) If set to `none`, no authentication will be done
-     */
-    auth: 'server',
-
-    /**
-     * Sets if packets will automatically be forwarded. If set to false, you must listen for on('packet')
-     * events and
-     */
-    auto: true,
-
-    /* Where to send upstream packets to */
-    destination: {
-      hostname: '127.0.0.1',
-      port: 19132,
-      // encryption: true
-    }
-  })
-
-  relay.create()
-}
-
-createRelay()
+// Too many things called 'Proxy' ;)
+module.exports = { Relay }
