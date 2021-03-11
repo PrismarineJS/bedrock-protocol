@@ -18,7 +18,7 @@ class RakNativeClient extends EventEmitter {
 
     this.raknet = new Client(options.hostname, options.port, 'minecraft')
     this.raknet.on('encapsulated', thingy => {
-      console.log('Encap',thingy)
+      // console.log('Encap',thingy)
       const { buffer, address, guid }=thingy
       this.onEncapsulated(buffer, address)
     })
@@ -76,7 +76,7 @@ class RakNativeServer extends EventEmitter {
 
     this.raknet.on('encapsulated', (thingy) => {
       const { buffer, address, guid }=thingy
-      console.log('ENCAP',thingy)
+      // console.log('ENCAP',thingy)
       this.onEncapsulated(buffer, address)
     })
   }

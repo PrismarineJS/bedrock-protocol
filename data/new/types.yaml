@@ -64,7 +64,7 @@ Blob:
    hash: lu64
    # Payload is the data of the blob. When sent, the client will associate the Hash of the blob with the
    # Payload in it.
-   payload: string
+   payload: ByteArray
 
 BlockPalette: []varint
    name: string
@@ -586,52 +586,121 @@ StackRequestSlotInfo:
 #
 
 ItemStackRequests: []varint
+   # RequestID is a unique ID for the request. This ID is used by the server to send a response for this
+   # specific request in the ItemStackResponse packet.
    request_id: zigzag32
    actions: []varint
       type_id: u8 =>
-         '0': 'TAKE' 
-         '1': 'PLACE' 
-         '2': 'SWAP' 
-         '3': 'DROP' 
-         '4': 'DESTROY' 
-         '5': 'CRAFTING_CONSUME_INPUT' 
-         '6': 'create' 
-         '7': 'LAB_TABLE_COMBINE' 
-         '8': 'BEACON_PAYMENT' 
-         '9': 'CRAFTING_RECIPE' 
-         '10': 'CRAFTING_RECIPE_AUTO'  #recipe book?
-         '11': 'CREATIVE_CREATE' 
-         '12': 'CRAFTING_NON_IMPLEMENTED_DEPRECATED'  #anvils aren't fully implemented yet
-         '13': 'CRAFTING_RESULTS_DEPRECATED'  #no idea what this is for
+         # TakeStackRequestAction is sent by the client to the server to take x amount of items from one slot in a
+         # container to the cursor.
+         0: take
+         # PlaceStackRequestAction is sent by the client to the server to place x amount of items from one slot into
+         # another slot, such as when shift clicking an item in the inventory to move it around or when moving an item
+         # in the cursor into a slot.
+         1: place
+         # SwapStackRequestAction is sent by the client to swap the item in its cursor with an item present in another
+         # container. The two item stacks swap places. 
+         2: swap
+         # DropStackRequestAction is sent by the client when it drops an item out of the inventory when it has its
+         # inventory opened. This action is not sent when a player drops an item out of the hotbar using the Q button
+         # (or the equivalent on mobile). The InventoryTransaction packet is still used for that action, regardless of
+         # whether the item stack network IDs are used or not.
+         3: drop
+         # DestroyStackRequestAction is sent by the client when it destroys an item in creative mode by moving it
+         # back into the creative inventory.
+         4: destroy
+         # ConsumeStackRequestAction is sent by the client when it uses an item to craft another item. The original
+         # item is 'consumed'.
+         5: consume
+         # CreateStackRequestAction is sent by the client when an item is created through being used as part of a
+         # recipe. For example, when milk is used to craft a cake, the buckets are leftover. The buckets are moved to
+         # the slot sent by the client here.
+         # Note that before this is sent, an action for consuming all items in the crafting table/grid is sent. Items
+         # that are not fully consumed when used for a recipe should not be destroyed there, but instead, should be
+         # turned into their respective resulting items. 
+         6: create 
+         # LabTableCombineStackRequestAction is sent by the client when it uses a lab table to combine item stacks.
+         7: lab_table_combine
+         # BeaconPaymentStackRequestAction is sent by the client when it submits an item to enable effects from a
+         # beacon. These items will have been moved into the beacon item slot in advance. 
+         8: beacon_payment
+         # CraftRecipeStackRequestAction is sent by the client the moment it begins crafting an item. This is the
+         # first action sent, before the Consume and Create item stack request actions.
+         # This action is also sent when an item is enchanted. Enchanting should be treated mostly the same way as
+         # crafting, where the old item is consumed.
+         9: craft_recipe
+         # AutoCraftRecipeStackRequestAction is sent by the client similarly to the CraftRecipeStackRequestAction. The
+         # only difference is that the recipe is automatically created and crafted by shift clicking the recipe book.
+         10: craft_recipe_auto  #recipe book?
+         # CraftCreativeStackRequestAction is sent by the client when it takes an item out fo the creative inventory.
+         # The item is thus not really crafted, but instantly created.
+         11: craft_creative
+         # CraftRecipeOptionalStackRequestAction is sent when using an anvil. When this action is sent, the
+         # CustomNames field in the respective stack request is non-empty and contains the name of the item created
+         # using the anvil.
+         12: optional
+         # CraftNonImplementedStackRequestAction is an action sent for inventory actions that aren't yet implemented
+         # in the new system. These include, for example, anvils.
+         13: non_implemented  #anvils aren't fully implemented yet
+         # CraftResultsDeprecatedStackRequestAction is an additional, deprecated packet sent by the client after
+         # crafting. It holds the final results and the amount of times the recipe was crafted. It shouldn't be used.
+         # This action is also sent when an item is enchanted. Enchanting should be treated mostly the same way as
+         # crafting, where the old item is consumed.
+         14: results_deprecated
       _: type_id ?
-         if TAKE or PLACE:
+         if take or place:
             count: u8
             source: StackRequestSlotInfo
             destination: StackRequestSlotInfo
-         if SWAP:
+         if swap:
+            # Source and Destination point to the source slot from which Count of the item stack were taken and the
+            # destination slot to which this item was moved.
             source: StackRequestSlotInfo
             destination: StackRequestSlotInfo
-         if DROP:
+         if drop:
+            # Count is the count of the item in the source slot that was taken towards the destination slot.
             count: u8
+            # Source is the source slot from which items were dropped to the ground.
             source: StackRequestSlotInfo
+            # Randomly seems to be set to false in most cases. I'm not entirely sure what this does, but this is what
+            # vanilla calls this field.
             randomly: bool
-         if DESTROY or CRAFTING_CONSUME_INPUT:
+         if destroy or consume:
+            # Count is the count of the item in the source slot that was destroyed.
             count: u8
+            # Source is the source slot from which items came that were destroyed by moving them into the creative
+            # inventory.
             source: StackRequestSlotInfo
          if create:
+            # ResultsSlot is the slot in the inventory in which the results of the crafting ingredients are to be
+            # placed.
             result_slot_id: u8
-         if BEACON_PAYMENT:
-            primary_effect: varint
-            secondary_effect: varint
-         if CRAFTING_RECIPE or CRAFTING_RECIPE_AUTO:
-            recipe_network_id: varint32
-         if CREATIVE_CREATE:
+         if beacon_payment:
+            # PrimaryEffect and SecondaryEffect are the effects that were selected from the beacon.
+            primary_effect: zigzag32
+            secondary_effect: zigzag32
+         if craft_recipe or craft_recipe_auto:
+            # RecipeNetworkID is the network ID of the recipe that is about to be crafted. This network ID matches
+            # one of the recipes sent in the CraftingData packet, where each of the recipes have a RecipeNetworkID as
+            # of 1.16.
+            recipe_network_id: varint
+         if craft_creative:
+            # CreativeItemNetworkID is the network ID of the creative item that is being created. This is one of the
+            # creative item network IDs sent in the CreativeContent packet.
             creative_item_network_id: varint32
-         if CRAFTING_NON_IMPLEMENTED_DEPRECATED: void
-         if CRAFTING_RESULTS_DEPRECATED:
-            result_items: ItemStacks
+         if optional:
+            # For the cartography table, if a certain MULTI recipe is being called, this points to the network ID that was assigned.
+            recipe_network_id: varint
+            # Most likely the index in the request's filter strings that this action is using
+            filtered_string_index: li32
+         if non_implemented: void
+         if results_deprecated:
+            result_items: Item[]varint
             times_crafted: u8
-
+   # CustomNames is a list of custom names involved in the request. This is typically filled with one string
+   # when an anvil is used.
+   # * Used for the server to determine which strings should be filtered. Used in anvils to verify a renamed item.
+   custom_names: string[]varint
 
 ItemStackResponses: []varint
    result: u8
@@ -683,6 +752,36 @@ CommandOrigin:
       if dev_console or test:
          player_entity_id: zigzag64
 
+# Some arbitrary definitions from CBMC, Window IDs are normally
+# unique + sequential
+WindowID: i8 =>
+   -100: drop_contents
+   -24: beacon
+   -23: trading_output
+   -22: trading_use_inputs
+   -21: trading_input_2
+   -20: trading_input_1
+   -17: enchant_output
+   -16: enchant_material
+   -15: enchant_input
+   -13: anvil_output
+   -12: anvil_result
+   -11: anvil_material
+   -10: container_input
+   -5: crafting_use_ingredient
+   -4: crafting_result
+   -3: crafting_remove_ingredient
+   -2: crafting_add_ingredient
+   -1: none
+   0: inventory
+   1: first
+   100: last
+   119: offhand
+   120: armor
+   121: creative
+   122: hotbar
+   123: fixed_inventory
+   124: ui
 
 WindowType: u8 =>
    0: container

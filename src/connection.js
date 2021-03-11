@@ -35,9 +35,9 @@ class Connection extends EventEmitter {
   queue(name, params) {
     this.outLog('Q <- ', name, params)
     const packet = this.serializer.createPacketBuffer({ name, params })
-    if (name == 'level_chunk') {
-      // Skip queue
-      this.sendMCPE(packet)
+    if (name == 'level_chunk' || name=='client_cache_blob_status' || name == 'client_cache_miss_response') {
+      // Skip queue, send ASAP
+      this.sendBuffer(packet)
       return
     }
     this.q.push(packet)
@@ -54,12 +54,12 @@ class Connection extends EventEmitter {
         // For now, we're over conservative so send max 3 packets
         // per batch and hold the rest for the next tick
         const sending = []
-        for (let i = 0; i < 3 && i < this.q.length; i++) {
+        for (let i = 0; i < this.q.length; i++) {
           const packet = this.q.shift()
           sending.push(this.q2.shift())
           batch.addEncodedPacket(packet)
         }
-        // console.warn('~~ Sending', sending)
+        // this.outLog('~~ Sending', sending)
         if (this.encryptionEnabled) {
           this.sendEncryptedBatch(batch)
         } else {
@@ -67,7 +67,7 @@ class Connection extends EventEmitter {
         }
         // this.q2 = []
       }
-    }, 100)
+    }, 20)
   }
 
   writeRaw(name, buffer) { // skip protodef serializaion
@@ -102,6 +102,7 @@ class Connection extends EventEmitter {
       }
     } else {
       this.q.push(buffer)
+      this.q2.push('rawBuffer')
     }
   }
 

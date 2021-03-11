@@ -1,9 +1,6 @@
 const UUID = require('uuid-1345')
 const minecraft = require('./minecraft')
-
-const Read = {}
-const Write = {}
-const SizeOf = {}
+const { Read, Write, SizeOf } = require('./varlong')
 
 /**
  * UUIDs
@@ -39,6 +36,39 @@ SizeOf.restBuffer = ['native', (value) => {
 }]
 
 /**
+ * Read NBT until end of buffer or \0
+ */
+Read.nbtLoop = ['context', (buffer, offset) => {
+  const values = []
+  while (buffer[offset] != 0) {
+    // console.log('offs',offset, buffer.length,buffer.slice(offset))
+    const n = ctx.nbt(buffer, offset)
+    // console.log('read',n)
+    values.push(n.value)
+    offset += n.size
+  }
+  // console.log('Ext',offset, buffer.length,buffer.slice(offset))
+  return { value: values, size: buffer.length - offset }
+}]
+Write.nbtLoop = ['context', (value, buffer, offset) => {
+  for (const val of value) {
+    // console.log('val',val,offset)
+    offset = ctx.nbt(val, buffer, offset)
+  }
+  // offset += 1
+  // console.log('writing 0', offset)
+  buffer.writeUint8(0, offset)
+  return offset + 1
+}]
+SizeOf.nbtLoop = ['context', (value, buffer, offset) => {
+  let size = 1
+  for (const val of value) {
+    size += ctx.nbt(val, buffer, offset)
+  }
+  return size
+}]
+
+/**
  * NBT
  */
 Read.nbt = ['native', minecraft.nbt[0]]
@@ -50,19 +80,19 @@ SizeOf.nbt = ['native', minecraft.nbt[2]]
  */
 // nvm,
 // Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
-  // return compiler.wrapCode(`
-  //   const { value, size } = ${compiler.callType('buffer, offset', type)}
-  //   const val = {}
-  //   for (let i = 0; i < size; i++) {
-  //     const hi = (value >> i) & 1
-  //     if ()
-  //     const v = value & 
-  //     if (flags[i]) 
-  //   }
-  // `
+// return compiler.wrapCode(`
+//   const { value, size } = ${compiler.callType('buffer, offset', type)}
+//   const val = {}
+//   for (let i = 0; i < size; i++) {
+//     const hi = (value >> i) & 1
+//     if ()
+//     const v = value & 
+//     if (flags[i]) 
+//   }
+// `
 // }]
 
-Read.bitflags = ['parametrizable', (compiler, { type, flags }) => { 
+Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
   return compiler.wrapCode(`
     const { value: _value, size } = ${compiler.callType(type, 'offset')}
     const value = { _value }
@@ -75,7 +105,7 @@ Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
 }]
 
 
-Write.bitflags = ['parametrizable', (compiler, { type, flags }) => { 
+Write.bitflags = ['parametrizable', (compiler, { type, flags }) => {
   return compiler.wrapCode(`
     const flags = ${JSON.stringify(flags)}
     let val = value._value
@@ -86,7 +116,7 @@ Write.bitflags = ['parametrizable', (compiler, { type, flags }) => {
   `.trim())
 }]
 
-SizeOf.bitflags = ['parametrizable', (compiler, { type, flags }) => { 
+SizeOf.bitflags = ['parametrizable', (compiler, { type, flags }) => {
   return compiler.wrapCode(`
     const flags = ${JSON.stringify(flags)}
     let val = value._value
@@ -117,7 +147,7 @@ Write.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   })
 }]
 SizeOf.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
-  return str(() => { 
+  return str(() => {
     if (value.values_len <= 0xff) _enum_type = 'byte'
     else if (value.values_len <= 0xffff) _enum_type = 'short'
     else if (value.values_len <= 0xffffff) _enum_type = 'int'

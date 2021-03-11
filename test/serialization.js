@@ -241,13 +241,50 @@ function test() {
     
   }
 
+  function testLevelEventGeneric() {
+    const s = '7cce1f0305436f756e74800205084469725363616c65cdcc4c3e0504456e647800a01c440504456e647900001a420504456e647a00008942050653746172747899ef1944050653746172747900002042050653746172747a4583a042050a566172696174696f6e789a99193f050a566172696174696f6e799a99394000'
+    const buf = Buffer.from(s, 'hex')
+    const des = read(buf)
+    console.log(JSON.stringify(des))
+
+    console.log(des.data.name)
+    const newBuf = write(des.data.name, des.data.params)
+    console.log(newBuf.toString('hex'), s)
+    console.assert(newBuf.toString('hex')==s)
+  }
+
+  function testEvent() {
+    const s = '41fdffffff5f2801001203e1417678933fdf294642a034a03e57b65b40'
+    const buf = Buffer.from(s, 'hex')
+    const des = read(buf)
+    console.log(serialize(des))
+
+    console.log(des.data.name)
+    const newBuf = write(des.data.name, des.data.params)
+    console.log(newBuf.toString('hex'), s)
+    console.assert(newBuf.toString('hex')==s)
+  }
+
+  function testItemStackReq() {
+    const s = '93010105030b9d050e01920502000000000100013b32053a000000'
+    const buf = Buffer.from(s, 'hex')
+    const des = read(buf)
+    console.log(serialize(des))
+
+    console.log(des.data.name)
+    const newBuf = write(des.data.name, des.data.params)
+    console.log(newBuf.toString('hex'), 'OLD:', s)
+    console.assert(newBuf.toString('hex')==s)
+  }
+
   // creativeTst()
   // availableCommands()
   // avaliableCmd()
   // creativeTestNew()
   // biomeDefinitions()
   // startGame()
-  testInventory()
+  // testLevelEventGeneric()
+  testItemStackReq()
 }
 
 if (!module.parent) {

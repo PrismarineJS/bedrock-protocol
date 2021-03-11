@@ -1,7 +1,6 @@
 {
   "types": {
     "varint32": "varint",
-    "varint64": "varint",
     "bool": "native",
     "zigzag32": "native",
     "zigzag64": "native",
@@ -209,7 +208,7 @@
         },
         {
           "name": "payload",
-          "type": "string"
+          "type": "ByteArray"
         }
       ]
     ],
@@ -2037,20 +2036,21 @@
                           {
                             "type": "u8",
                             "mappings": {
-                              "0": "TAKE",
-                              "1": "PLACE",
-                              "2": "SWAP",
-                              "3": "DROP",
-                              "4": "DESTROY",
-                              "5": "CRAFTING_CONSUME_INPUT",
+                              "0": "take",
+                              "1": "place",
+                              "2": "swap",
+                              "3": "drop",
+                              "4": "destroy",
+                              "5": "consume",
                               "6": "create",
-                              "7": "LAB_TABLE_COMBINE",
-                              "8": "BEACON_PAYMENT",
-                              "9": "CRAFTING_RECIPE",
-                              "10": "CRAFTING_RECIPE_AUTO",
-                              "11": "CREATIVE_CREATE",
-                              "12": "CRAFTING_NON_IMPLEMENTED_DEPRECATED",
-                              "13": "CRAFTING_RESULTS_DEPRECATED"
+                              "7": "lab_table_combine",
+                              "8": "beacon_payment",
+                              "9": "craft_recipe",
+                              "10": "craft_recipe_auto",
+                              "11": "craft_creative",
+                              "12": "optional",
+                              "13": "non_implemented",
+                              "14": "results_deprecated"
                             }
                           }
                         ]
@@ -2062,7 +2062,7 @@
                           {
                             "compareTo": "type_id",
                             "fields": {
-                              "TAKE": [
+                              "take": [
                                 "container",
                                 [
                                   {
@@ -2079,7 +2079,7 @@
                                   }
                                 ]
                               ],
-                              "PLACE": [
+                              "place": [
                                 "container",
                                 [
                                   {
@@ -2096,7 +2096,7 @@
                                   }
                                 ]
                               ],
-                              "SWAP": [
+                              "swap": [
                                 "container",
                                 [
                                   {
@@ -2109,7 +2109,7 @@
                                   }
                                 ]
                               ],
-                              "DROP": [
+                              "drop": [
                                 "container",
                                 [
                                   {
@@ -2126,7 +2126,7 @@
                                   }
                                 ]
                               ],
-                              "DESTROY": [
+                              "destroy": [
                                 "container",
                                 [
                                   {
@@ -2139,7 +2139,7 @@
                                   }
                                 ]
                               ],
-                              "CRAFTING_CONSUME_INPUT": [
+                              "consume": [
                                 "container",
                                 [
                                   {
@@ -2161,38 +2161,38 @@
                                   }
                                 ]
                               ],
-                              "BEACON_PAYMENT": [
+                              "beacon_payment": [
                                 "container",
                                 [
                                   {
                                     "name": "primary_effect",
-                                    "type": "varint"
+                                    "type": "zigzag32"
                                   },
                                   {
                                     "name": "secondary_effect",
+                                    "type": "zigzag32"
+                                  }
+                                ]
+                              ],
+                              "craft_recipe": [
+                                "container",
+                                [
+                                  {
+                                    "name": "recipe_network_id",
                                     "type": "varint"
                                   }
                                 ]
                               ],
-                              "CRAFTING_RECIPE": [
+                              "craft_recipe_auto": [
                                 "container",
                                 [
                                   {
                                     "name": "recipe_network_id",
-                                    "type": "varint32"
+                                    "type": "varint"
                                   }
                                 ]
                               ],
-                              "CRAFTING_RECIPE_AUTO": [
-                                "container",
-                                [
-                                  {
-                                    "name": "recipe_network_id",
-                                    "type": "varint32"
-                                  }
-                                ]
-                              ],
-                              "CREATIVE_CREATE": [
+                              "craft_creative": [
                                 "container",
                                 [
                                   {
@@ -2201,13 +2201,32 @@
                                   }
                                 ]
                               ],
-                              "CRAFTING_NON_IMPLEMENTED_DEPRECATED": "void",
-                              "CRAFTING_RESULTS_DEPRECATED": [
+                              "optional": [
+                                "container",
+                                [
+                                  {
+                                    "name": "recipe_network_id",
+                                    "type": "varint"
+                                  },
+                                  {
+                                    "name": "filtered_string_index",
+                                    "type": "li32"
+                                  }
+                                ]
+                              ],
+                              "non_implemented": "void",
+                              "results_deprecated": [
                                 "container",
                                 [
                                   {
                                     "name": "result_items",
-                                    "type": "ItemStacks"
+                                    "type": [
+                                      "array",
+                                      {
+                                        "countType": "varint",
+                                        "type": "Item"
+                                      }
+                                    ]
                                   },
                                   {
                                     "name": "times_crafted",
@@ -2222,6 +2241,16 @@
                       }
                     ]
                   ]
+                }
+              ]
+            },
+            {
+              "name": "custom_names",
+              "type": [
+                "array",
+                {
+                  "countType": "varint",
+                  "type": "string"
                 }
               ]
             }
@@ -2384,6 +2413,41 @@
           ]
         }
       ]
+    ],
+    "WindowID": [
+      "mapper",
+      {
+        "type": "i8",
+        "mappings": {
+          "0": "inventory",
+          "1": "first",
+          "100": "last",
+          "119": "offhand",
+          "120": "armor",
+          "121": "creative",
+          "122": "hotbar",
+          "123": "fixed_inventory",
+          "124": "ui",
+          "-100": "drop_contents",
+          "-24": "beacon",
+          "-23": "trading_output",
+          "-22": "trading_use_inputs",
+          "-21": "trading_input_2",
+          "-20": "trading_input_1",
+          "-17": "enchant_output",
+          "-16": "enchant_material",
+          "-15": "enchant_input",
+          "-13": "anvil_output",
+          "-12": "anvil_result",
+          "-11": "anvil_material",
+          "-10": "container_input",
+          "-5": "crafting_use_ingredient",
+          "-4": "crafting_result",
+          "-3": "crafting_remove_ingredient",
+          "-2": "crafting_add_ingredient",
+          "-1": "none"
+        }
+      }
     ],
     "WindowType": [
       "mapper",
@@ -3063,6 +3127,10 @@
                     {
                       "name": "source_name",
                       "type": "string"
+                    },
+                    {
+                      "name": "message",
+                      "type": "string"
                     }
                   ]
                 ],
@@ -3072,6 +3140,10 @@
                     {
                       "name": "source_name",
                       "type": "string"
+                    },
+                    {
+                      "name": "message",
+                      "type": "string"
                     }
                   ]
                 ],
@@ -3080,6 +3152,10 @@
                   [
                     {
                       "name": "source_name",
+                      "type": "string"
+                    },
+                    {
+                      "name": "message",
                       "type": "string"
                     }
                   ]
@@ -4166,7 +4242,7 @@
         },
         {
           "name": "windows_id",
-          "type": "u8"
+          "type": "WindowID"
         }
       ]
     ],
@@ -4457,8 +4533,8 @@
           "type": "u8"
         },
         {
-          "name": "type",
-          "type": "u8"
+          "name": "window_type",
+          "type": "WindowType"
         },
         {
           "name": "coordinates",
@@ -4492,7 +4568,7 @@
         },
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "select_slot",
@@ -4517,7 +4593,7 @@
       "container",
       [
         {
-          "name": "inventory_id",
+          "name": "window_id",
           "type": "varint"
         },
         {
@@ -4539,7 +4615,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "property",
@@ -4577,11 +4653,21 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "recipe_type",
-          "type": "zigzag32"
+          "type": [
+            "mapper",
+            {
+              "type": "zigzag32",
+              "mappings": {
+                "0": "inventory",
+                "1": "crafting",
+                "2": "workbench"
+              }
+            }
+          ]
         },
         {
           "name": "recipe_id",
@@ -4589,11 +4675,23 @@
         },
         {
           "name": "input",
-          "type": "ItemStacks"
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "Item"
+            }
+          ]
         },
         {
           "name": "result",
-          "type": "ItemStacks"
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "Item"
+            }
+          ]
         }
       ]
     ],
@@ -4813,7 +4911,7 @@
           "type": [
             "mapper",
             {
-              "type": "varint",
+              "type": "zigzag32",
               "mappings": {
                 "0": "achievement_awarded",
                 "1": "entity_interact",
@@ -4840,6 +4938,10 @@
         {
           "name": "use_player_id",
           "type": "u8"
+        },
+        {
+          "name": "event_data",
+          "type": "restBuffer"
         }
       ]
     ],
@@ -6220,11 +6322,37 @@
     ],
     "packet_level_event_generic": [
       "container",
-      []
+      [
+        {
+          "name": "event_id",
+          "type": "varint"
+        },
+        {
+          "name": "nbt",
+          "type": "nbtLoop"
+        }
+      ]
     ],
     "packet_lectern_update": [
       "container",
-      []
+      [
+        {
+          "name": "page",
+          "type": "u8"
+        },
+        {
+          "name": "page_count",
+          "type": "u8"
+        },
+        {
+          "name": "position",
+          "type": "vec3i"
+        },
+        {
+          "name": "drop_book",
+          "type": "bool"
+        }
+      ]
     ],
     "packet_video_stream_connect": [
       "container",
@@ -6307,11 +6435,19 @@
       "container",
       [
         {
+          "name": "misses",
+          "type": "varint"
+        },
+        {
+          "name": "haves",
+          "type": "varint"
+        },
+        {
           "name": "missing",
           "type": [
             "array",
             {
-              "countType": "varint",
+              "count": "misses",
               "type": "lu64"
             }
           ]
@@ -6321,7 +6457,7 @@
           "type": [
             "array",
             {
-              "countType": "varint",
+              "count": "haves",
               "type": "lu64"
             }
           ]
@@ -6892,6 +7028,12 @@
         "countType": "varint"
       }
     ],
+    "SignedByteArray": [
+      "buffer",
+      {
+        "countType": "zigzag32"
+      }
+    ],
     "LittleString": [
       "pstring",
       {
@@ -6969,7 +7111,7 @@
     "InputFlag": [
       "bitflags",
       {
-        "type": "varint64",
+        "type": "varint",
         "flags": {
           "ascend": 1,
           "descend": 2,

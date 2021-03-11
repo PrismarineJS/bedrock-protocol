@@ -1,9 +1,9 @@
 # Created from MiNET docs
 string: ["pstring",{"countType":"varint"}]
 ByteArray: ["buffer",{"countType":"varint"}]
+SignedByteArray: ["buffer",{"countType":"zigzag32"}]
 LittleString: ["pstring",{"countType":"li32"}]
 varint32: varint
-varint64: varint
 bool: native
 zigzag32: native
 zigzag64: native
@@ -166,6 +166,7 @@ packet_text:
    _: type?
       if chat or whisper or announcement:
          source_name: string
+         message: string
       if raw or tip or system or json_whisper or json:
          message: string
       if translation or popup or jukebox_popup:
@@ -718,7 +719,7 @@ packet_mob_equipment:
    item: Item
    slot: u8
    selected_slot: u8
-   windows_id: u8
+   windows_id: WindowID
 
 packet_mob_armor_equipment:
    !id: 0x20
@@ -865,46 +866,94 @@ packet_respawn:
    state: u8
    runtime_entity_id: varint
 
+# ContainerOpen is sent by the server to open a container client-side. This container must be physically
+# present in the world, for the packet to have any effect. Unlike Java Edition, Bedrock Edition requires that
+# chests for example must be present and in range to open its inventory.
 packet_container_open:
    !id: 0x2e
    !bound: client
+   # WindowID is the ID representing the window that is being opened. It may be used later to close the
+   # container using a ContainerClose packet.
    window_id: u8
-   type: u8
+   # ContainerType is the type ID of the container that is being opened when opening the container at the
+   # position of the packet. It depends on the block/entity, and could, for example, be the window type of
+   # a chest or a hopper, but also a horse inventory.
+   window_type: WindowType
+   # ContainerPosition is the position of the container opened. The position must point to a block entity
+   # that actually has a container. If that is not the case, the window will not be opened and the packet
+   # will be ignored, if a valid ContainerEntityUniqueID has not also been provided.
    coordinates: BlockCoordinates
+   # ContainerEntityUniqueID is the unique ID of the entity container that was opened. It is only used if
+   # the ContainerType is one that points to an entity, for example a horse.
    runtime_entity_id: zigzag64
 
+# ContainerClose is sent by the server to close a container the player currently has opened, which was opened
+# using the ContainerOpen packet, or by the client to tell the server it closed a particular container, such
+# as the crafting grid.
 packet_container_close:
    !id: 0x2f
    !bound: both
+   # WindowID is the ID representing the window of the container that should be closed. It must be equal to
+   # the one sent in the ContainerOpen packet to close the designated window.
    window_id: u8
+   # ServerSide determines whether or not the container was force-closed by the server. If this value is
+   # not set correctly, the client may ignore the packet and respond with a PacketViolationWarning.
    server: bool
 
+# PlayerHotBar is sent by the server to the client. It used to be used to link hot bar slots of the player to
+# actual slots in the inventory, but as of 1.2, this was changed and hot bar slots are no longer a free
+# floating part of the inventory.
+# Since 1.2, the packet has been re-purposed, but its new functionality is not clear.
 packet_player_hotbar:
    !id: 0x30
    !bound: both
    selected_slot: varint
-   window_id: u8
+   window_id: WindowID
    select_slot: bool
 
+# InventoryContent is sent by the server to update the full content of a particular inventory. It is usually
+# sent for the main inventory of the player, but also works for other inventories that are currently opened
+# by the player.
 packet_inventory_content:
    !id: 0x31
    !bound: both
+   # WindowID is the ID that identifies one of the windows that the client currently has opened, or one of
+   # the consistent windows such as the main inventory.
    inventory_id: varint
+   # Content is the new content of the inventory. The length of this slice must be equal to the full size of
+   # the inventory window updated.
    input: ItemStacks
 
+# InventorySlot is sent by the server to update a single slot in one of the inventory windows that the client
+# currently has opened. Usually this is the main inventory, but it may also be the off hand or, for example,
+# a chest inventory.
 packet_inventory_slot:
    !id: 0x32
    !bound: both
-   inventory_id: varint
+   # WindowID is the ID of the window that the packet modifies. It must point to one of the windows that the
+   # client currently has opened.
+   window_id: varint
+   # Slot is the index of the slot that the packet modifies. The new item will be set to the slot at this
+   # index.
    slot: varint
+   # NewItem is the item to be put in the slot at Slot. It will overwrite any item that may currently
+   # be present in that slot.
    uniqueid: zigzag32
    item: Item
 
+# ContainerSetData is sent by the server to update specific data of a single container, meaning a block such
+# as a furnace or a brewing stand. This data is usually used by the client to display certain features
+# client-side.
 packet_container_set_data:
    !id: 0x33
    !bound: client
-   window_id: u8
+   # WindowID is the ID of the window that should have its data set. The player must have a window open with
+   # the window ID passed, or nothing will happen.
+   window_id: WindowID
+   # Key is the key of the property. It is one of the constants that can be found above. Multiple properties
+   # share the same key, but the functionality depends on the type of the container that the data is set to.
    property: zigzag32
+   # Value is the value of the property. Its use differs per property. 
    value: zigzag32
 
 packet_crafting_data:
@@ -915,19 +964,32 @@ packet_crafting_data:
    potion_container_recipes: PotionContainerChangeRecipes
    is_clean: bool
 
+# CraftingEvent is sent by the client when it crafts a particular item. Note that this packet may be fully
+# ignored, as the InventoryTransaction packet provides all the information required.
 packet_crafting_event:
    !id: 0x35
    !bound: both
-   window_id: u8
-   recipe_type: zigzag32
+   # WindowID is the ID representing the window that the player crafted in.
+   window_id: WindowID
+   # CraftingType is a type that indicates the way the crafting was done, for example if a crafting table
+   # was used.
+   recipe_type: zigzag32 =>
+      0: inventory
+      1: crafting
+      2: workbench
+   # RecipeUUID is the UUID of the recipe that was crafted. It points to the UUID of the recipe that was
+   # sent earlier in the CraftingData packet.
    recipe_id: uuid
-   input: ItemStacks
-   result: ItemStacks
+   # Input is a list of items that the player put into the recipe so that it could create the Output items.
+   # These items are consumed in the process.
+   input: Item[]varint
+   # Output is a list of items that were obtained as a result of crafting the recipe.
+   result: Item[]varint
+
 
 packet_gui_data_pick_item:
    !id: 0x36
    !bound: client
-
 
 # AdventureSettings is sent by the server to update game-play related features, in particular permissions to
 # access these features for the client. It includes allowing the player to fly, build and mine, and attack
@@ -1085,7 +1147,7 @@ packet_event:
    !id: 0x41
    !bound: client
    runtime_id: varint64
-   event_type: varint =>
+   event_type: zigzag32 =>
       0: achievement_awarded 
       1: entity_interact 
       2: portal_built 
@@ -1105,6 +1167,7 @@ packet_event:
       16: composter_block_used 
       17: bell_block_used 
    use_player_id: u8
+   event_data: restBuffer # Unknown data, TODO: add
 
 packet_spawn_experience_orb:
    !id: 0x42
@@ -1821,13 +1884,36 @@ packet_level_sound_event:
    is_baby_mob: bool
    is_global: bool
 
+# LevelEventGeneric is sent by the server to send a 'generic' level event to the client. This packet sends an
+# NBT serialised object and may for that reason be used for any event holding additional data.
 packet_level_event_generic:
    !id: 0x7c
    !bound: client
+   # EventID is a unique identifier that identifies the event called. The data that follows has fields in
+   # the NBT depending on what event it is.
+   event_id: varint
+   # SerialisedEventData is a network little endian serialised object of event data, with fields that vary
+   # depending on EventID.
+   # Unlike many other NBT structures, this data is not actually in a compound but just loosely floating
+   # NBT tags. To decode using the nbt package, you would need to append 0x0a00 at the start (compound id
+   # and name length) and add 0x00 at the end, to manually wrap it in a compound. Likewise, you would have
+   # to remove these bytes when encoding.
+   nbt: nbtLoop
 
+# LecternUpdate is sent by the client to update the server on which page was opened in a book on a lectern,
+# or if the book should be removed from it.
 packet_lectern_update:
    !id: 0x7d
    !bound: client
+   # Page is the page number in the book that was opened by the player on the lectern.
+   page: u8
+   # PageCount is the number of pages that the book opened in the lectern has.
+   page_count: u8
+   # Position is the position of the lectern that was updated. If no lectern is at the block position,
+   # the packet should be ignored.
+   position: vec3i
+   # DropBook specifies if the book currently set on display in the lectern should be dropped server-side.
+   drop_book: bool
 
 packet_video_stream_connect:
    !id: 0x7e
@@ -1890,11 +1976,15 @@ packet_update_block_properties:
 packet_client_cache_blob_status:
    !id: 0x87
    !bound: client
+   # The number of MISSes in this packet
+   misses: varint
+   # The number of HITs in this packet
+   haves: varint
    # A list of blob hashes that the client does not have a blob available for. The server
    # should send the blobs matching these hashes as soon as possible.
-   missing: lu64[]varint
+   missing: lu64[]$misses
    # A list of hashes that the client does have a cached blob for. Server doesn't need to send.
-   have: lu64[]varint
+   have: lu64[]$haves
 
 # ClientCacheMissResponse is part of the blob cache protocol. It is sent by the server in response to a
 # ClientCacheBlobStatus packet and contains the blob data of all blobs that the client acknowledged not to
@@ -2051,7 +2141,7 @@ packet_player_auth_input:
    delta: vec3f
 
 InputFlag: [ "bitflags", {
-   "type": "varint64",
+   "type": "varint",
    "flags": {
       "ascend": 0b1,
       "descend": 0b10,
