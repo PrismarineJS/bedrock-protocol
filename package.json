@@ -31,7 +31,7 @@
     "uuid-1345": "^0.99.7"
   },
   "devDependencies": {
-    "mocha": "^2.5.3"
+    "mocha": "^8.3.1"
   },
   "repository": {
     "type": "git",
