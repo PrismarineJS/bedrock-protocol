@@ -1,15 +1,4 @@
-const XboxLiveAuth = require('@xboxreplay/xboxlive-auth')
-const debug = require('debug')('minecraft-protocol')
-const fetch = require('node-fetch')
-const authConstants = require('./authConstants')
 const { MsAuthFlow } = require('./authFlow.js')
-
-const getFetchOptions = {
-  headers: {
-    'Content-Type': 'application/json',
-    'User-Agent': 'node-minecraft-protocol'
-  }
-}
 
 /**
  * Obtains Minecaft profile data using a Minecraft access token and starts the join sequence
@@ -71,33 +60,25 @@ async function authenticateDeviceCode (client, options) {
   }
 }
 
-function checkStatus (res) {
-  if (res.ok) { // res.status >= 200 && res.status < 300
-    return res.json()
-  } else {
-    throw Error(res.statusText)
-  }
-}
-
 module.exports = {
   authenticatePassword,
   authenticateDeviceCode
 }
 
-async function msaTest () {
-  // MsAuthFlow.resetTokenCaches()
+// async function msaTest () {
+//   // MsAuthFlow.resetTokenCaches()
 
-  await authenticateDeviceCode({
-    connect(...args) {
-      console.log('Connecting', args)
-    },
-    emit(...e) {
-      console.log('Event', e)
-    }
-  }, {})
-}
+//   await authenticateDeviceCode({
+//     connect(...args) {
+//       console.log('Connecting', args)
+//     },
+//     emit(...e) {
+//       console.log('Event', e)
+//     }
+//   }, {})
+// }
 
-// debug with node microsoftAuth.js
-if (!module.parent) {
-  msaTest()
-}
+// // debug with node microsoftAuth.js
+// if (!module.parent) {
+//   msaTest()
+// }

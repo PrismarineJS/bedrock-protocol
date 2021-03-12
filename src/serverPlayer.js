@@ -16,15 +16,14 @@ class Player extends Connection {
     this.server = server
     this.serializer = server.serializer
     this.deserializer = server.deserializer
-    // console.log('serializer/des',this.serializer,this.deserializer)
     this.connection = connection
     this.options = server.options
     Encrypt(this, server, this.options)
 
     this.startQueue()
     this.status = ClientStatus.Authenticating
-    this.inLog = (...args) => console.info('S ->', ...args)
-    this.outLog = (...args) => console.info('S <-', ...args)
+    this.inLog = (...args) => console.info('S -> C', ...args)
+    this.outLog = (...args) => console.info('C -> S', ...args)
   }
 
   getData() {
@@ -33,17 +32,17 @@ class Player extends Connection {
 
   onLogin(packet) {
     let body = packet.data
-    debug('Body', body)
+    // debug('Login body', body)
     this.emit('loggingIn', body)
 
     const clientVer = body.protocol_version
-    if (this.server.options.version) {
-      if (this.server.options.version < clientVer) {
-        this.sendDisconnectStatus(failed_client)
+    if (this.server.options.protocolVersion) {
+      if (this.server.options.protocolVersion < clientVer) {
+        this.sendDisconnectStatus('failed_client')
         return
       }
     } else if (clientVer < MIN_VERSION) {
-      this.sendDisconnectStatus(failed_client)
+      this.sendDisconnectStatus('failed_client')
       return
     }
 
@@ -55,6 +54,7 @@ class Player extends Connection {
       var { key, userData, chain } = decodeLoginJWT(authChain.chain, skinChain)
     } catch (e) {
       console.error(e)
+      // TODO: disconnect user
       throw new Error('Failed to verify user')
     }
     console.log('Verified user', 'got pub key', key, userData)
@@ -65,7 +65,6 @@ class Player extends Connection {
     this.userData = userData.extraData
     this.version = clientVer
   }
-
 
   /**
    * Disconnects a client before it has joined

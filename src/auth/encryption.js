@@ -2,11 +2,15 @@ const JWT = require('jsonwebtoken')
 const crypto = require('crypto')
 const { Ber } = require('asn1')
 const ec_pem = require('ec-pem')
+const fs = require('fs')
+const DataProvider = require('../../data/provider')
 
 const SALT = '🧂'
 const curve = 'secp384r1'
 
 function Encrypt(client, server, options) {
+  const skinGeom = fs.readFileSync(DataProvider(options.protocolVersion).getPath('skin_geom.txt'), 'utf-8')
+
   client.ecdhKeyPair = crypto.createECDH(curve)
   client.ecdhKeyPair.generateKeys()
   client.clientX509 = writeX509PublicKey(client.ecdhKeyPair.getPublicKey())
@@ -84,7 +88,6 @@ function Encrypt(client, server, options) {
   }
 
   client.on('server.client_handshake', startClientboundEncryption)
-
   client.on('client.server_handshake', startServerboundEncryption)
 
   client.createClientChain = (mojangKey) => {
@@ -118,7 +121,7 @@ function Encrypt(client, server, options) {
       SkinId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0',
       SkinData: 'AAAAAA==',
       SkinResourcePatch: 'ewogICAiZ2VvbWV0cnkiIDogewogICAgICAiYW5pbWF0ZWRfMTI4eDEyOCIgOiAiZ2VvbWV0cnkuYW5pbWF0ZWRfMTI4eDEyOF9wZXJzb25hLWUxOTk2NzJhOGMxYTg3ZTAtMCIsCiAgICAgICJhbmltYXRlZF9mYWNlIiA6ICJnZW9tZXRyeS5hbmltYXRlZF9mYWNlX3BlcnNvbmEtZTE5OTY3MmE4YzFhODdlMC0wIiwKICAgICAgImRlZmF1bHQiIDogImdlb21ldHJ5LnBlcnNvbmFfZTE5OTY3MmE4YzFhODdlMC0wIgogICB9Cn0K',
-      SkinGeometryData: require('./geom'),
+      SkinGeometryData: skinGeom,
       "SkinImageHeight": 1,
       "SkinImageWidth": 1,
       "ArmSize": "wide",

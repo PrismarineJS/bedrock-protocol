@@ -3,6 +3,7 @@ const Listener = require('jsp-raknet/listener')
 const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
 const RakClient = require('jsp-raknet/client')
 const ConnWorker = require('./rakWorker')
+const { waitFor } = require('./datatypes/util')
 try {
   var { Client, Server, PacketPriority, PacketReliability, McPingMessage } = require('raknet-native')
 } catch (e) {
@@ -12,14 +13,14 @@ try {
 class RakNativeClient extends EventEmitter {
   constructor(options) {
     super()
-    this.onConnected = () => {}
-    this.onCloseConnection = () => {}
-    this.onEncapsulated = () => {}
+    this.onConnected = () => { }
+    this.onCloseConnection = () => { }
+    this.onEncapsulated = () => { }
 
     this.raknet = new Client(options.hostname, options.port, 'minecraft')
     this.raknet.on('encapsulated', thingy => {
       // console.log('Encap',thingy)
-      const { buffer, address, guid }=thingy
+      const { buffer, address, guid } = thingy
       this.onEncapsulated(buffer, address)
     })
     this.raknet.on('connected', () => {
@@ -51,18 +52,17 @@ class RakNativeClient extends EventEmitter {
 class RakNativeServer extends EventEmitter {
   constructor(options = {}) {
     super()
-    console.log('opts',options)
-    this.onOpenConnection = () => {}
-    this.onCloseConnection = () => {}
-    this.onEncapsulated = () => {}
+    this.onOpenConnection = () => { }
+    this.onCloseConnection = () => { }
+    this.onEncapsulated = () => { }
     this.raknet = new Server(options.hostname, options.port, {
       maxConnections: options.maxConnections || 3,
-      minecraft: { },
+      minecraft: {},
       message: new McPingMessage().toBuffer()
     })
-    
+
     this.raknet.on('openConnection', (client) => {
-      client.sendReliable = function(buffer, immediate) {
+      client.sendReliable = function (buffer, immediate) {
         const priority = immediate ? PacketPriority.IMMEDIATE_PRIORITY : PacketPriority.MEDIUM_PRIORITY
         return this.send(buffer, priority, PacketReliability.RELIABLE_ORDERED, 0)
       }
@@ -70,12 +70,13 @@ class RakNativeServer extends EventEmitter {
     })
 
     this.raknet.on('closeConnection', (client) => {
-      console.log('!!! Client CLOSED CONNECTION!')
+      console.warn('! Client closed connection')
+      // TODO: need to handle this properly..
       this.onCloseConnection(client)
     })
 
     this.raknet.on('encapsulated', (thingy) => {
-      const { buffer, address, guid }=thingy
+      const { buffer, address, guid } = thingy
       // console.log('ENCAP',thingy)
       this.onEncapsulated(buffer, address)
     })
@@ -89,8 +90,8 @@ class RakNativeServer extends EventEmitter {
 class RakJsClient extends EventEmitter {
   constructor(options = {}) {
     super()
-    this.onConnected = () => {}
-    this.onEncapsulated = () => {}
+    this.onConnected = () => { }
+    this.onEncapsulated = () => { }
     if (options.useWorkers) {
       this.connect = this.workerConnect
       this.sendReliable = this.workerSendReliable
@@ -145,9 +146,9 @@ class RakJsServer extends EventEmitter {
   constructor(options = {}) {
     super()
     this.options = options
-    this.onOpenConnection = () => {}
-    this.onCloseConnection = () => {}
-    this.onEncapsulated = () => {}
+    this.onOpenConnection = () => { }
+    this.onCloseConnection = () => { }
+    this.onEncapsulated = () => { }
 
     if (options.useWorkers) {
       throw Error('nyi')
@@ -159,13 +160,13 @@ class RakJsServer extends EventEmitter {
   async plainListen() {
     this.raknet = new Listener()
     await this.raknet.listen(this.options.hostname, this.options.port)
-    this.raknet.on('openConnection',  (conn) => {
-      conn.sendReliable = function(buffer, immediate) {
+    this.raknet.on('openConnection', (conn) => {
+      conn.sendReliable = function (buffer, immediate) {
         const sendPacket = new EncapsulatedPacket()
         sendPacket.reliability = Reliability.ReliableOrdered
         sendPacket.buffer = buffer
         this.connection.addEncapsulatedToQueue(sendPacket)
-        if (immediate) this.raknet.sendQueue()        
+        if (immediate) this.raknet.sendQueue()
       }
       this.onOpenConnection(conn)
     })
@@ -174,7 +175,7 @@ class RakJsServer extends EventEmitter {
   }
 }
 
-module.exports = { 
-  RakClient: Client ? RakNativeClient : RakJsClient, 
+module.exports = {
+  RakClient: Client ? RakNativeClient : RakJsClient,
   RakServer: Server ? RakNativeServer : RakJsServer
 }

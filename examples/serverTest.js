@@ -1,14 +1,23 @@
 process.env.DEBUG = 'minecraft-protocol raknet'
 const { Server } = require('../src/server')
-const CreativeItems = require('../data/creativeitems.json')
+// const CreativeItems = require('../data/creativeitems.json')
 const NBT = require('prismarine-nbt')
 const fs = require('fs')
+const DataProvider = require('../data/provider')
 
 
 let server = new Server({
 
 })
 server.create('0.0.0.0', 19132)
+
+function getPath(packetPath) {
+  return DataProvider(server.options.protocolVersion).getPath(packetPath)
+}
+
+function get(packetPath) {
+  return require(getPath('sample/' + packetPath))
+}
 
 let ran = false
 
@@ -50,35 +59,35 @@ server.on('connect', ({ client }) => {
         client.queue('inventory_slot', {"inventory_id":120,"slot":i,"uniqueid":0,"item":{"network_id":0}})
       }
 
-      client.queue('inventory_transaction', require('../src/packets/inventory_transaction.json'))
-      client.queue('player_list', require('../src/packets/player_list.json'))
-      client.queue('start_game', require('../src/packets/start_game.json'))
+      client.queue('inventory_transaction', get('packets/inventory_transaction.json'))
+      client.queue('player_list', get('packets/player_list.json'))
+      client.queue('start_game', get('packets/start_game.json'))
       client.queue('item_component', {"entries":[]})
-      client.queue('set_spawn_position', require('../src/packets/set_spawn_position.json'))
+      client.queue('set_spawn_position', get('packets/set_spawn_position.json'))
       client.queue('set_time', { time: 5433771 })
       client.queue('set_difficulty', { difficulty: 1 })
       client.queue('set_commands_enabled', { enabled: true })
-      client.queue('adventure_settings', require('../src/packets/adventure_settings.json'))
+      client.queue('adventure_settings', get('packets/adventure_settings.json'))
       
-      client.queue('biome_definition_list', require('../src/packets/biome_definition_list.json'))
-      client.queue('available_entity_identifiers', require('../src/packets/available_entity_identifiers.json'))
+      client.queue('biome_definition_list', get('packets/biome_definition_list.json'))
+      client.queue('available_entity_identifiers', get('packets/available_entity_identifiers.json'))
 
-      client.queue('update_attributes', require('../src/packets/update_attributes.json'))
-      client.queue('creative_content', require('../src/packets/creative_content.json'))
-      client.queue('inventory_content', require('../src/packets/inventory_content.json'))
+      client.queue('update_attributes', get('packets/update_attributes.json'))
+      client.queue('creative_content', get('packets/creative_content.json'))
+      client.queue('inventory_content', get('packets/inventory_content.json'))
       client.queue('player_hotbar', {"selected_slot":3,"window_id":0,"select_slot":true})
 
-      client.queue('crafting_data', require('../src/packets/crafting_data.json'))
-      client.queue('available_commands', require('../src/packets/available_commands.json'))
+      client.queue('crafting_data', get('packets/crafting_data.json'))
+      client.queue('available_commands', get('packets/available_commands.json'))
       client.queue('chunk_radius_update', {"chunk_radius":5})
 
-      client.queue('set_entity_data', require('../src/packets/set_entity_data.json'))
+      client.queue('set_entity_data', get('packets/set_entity_data.json'))
 
-      client.queue('game_rules_changed', require('../src/packets/game_rules_changed.json'))
+      client.queue('game_rules_changed', get('packets/game_rules_changed.json'))
       client.queue('respawn', {"x":646.9405517578125,"y":65.62001037597656,"z":77.86255645751953,"state":0,"runtime_entity_id":0})
 
-      for (const file of fs.readdirSync('../src/chunks')) {
-        const buffer = Buffer.from(fs.readFileSync('../src/chunks/' + file, 'utf8'), 'hex')
+      for (const file of fs.readdirSync(`../data/${server.options.version}/sample/chunks`)) {
+        const buffer = Buffer.from(fs.readFileSync(`../data/${server.options.version}/sample/chunks/` + file, 'utf8'), 'hex')
         // console.log('Sending chunk', chunk)
         client.sendBuffer(buffer)
       }
