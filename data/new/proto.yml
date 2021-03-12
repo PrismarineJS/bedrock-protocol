@@ -1,4 +1,9 @@
-# Created from MiNET docs
+# Created from MiNET and gophertunnel docs
+# The version below is the latest version this protocol schema was updated for.
+# The output protocol.json will be in the folder for the version
+!version: 1.16.201
+
+# Some ProtoDef aliases
 string: ["pstring",{"countType":"varint"}]
 ByteArray: ["buffer",{"countType":"varint"}]
 SignedByteArray: ["buffer",{"countType":"zigzag32"}]
@@ -12,8 +17,10 @@ byterot: native
 MapInfo: native
 nbt: native
 
+# load the packet map file
 !import: packet_map.yml
 
+#todo: docs
 !StartDocs: Packets
 
 # # Login Sequence

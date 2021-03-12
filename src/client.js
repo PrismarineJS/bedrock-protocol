@@ -15,11 +15,11 @@ class Client extends Connection {
   constructor(options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
-    this.serializer = createSerializer()
-    this.deserializer = createDeserializer()
     this.validateOptions()
+    this.serializer = createSerializer(this.options.version)
+    this.deserializer = createDeserializer(this.options.version)
 
-    Encrypt(this, null, options)
+    Encrypt(this, null, this.options)
 
     if (options.password) {
       auth.authenticatePassword(this, options)
@@ -35,8 +35,14 @@ class Client extends Connection {
 
   validateOptions() {
     if (!this.options.hostname || this.options.port == null) throw Error('Invalid hostname/port')
-    if (this.options.version < Options.MIN_VERSION) {
-      throw new Error(`Unsupported protocol version < ${Options.MIN_VERSION} : ${this.options.version}`)
+
+    if (!Options.Versions[this.options.version]) {
+      console.warn('Supported versions: ', Options.Versions)
+      throw Error(`Unsupported version ${this.options.version}`)
+    }
+    this.options.protocolVersion = Options.Versions[this.options.version]
+    if (this.options.protocolVersion < Options.MIN_VERSION) {
+      throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
     }
   }
 
@@ -70,7 +76,7 @@ class Client extends Connection {
     debug('Auth chain', chain)
 
     this.write('login', {
-      protocol_version: this.options.version,
+      protocol_version: this.options.protocolVersion,
       payload_size: bodyLength,
       chain: encodedChain,
       client_data: this.clientUserChain
@@ -121,9 +127,10 @@ class Client extends Connection {
       // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
       // Packet dumping
       try {
-        if (!fs.existsSync(`./packets/${pakData.name}.json`)) {
-          fs.writeFileSync(`./packets/${pakData.name}.json`, serialize(pakData.params, 2))
-          fs.writeFileSync(`./packets/${pakData.name}.txt`, packet.toString('hex'))
+        const root = __dirname + `../data/${this.options.version}/sample/`
+        if (!fs.existsSync(root + `packets/${pakData.name}.json`)) {
+          fs.writeFileSync(root + `packets/${pakData.name}.json`, serialize(pakData.params, 2))
+          fs.writeFileSync(root + `packets/${pakData.name}.txt`, packet.toString('hex'))
         }
       } catch { }
     }

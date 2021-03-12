@@ -1,20 +1,20 @@
-const { PassThrough, Transform } = require('readable-stream')
+const { Transform } = require('readable-stream')
 const crypto = require('crypto')
 const aesjs = require('aes-js')
 const Zlib = require('zlib')
 
-const CIPHER = 'aes-256-cfb8'
+const CIPHER_ALG = 'aes-256-cfb8'
 
 function createCipher(secret, initialValue) {
-  if (crypto.getCiphers().includes(CIPHER)) {
-    return crypto.createCipheriv(CIPHER, secret, initialValue)
+  if (crypto.getCiphers().includes(CIPHER_ALG)) {
+    return crypto.createCipheriv(CIPHER_ALG, secret, initialValue)
   }
   return new Cipher(secret, initialValue)
 }
 
 function createDecipher(secret, initialValue) {
-  if (crypto.getCiphers().includes(CIPHER)) {
-    return crypto.createDecipheriv(CIPHER, secret, initialValue)
+  if (crypto.getCiphers().includes(CIPHER_ALG)) {
+    return crypto.createDecipheriv(CIPHER_ALG, secret, initialValue)
   }
   return new Decipher(secret, initialValue)
 }
@@ -54,14 +54,11 @@ class Decipher extends Transform {
 function computeCheckSum(packetPlaintext, sendCounter, secretKeyBytes) {
   let digest = crypto.createHash('sha256');
   let counter = Buffer.alloc(8)
-  // writeLI64(sendCounter, counter, 0);
   counter.writeBigInt64LE(sendCounter, 0)
-  // console.log('Send counter', counter)
   digest.update(counter);
   digest.update(packetPlaintext);
   digest.update(secretKeyBytes);
   let hash = digest.digest();
-  // console.log('Hash', hash.toString('hex'))
   return hash.slice(0, 8);
 }
 
@@ -74,21 +71,14 @@ function createEncryptor(client, iv) {
 
   function process(chunk) {
     const buffer =  Zlib.deflateRawSync(chunk, { level: 7 })
-    // client.outLog('🟡 Compressed', buffer, client.sendCounter)
     const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
     client.sendCounter++
-    // client.outLog('writing to cipher...', packet, client.secretKeyBytes, iv)
     client.cipher.write(packet)
   }
 
-  // const stream = new PassThrough()
-
   client.cipher.on('data', client.onEncryptedPacket)
 
-
   return (blob) => {
-    // client.outLog(client.options ? 'C':'S', '🟡 Encrypting', client.sendCounter, blob)
-    // stream.write(blob)
     process(blob)
   }
 }
@@ -99,6 +89,8 @@ function createDecryptor(client, iv) {
   client.receiveCounter = client.receiveCounter || 0n
 
   function verify(chunk) {
+    // TODO: remove the extra logic here, probably fixed with new raknet impl
+
     // console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
     // client.outLog('🔵 Inflating', chunk)
     // First try to zlib decompress, then see how much bytes get read
@@ -139,8 +131,6 @@ function createDecryptor(client, iv) {
   client.decipher.on('data', verify)
 
   return (blob) => {
-    // client.inLog(client.options ? 'C':'S', ' 🔵 Decrypting', client.receiveCounter, blob)
-    // client.inLog('Using shared key', client.secretKeyBytes, iv)
     client.decipher.write(blob)
   }
 }

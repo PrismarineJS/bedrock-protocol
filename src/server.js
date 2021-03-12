@@ -9,18 +9,23 @@ class Server extends EventEmitter {
   constructor(options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
-    this.serializer = createSerializer()
-    this.deserializer = createDeserializer()
+    this.validateOptions()
+    this.serializer = createSerializer(this.options.version)
+    this.deserializer = createDeserializer(this.options.version)
     this.clients = {}
     this.clientCount = 0
-    this.validateOptions()
-    this.inLog = (...args) => console.debug('S', ...args)
-    this.outLog = (...args) => console.debug('S', ...args)
+    this.inLog = (...args) => console.debug('C -> S', ...args)
+    this.outLog = (...args) => console.debug('S -> C', ...args)
   }
 
   validateOptions() {
-    if (this.options.version < Options.MIN_VERSION) {
-      throw new Error(`Unsupported protocol version < ${Options.MIN_VERSION} : ${this.options.version}`)
+    if (!Options.Versions[this.options.version]) {
+      console.warn('Supported versions: ', Options.Versions)
+      throw Error(`Unsupported version ${this.options.version}`)
+    }
+    this.options.protocolVersion = Options.Versions[this.options.version]
+    if (this.options.protocolVersion < Options.MIN_VERSION) {
+      throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
     }
   }
 

@@ -8,11 +8,14 @@
 const fs = require('fs')
 const { ProtoDefCompiler } = require('protodef').Compiler
 
+// Parse the YML files and turn to JSON
 function genProtoSchema() {
     const { parse, compile } = require('protodef-yaml/compiler')
+    let version
 
     // Create the packet_map.yml from proto.yml
     const parsed = parse('./proto.yml')
+    version = parsed['!version']
     const packets = []
     for (const key in parsed) {
         if (key.startsWith('%container')) {
@@ -30,31 +33,39 @@ function genProtoSchema() {
         l1 += `      0x${id.toString(16).padStart(2, '0')}: ${name}\n`
         l2 += `      if ${name}: ${fname}\n`
     }
-    const t = `!import: types.yaml\nmcpe_packet:\n   name: varint =>\n${l1}\n   params: name ?\n${l2}`
+    // TODO: skip creating packet_map.yml and just generate the ProtoDef map JSON directly
+    const t = `#Auto-generated from proto.yml, do not modify\n!import: types.yaml\nmcpe_packet:\n   name: varint =>\n${l1}\n   params: name ?\n${l2}`
     fs.writeFileSync('./packet_map.yml', t)
 
     compile('./proto.yml', 'protocol.json')
+    return version
 }
 
-genProtoSchema()
-
-fs.writeFileSync('../newproto.json', JSON.stringify({ types: require('./protocol.json') }, null, 2))
-fs.unlinkSync('./protocol.json') //remove temp file
-
-function createProtocol() {
+// Compile the ProtoDef JSON into JS
+function createProtocol(version) {
     const compiler = new ProtoDefCompiler()
-    const protocol = require('../newproto.json').types
+    const protocol = require(`../${version}/protocol.json`).types
     compiler.addTypes(require('../../src/datatypes/compiler-minecraft'))
     compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
     compiler.addTypesToCompile(protocol)
 
-    fs.writeFileSync('../read.js', 'module.exports = ' + compiler.readCompiler.generate())
-    fs.writeFileSync('../write.js', 'module.exports = ' + compiler.writeCompiler.generate())
-    fs.writeFileSync('../size.js', 'module.exports = ' + compiler.sizeOfCompiler.generate())
+    fs.writeFileSync(`../${version}/read.js`, 'module.exports = ' + compiler.readCompiler.generate())
+    fs.writeFileSync(`../${version}/write.js`, 'module.exports = ' + compiler.writeCompiler.generate())
+    fs.writeFileSync(`../${version}/size.js`, 'module.exports = ' + compiler.sizeOfCompiler.generate())
 
     const compiledProto = compiler.compileProtoDefSync()
     return compiledProto
 }
 
-console.log('Generating JS...')
-createProtocol()
+function main() {
+    const version = genProtoSchema()
+
+    fs.writeFileSync(`../${version}/protocol.json`, JSON.stringify({ types: require('./protocol.json') }, null, 2))
+    fs.unlinkSync('./protocol.json') //remove temp file
+    fs.unlinkSync('./packet_map.yml') //remove temp file
+    
+    console.log('Generating JS...')
+    createProtocol(version)
+}
+
+main()

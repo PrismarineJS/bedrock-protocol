@@ -3,13 +3,14 @@ const crypto = require('crypto')
 const { Ber } = require('asn1')
 const ec_pem = require('ec-pem')
 const fs = require('fs')
+const DataProvider = require('../../data/provider')
 
 const SALT = '🧂'
 const curve = 'secp384r1'
 
-const skinGeom = fs.readFileSync('../data/skin_geom.txt', 'utf-8')
-
 function Encrypt(client, server, options) {
+  const skinGeom = fs.readFileSync(DataProvider(options.protocolVersion).getPath('skin_geom.txt'), 'utf-8')
+
   client.ecdhKeyPair = crypto.createECDH(curve)
   client.ecdhKeyPair.generateKeys()
   client.clientX509 = writeX509PublicKey(client.ecdhKeyPair.getPublicKey())

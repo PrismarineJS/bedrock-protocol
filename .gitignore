@@ -2,7 +2,11 @@ node_modules/
 npm-debug.log
 package-lock.json
 __*
-data/*.js
 src/**/*.json
-src/**/*.txt
-dist/
+# Runtime generated data
+data/*/sample
+data/**/read.js
+data/**/write.js
+data/**/size.js
+samples/*.txt
+samples/*.json
