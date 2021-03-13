@@ -1,16 +1,10 @@
-const { Connection } = require('./connection')
+const { ClientStatus, Connection } = require('./connection')
 const fs = require('fs')
 const Options = require('./options')
 
 const { Encrypt } = require('./auth/encryption')
 const Login = require('./auth/login')
 const LoginVerify = require('./auth/loginVerify')
-
-const ClientStatus = {
-  Authenticating: 0,
-  Initializing: 1,
-  Initialized: 2
-}
 
 class Player extends Connection {
   constructor (server, connection) {

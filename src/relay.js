@@ -106,6 +106,7 @@ class RelayPlayer extends Player {
       }
       this.flushUpQueue() // Send queued packets
       this.downInLog('Recv packet', packet)
+      // TODO: If we fail to parse a packet, proxy it raw and log an error
       const des = this.server.deserializer.parsePacketBuffer(packet)
 
       if (debugging) { // some packet encode/decode testing stuff
@@ -150,7 +151,8 @@ class Relay extends Server {
     const client = new Client({
       hostname: this.options.destination.hostname,
       port: this.options.destination.port,
-      encrypt: this.options.encrypt
+      encrypt: this.options.encrypt,
+      autoInitPlayer: false
     })
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog

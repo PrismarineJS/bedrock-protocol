@@ -1048,23 +1048,24 @@
         }
       ]
     ],
+    "ItemStack": [
+      "container",
+      [
+        {
+          "name": "runtime_id",
+          "type": "zigzag32"
+        },
+        {
+          "name": "item",
+          "type": "Item"
+        }
+      ]
+    ],
     "ItemStacks": [
       "array",
       {
         "countType": "varint",
-        "type": [
-          "container",
-          [
-            {
-              "name": "runtime_id",
-              "type": "zigzag32"
-            },
-            {
-              "name": "item",
-              "type": "Item"
-            }
-          ]
-        ]
+        "type": "ItemStack"
       }
     ],
     "RecipeIngredient": [
@@ -4601,12 +4602,8 @@
           "type": "varint"
         },
         {
-          "name": "uniqueid",
-          "type": "zigzag32"
-        },
-        {
           "name": "item",
-          "type": "Item"
+          "type": "ItemStack"
         }
       ]
     ],

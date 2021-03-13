@@ -7,7 +7,16 @@ const debug = require('debug')('minecraft-protocol')
 
 const SKIP_BATCH = ['level_chunk', 'client_cache_blob_status', 'client_cache_miss_response']
 
+const ClientStatus = {
+  Disconnected: 0,
+  Authenticating: 1, // Handshaking
+  Initializing: 2, // Authed, need to spawn
+  Initialized: 3 // play_status spawn sent by server, client responded with SetPlayerInit packet
+}
+
 class Connection extends EventEmitter {
+  state = ClientStatus.Disconnected
+
   versionLessThan (version) {
     if (typeof version === 'string') {
       return Versions[version] < this.options.version
@@ -112,6 +121,7 @@ class Connection extends EventEmitter {
 
   // TODO: Rename this to sendEncapsulated
   sendMCPE (buffer, immediate) {
+    if (this.connection.connected === false) return
     this.connection.sendReliable(buffer, immediate)
   }
 
@@ -151,4 +161,4 @@ class Connection extends EventEmitter {
   }
 }
 
-module.exports = { Connection }
+module.exports = { ClientStatus, Connection }
