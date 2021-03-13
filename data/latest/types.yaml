@@ -408,9 +408,17 @@ Transaction:
          # mainly for purposes such as spawning eating particles at that position.
          head_pos: vec3f
 
-ItemStacks: []varint
+# An "ItemStack" here represents an Item instance. You can think about it like a pointer
+# to an item class. The data for the class gets updated with the data in the `item` field
+ItemStack:
+   # StackNetworkID is the network ID of the item stack. If the stack is empty, 0 is always written for this
+   # field. If not, the field should be set to 1 if the server authoritative inventories are disabled in the
+   # StartGame packet, or to a unique stack ID if it is enabled.
    runtime_id: zigzag32
+   # Stack is the actual item stack of the item instance.
    item: Item
+
+ItemStacks: ItemStack[]varint
 
 RecipeIngredient:
    network_id: zigzag32

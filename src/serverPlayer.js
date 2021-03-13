@@ -1,9 +1,10 @@
-const { Encrypt } = require('./auth/encryption')
-const { decodeLoginJWT } = require('./auth/chains')
 const { Connection } = require('./connection')
 const fs = require('fs')
-// const debug = require('debug')('minecraft-protocol')
-const { MIN_VERSION } = require('./options')
+const Options = require('./options')
+
+const { Encrypt } = require('./auth/encryption')
+const Login = require('./auth/login')
+const LoginVerify = require('./auth/loginVerify')
 
 const ClientStatus = {
   Authenticating: 0,
@@ -19,7 +20,10 @@ class Player extends Connection {
     this.deserializer = server.deserializer
     this.connection = connection
     this.options = server.options
-    Encrypt(this, server, this.options)
+
+    Encrypt(this, server, server.options)
+    Login(this, server, server.options)
+    LoginVerify(this, server, server.options)
 
     this.startQueue()
     this.status = ClientStatus.Authenticating
@@ -42,7 +46,7 @@ class Player extends Connection {
         this.sendDisconnectStatus('failed_client')
         return
       }
-    } else if (clientVer < MIN_VERSION) {
+    } else if (clientVer < Options.MIN_VERSION) {
       this.sendDisconnectStatus('failed_client')
       return
     }
@@ -52,7 +56,7 @@ class Player extends Connection {
     const skinChain = body.params.client_data
 
     try {
-      var { key, userData, chain } = decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
+      var { key, userData, chain } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
     } catch (e) {
       console.error(e)
       // TODO: disconnect user

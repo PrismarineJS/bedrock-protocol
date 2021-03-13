@@ -44,7 +44,7 @@ class Server extends EventEmitter {
   }
 
   onEncapsulated = (buffer, address) => {
-    this.inLog('encapsulated', address, buffer)
+    // this.inLog('encapsulated', address, buffer)
     const client = this.clients[address]
     if (!client) {
       throw new Error(`packet from unknown inet addr: ${address}`)

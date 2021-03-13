@@ -945,8 +945,7 @@ packet_inventory_slot:
    slot: varint
    # NewItem is the item to be put in the slot at Slot. It will overwrite any item that may currently
    # be present in that slot.
-   uniqueid: zigzag32
-   item: Item
+   item: ItemStack
 
 # ContainerSetData is sent by the server to update specific data of a single container, meaning a block such
 # as a furnace or a brewing stand. This data is usually used by the client to display certain features
@@ -1325,97 +1324,6 @@ packet_available_commands:
                43: raw_text
                46: json
                53: command
-               # 15: unknown15
-               # 16: unknown16
-               # 125: unknown125
-               # 126: unknown126
-               # 22: unknown22
-               # 10: unknown10
-               # 39: unknown39
-               # 18: unknown18
-               # 20: unknown20
-               # 19: unknown19
-               # 7: unknown7
-               # 23: unknown23
-               # 24: unknown24
-               # 13: unknown13
-               # 25: unknown25
-               # 40: unknown40
-               # 56: unknown56
-               # 26: unknown26
-               # 27: unknown27
-               # 28: unknown28
-               # 31: unknown31
-               # 30: unknown30
-               # 0: unknown0
-               # 32: unknown32
-               # 49: unknown49
-               # 12: unknown12
-               # 35: unknown35
-               # 36: unknown36
-               # 38: unknown38
-               # 44: unknown44
-               # 47: unknown47
-               # 45: unknown45
-               # 48: unknown48
-               # 55: unknown55
-               # 54: unknown54
-               # 50: unknown50
-               # 51: unknown51
-               # 52: unknown52
-               # 9: unknown9
-               # 123: unknown123
-               # 57: unknown57
-               # 58: unknown58
-               # 59: unknown59
-               # 60: unknown60
-               # 61: unknown61
-               # 63: unknown63
-               # 75: unknown75
-               # 64: unknown64
-               # 67: unknown67
-               # 66: unknown66
-               # 73: unknown73
-               # 72: unknown72
-               # 74: unknown74
-               # 62: unknown62
-               # 68: unknown68
-               # 69: unknown69
-               # 65: unknown65
-               # 70: unknown70
-               # 71: unknown71
-               # 76: unknown76
-               # 77: unknown77
-               # 79: unknown79
-               # 78: unknown78
-               # 80: unknown80
-               # 81: unknown81
-               # 82: unknown82
-               # 83: unknown83
-               # 84: unknown84
-               # 87: unknown87
-               # 88: unknown88
-               # 92: unknown92
-               # 89: unknown89
-               # 90: unknown90
-               # 91: unknown91
-               # 93: unknown93
-               # 95: unknown95
-               # 94: unknown94
-               # 98: unknown98
-               # 96: unknown96
-               # 97: unknown97
-               # 99: unknown99
-               # 100: unknown100
-               # 101: unknown101
-               # 102: unknown102
-               # 103: unknown103
-               # 104: unknown104
-               # 105: unknown105
-               # 106: unknown106
-               # 107: unknown107
-               # 108: unknown108
-               # 124: unknown124
             # In MC, this + prior field are combined to one 32bit bitfield
             enum_type: lu16 =>
                0x10: valid
