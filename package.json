@@ -9,6 +9,7 @@
     "test": "mocha",
     "pretest": "npm run lint",
     "lint": "standard",
+    "vanillaServer": "node tools/startVanillaServer.js",
     "fix": "standard --fix"
   },
   "keywords": [

@@ -19,10 +19,10 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function waitFor (cb, withTimeout) {
+function waitFor (cb, withTimeout, onTimeout) {
   return Promise.race([
     new Promise((resolve) => cb(resolve)),
-    sleep(withTimeout)
+    sleep(withTimeout).then(onTimeout)
   ])
 }
 

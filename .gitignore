@@ -10,3 +10,4 @@ data/**/write.js
 data/**/size.js
 samples/*.txt
 samples/*.json
+tools/bds*
