@@ -1,3 +1,4 @@
+/* eslint-disable */
 const UUID = require('uuid-1345')
 const minecraft = require('./minecraft')
 const { Read, Write, SizeOf } = require('./varlong')
@@ -78,19 +79,6 @@ SizeOf.nbt = ['native', minecraft.nbt[2]]
 /**
  * Bits
  */
-// nvm,
-// Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
-// return compiler.wrapCode(`
-//   const { value, size } = ${compiler.callType('buffer, offset', type)}
-//   const val = {}
-//   for (let i = 0; i < size; i++) {
-//     const hi = (value >> i) & 1
-//     if ()
-//     const v = value & 
-//     if (flags[i]) 
-//   }
-// `
-// }]
 
 Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
   return compiler.wrapCode(`
@@ -103,7 +91,6 @@ Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
     return { value, size }
   `.trim())
 }]
-
 
 Write.bitflags = ['parametrizable', (compiler, { type, flags }) => {
   return compiler.wrapCode(`
@@ -155,11 +142,11 @@ SizeOf.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   })
 }]
 
-function js(fn) {
+function js (fn) {
   return fn.toString().split('\n').slice(1, -1).join('\n').trim()
 }
 
-function str(fn) {
+function str (fn) {
   return fn.toString() + ')();(()=>{}'
 }
 

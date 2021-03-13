@@ -12,7 +12,7 @@ const debugging = false
 
 class Client extends Connection {
   /** @param {{ version: number, hostname: string, port: number }} options */
-  constructor(options) {
+  constructor (options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
@@ -33,7 +33,7 @@ class Client extends Connection {
     this.outLog = (...args) => console.info('C <-', ...args)
   }
 
-  validateOptions() {
+  validateOptions () {
     if (!this.options.hostname || this.options.port == null) throw Error('Invalid hostname/port')
 
     if (!Options.Versions[this.options.version]) {
@@ -61,7 +61,7 @@ class Client extends Connection {
     this.connection.connect()
   }
 
-  sendLogin() {
+  sendLogin () {
     this.createClientChain()
 
     const chain = [
@@ -84,23 +84,22 @@ class Client extends Connection {
     this.emit('loggingIn')
   }
 
-  onDisconnectRequest(packet) {
+  onDisconnectRequest (packet) {
     // We're talking over UDP, so there is no connection to close, instead
     // we stop communicating with the server
     console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
     process.exit(1) // TODO: handle
   }
 
-  close() {
+  close () {
     console.warn('Close not implemented!!')
   }
 
-  tryRencode(name, params, actual) {
+  tryRencode (name, params, actual) {
     const packet = this.serializer.createPacketBuffer({ name, params })
 
-    console.assert(packet.toString('hex') == actual.toString('hex'))
+    console.assert(packet.toString('hex') === actual.toString('hex'))
     if (packet.toString('hex') !== actual.toString('hex')) {
-
       const ours = packet.toString('hex').match(/.{1,16}/g).join('\n')
       const theirs = actual.toString('hex').match(/.{1,16}/g).join('\n')
 
@@ -113,10 +112,10 @@ class Client extends Connection {
     }
   }
 
-  readPacket(packet) {
+  readPacket (packet) {
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
-    this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100)*/)
+    this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100) */)
 
     if (debugging) {
       // Packet verifying (decode + re-encode + match test)

@@ -8,7 +8,7 @@ const authConstants = require('./authConstants')
 
 // Manages Microsoft account tokens
 class MsaTokenManager {
-  constructor(msalConfig, scopes, cacheLocation) {
+  constructor (msalConfig, scopes, cacheLocation) {
     this.msaClientId = msalConfig.auth.clientId
     this.scopes = scopes
     this.cacheLocation = cacheLocation || path.join(__dirname, './msa-cache.json')
@@ -42,7 +42,7 @@ class MsaTokenManager {
     this.msalConfig = msalConfig
   }
 
-  getUsers() {
+  getUsers () {
     const accounts = this.msaCache.Account
     const users = []
     if (!accounts) return users
@@ -52,7 +52,7 @@ class MsaTokenManager {
     return users
   }
 
-  getAccessToken() {
+  getAccessToken () {
     const tokens = this.msaCache.AccessToken
     if (!tokens) return
     const account = Object.values(tokens).filter(t => t.client_id === this.msaClientId)[0]
@@ -65,7 +65,7 @@ class MsaTokenManager {
     return { valid, until: until, token: account.secret }
   }
 
-  getRefreshToken() {
+  getRefreshToken () {
     const tokens = this.msaCache.RefreshToken
     if (!tokens) return
     const account = Object.values(tokens).filter(t => t.client_id === this.msaClientId)[0]
@@ -76,7 +76,7 @@ class MsaTokenManager {
     return { token: account.secret }
   }
 
-  async refreshTokens() {
+  async refreshTokens () {
     const rtoken = this.getRefreshToken()
     if (!rtoken) {
       throw new Error('Cannot refresh without refresh token')
@@ -97,7 +97,7 @@ class MsaTokenManager {
     })
   }
 
-  async verifyTokens() {
+  async verifyTokens () {
     const at = this.getAccessToken()
     const rt = this.getRefreshToken()
     if (!at || !rt || this.forceRefresh) {
@@ -111,13 +111,14 @@ class MsaTokenManager {
         await this.refreshTokens()
         return true
       } catch (e) {
+        console.warn('Error refreshing token', e) // TODO: looks like an error happens here
         return false
       }
     }
   }
 
   // Authenticate with device_code flow
-  async authDeviceCode(dataCallback) {
+  async authDeviceCode (dataCallback) {
     const deviceCodeRequest = {
       deviceCodeCallback: (resp) => {
         debug('[msa] device_code response: ', resp)
@@ -142,7 +143,7 @@ class MsaTokenManager {
 
 // Manages Xbox Live tokens for xboxlive.com
 class XboxTokenManager {
-  constructor(relyingParty, cacheLocation) {
+  constructor (relyingParty, cacheLocation) {
     this.relyingParty = relyingParty
     this.cacheLocation = cacheLocation || path.join(__dirname, './xbl-cache.json')
     try {
@@ -152,7 +153,7 @@ class XboxTokenManager {
     }
   }
 
-  getCachedUserToken() {
+  getCachedUserToken () {
     const token = this.cache.userToken
     if (!token) return
     const until = new Date(token.NotAfter)
@@ -162,7 +163,7 @@ class XboxTokenManager {
     return { valid, token: token.Token, data: token }
   }
 
-  getCachedXstsToken() {
+  getCachedXstsToken () {
     const token = this.cache.xstsToken
     if (!token) return
     const until = new Date(token.expiresOn)
@@ -172,17 +173,17 @@ class XboxTokenManager {
     return { valid, token: token.XSTSToken, data: token }
   }
 
-  setCachedUserToken(data) {
+  setCachedUserToken (data) {
     this.cache.userToken = data
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
-  setCachedXstsToken(data) {
+  setCachedXstsToken (data) {
     this.cache.xstsToken = data
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
-  async verifyTokens() {
+  async verifyTokens () {
     const ut = this.getCachedUserToken()
     const xt = this.getCachedXstsToken()
     if (!ut || !xt || this.forceRefresh) {
@@ -202,7 +203,7 @@ class XboxTokenManager {
     return false
   }
 
-  async getUserToken(msaAccessToken) {
+  async getUserToken (msaAccessToken) {
     debug('[xbl] obtaining xbox token with ms token', msaAccessToken)
     if (!msaAccessToken.startsWith('d=')) { msaAccessToken = 'd=' + msaAccessToken }
     const xblUserToken = await XboxLiveAuth.exchangeRpsTicketForUserToken(msaAccessToken)
@@ -211,7 +212,7 @@ class XboxTokenManager {
     return xblUserToken
   }
 
-  async getXSTSToken(xblUserToken) {
+  async getXSTSToken (xblUserToken) {
     debug('[xbl] obtaining xsts token with xbox user token', xblUserToken.Token)
     const xsts = await XboxLiveAuth.exchangeUserTokenForXSTSIdentity(
       xblUserToken.Token, { XSTSRelyingParty: this.relyingParty, raw: false }
@@ -224,7 +225,7 @@ class XboxTokenManager {
 
 // Manages Minecraft tokens for sessionserver.mojang.com
 class MinecraftTokenManager {
-  constructor(clientPublicKey, cacheLocation) {
+  constructor (clientPublicKey, cacheLocation) {
     this.clientPublicKey = clientPublicKey
     this.cacheLocation = cacheLocation || path.join(__dirname, './bed-cache.json')
     try {
@@ -234,13 +235,13 @@ class MinecraftTokenManager {
     }
   }
 
-  getCachedAccessToken() {
+  getCachedAccessToken () {
     const token = this.cache.mca
     debug('[mc] token cache', this.cache)
     if (!token) return
     console.log('TOKEN', token)
     const jwt = token.chain[0]
-    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64'))
+    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
 
     const body = JSON.parse(String(payload))
     const expires = new Date(body.exp * 1000)
@@ -249,13 +250,13 @@ class MinecraftTokenManager {
     return { valid, until: expires, chain: token.chain }
   }
 
-  setCachedAccessToken(data) {
+  setCachedAccessToken (data) {
     data.obtainedOn = Date.now()
     this.cache.mca = data
     fs.writeFileSync(this.cacheLocation, JSON.stringify(this.cache))
   }
 
-  async verifyTokens() {
+  async verifyTokens () {
     const at = this.getCachedAccessToken()
     if (!at || this.forceRefresh) {
       return false
@@ -267,13 +268,13 @@ class MinecraftTokenManager {
     return false
   }
 
-  async getAccessToken(clientPublicKey, xsts) {
+  async getAccessToken (clientPublicKey, xsts) {
     debug('[mc] authing to minecraft', clientPublicKey, xsts)
     const getFetchOptions = {
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'node-minecraft-protocol',
-        'Authorization': `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}`
+        Authorization: `XBL3.0 x=${xsts.userHash};${xsts.XSTSToken}`
       }
     }
     const MineServicesResponse = await fetch(authConstants.MinecraftAuth, {
@@ -288,7 +289,7 @@ class MinecraftTokenManager {
   }
 }
 
-function checkStatus(res) {
+function checkStatus (res) {
   if (res.ok) { // res.status >= 200 && res.status < 300
     return res.json()
   } else {

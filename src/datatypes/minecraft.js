@@ -1,139 +1,139 @@
-var nbt = require('prismarine-nbt')
+/* eslint-disable */
+const nbt = require('prismarine-nbt')
 const UUID = require('uuid-1345')
 
 const proto = nbt.protos.littleVarint
 // TODO: deal with this:
-var zigzag = require('prismarine-nbt/compiler-zigzag')
+const zigzag = require('prismarine-nbt/compiler-zigzag')
 
-function readUUID(buffer, offset) {
-  if (offset + 16 > buffer.length)
-    throw new PartialReadError();
+function readUUID (buffer, offset) {
+  if (offset + 16 > buffer.length) { throw new PartialReadError() }
   return {
     value: UUID.stringify(buffer.slice(offset, 16 + offset)),
     size: 16
-  };
+  }
 }
 
-function writeUUID(value, buffer, offset) {
-  const buf = UUID.parse(value);
-  buf.copy(buffer, offset);
-  return offset + 16;
+function writeUUID (value, buffer, offset) {
+  const buf = UUID.parse(value)
+  buf.copy(buffer, offset)
+  return offset + 16
 }
 
-function readNbt(buffer, offset) {
-  return proto.read(buffer, offset, "nbt")
+function readNbt (buffer, offset) {
+  return proto.read(buffer, offset, 'nbt')
 }
 
-function writeNbt(value, buffer, offset) {
-  return proto.write(value, buffer, offset, "nbt")
+function writeNbt (value, buffer, offset) {
+  return proto.write(value, buffer, offset, 'nbt')
 }
 
-function sizeOfNbt(value) {
-  return proto.sizeOf(value, "nbt")
+function sizeOfNbt (value) {
+  return proto.sizeOf(value, 'nbt')
 }
 
-function readEntityMetadata(buffer, offset, _ref) {
-  var type = _ref.type;
-  var endVal = _ref.endVal;
+function readEntityMetadata (buffer, offset, _ref) {
+  const type = _ref.type
+  const endVal = _ref.endVal
 
-  var cursor = offset;
-  var metadata = [];
-  var item = undefined;
+  let cursor = offset
+  const metadata = []
+  let item
   while (true) {
-    if (offset + 1 > buffer.length) throw new PartialReadError();
-    item = buffer.readUInt8(cursor);
+    if (offset + 1 > buffer.length) throw new PartialReadError()
+    item = buffer.readUInt8(cursor)
     if (item === endVal) {
       return {
         value: metadata,
         size: cursor + 1 - offset
-      };
+      }
     }
-    var results = this.read(buffer, cursor, type, {});
-    metadata.push(results.value);
-    cursor += results.size;
+    const results = this.read(buffer, cursor, type, {})
+    metadata.push(results.value)
+    cursor += results.size
   }
 }
 
-function writeEntityMetadata(value, buffer, offset, _ref2) {
-  var type = _ref2.type;
-  var endVal = _ref2.endVal;
+function writeEntityMetadata (value, buffer, offset, _ref2) {
+  const type = _ref2.type
+  const endVal = _ref2.endVal
 
-  var self = this;
+  const self = this
   value.forEach(function (item) {
-    offset = self.write(item, buffer, offset, type, {});
-  });
-  buffer.writeUInt8(endVal, offset);
-  return offset + 1;
+    offset = self.write(item, buffer, offset, type, {})
+  })
+  buffer.writeUInt8(endVal, offset)
+  return offset + 1
 }
 
-function sizeOfEntityMetadata(value, _ref3) {
-  var type = _ref3.type;
+function sizeOfEntityMetadata (value, _ref3) {
+  const type = _ref3.type
 
-  var size = 1;
-  for (var i = 0; i < value.length; ++i) {
-    size += this.sizeOf(value[i], type, {});
+  let size = 1
+  for (let i = 0; i < value.length; ++i) {
+    size += this.sizeOf(value[i], type, {})
   }
-  return size;
+  return size
 }
 
-function readIpAddress(buffer, offset) {
-  var address = buffer[offset] + '.' + buffer[offset + 1] + '.' + buffer[offset + 2] + '.' + buffer[offset + 3];
+function readIpAddress (buffer, offset) {
+  const address = buffer[offset] + '.' + buffer[offset + 1] + '.' + buffer[offset + 2] + '.' + buffer[offset + 3]
   return {
     size: 4,
     value: address
   }
 }
 
-function writeIpAddress(value, buffer, offset) {
-  var address = value.split('.');
+function writeIpAddress (value, buffer, offset) {
+  const address = value.split('.')
 
   address.forEach(function (b) {
-    buffer[offset] = parseInt(b);
-    offset++;
-  });
+    buffer[offset] = parseInt(b)
+    offset++
+  })
 
-  return offset;
+  return offset
 }
 
-function readEndOfArray(buffer, offset, typeArgs) {
-  var type = typeArgs.type;
-  var cursor = offset;
-  var elements = [];
+function readEndOfArray (buffer, offset, typeArgs) {
+  const type = typeArgs.type
+  let cursor = offset
+  const elements = []
   while (cursor < buffer.length) {
-    var results = this.read(buffer, cursor, type, {});
-    elements.push(results.value);
-    cursor += results.size;
+    const results = this.read(buffer, cursor, type, {})
+    elements.push(results.value)
+    cursor += results.size
   }
   return {
     value: elements,
     size: cursor - offset
-  };
-}
-
-function writeEndOfArray(value, buffer, offset, typeArgs) {
-  var type = typeArgs.type;
-  var self = this;
-  value.forEach(function (item) {
-    offset = self.write(item, buffer, offset, type, {});
-  });
-  return offset;
-}
-
-function sizeOfEndOfArray(value, typeArgs) {
-  var type = typeArgs.type;
-  var size = 0;
-  for (var i = 0; i < value.length; ++i) {
-    size += this.sizeOf(value[i], type, {});
   }
-  return size;
+}
+
+function writeEndOfArray (value, buffer, offset, typeArgs) {
+  const type = typeArgs.type
+  const self = this
+  value.forEach(function (item) {
+    offset = self.write(item, buffer, offset, type, {})
+  })
+  return offset
+}
+
+function sizeOfEndOfArray (value, typeArgs) {
+  const type = typeArgs.type
+  let size = 0
+  for (let i = 0; i < value.length; ++i) {
+    size += this.sizeOf(value[i], type, {})
+  }
+  return size
 }
 
 module.exports = {
-  'uuid': [readUUID, writeUUID, 16],
-  'nbt': [readNbt, writeNbt, sizeOfNbt],
-  'entityMetadataLoop': [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
-  'ipAddress': [readIpAddress, writeIpAddress, 4],
-  'endOfArray': [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],
-  'zigzag32': zigzag.zigzag32,
-  'zigzag64': zigzag.zigzag64
+  uuid: [readUUID, writeUUID, 16],
+  nbt: [readNbt, writeNbt, sizeOfNbt],
+  entityMetadataLoop: [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
+  ipAddress: [readIpAddress, writeIpAddress, 4],
+  endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],
+  zigzag32: zigzag.zigzag32,
+  zigzag64: zigzag.zigzag64
 }

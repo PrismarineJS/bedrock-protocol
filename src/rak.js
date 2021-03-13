@@ -1,26 +1,25 @@
 const { EventEmitter } = require('events')
 const Listener = require('jsp-raknet/listener')
 const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
+const Reliability = require('jsp-raknet/protocol/reliability')
 const RakClient = require('jsp-raknet/client')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
 try {
-  var { Client, Server, PacketPriority, PacketReliability, McPingMessage } = require('raknet-native')
+  var { Client, Server, PacketPriority, PacketReliability, McPingMessage } = require('raknet-native') // eslint-disable-line
 } catch (e) {
   console.debug('[raknet] native not found, using js', e)
 }
 
 class RakNativeClient extends EventEmitter {
-  constructor(options) {
+  constructor (options) {
     super()
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
 
     this.raknet = new Client(options.hostname, options.port, 'minecraft')
-    this.raknet.on('encapsulated', thingy => {
-      // console.log('Encap',thingy)
-      const { buffer, address, guid } = thingy
+    this.raknet.on('encapsulated', ({ buffer, address }) => {
       this.onEncapsulated(buffer, address)
     })
     this.raknet.on('connected', () => {
@@ -28,7 +27,7 @@ class RakNativeClient extends EventEmitter {
     })
   }
 
-  async ping() {
+  async ping () {
     this.raknet.ping()
     return waitFor((done) => {
       this.raknet.on('pong', (ret) => {
@@ -39,18 +38,18 @@ class RakNativeClient extends EventEmitter {
     }, 1000)
   }
 
-  connect() {
+  connect () {
     this.raknet.connect()
   }
 
-  sendReliable(buffer, immediate) {
+  sendReliable (buffer, immediate) {
     const priority = immediate ? PacketPriority.IMMEDIATE_PRIORITY : PacketPriority.MEDIUM_PRIORITY
     return this.raknet.send(buffer, priority, PacketReliability.RELIABLE_ORDERED, 0)
   }
 }
 
 class RakNativeServer extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
     this.onOpenConnection = () => { }
     this.onCloseConnection = () => { }
@@ -75,20 +74,19 @@ class RakNativeServer extends EventEmitter {
       this.onCloseConnection(client)
     })
 
-    this.raknet.on('encapsulated', (thingy) => {
-      const { buffer, address, guid } = thingy
+    this.raknet.on('encapsulated', ({ buffer, address }) => {
       // console.log('ENCAP',thingy)
       this.onEncapsulated(buffer, address)
     })
   }
 
-  listen() {
+  listen () {
     this.raknet.listen()
   }
 }
 
 class RakJsClient extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
     this.onConnected = () => { }
     this.onEncapsulated = () => { }
@@ -101,23 +99,25 @@ class RakJsClient extends EventEmitter {
     }
   }
 
-  workerConnect(hostname = this.options.hostname, port = this.options.port) {
+  workerConnect (hostname = this.options.hostname, port = this.options.port) {
     this.worker = ConnWorker.connect(hostname, port)
 
     this.worker.on('message', (evt) => {
       switch (evt.type) {
-        case 'connected':
+        case 'connected': {
           this.onConnected()
           break
-        case 'encapsulated':
+        }
+        case 'encapsulated': {
           const [ecapsulated, address] = evt.args
           this.onEncapsulated(ecapsulated.buffer, address.hash)
           break
+        }
       }
     })
   }
 
-  async plainConnect(hostname = this.options.hostname, port = this.options.port) {
+  async plainConnect (hostname = this.options.hostname, port = this.options.port) {
     this.raknet = new RakClient(hostname, port)
     await this.raknet.connect()
 
@@ -129,11 +129,11 @@ class RakJsClient extends EventEmitter {
     this.raknet.on('encapsulated', (encapsulated, addr) => this.onEncapsulated(encapsulated.buffer, addr.hash))
   }
 
-  workerSendReliable(buffer, immediate) {
+  workerSendReliable (buffer, immediate) {
     this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
   }
 
-  plainSendReliable(buffer, immediate) {
+  plainSendReliable (buffer, immediate) {
     const sendPacket = new EncapsulatedPacket()
     sendPacket.reliability = Reliability.ReliableOrdered
     sendPacket.buffer = buffer
@@ -143,7 +143,7 @@ class RakJsClient extends EventEmitter {
 }
 
 class RakJsServer extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
     this.options = options
     this.onOpenConnection = () => { }
@@ -157,7 +157,7 @@ class RakJsServer extends EventEmitter {
     }
   }
 
-  async plainListen() {
+  async plainListen () {
     this.raknet = new Listener()
     await this.raknet.listen(this.options.hostname, this.options.port)
     this.raknet.on('openConnection', (conn) => {

@@ -3,7 +3,7 @@ const { Worker, isMainThread, parentPort } = require('worker_threads')
 const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
 const Reliability = require('jsp-raknet/protocol/reliability')
 
-function connect(hostname, port) {
+function connect (hostname, port) {
   if (isMainThread) {
     const worker = new Worker(__filename)
     worker.postMessage({ type: 'connect', hostname, port })
@@ -11,12 +11,12 @@ function connect(hostname, port) {
   }
 }
 
-var raknet
+let raknet
 
-function main() {
+function main () {
   parentPort.on('message', (evt) => {
-    if (evt.type == 'connect') {
-      const { hostname, port } =evt
+    if (evt.type === 'connect') {
+      const { hostname, port } = evt
       raknet = new RakClient(hostname, port)
 
       raknet.connect().then(() => {
@@ -30,7 +30,7 @@ function main() {
       })
 
       raknet.once('connected', (connection) => {
-        console.log(`[worker] connected!`)
+        console.log('[worker] connected!')
         globalThis.raknetConnection = connection
         parentPort.postMessage({ type: 'connected' })
       })
@@ -45,8 +45,8 @@ function main() {
       raknet.on('raw', (buffer, inetAddr) => {
         console.log('Raw packet', buffer, inetAddr)
       })
-    } else if (evt.type == 'queueEncapsulated') {
-      console.log('SEND' , globalThis.raknetConnection, evt.packet)
+    } else if (evt.type === 'queueEncapsulated') {
+      // console.log('SEND', globalThis.raknetConnection, evt.packet)
 
       const sendPacket = new EncapsulatedPacket()
       sendPacket.reliability = Reliability.ReliableOrdered

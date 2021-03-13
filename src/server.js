@@ -6,7 +6,7 @@ const Options = require('./options')
 const debug = require('debug')('minecraft-protocol')
 
 class Server extends EventEmitter {
-  constructor(options) {
+  constructor (options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
@@ -18,7 +18,7 @@ class Server extends EventEmitter {
     this.outLog = (...args) => console.debug('S -> C', ...args)
   }
 
-  validateOptions() {
+  validateOptions () {
     if (!Options.Versions[this.options.version]) {
       console.warn('Supported versions: ', Options.Versions)
       throw Error(`Unsupported version ${this.options.version}`)
@@ -52,7 +52,7 @@ class Server extends EventEmitter {
     client.handle(buffer)
   }
 
-  async create(hostname = this.options.hostname, port = this.options.port) {
+  async create (hostname = this.options.hostname, port = this.options.port) {
     this.raknet = new RakServer({ hostname, port })
     await this.raknet.listen()
     console.debug('Listening on', hostname, port)

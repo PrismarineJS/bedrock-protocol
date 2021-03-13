@@ -1,6 +1,6 @@
 const { Relay } = require('../src/relay')
 
-function createRelay() {
+function createRelay () {
   console.log('Creating relay')
   /**
    * Example to create a non-transparent proxy (or 'Relay') connection to destination server
@@ -27,7 +27,7 @@ function createRelay() {
     /* Where to send upstream packets to */
     destination: {
       hostname: '127.0.0.1',
-      port: 19132,
+      port: 19132
       // encryption: true
     }
   })
