@@ -1,11 +1,11 @@
 const BinaryStream = require('@jsprismarine/jsbinaryutils').default
-const Zlib = require('zlib');
+const Zlib = require('zlib')
 
 const NETWORK_ID = 0xfe
 
 // This is not a real MCPE packet, it's a wrapper that contains compressed/encrypted batched packets
 class BatchPacket {
-  constructor(stream) {
+  constructor (stream) {
     // Shared
     this.payload = Buffer.alloc(0)
     this.stream = stream || new BinaryStream()
@@ -18,9 +18,9 @@ class BatchPacket {
     this.count = 0
   }
 
-  decode() {
+  decode () {
     // Read header
-    const pid = this.stream.readByte();
+    const pid = this.stream.readByte()
     if (!pid === NETWORK_ID) {
       throw new Error(`Batch ID mismatch: is ${BatchPacket.NETWORK_ID}, got ${pid}`) // this is not a BatchPacket
     }
@@ -29,14 +29,14 @@ class BatchPacket {
     try {
       this.payload = Zlib.inflateRawSync(this.stream.readRemaining(), {
         chunkSize: 1024 * 1024 * 2
-      });
+      })
     } catch (e) {
       console.error(e)
       console.debug(`[bp] Error decompressing packet ${pid}`)
     }
   }
 
-  encode() {
+  encode () {
     const buf = this.stream.getBuffer()
     console.log('Encoding payload', buf)
     const def = Zlib.deflateRawSync(buf, { level: this.compressionLevel })
@@ -45,13 +45,13 @@ class BatchPacket {
     return ret
   }
 
-  addEncodedPacket(packet) {
+  addEncodedPacket (packet) {
     this.stream.writeUnsignedVarInt(packet.byteLength)
     this.stream.append(packet)
     this.count++
   }
 
-  getPackets() {
+  getPackets () {
     const stream = new BinaryStream()
     stream.buffer = this.payload
     const packets = []
@@ -64,7 +64,7 @@ class BatchPacket {
     return packets
   }
 
-  static getPackets(stream) {
+  static getPackets (stream) {
     const packets = []
     while (!stream.feof()) {
       const length = stream.readUnsignedVarInt()

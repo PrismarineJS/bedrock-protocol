@@ -13,15 +13,16 @@ const msalConfig = {
     // the minecraft client:
     // clientId: "000000004C12AE6F",
     clientId: '389b1b32-b5d5-43b2-bddc-84ce938d6737', // token from https://github.com/microsoft/Office365APIEditor
-    authority: 'https://login.microsoftonline.com/consumers',
+    authority: 'https://login.microsoftonline.com/consumers'
   }
 }
 
-async function retry (methodFn, beforeRety, times) {
+async function retry (methodFn, beforeRetry, times) {
   while (times--) {
     if (times !== 0) {
       try { return await methodFn() } catch (e) { debug(e) }
-      await beforeRety()
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      await beforeRetry()
     } else {
       return await methodFn()
     }
@@ -111,7 +112,7 @@ class MsAuthFlow {
   async getMinecraftToken (publicKey) {
     // TODO: Fix cache, in order to do cache we also need to cache the ECDH keys so disable it
     // is this even a good idea to cache?
-    if (await this.mca.verifyTokens() && false) {
+    if (await this.mca.verifyTokens() && false) { // eslint-disable-line
       debug('[mc] Using existing tokens')
       return this.mca.getCachedAccessToken().chain
     } else {

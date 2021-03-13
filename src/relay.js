@@ -1,8 +1,7 @@
 // process.env.DEBUG = 'minecraft-protocol raknet'
-const fs = require('fs')
-const { Client } = require("./client")
-const { Server } = require("./server")
-const { Player } = require("./serverPlayer")
+const { Client } = require('./client')
+const { Server } = require('./server')
+const { Player } = require('./serverPlayer')
 const debug = require('debug')('minecraft-protocol relay')
 const { serialize } = require('./datatypes/util')
 
@@ -11,7 +10,7 @@ const { serialize } = require('./datatypes/util')
 const debugging = true // Do re-encoding tests
 
 class RelayPlayer extends Player {
-  constructor(server, conn) {
+  constructor (server, conn) {
     super(server, conn)
     this.server = server
     this.conn = conn
@@ -47,7 +46,7 @@ class RelayPlayer extends Player {
   }
 
   // Called when we get a packet from backend server (Backend -> PROXY -> Client)
-  readUpstream(packet) {
+  readUpstream (packet) {
     if (!this.startRelaying) {
       console.warn('The downstream client is not ready yet !!')
       this.downQ.push(packet)
@@ -59,7 +58,7 @@ class RelayPlayer extends Player {
     const params = des.data.params
     this.upInLog('~ Bounce B->C', name, serialize(params).slice(0, 100))
     // this.upInLog('~ ', des.buffer)
-    if (name == 'play_status' && params.status == 'login_success') return // We already sent this, this needs to be sent ASAP or client will disconnect
+    if (name === 'play_status' && params.status === 'login_success') return // We already sent this, this needs to be sent ASAP or client will disconnect
 
     if (debugging) { // some packet encode/decode testing stuff
       const rpacket = this.server.serializer.createPacketBuffer({ name, params })
@@ -76,7 +75,7 @@ class RelayPlayer extends Player {
   }
 
   // Send queued packets to the connected client
-  flushDownQueue() {
+  flushDownQueue () {
     for (const packet of this.downQ) {
       const des = this.server.deserializer.parsePacketBuffer(packet)
       this.write(des.data.name, des.data.params)
@@ -85,10 +84,10 @@ class RelayPlayer extends Player {
   }
 
   // Send queued packets to the backend upstream server from the client
-  flushUpQueue() {
-    for (var e of this.upQ) { // Send the queue
+  flushUpQueue () {
+    for (const e of this.upQ) { // Send the queue
       const des = this.server.deserializer.parsePacketBuffer(e)
-      if (des.data.name == 'client_cache_status') { // Currently broken, force off the chunk cache
+      if (des.data.name === 'client_cache_status') { // Currently broken, force off the chunk cache
         this.upstream.write('client_cache_status', { enabled: false })
       } else {
         this.upstream.write(des.data.name, des.data.params)
@@ -98,8 +97,8 @@ class RelayPlayer extends Player {
   }
 
   // Called when the server gets a packet from the downstream player (Client -> PROXY -> Backend)
-  readPacket(packet) {
-    if (this.startRelaying) { // The downstream client conn is established & we got a packet to send to upstream server 
+  readPacket (packet) {
+    if (this.startRelaying) { // The downstream client conn is established & we got a packet to send to upstream server
       if (!this.upstream) { // Upstream is still connecting/handshaking
         this.downInLog('Got downstream connected packet but upstream is not connected yet, added to q', this.upQ.length)
         this.upQ.push(packet) // Put into a queue
@@ -138,16 +137,16 @@ class RelayPlayer extends Player {
 class Relay extends Server {
   /**
    * Creates a new non-transparent proxy connection to a destination server
-   * @param {Options} options 
+   * @param {Options} options
    */
-  constructor(options) {
+  constructor (options) {
     super(options)
     this.RelayPlayer = options.relayPlayer || RelayPlayer
     this.forceSingle = true
     this.upstreams = new Map()
   }
 
-  openUpstreamConnection(ds, clientAddr) {
+  openUpstreamConnection (ds, clientAddr) {
     const client = new Client({
       hostname: this.options.destination.hostname,
       port: this.options.destination.port,
@@ -165,7 +164,7 @@ class Relay extends Server {
     this.upstreams.set(clientAddr.hash, client)
   }
 
-  closeUpstreamConnection(clientAddr) {
+  closeUpstreamConnection (clientAddr) {
     const up = this.upstreams.get(clientAddr.hash)
     if (!up) throw Error(`unable to close non-open connection ${clientAddr.hash}`)
     up.close()

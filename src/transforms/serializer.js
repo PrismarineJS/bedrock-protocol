@@ -2,9 +2,9 @@ const { ProtoDefCompiler, CompiledProtodef } = require('protodef').Compiler
 const { FullPacketParser, Serializer } = require('protodef')
 
 // Compiles the ProtoDef schema at runtime
-function createProtocol(version) {
+function createProtocol (version) {
   const protocol = require(`../../data/${version}/protocol.json`).types
-  var compiler = new ProtoDefCompiler()
+  const compiler = new ProtoDefCompiler()
   compiler.addTypesToCompile(protocol)
   compiler.addTypes(require('../datatypes/compiler-minecraft'))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
@@ -14,7 +14,7 @@ function createProtocol(version) {
 }
 
 // Loads already generated read/write/sizeof code
-function getProtocol(version) {
+function getProtocol (version) {
   const compiler = new ProtoDefCompiler()
   compiler.addTypes(require('../datatypes/compiler-minecraft'))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
@@ -32,14 +32,14 @@ function getProtocol(version) {
   )
 }
 
-function createSerializer(version) {
-  var proto = getProtocol(version)
-  return new Serializer(proto, 'mcpe_packet');
+function createSerializer (version) {
+  const proto = getProtocol(version)
+  return new Serializer(proto, 'mcpe_packet')
 }
 
-function createDeserializer(version) {
-  var proto = getProtocol(version)
-  return new FullPacketParser(proto, 'mcpe_packet');
+function createDeserializer (version) {
+  const proto = getProtocol(version)
+  return new FullPacketParser(proto, 'mcpe_packet')
 }
 
 module.exports = {

@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "cd data/new && node compile.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "npm run build",
+    "test": "mocha",
+    "pretest": "npm run lint",
+    "lint": "standard",
+    "fix": "standard --fix"
   },
   "keywords": [
     "minecraft",
@@ -19,19 +23,25 @@
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "aes-js": "^3.1.2",
     "asn1": "^0.2.4",
-    "bedrock-provider": "github:extremeheat/bedrock-provider",
+    "bedrock-provider": "^0.1.1",
     "debug": "^4.3.1",
     "ec-pem": "^0.18.0",
     "jsonwebtoken": "^8.5.1",
     "jsp-raknet": "github:extremeheat/raknet#client",
     "minecraft-folder-path": "^1.1.0",
     "prismarine-nbt": "^1.5.0",
-    "protodef": "github:extremeheat/node-protodef#compiler",
+    "protodef": "github:extremeheat/node-protodef#compiler2",
     "raknet-native": "^0.1.0",
     "uuid-1345": "^0.99.7"
   },
   "devDependencies": {
-    "mocha": "^2.5.3"
+    "@babel/eslint-parser": "^7.13.10",
+    "babel-eslint": "^10.1.0",
+    "mocha": "^2.5.3",
+    "standard": "^16.0.3"
+  },
+  "standard": {
+    "parser": "babel-eslint"
   },
   "repository": {
     "type": "git",

@@ -2,7 +2,8 @@ const { Encrypt } = require('./auth/encryption')
 const { decodeLoginJWT } = require('./auth/chains')
 const { Connection } = require('./connection')
 const fs = require('fs')
-const debug = require('debug')('minecraft-protocol')
+// const debug = require('debug')('minecraft-protocol')
+const { MIN_VERSION } = require('./options')
 
 const ClientStatus = {
   Authenticating: 0,
@@ -11,7 +12,7 @@ const ClientStatus = {
 }
 
 class Player extends Connection {
-  constructor(server, connection) {
+  constructor (server, connection) {
     super()
     this.server = server
     this.serializer = server.serializer
@@ -26,12 +27,12 @@ class Player extends Connection {
     this.outLog = (...args) => console.info('C -> S', ...args)
   }
 
-  getData() {
+  getData () {
     return this.userData
   }
 
-  onLogin(packet) {
-    let body = packet.data
+  onLogin (packet) {
+    const body = packet.data
     // debug('Login body', body)
     this.emit('loggingIn', body)
 
@@ -51,7 +52,7 @@ class Player extends Connection {
     const skinChain = body.params.client_data
 
     try {
-      var { key, userData, chain } = decodeLoginJWT(authChain.chain, skinChain)
+      var { key, userData, chain } = decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
     } catch (e) {
       console.error(e)
       // TODO: disconnect user
@@ -68,17 +69,17 @@ class Player extends Connection {
 
   /**
    * Disconnects a client before it has joined
-   * @param {string} play_status 
+   * @param {string} playStatus
    */
-  sendDisconnectStatus(play_status) {
-    this.write('play_status', { status: play_status })
+  sendDisconnectStatus (playStatus) {
+    this.write('play_status', { status: playStatus })
     this.connection.close()
   }
 
   /**
    * Disconnects a client after it has joined
    */
-  disconnect(reason, hide = false) {
+  disconnect (reason, hide = false) {
     this.write('disconnect', {
       hide_disconnect_screen: hide,
       message: reason
@@ -88,7 +89,7 @@ class Player extends Connection {
 
   // After sending Server to Client Handshake, this handles the client's
   // Client to Server handshake response. This indicates successful encryption
-  onHandshake() {
+  onHandshake () {
     // this.outLog('Sending login success!', this.status)
     // https://wiki.vg/Bedrock_Protocol#Play_Status
     this.write('play_status', { status: 'login_success' })
@@ -96,10 +97,10 @@ class Player extends Connection {
     this.emit('join')
   }
 
-  readPacket(packet) {
+  readPacket (packet) {
     // console.log('packet', packet)
     try {
-      var des = this.server.deserializer.parsePacketBuffer(packet)
+      var des = this.server.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
       this.disconnect('Server error')
       console.warn('Packet parsing failed! Writing dump to ./packetdump.bin')
@@ -117,10 +118,12 @@ class Player extends Connection {
       case 'client_to_server_handshake':
         // Emit the 'join' event
         this.onHandshake()
+        break
       case 'set_local_player_as_initialized':
         this.state = ClientStatus.Initialized
         // Emit the 'spawn' event
         this.emit('spawn')
+        break
       default:
         console.log('ignoring, unhandled')
     }

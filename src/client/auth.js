@@ -9,7 +9,7 @@ const { MsAuthFlow } = require('./authFlow.js')
 async function postAuthenticate (client, options, chains) {
   // First chain is Mojang stuff, second is Xbox profile data used by mc
   const jwt = chains[1]
-  const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64'))
+  const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
   const xboxProfile = JSON.parse(String(payload))
 
   // This profile / session here could be simplified down to where it just passes the uuid of the player to encrypt.js
@@ -17,7 +17,7 @@ async function postAuthenticate (client, options, chains) {
   // - Kashalls
   const profile = {
     name: xboxProfile?.extraData?.displayName || 'Player',
-    uuid: xboxProfile?.extraData?.identity || 'adfcf5ca-206c-404a-aec4-f59fff264c9b', //random
+    uuid: xboxProfile?.extraData?.identity || 'adfcf5ca-206c-404a-aec4-f59fff264c9b', // random
     xuid: xboxProfile?.extraData?.XUID || 0
   }
 

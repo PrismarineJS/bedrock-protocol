@@ -5,8 +5,10 @@ const { EventEmitter } = require('events')
 const Versions = require('./options')
 const debug = require('debug')('minecraft-protocol')
 
+const SKIP_BATCH = ['level_chunk', 'client_cache_blob_status', 'client_cache_miss_response']
+
 class Connection extends EventEmitter {
-  versionLessThan(version) {
+  versionLessThan (version) {
     if (typeof version === 'string') {
       return Versions[version] < this.options.version
     } else {
@@ -14,7 +16,7 @@ class Connection extends EventEmitter {
     }
   }
 
-  versionGreaterThan(version) {
+  versionGreaterThan (version) {
     if (typeof version === 'string') {
       return Versions[version] > this.options.version
     } else {
@@ -22,7 +24,7 @@ class Connection extends EventEmitter {
     }
   }
 
-  startEncryption(iv) {
+  startEncryption (iv) {
     this.encryptionEnabled = true
     this.inLog('Started encryption', this.sharedSecret, iv)
     this.decrypt = cipher.createDecryptor(this, iv)
@@ -30,7 +32,7 @@ class Connection extends EventEmitter {
     this.q2 = []
   }
 
-  write(name, params) {
+  write (name, params) {
     this.outLog('sending', name, params)
     const batch = new BatchPacket()
     const packet = this.serializer.createPacketBuffer({ name, params })
@@ -43,10 +45,10 @@ class Connection extends EventEmitter {
     }
   }
 
-  queue(name, params) {
+  queue (name, params) {
     this.outLog('Q <- ', name, params)
     const packet = this.serializer.createPacketBuffer({ name, params })
-    if (name == 'level_chunk' || name=='client_cache_blob_status' || name == 'client_cache_miss_response') {
+    if (SKIP_BATCH.includes(name)) {
       // Skip queue, send ASAP
       this.sendBuffer(packet)
       return
@@ -55,11 +57,11 @@ class Connection extends EventEmitter {
     this.q2.push(name)
   }
 
-  startQueue() {
+  startQueue () {
     this.q = []
     this.loop = setInterval(() => {
       if (this.q.length) {
-        //TODO: can we just build Batch before the queue loop?
+        // TODO: can we just build Batch before the queue loop?
         const batch = new BatchPacket()
         this.outLog('<- BATCH', this.q2)
         const sending = []
@@ -78,11 +80,10 @@ class Connection extends EventEmitter {
     }, 20)
   }
 
-
   /**
    * Sends a MCPE packet buffer
    */
-  sendBuffer(buffer, immediate = false) {
+  sendBuffer (buffer, immediate = false) {
     if (immediate) {
       const batch = new BatchPacket()
       batch.addEncodedPacket(buffer)
@@ -97,20 +98,20 @@ class Connection extends EventEmitter {
     }
   }
 
-  sendDecryptedBatch(batch) {
+  sendDecryptedBatch (batch) {
     const buf = batch.encode()
     // send to raknet
     this.sendMCPE(buf, true)
   }
 
-  sendEncryptedBatch(batch) {
+  sendEncryptedBatch (batch) {
     const buf = batch.stream.getBuffer()
     debug('Sending encrypted batch', batch)
     this.encrypt(buf)
   }
 
   // TODO: Rename this to sendEncapsulated
-  sendMCPE(buffer, immediate) {
+  sendMCPE (buffer, immediate) {
     this.connection.sendReliable(buffer, immediate)
   }
 
@@ -132,8 +133,8 @@ class Connection extends EventEmitter {
     }
   }
 
-  handle(buffer) { // handle encapsulated
-    if (buffer[0] == 0xfe) { // wrapper
+  handle (buffer) { // handle encapsulated
+    if (buffer[0] === 0xfe) { // wrapper
       if (this.encryptionEnabled) {
         this.decrypt(buffer.slice(1))
       } else {
@@ -142,7 +143,7 @@ class Connection extends EventEmitter {
         batch.decode()
         const packets = batch.getPackets()
         this.inLog('Reading ', packets.length, 'packets')
-        for (var packet of packets) {
+        for (const packet of packets) {
           this.readPacket(packet)
         }
       }
