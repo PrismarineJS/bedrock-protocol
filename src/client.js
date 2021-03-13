@@ -1,4 +1,4 @@
-const { Connection } = require('./connection')
+const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { RakClient } = require('./Rak')
 const { serialize } = require('./datatypes/util')
@@ -32,10 +32,12 @@ class Client extends Connection {
       auth.authenticateDeviceCode(this, options)
     }
 
+    this.startGameData = {}
+
     this.on('session', this.connect)
     this.startQueue()
-    this.inLog = (...args) => console.info('C ->', ...args)
-    this.outLog = (...args) => console.info('C <-', ...args)
+    this.inLog = (...args) => debug('C ->', ...args)
+    this.outLog = (...args) => debug('C <-', ...args)
   }
 
   validateOptions () {
@@ -62,11 +64,13 @@ class Client extends Connection {
 
     this.connection = new RakClient({ useWorkers: true, hostname, port })
     this.connection.onConnected = () => this.sendLogin()
+    this.connection.onCloseConnection = () => this._close()
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
   }
 
   sendLogin () {
+    this.status = ClientStatus.Authenticating
     this.createClientChain()
 
     const chain = [
@@ -96,8 +100,25 @@ class Client extends Connection {
     process.exit(1) // TODO: handle
   }
 
+  onPlayStatus(statusPacket) {
+    if (this.status == ClientStatus.Initializing && this.options.autoInitPlayer === true) {
+      if (statusPacket.status === 'player_spawn') {
+        this.status = ClientStatus.Initialized
+        this.write('set_local_player_as_initialized', { runtime_entity_id: this.startGameData.runtime_entity_id })
+        this.emit('spawn')
+      }
+    }
+  }
+
+  _close() {
+    this.q = []
+    this.q2 = []
+  }
+
   close () {
-    console.warn('Close not implemented!!')
+    this._close()
+    this.connection.close()
+    console.log('Closed!')
   }
 
   tryRencode (name, params, actual) {
@@ -147,15 +168,12 @@ class Client extends Connection {
       case 'disconnect': // Client kicked
         this.onDisconnectRequest(des.data.params)
         break
-      // case 'crafting_data':
-      //   fs.writeFileSync('crafting.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
-      //   break
-      // case 'start_game':
-      //   fs.writeFileSync('start_game.json', JSON.stringify(des.data.params, (k, v) => typeof v == 'bigint' ? v.toString() : v))
-      //   break
-      // case 'level_chunk':
-      //   // fs.writeFileSync(`./chunks/chunk-${chunks++}.txt`, packet.toString('hex'))
-      //   break
+      case 'start_game':
+        this.startGameData = pakData.params
+        break
+      case 'play_status':
+        this.onPlayStatus(pakData.params)
+        break
       default:
       // console.log('Sending to listeners')
     }

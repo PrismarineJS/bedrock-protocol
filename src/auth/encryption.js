@@ -1,4 +1,5 @@
 const { Ber } = require('asn1')
+const { ClientStatus } = require('../connection')
 const JWT = require('jsonwebtoken')
 const crypto = require('crypto')
 const ecPem = require('ec-pem')
@@ -82,6 +83,7 @@ function Encrypt (client, server, options) {
     // It works! First encrypted packet :)
     client.write('client_to_server_handshake', {})
     this.emit('join')
+    client.status = ClientStatus.Initializing
   }
 
   client.on('server.client_handshake', startClientboundEncryption)

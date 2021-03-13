@@ -14,6 +14,7 @@ try {
 class RakNativeClient extends EventEmitter {
   constructor (options) {
     super()
+    this.connected = false
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
@@ -23,7 +24,13 @@ class RakNativeClient extends EventEmitter {
       this.onEncapsulated(buffer, address)
     })
     this.raknet.on('connected', () => {
+      this.connected = true
       this.onConnected()
+    })
+
+    this.raknet.on('disconnected', ({ reason }) => {
+      this.connected = false
+      this.onCloseConnection(reason)
     })
   }
 
@@ -42,7 +49,15 @@ class RakNativeClient extends EventEmitter {
     this.raknet.connect()
   }
 
+  close() {
+    this.connected = false
+    setTimeout(() => {
+      this.raknet.close()
+    }, 40)
+  }
+
   sendReliable (buffer, immediate) {
+    if (!this.connected) return
     const priority = immediate ? PacketPriority.IMMEDIATE_PRIORITY : PacketPriority.MEDIUM_PRIORITY
     return this.raknet.send(buffer, priority, PacketReliability.RELIABLE_ORDERED, 0)
   }
@@ -82,6 +97,10 @@ class RakNativeServer extends EventEmitter {
 
   listen () {
     this.raknet.listen()
+  }
+
+  close() {
+    this.raknet.close()
   }
 }
 

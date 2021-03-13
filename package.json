@@ -4,7 +4,7 @@
   "description": "Parse and serialize Minecraft Bedrock Edition packets",
   "main": "index.js",
   "scripts": {
-    "build": "cd data/new && node compile.js",
+    "build": "cd tools && node compileProtocol.js",
     "prepare": "npm run build",
     "test": "mocha",
     "pretest": "npm run lint",

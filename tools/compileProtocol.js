@@ -7,6 +7,11 @@
  */
 const fs = require('fs')
 const { ProtoDefCompiler } = require('protodef').Compiler
+const { join } = require('path')
+
+function getJSON (path) {
+  return JSON.parse(fs.readFileSync(path, 'utf-8'))
+}
 
 // Parse the YML files and turn to JSON
 function genProtoSchema () {
@@ -37,15 +42,15 @@ function genProtoSchema () {
   const t = `#Auto-generated from proto.yml, do not modify\n!import: types.yaml\nmcpe_packet:\n   name: varint =>\n${l1}\n   params: name ?\n${l2}`
   fs.writeFileSync('./packet_map.yml', t)
 
-  compile('./proto.yml', 'protocol.json')
+  compile('./proto.yml', 'proto.json')
   return version
 }
 
 // Compile the ProtoDef JSON into JS
 function createProtocol (version) {
   const compiler = new ProtoDefCompiler()
-  const protocol = require(`../${version}/protocol.json`).types
-  compiler.addTypes(require('../../src/datatypes/compiler-minecraft'))
+  const protocol = getJSON(`../${version}/protocol.json`).types
+  compiler.addTypes(require('../src/datatypes/compiler-minecraft'))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
   compiler.addTypesToCompile(protocol)
 
@@ -57,11 +62,12 @@ function createProtocol (version) {
   return compiledProto
 }
 
-function main () {
+function main (ver = 'latest') {
+  process.chdir(join(__dirname, '/../data/', ver))
   const version = genProtoSchema()
 
-  fs.writeFileSync(`../${version}/protocol.json`, JSON.stringify({ types: require('./protocol.json') }, null, 2))
-  fs.unlinkSync('./protocol.json') // remove temp file
+  fs.writeFileSync(`../${version}/protocol.json`, JSON.stringify({ types: getJSON('./proto.json') }, null, 2))
+  fs.unlinkSync('./proto.json') // remove temp file
   fs.unlinkSync('./packet_map.yml') // remove temp file
 
   console.log('Generating JS...')
