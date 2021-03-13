@@ -88,43 +88,21 @@ function createDecryptor (client, iv) {
   client.receiveCounter = client.receiveCounter || 0n
 
   function verify (chunk) {
-    // TODO: remove the extra logic here, probably fixed with new raknet impl
-
     // console.log('Decryptor: checking checksum', client.receiveCounter, chunk)
-    // client.outLog('🔵 Inflating', chunk)
-    // First try to zlib decompress, then see how much bytes get read
-    const { buffer, engine } = Zlib.inflateRawSync(chunk, {
-      chunkSize: 1024 * 1024 * 2,
-      info: true
-    })
-
-    // Holds how much bytes we read, also where the checksum (should) start
-    const inflatedLen = engine.bytesRead
-    // It appears that mc sends extra bytes past the checksum. I don't think this is a raknet
-    // issue (as we are able to decipher properly, zlib works and should also have a checksum) so
-    // there needs to be more investigation done. If you know what's wrong here, please make an issue :)
-    const extraneousLen = chunk.length - inflatedLen - 8
-    if (extraneousLen > 0) { // Extra bytes
-      // Info for debugging, todo: use debug()
-      const extraneousBytes = chunk.slice(inflatedLen + 8)
-      console.debug('Extraneous bytes!', extraneousLen, extraneousBytes.toString('hex'))
-    } else if (extraneousLen < 0) {
-      // No checksum or decompression failed
-      console.warn('Failed to decrypt', chunk.toString('hex'))
-      throw new Error('Decrypted packet is missing checksum')
-    }
-
-    const packet = chunk.slice(0, inflatedLen)
-    const checksum = chunk.slice(inflatedLen, inflatedLen + 8)
+    const packet = chunk.slice(0, chunk.length - 8)
+    const checksum = chunk.slice(chunk.length - 8, chunk.length)
     const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
     client.receiveCounter++
 
-    if (checksum.toString('hex') === computedCheckSum.toString('hex')) {
-      client.onDecryptedPacket(buffer)
-    } else {
-      console.log('Inflated', inflatedLen, chunk.length, extraneousLen, chunk.toString('hex'))
+    if (Buffer.compare(checksum, computedCheckSum) !== 0) {
+      // console.log('Inflated', inflatedLen, chunk.length, extraneousLen, chunk.toString('hex'))
       throw Error(`Checksum mismatch ${checksum.toString('hex')} != ${computedCheckSum.toString('hex')}`)
     }
+
+    Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buffer) => {
+      if (err) throw err
+      client.onDecryptedPacket(buffer)
+    })
   }
 
   client.decipher.on('data', verify)

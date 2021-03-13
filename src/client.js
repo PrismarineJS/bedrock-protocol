@@ -1,12 +1,15 @@
-const fs = require('fs')
-const debug = require('debug')('minecraft-protocol')
-const auth = require('./client/auth')
-const Options = require('./options')
 const { Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
-const { Encrypt } = require('./auth/encryption')
 const { RakClient } = require('./Rak')
 const { serialize } = require('./datatypes/util')
+const fs = require('fs')
+const debug = require('debug')('minecraft-protocol')
+const Options = require('./options')
+const auth = require('./client/auth')
+
+const { Encrypt } = require('./auth/encryption')
+const Login = require('./auth/login')
+const LoginVerify = require('./auth/loginVerify')
 
 const debugging = false
 
@@ -20,6 +23,8 @@ class Client extends Connection {
     this.deserializer = createDeserializer(this.options.version)
 
     Encrypt(this, null, this.options)
+    Login(this, null, this.options)
+    LoginVerify(this, null, this.options)
 
     if (options.password) {
       auth.authenticatePassword(this, options)

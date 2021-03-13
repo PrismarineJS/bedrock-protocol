@@ -14,7 +14,7 @@ function loadVersions () {
       files = getFiles(join(__dirname, '/', version))
     } catch {}
     for (const file of files) {
-      const rfile = file.replace(join(__dirname, '/', version), '')
+      const rfile = file.replace(join(__dirname, '/', version) + '/', '')
       fileMap[rfile] ??= []
       fileMap[rfile].push([Versions[version], file])
       fileMap[rfile].sort().reverse()
@@ -42,5 +42,3 @@ module.exports = (protocolVersion) => {
 }
 
 loadVersions()
-// console.log('file map', fileMap)
-// module.exports(Versions['1.16.210']).open('creativeitems.json')
