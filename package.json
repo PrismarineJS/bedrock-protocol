@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.10",
+    "babel-eslint": "^10.1.0",
     "mocha": "^8.3.2",
     "protodef-yaml": "^1.0.1",
     "standard": "^16.0.3"
