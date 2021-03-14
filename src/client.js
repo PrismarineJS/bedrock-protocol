@@ -100,8 +100,8 @@ class Client extends Connection {
     process.exit(1) // TODO: handle
   }
 
-  onPlayStatus(statusPacket) {
-    if (this.status == ClientStatus.Initializing && this.options.autoInitPlayer === true) {
+  onPlayStatus (statusPacket) {
+    if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
       if (statusPacket.status === 'player_spawn') {
         this.status = ClientStatus.Initialized
         this.write('set_local_player_as_initialized', { runtime_entity_id: this.startGameData.runtime_entity_id })
@@ -110,7 +110,7 @@ class Client extends Connection {
     }
   }
 
-  _close() {
+  _close () {
     this.q = []
     this.q2 = []
   }

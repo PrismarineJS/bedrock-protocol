@@ -31,7 +31,7 @@
     "jsp-raknet": "github:extremeheat/raknet#client",
     "minecraft-folder-path": "^1.1.0",
     "prismarine-nbt": "^1.5.0",
-    "protodef": "github:extremeheat/node-protodef#compiler2",
+    "protodef": "^1.11.0",
     "raknet-native": "^0.1.0",
     "uuid-1345": "^1.0.2"
   },

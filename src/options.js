@@ -7,7 +7,7 @@ const defaultOptions = {
   // https://minecraft.gamepedia.com/Protocol_version#Bedrock_Edition_2
   version: CURRENT_VERSION,
   // client: If we should send SetPlayerInitialized to the server after getting play_status spawn.
-  // if this is disabled, no 'spawn' event will be emitted, you should manually set 
+  // if this is disabled, no 'spawn' event will be emitted, you should manually set
   // client.status to ClientStatus.Initialized after sending the init packet.
   autoInitPlayer: true
 }
