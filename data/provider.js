@@ -15,7 +15,7 @@ function loadVersions () {
     } catch {}
     for (const file of files) {
       const rfile = file.replace(join(__dirname, '/', version) + '/', '')
-      fileMap[rfile] ??= []
+      fileMap[rfile] = fileMap[rfile] ?? []
       fileMap[rfile].push([Versions[version], file])
       fileMap[rfile].sort().reverse()
     }

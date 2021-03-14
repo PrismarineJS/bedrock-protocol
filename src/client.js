@@ -1,6 +1,6 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
-const { RakClient } = require('./Rak')
+const { RakClient } = require('./rak')
 const { serialize } = require('./datatypes/util')
 const fs = require('fs')
 const debug = require('debug')('minecraft-protocol')

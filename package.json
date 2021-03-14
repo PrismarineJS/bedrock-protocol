@@ -30,6 +30,7 @@
     "jsonwebtoken": "^8.5.1",
     "jsp-raknet": "github:extremeheat/raknet#client",
     "minecraft-folder-path": "^1.1.0",
+    "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
     "protodef": "^1.11.0",
     "raknet-native": "^0.1.0",

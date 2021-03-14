@@ -3,6 +3,7 @@ const fs = require('fs')
 const cp = require('child_process')
 const debug = require('debug')('minecraft-protocol')
 const { getFiles } = require('../src/datatypes/util')
+const path = require('path')
 
 const head = (url) => new Promise((resolve, reject) => http.request(url, { method: 'HEAD' }, resolve).on('error', reject).end())
 const get = (url, out) => cp.execSync(`curl -o ${out} ${url}`)
@@ -90,7 +91,7 @@ async function main (version) {
 
 function startServer (version, seperateProcess = true) {
   if (seperateProcess) {
-    const handle = cp.spawn('node', ('startVanillaServer.js ' + version).split(' '), { stdio: 'inherit' })
+    const handle = cp.spawn('node', (path.join(__dirname, 'startVanillaServer.js ') + version).split(' '), { stdio: 'inherit' })
     return handle
   } else {
     main(process.argv[2]) // No way to un-block, just for testing
