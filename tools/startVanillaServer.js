@@ -56,8 +56,13 @@ async function download (os, version) {
 
 // Setup the server
 function configure () {
+  // if (!fs.existsSync('./old.properties')) { // not really needed
+  //   fs.copyFileSync('./server.properties', './old.properties')
+  // } else {
+  //   fs.copyFileSync('./old.properties', './server.properties')
+  // }
   let config = fs.readFileSync('./server.properties', 'utf-8')
-  config += '\nlevel-generator=2\nserver-port=19130\nplayer-idle-timeout=1\nallow-cheats=true\ndefault-player-permission-level=operator'
+  config += '\nlevel-generator=2\nserver-port=19130\nplayer-idle-timeout=1\nallow-cheats=true\ndefault-player-permission-level=operator\nonline-mode=false'
   fs.writeFileSync('./server.properties', config)
 }
 

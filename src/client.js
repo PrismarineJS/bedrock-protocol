@@ -26,15 +26,19 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    if (options.password) {
-      auth.authenticatePassword(this, options)
+    this.on('session', this.connect)
+
+    if (options.offline) {
+      console.debug('offline mode, not authenticating', this.options)
+      auth.createOfflineSession(this, this.options)
+    } else if (options.password) {
+      auth.authenticatePassword(this, this.options)
     } else {
-      auth.authenticateDeviceCode(this, options)
+      auth.authenticateDeviceCode(this, this.options)
     }
 
     this.startGameData = {}
 
-    this.on('session', this.connect)
     this.startQueue()
     this.inLog = (...args) => debug('C ->', ...args)
     this.outLog = (...args) => debug('C <-', ...args)
@@ -71,7 +75,7 @@ class Client extends Connection {
 
   sendLogin () {
     this.status = ClientStatus.Authenticating
-    this.createClientChain()
+    this.createClientChain(null, this.options.offline)
 
     const chain = [
       this.clientIdentityChain, // JWT we generated for auth
@@ -79,7 +83,6 @@ class Client extends Connection {
     ]
 
     const encodedChain = JSON.stringify({ chain })
-
     const bodyLength = this.clientUserChain.length + encodedChain.length + 8
 
     debug('Auth chain', chain)

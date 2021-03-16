@@ -1,4 +1,5 @@
 const fs = require('fs')
+const UUID = require('uuid-1345')
 
 function getFiles (dir) {
   let results = []
@@ -30,4 +31,8 @@ function serialize (obj = {}, fmt) {
   return JSON.stringify(obj, (k, v) => typeof v === 'bigint' ? v.toString() : v, fmt)
 }
 
-module.exports = { getFiles, sleep, waitFor, serialize }
+function uuidFrom (string) {
+  return UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: string })
+}
+
+module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom }

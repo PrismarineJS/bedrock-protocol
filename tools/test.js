@@ -13,7 +13,9 @@ async function test () {
 
   const client = new Client({
     hostname: '127.0.0.1',
-    port: 19130
+    port: 19130,
+    username: 'Notch',
+    offline: true
   })
 
   console.log('Started client')
@@ -26,13 +28,6 @@ async function test () {
       })
 
       client.once('resource_pack_stack', (stack) => {
-        client.write('resource_pack_client_response', {
-          response_status: 'completed',
-          resourcepackids: []
-        })
-      })
-
-      client.once('resource_packs_info', (packet) => {
         client.write('resource_pack_client_response', {
           response_status: 'completed',
           resourcepackids: []
