@@ -5,7 +5,7 @@ const { waitFor } = require('../src/datatypes/util')
 
 async function test () {
   // Start the server, wait for it to accept clients, throws on timeout
-  const handle = await vanillaServer.startServerAndWait('1.16.201', 1000 * 20)
+  const handle = await vanillaServer.startServerAndWait('1.16.201', 1000 * 120)
   console.log('Started server')
 
   const client = new Client({
@@ -50,10 +50,10 @@ async function test () {
         res()
       })
     })
-  }, 9100, () => {
-    console.log('❌ client timed out')
+  }, 1000 * 60, () => {
     client.close()
     handle.kill()
+    throw Error('❌ client timed out ')
   })
   clearInterval(loop)
 }
