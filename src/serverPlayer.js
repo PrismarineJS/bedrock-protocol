@@ -71,7 +71,7 @@ class Player extends Connection {
    */
   sendDisconnectStatus (playStatus) {
     this.write('play_status', { status: playStatus })
-    this.connection.close()
+    this.close()
   }
 
   /**
@@ -82,7 +82,7 @@ class Player extends Connection {
       hide_disconnect_screen: hide,
       message: reason
     })
-    this.connection.close()
+    this.close()
   }
 
   // After sending Server to Client Handshake, this handles the client's
@@ -93,6 +93,14 @@ class Player extends Connection {
     this.write('play_status', { status: 'login_success' })
     this.status = ClientStatus.Initializing
     this.emit('join')
+  }
+
+  close () {
+    this.q = []
+    this.q2 = []
+    clearInterval(this.loop)
+    this.connection?.close()
+    this.removeAllListeners()
   }
 
   readPacket (packet) {

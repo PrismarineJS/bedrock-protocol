@@ -2,8 +2,7 @@ const http = require('https')
 const fs = require('fs')
 const cp = require('child_process')
 const debug = require('debug')('minecraft-protocol')
-const { getFiles } = require('../src/datatypes/util')
-const path = require('path')
+const { getFiles, waitFor } = require('../src/datatypes/util')
 
 const head = (url) => new Promise((resolve, reject) => http.request(url, { method: 'HEAD' }, resolve).on('error', reject).end())
 const get = (url, out) => cp.execSync(`curl -o ${out} ${url}`)
@@ -56,56 +55,53 @@ async function download (os, version) {
 
 // Setup the server
 function configure () {
-  // if (!fs.existsSync('./old.properties')) { // not really needed
-  //   fs.copyFileSync('./server.properties', './old.properties')
-  // } else {
-  //   fs.copyFileSync('./old.properties', './server.properties')
-  // }
+  if (!fs.existsSync('./old.properties')) { // not really needed
+    fs.copyFileSync('./server.properties', './old.properties')
+  } else {
+    fs.copyFileSync('./old.properties', './server.properties')
+  }
   let config = fs.readFileSync('./server.properties', 'utf-8')
   config += '\nlevel-generator=2\nserver-port=19130\nplayer-idle-timeout=1\nallow-cheats=true\ndefault-player-permission-level=operator\nonline-mode=false'
   fs.writeFileSync('./server.properties', config)
 }
 
-async function run () {
-  if (process.platform === 'win32') return cp.spawnSync('bedrock_server.exe', { stdio: 'inherit' })
-  else cp.spawnSync('./bedrock_server', { stdio: 'inherit' })
+function run (inheritStdout = true) {
+  const exe = process.platform === 'win32' ? 'bedrock_server.exe' : './bedrock_server'
+  return cp.spawn(exe, inheritStdout ? { stdio: 'inherit' } : {})
 }
 
 // Run the server
-async function main (version) {
+async function startServer (version, onStart) {
   const os = process.platform === 'win32' ? 'win' : process.platform
   if (os !== 'win' && os !== 'linux') {
     throw Error('unsupported os ' + os)
   }
   await download(os, version)
   configure()
-  run()
+  const handle = run(!onStart)
+  if (onStart) {
+    handle.stdout.on('data', data => data.includes('Server started.') ? onStart() : null)
+    handle.stdout.pipe(process.stdout)
+    handle.stderr.pipe(process.stdout)
+  }
+  return handle
 }
 
-// async function main () {
-//   fs.remov
-//   // const latest_version = fetchLatestStable()
-//   const { Versions } = require('../src/options')
-
-//   for (const version in Versions) {
-//     download('win', version)
-//   }
-// }
-
-// download('linux', '')
-
-function startServer (version, seperateProcess = true) {
-  if (seperateProcess) {
-    const handle = cp.spawn('node', (path.join(__dirname, 'startVanillaServer.js ') + version).split(' '), { stdio: 'inherit' })
-    return handle
-  } else {
-    main(process.argv[2]) // No way to un-block, just for testing
-  }
+// Start the server and wait for it to be ready, with a timeout
+async function startServerAndWait (version, withTimeout) {
+  let handle
+  await waitFor(async res => {
+    handle = await startServer(version, res)
+  }, withTimeout, () => {
+    handle?.kill()
+    throw new Error('Server did not start on time ' + withTimeout)
+  })
+  return handle
 }
 
 if (!module.parent) {
   // if (process.argv.length < 3) throw Error('Missing version argument')
-  main(process.argv[2] || '1.16.201')
+  startServer(process.argv[2] || '1.16.201')
 }
 
-module.exports = { fetchLatestStable, startServer }
+module.exports = { fetchLatestStable, startServer, startServerAndWait }

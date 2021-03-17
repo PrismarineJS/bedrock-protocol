@@ -14,6 +14,8 @@ const LoginVerify = require('./auth/loginVerify')
 const debugging = false
 
 class Client extends Connection {
+  connection
+
   /** @param {{ version: number, hostname: string, port: number }} options */
   constructor (options) {
     super()
@@ -68,7 +70,7 @@ class Client extends Connection {
 
     this.connection = new RakClient({ useWorkers: true, hostname, port })
     this.connection.onConnected = () => this.sendLogin()
-    this.connection.onCloseConnection = () => this._close()
+    this.connection.onCloseConnection = () => this.close()
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
   }
@@ -113,14 +115,12 @@ class Client extends Connection {
     }
   }
 
-  _close () {
+  close () {
+    clearInterval(this.loop)
     this.q = []
     this.q2 = []
-  }
-
-  close () {
-    this._close()
-    this.connection.close()
+    this.connection?.close()
+    this.removeAllListeners()
     console.log('Closed!')
   }
 

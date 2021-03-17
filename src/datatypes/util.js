@@ -20,11 +20,15 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function waitFor (cb, withTimeout, onTimeout) {
-  return Promise.race([
-    new Promise((resolve) => cb(resolve)),
-    sleep(withTimeout).then(onTimeout)
+async function waitFor (cb, withTimeout, onTimeout) {
+  let t
+  const ret = await Promise.race([
+    new Promise(resolve => cb(resolve)),
+    new Promise(resolve => { t = setTimeout(() => resolve('timeout'), withTimeout) })
   ])
+  clearTimeout(t)
+  if (ret === 'timeout') onTimeout()
+  return ret
 }
 
 function serialize (obj = {}, fmt) {
