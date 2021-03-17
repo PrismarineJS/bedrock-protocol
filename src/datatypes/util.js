@@ -1,4 +1,5 @@
 const fs = require('fs')
+const UUID = require('uuid-1345')
 
 function getFiles (dir) {
   let results = []
@@ -19,15 +20,23 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function waitFor (cb, withTimeout) {
-  return Promise.race([
-    new Promise((resolve) => cb(resolve)),
-    sleep(withTimeout)
+async function waitFor (cb, withTimeout, onTimeout) {
+  let t
+  const ret = await Promise.race([
+    new Promise(resolve => cb(resolve)),
+    new Promise(resolve => { t = setTimeout(() => resolve('timeout'), withTimeout) })
   ])
+  clearTimeout(t)
+  if (ret === 'timeout') onTimeout()
+  return ret
 }
 
 function serialize (obj = {}, fmt) {
   return JSON.stringify(obj, (k, v) => typeof v === 'bigint' ? v.toString() : v, fmt)
 }
 
-module.exports = { getFiles, sleep, waitFor, serialize }
+function uuidFrom (string) {
+  return UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: string })
+}
+
+module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom }

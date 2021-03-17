@@ -1,4 +1,5 @@
 const { MsAuthFlow } = require('./authFlow.js')
+const { uuidFrom } = require('../datatypes/util')
 
 /**
  * Obtains Minecaft profile data using a Minecraft access token and starts the join sequence
@@ -24,6 +25,22 @@ async function postAuthenticate (client, options, chains) {
   client.profile = profile
   client.username = profile.name
   client.accessToken = chains
+  client.emit('session', profile)
+}
+
+/**
+ * Creates an offline session for the client
+ */
+function createOfflineSession (client, options) {
+  if (!options.username) throw Error('Must specify a valid username')
+  const profile = {
+    name: options.username,
+    uuid: uuidFrom(options.username), // random
+    xuid: 0
+  }
+  client.profile = profile
+  client.username = profile.name
+  client.accessToken = [] // No extra JWTs, only send 1 client signed chain with all the data
   client.emit('session', profile)
 }
 
@@ -61,6 +78,7 @@ async function authenticateDeviceCode (client, options) {
 }
 
 module.exports = {
+  createOfflineSession,
   authenticatePassword,
   authenticateDeviceCode
 }

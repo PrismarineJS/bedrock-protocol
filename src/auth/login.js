@@ -7,16 +7,30 @@ const curve = 'secp384r1'
 module.exports = (client, server, options) => {
   const skinGeom = fs.readFileSync(DataProvider(options.protocolVersion).getPath('skin_geom.txt'), 'utf-8')
 
-  client.createClientChain = (mojangKey) => {
+  client.createClientChain = (mojangKey, offline) => {
     mojangKey = mojangKey || require('./constants').PUBLIC_KEY
     const alice = client.ecdhKeyPair
     const alicePEM = ecPem(alice, curve) // https://github.com/nodejs/node/issues/15116#issuecomment-384790125
     const alicePEMPrivate = alicePEM.encodePrivateKey()
 
-    const token = JWT.sign({
-      identityPublicKey: mojangKey,
-      certificateAuthority: true
-    }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: client.clientX509 } })
+    let token
+    if (offline) {
+      const payload = {
+        extraData: {
+          displayName: client.username,
+          identity: client.profile.uuid,
+          titleId: '89692877'
+        },
+        certificateAuthority: true,
+        identityPublicKey: client.clientX509
+      }
+      token = JWT.sign(payload, alicePEMPrivate, { algorithm: 'ES384', notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509 } })
+    } else {
+      token = JWT.sign({
+        identityPublicKey: mojangKey,
+        certificateAuthority: true
+      }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: client.clientX509 } })
+    }
 
     client.clientIdentityChain = token
     client.createClientUserChain(alicePEMPrivate)
@@ -24,46 +38,42 @@ module.exports = (client, server, options) => {
 
   client.createClientUserChain = (privateKey) => {
     let payload = {
-      ServerAddress: options.hostname,
-      ThirdPartyName: client.profile.name,
-      DeviceOS: client.session?.deviceOS || 1,
-      GameVersion: options.version || '1.16.201',
-      ClientRandomId: Date.now(), // TODO make biggeer
-      DeviceId: '2099de18-429a-465a-a49b-fc4710a17bb3', // TODO random
-      LanguageCode: 'en_GB', // TODO locale
       AnimatedImageData: [],
-      PersonaPieces: [],
-      PieceTintColours: [],
-      SelfSignedId: '78eb38a6-950e-3ab9-b2cf-dd849e343701',
-      SkinId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0',
-      SkinData: 'AAAAAA==',
-      SkinResourcePatch: 'ewogICAiZ2VvbWV0cnkiIDogewogICAgICAiYW5pbWF0ZWRfMTI4eDEyOCIgOiAiZ2VvbWV0cnkuYW5pbWF0ZWRfMTI4eDEyOF9wZXJzb25hLWUxOTk2NzJhOGMxYTg3ZTAtMCIsCiAgICAgICJhbmltYXRlZF9mYWNlIiA6ICJnZW9tZXRyeS5hbmltYXRlZF9mYWNlX3BlcnNvbmEtZTE5OTY3MmE4YzFhODdlMC0wIiwKICAgICAgImRlZmF1bHQiIDogImdlb21ldHJ5LnBlcnNvbmFfZTE5OTY3MmE4YzFhODdlMC0wIgogICB9Cn0K',
-      SkinGeometryData: skinGeom,
-      SkinImageHeight: 1,
-      SkinImageWidth: 1,
       ArmSize: 'wide',
       CapeData: '',
       CapeId: '',
       CapeImageHeight: 0,
       CapeImageWidth: 0,
       CapeOnClassicSkin: false,
-      PlatformOfflineId: '',
-      PlatformOnlineId: '', // chat
-      // a bunch of meaningless junk
+      ClientRandomId: 1, // TODO make biggeer
       CurrentInputMode: 1,
       DefaultInputMode: 1,
+      DeviceId: '2099de18-429a-465a-a49b-fc4710a17bb3', // TODO random
       DeviceModel: '',
+      DeviceOS: client.session?.deviceOS || 7,
+      GameVersion: options.version || '1.16.201',
       GuiScale: -1,
-      UIProfile: 0,
-      TenantId: '',
-      PremiumSkin: false,
-      PersonaSkin: false,
+      LanguageCode: 'en_GB', // TODO locale
+      PersonaPieces: [],
+      PersonaSkin: true,
       PieceTintColors: [],
+      PlatformOfflineId: '',
+      PlatformOnlineId: '', // chat
+      PremiumSkin: false,
+      SelfSignedId: '78eb38a6-950e-3ab9-b2cf-dd849e343701',
+      ServerAddress: `${options.hostname}:${options.port}`,
       SkinAnimationData: '',
+      SkinColor: '#ffffcd96',
+      SkinData: 'AAAAAA==',
+      SkinGeometryData: skinGeom,
+      SkinId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0',
+      SkinImageHeight: 1,
+      SkinImageWidth: 1,
+      SkinResourcePatch: '',
+      ThirdPartyName: client.profile.name,
       ThirdPartyNameOnly: false,
-      SkinColor: '#ffffcd96'
+      UIProfile: 0
     }
-    payload = require('./logPack.json')
     const customPayload = options.userData || {}
     payload = { ...payload, ...customPayload }
 

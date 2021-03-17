@@ -49,7 +49,7 @@ class RakNativeClient extends EventEmitter {
     this.raknet.connect()
   }
 
-  close() {
+  close () {
     this.connected = false
     setTimeout(() => {
       this.raknet.close()
@@ -99,7 +99,7 @@ class RakNativeServer extends EventEmitter {
     this.raknet.listen()
   }
 
-  close() {
+  close () {
     this.raknet.close()
   }
 }

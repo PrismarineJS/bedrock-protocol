@@ -1,6 +1,6 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
-const { RakClient } = require('./Rak')
+const { RakClient } = require('./rak')
 const { serialize } = require('./datatypes/util')
 const fs = require('fs')
 const debug = require('debug')('minecraft-protocol')
@@ -14,6 +14,8 @@ const LoginVerify = require('./auth/loginVerify')
 const debugging = false
 
 class Client extends Connection {
+  connection
+
   /** @param {{ version: number, hostname: string, port: number }} options */
   constructor (options) {
     super()
@@ -26,15 +28,19 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    if (options.password) {
-      auth.authenticatePassword(this, options)
+    this.on('session', this.connect)
+
+    if (options.offline) {
+      console.debug('offline mode, not authenticating', this.options)
+      auth.createOfflineSession(this, this.options)
+    } else if (options.password) {
+      auth.authenticatePassword(this, this.options)
     } else {
-      auth.authenticateDeviceCode(this, options)
+      auth.authenticateDeviceCode(this, this.options)
     }
 
     this.startGameData = {}
 
-    this.on('session', this.connect)
     this.startQueue()
     this.inLog = (...args) => debug('C ->', ...args)
     this.outLog = (...args) => debug('C <-', ...args)
@@ -64,14 +70,14 @@ class Client extends Connection {
 
     this.connection = new RakClient({ useWorkers: true, hostname, port })
     this.connection.onConnected = () => this.sendLogin()
-    this.connection.onCloseConnection = () => this._close()
+    this.connection.onCloseConnection = () => this.close()
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
   }
 
   sendLogin () {
     this.status = ClientStatus.Authenticating
-    this.createClientChain()
+    this.createClientChain(null, this.options.offline)
 
     const chain = [
       this.clientIdentityChain, // JWT we generated for auth
@@ -79,7 +85,6 @@ class Client extends Connection {
     ]
 
     const encodedChain = JSON.stringify({ chain })
-
     const bodyLength = this.clientUserChain.length + encodedChain.length + 8
 
     debug('Auth chain', chain)
@@ -100,8 +105,8 @@ class Client extends Connection {
     process.exit(1) // TODO: handle
   }
 
-  onPlayStatus(statusPacket) {
-    if (this.status == ClientStatus.Initializing && this.options.autoInitPlayer === true) {
+  onPlayStatus (statusPacket) {
+    if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
       if (statusPacket.status === 'player_spawn') {
         this.status = ClientStatus.Initialized
         this.write('set_local_player_as_initialized', { runtime_entity_id: this.startGameData.runtime_entity_id })
@@ -110,14 +115,12 @@ class Client extends Connection {
     }
   }
 
-  _close() {
+  close () {
+    clearInterval(this.loop)
     this.q = []
     this.q2 = []
-  }
-
-  close () {
-    this._close()
-    this.connection.close()
+    this.connection?.close()
+    this.removeAllListeners()
     console.log('Closed!')
   }
 
