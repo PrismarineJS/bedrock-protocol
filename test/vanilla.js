@@ -1,5 +1,5 @@
 // process.env.DEBUG = 'minecraft-protocol raknet'
-const vanillaServer = require('./startVanillaServer')
+const vanillaServer = require('../tools/startVanillaServer')
 const { Client } = require('../src/client')
 const { waitFor } = require('../src/datatypes/util')
 
@@ -58,4 +58,5 @@ async function test () {
   clearInterval(loop)
 }
 
-test()
+if (!module.parent) test()
+module.exports = { clientTest: test }

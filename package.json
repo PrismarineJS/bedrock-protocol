@@ -10,7 +10,6 @@
     "pretest": "npm run lint",
     "lint": "standard",
     "vanillaServer": "node tools/startVanillaServer.js",
-    "vanillaTest": "node tools/test.js",
     "fix": "standard --fix"
   },
   "keywords": [
