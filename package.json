@@ -1,5 +1,5 @@
 {
-  "name": "pocket-minecraft-protocol",
+  "name": "bedrock-protocol",
   "version": "3.0.0",
   "description": "Parse and serialize Minecraft Bedrock Edition packets",
   "main": "index.js",
@@ -49,10 +49,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mhsjlw/pocket-minecraft-protocol.git"
+    "url": "git+https://github.com/PrismarineJS/bedrock-protocol.git"
   },
   "bugs": {
-    "url": "https://github.com/mhsjlw/pocket-minecraft-protocol/issues"
+    "url": "https://github.com/PrismarineJS/bedrock-protocol/issues"
   },
-  "homepage": "https://github.com/mhsjlw/pocket-minecraft-protocol#readme"
+  "homepage": "https://github.com/PrismarineJS/bedrock-protocol#readme"
 }

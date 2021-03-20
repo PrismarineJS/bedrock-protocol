@@ -4,7 +4,7 @@ const assert=require("assert");
 const bufferEqual=require("buffer-equal");
 
 // based on https://s.yawk.at/VZSf and https://confluence.yawk.at/display/PEPROTOCOL/Encryption
-// and https://github.com/mhsjlw/pocket-minecraft-protocol/issues/15
+// and https://github.com/PrismarineJS/bedrock-protocol/issues/15
 describe("ecdh key exchange",() => {
   it("generate the secret",() => {
 
