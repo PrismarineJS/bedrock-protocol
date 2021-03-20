@@ -1,5 +1,8 @@
-bedrock-protocol [![NPM version](https://img.shields.io/npm/v/bedrock-protocol.svg)](http://npmjs.com/package/bedrock-protocol) [![Join the chat at https://gitter.im/PrismarineJS/bedrock-protocol](https://badges.gitter.im/PrismarineJS/bedrock-protocol.svg)](https://gitter.im/PrismarineJS/bedrock-protocol?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-=========================
+# bedrock-protocol
+[![NPM version](https://img.shields.io/npm/v/bedrock-protocol.svg)](http://npmjs.com/package/bedrock-protocol)
+[![Build Status](https://github.com/PrismarineJS/bedrock-protocol/workflows/CI/badge.svg)](https://github.com/PrismarineJS/bedrock-protocol/actions?query=workflow%3A%22CI%22)
+[![Discord](https://img.shields.io/badge/chat-on%20discord-brightgreen.svg)](https://discord.gg/GsEFRM8)
+[![Try it on gitpod](https://img.shields.io/badge/try-on%20gitpod-brightgreen.svg)](https://gitpod.io/#https://github.com/PrismarineJS/bedrock-protocol)
 
 Not ready for prime time yet, check https://github.com/PrismarineJS/bedrock-protocol/projects/1 for progress
 
