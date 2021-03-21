@@ -1543,6 +1543,10 @@
           "type": "string"
         },
         {
+          "name": "play_fab_id",
+          "type": "string"
+        },
+        {
           "name": "skin_resource_pack",
           "type": "string"
         },

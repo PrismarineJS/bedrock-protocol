@@ -1,12 +1,13 @@
 const { ProtoDefCompiler, CompiledProtodef } = require('protodef').Compiler
 const { FullPacketParser, Serializer } = require('protodef')
+const { join } = require('path')
 
 // Compiles the ProtoDef schema at runtime
 function createProtocol (version) {
-  const protocol = require(`../../data/${version}/protocol.json`).types
+  const protocol = require(join(__dirname, `../../data/${version}/protocol.json`)).types
   const compiler = new ProtoDefCompiler()
   compiler.addTypesToCompile(protocol)
-  compiler.addTypes(require('../datatypes/compiler-minecraft'))
+  compiler.addTypes(require(join(__dirname, '../datatypes/compiler-minecraft')))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
 
   const compiledProto = compiler.compileProtoDefSync()
@@ -16,7 +17,7 @@ function createProtocol (version) {
 // Loads already generated read/write/sizeof code
 function getProtocol (version) {
   const compiler = new ProtoDefCompiler()
-  compiler.addTypes(require('../datatypes/compiler-minecraft'))
+  compiler.addTypes(require(join(__dirname, '../datatypes/compiler-minecraft')))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
 
   const compile = (compiler, file) => {
@@ -26,9 +27,9 @@ function getProtocol (version) {
   }
 
   return new CompiledProtodef(
-    compile(compiler.sizeOfCompiler, `../../data/${version}/size.js`),
-    compile(compiler.writeCompiler, `../../data/${version}/write.js`),
-    compile(compiler.readCompiler, `../../data/${version}/read.js`)
+    compile(compiler.sizeOfCompiler, join(__dirname, `../../data/${version}/size.js`)),
+    compile(compiler.writeCompiler, join(__dirname, `../../data/${version}/write.js`)),
+    compile(compiler.readCompiler, join(__dirname, `../../data/${version}/read.js`))
   )
 }
 
