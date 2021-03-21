@@ -12,6 +12,7 @@ async function test (version) {
     hostname: '127.0.0.1',
     port: 19130,
     username: 'Notch',
+    version,
     offline: true
   })
 

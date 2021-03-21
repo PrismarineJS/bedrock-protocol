@@ -2155,7 +2155,7 @@ packet_player_auth_input:
    # as it can be calculated by the server itself.
    delta: vec3f
 
-
+#TODO: update to use the new `shift` option in bitflags
 InputFlag: [ "bitflags", {
    "type": "varint",
    "flags": {

@@ -607,6 +607,7 @@ SkinImage:
 
 Skin:
    skin_id: string
+   play_fab_id: string
    skin_resource_pack: string
    skin_data: SkinImage
    animations: []li32
