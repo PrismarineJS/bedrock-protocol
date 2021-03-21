@@ -1,7 +1,7 @@
 // Minimum supported version (< will be kicked)
 const MIN_VERSION = '1.16.201'
 // Currently supported verson
-const CURRENT_VERSION = '1.16.201'
+const CURRENT_VERSION = '1.16.210'
 
 const defaultOptions = {
   // https://minecraft.gamepedia.com/Protocol_version#Bedrock_Edition_2
@@ -15,8 +15,7 @@ const defaultOptions = {
 }
 
 const Versions = {
-  // TODO
-  // '1.16.210': 428,
+  '1.16.210': 428,
   '1.16.201': 422
 }
 

@@ -80,34 +80,58 @@ SizeOf.nbt = ['native', minecraft.nbt[2]]
  * Bits
  */
 
-Read.bitflags = ['parametrizable', (compiler, { type, flags }) => {
+Read.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
+  if (shift) {
+    let i = 0
+    for (const key in flags) {
+      const val = flags[key]
+      flags[key] = val << i++
+    }
+  }
   return compiler.wrapCode(`
     const { value: _value, size } = ${compiler.callType(type, 'offset')}
     const value = { _value }
     const flags = ${JSON.stringify(flags)}
     for (const key in flags) {
-      value[key] = (_value & flags[key]) == flags[key]
+      const v = ${big ? `BigInt(flags[key])` : 'flags[key]'}
+      value[key] = (_value & v) == v
     }
     return { value, size }
   `.trim())
 }]
 
-Write.bitflags = ['parametrizable', (compiler, { type, flags }) => {
+Write.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
+  if (shift) {
+    let i = 0
+    for (const key in flags) {
+      const val = flags[key]
+      flags[key] = val << i++
+    }
+  }
   return compiler.wrapCode(`
     const flags = ${JSON.stringify(flags)}
     let val = value._value
     for (const key in flags) {
-      if (value[key]) val |= flags[key]
+      const v = ${big ? `BigInt(flags[key])` : 'flags[key]'}
+      if (value[key]) val |= v
     }
     return (ctx.${type})(val, buffer, offset)
   `.trim())
 }]
 
-SizeOf.bitflags = ['parametrizable', (compiler, { type, flags }) => {
+SizeOf.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
+  if (shift) {
+    let i = 0
+    for (const key in flags) {
+      const val = flags[key]
+      flags[key] = val << i++
+    }
+  }
   return compiler.wrapCode(`
     const flags = ${JSON.stringify(flags)}
     let val = value._value
     for (const key in flags) {
+      const v = ${big ? `BigInt(flags[key])` : 'flags[key]'}
       if (value[key]) val |= flags[key]
     }
     return (ctx.${type})(val)

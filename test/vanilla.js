@@ -3,9 +3,9 @@ const vanillaServer = require('../tools/startVanillaServer')
 const { Client } = require('../src/client')
 const { waitFor } = require('../src/datatypes/util')
 
-async function test () {
+async function test (version) {
   // Start the server, wait for it to accept clients, throws on timeout
-  const handle = await vanillaServer.startServerAndWait('1.16.201', 1000 * 120)
+  const handle = await vanillaServer.startServerAndWait(version, 1000 * 120)
   console.log('Started server')
 
   const client = new Client({

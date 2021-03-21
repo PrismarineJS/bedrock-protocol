@@ -59,6 +59,10 @@ module.exports = (client, server, options) => {
       PieceTintColors: [],
       PlatformOfflineId: '',
       PlatformOnlineId: '', // chat
+      // PlayFabID is the PlayFab ID produced for the skin. PlayFab is the company that hosts the Marketplace,
+      // skins and other related features from the game. This ID is the ID of the skin used to store the skin
+      // inside of PlayFab.
+      PlayFabId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0', // 1.16.210
       PremiumSkin: false,
       SelfSignedId: '78eb38a6-950e-3ab9-b2cf-dd849e343701',
       ServerAddress: `${options.hostname}:${options.port}`,

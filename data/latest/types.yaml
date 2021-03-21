@@ -117,7 +117,7 @@ vec2f:
 MetadataDictionary: []varint
    # https://github.com/pmmp/PocketMine-MP/blob/stable/src/pocketmine/entity/Entity.php#L101
    key: varint =>
-      0: index
+      0: flags
       1: health #int (minecart/boat)
       2: variant #int
       3: color #byte
@@ -175,66 +175,68 @@ MetadataDictionary: []varint
       57: rider_rotation_locked #byte
       58: rider_max_rotation #float
       59: rider_min_rotation #float
-      60: area_effect_cloud_radius #float
-      61: area_effect_cloud_waiting #int
-      62: area_effect_cloud_particle_id #int
-      63: shulker_peek_id #int
-      64: shulker_attach_face #byte
-      65: shulker_attached #short
-      66: shulker_attach_pos
-      67: trading_player_eid #long
-      68: trading_career
-      69: has_command_block
-      70: command_block_command #string
-      71: command_block_last_output #string
-      72: command_block_track_output #byte
-      73: controlling_rider_seat_number #byte
-      74: strength #int
-      75: max_strength #int
-      76: spell_casting_color #int
-      77: limited_life
-      78: armor_stand_pose_index # int
-      79: ender_crystal_time_offset # int
-      80: always_show_nametag # byte
-      81: color_2 # byte
-      82: name_author
-      83: score_tag #String
-      84: balloon_attached_entity # long
-      85: pufferfish_size
-      86: bubble_time
-      87: agent
-      88: sitting_amount
-      89: sitting_amount_previous
-      90: eating_counter
-      91: flags_extended
-      92: laying_amount
-      93: laying_amount_previous
-      94: duration
-      95: spawn_time
-      96: change_rate
-      97: change_on_pickup
-      98: pickup_count
-      99: interact_text
-      100: trade_tier
-      101: max_trade_tier
-      102: trade_experience
-      103: skin_id
-      104: spawning_frames
-      105: command_block_tick_delay
-      106: command_block_execute_on_first_tick
-      107: ambient_sound_interval
-      108: ambient_sound_interval_range
-      109: ambient_sound_event_name
-      110: fall_damage_multiplier
-      111: name_raw_text
-      112: can_ride_target
-      113: low_tier_cured_discount
-      114: high_tier_cured_discount
-      115: nearby_cured_discount
-      116: nearby_cured_discount_timestamp
-      117: hitbox
-      118: is_buoyant
-      119: buoyancy_data
+      60: rider_rotation_offset
+      61: area_effect_cloud_radius #float
+      62: area_effect_cloud_waiting #int
+      63: area_effect_cloud_particle_id #int
+      64: shulker_peek_id #int
+      65: shulker_attach_face #byte
+      66: shulker_attached #short
+      67: shulker_attach_pos
+      68: trading_player_eid #long
+      69: trading_career
+      70: has_command_block
+      71: command_block_command #string
+      72: command_block_last_output #string
+      73: command_block_track_output #byte
+      74: controlling_rider_seat_number #byte
+      75: strength #int
+      76: max_strength #int
+      77: spell_casting_color #int
+      78: limited_life
+      79: armor_stand_pose_index # int
+      80: ender_crystal_time_offset # int
+      81: always_show_nametag # byte
+      82: color_2 # byte
+      83: name_author
+      84: score_tag #String
+      85: balloon_attached_entity # long
+      86: pufferfish_size
+      87: bubble_time
+      88: agent
+      89: sitting_amount
+      90: sitting_amount_previous
+      91: eating_counter
+      92: flags_extended
+      93: laying_amount
+      94: laying_amount_previous
+      95: duration
+      96: spawn_time
+      97: change_rate
+      98: change_on_pickup
+      99: pickup_count
+      100: interact_text
+      101: trade_tier
+      102: max_trade_tier
+      103: trade_experience
+      104: skin_id
+      105: spawning_frames
+      106: command_block_tick_delay
+      107: command_block_execute_on_first_tick
+      108: ambient_sound_interval
+      109: ambient_sound_interval_range
+      110: ambient_sound_event_name
+      111: fall_damage_multiplier
+      112: name_raw_text
+      113: can_ride_target
+      114: low_tier_cured_discount
+      115: high_tier_cured_discount
+      116: nearby_cured_discount
+      117: nearby_cured_discount_timestamp
+      118: hitbox
+      119: is_buoyant
+      120: buoyancy_data
+      121: goat_horn_count
    type: varint =>
       0: byte
       1: short
@@ -245,16 +247,126 @@ MetadataDictionary: []varint
       6: vec3i
       7: long
       8: vec3f
-   value: type?
-      if byte: i8
-      if short: li16
-      if int: zigzag32
-      if float: lf32
-      if string: string
-      if compound: nbt
-      if vec3i: vec3i
-      if long: zigzag64
-      if vec3f: vec3f
+   value: key ?
+      if flags: MetadataFlags1
+      if flags_extended: MetadataFlags2
+      default: type ?
+         if byte: i8
+         if short: li16
+         if int: zigzag32
+         if float: lf32
+         if string: string
+         if compound: nbt
+         if vec3i: vec3i
+         if long: zigzag64
+         if vec3f: vec3f
+
+MetadataFlags1: [ "bitflags", {
+   "type": "zigzag64", "big": true, "shift": true,
+   "flags": {
+      "onfire": 0,
+      "sneaking": 1,
+      "riding": 2,
+      "sprinting": 3,
+      "action": 4,
+      "invisible": 5,
+      "tempted": 6,
+      "inlove": 7,
+      "saddled": 8,
+      "powered": 9,
+      "ignited": 10,
+      "baby": 11,
+      "converting": 12,
+      "critical": 13,
+      "can_show_nametag": 14,
+      "always_show_nametag": 15,
+      "no_ai": 16,
+      "silent": 17,
+      "wallclimbing": 18,
+      "can_climb": 19,
+      "swimmer": 20,
+      "can_fly": 21,
+      "walker": 22,
+      "resting": 23,
+      "sitting": 24,
+      "angry": 25,
+      "interested": 26,
+      "charged": 27,
+      "tamed": 28,
+      "orphaned": 29,
+      "leashed": 30,
+      "sheared": 31,
+      "gliding": 32,
+      "elder": 33,
+      "moving": 34,
+      "breathing": 35,
+      "chested": 36,
+      "stackable": 37,
+      "showbase": 38,
+      "rearing": 39,
+      "vibrating": 40,
+      "idling": 41,
+      "evoker_spell": 42,
+      "charge_attack": 43,
+      "wasd_controlled": 44,
+      "can_power_jump": 45,
+      "linger": 46,
+      "has_collision": 47,
+      "affected_by_gravity": 48,
+      "fire_immune": 49,
+      "dancing": 50,
+      "enchanted": 51,
+      "show_trident_rope": 52, # tridents show an animated rope when enchanted with loyalty after they are thrown and return to their owner. to be combined with data_owner_eid
+      "container_private": 53, #inventory is private, doesn't drop contents when killed if true
+      "transforming": 54,
+      "spin_attack": 55,
+      "swimming": 56,
+      "bribed": 57, #dolphins have this set when they go to find treasure for the player
+      "pregnant": 58,
+      "laying_egg": 59,
+      "rider_can_pick": 60, #???
+      "transition_sitting": 61,
+      "eating": 62,
+      "laying_down": 63,
+   }
+}]
+
+MetadataFlags2: [ "bitflags", {
+   "type": "zigzag64","big": true, "shift": true,
+   "flags": {
+      "sneezing": 64,
+      "trusting": 65,
+      "rolling": 66,
+      "scared": 67,
+      "in_scaffolding": 68,
+      "over_scaffolding": 69,
+      "fall_through_scaffolding": 70,
+      "blocking": 71, #shield
+      "transition_blocking": 72,
+      "blocked_using_shield": 73,
+      "blocked_using_damaged_shield": 74,
+      "sleeping": 75,
+      "wants_to_wake": 76,
+      "trade_interest": 77,
+      "door_breaker": 78, #...
+      "breaking_obstruction": 79,
+      "door_opener": 80, #...
+      "illager_captain": 81,
+      "stunned": 82,
+      "roaring": 83,
+      "delayed_attacking": 84,
+      "avoiding_mobs": 85,
+      "avoiding_block": 86,
+      "facing_target_to_range_attack": 87,
+      "hidden_when_invisible": 88, #??????????????????
+      "is_in_ui": 89,
+      "stalking": 90,
+      "emoting": 91,
+      "celebrating": 92,
+      "admiring": 93,
+      "celebrating_special": 94,
+   }
+}]
 
 Link:
    ridden_entity_id: zigzag64
@@ -632,29 +744,31 @@ ItemStackRequests: []varint
          # BeaconPaymentStackRequestAction is sent by the client when it submits an item to enable effects from a
          # beacon. These items will have been moved into the beacon item slot in advance. 
          8: beacon_payment
+         # MineBlockStackRequestAction is sent by the client when it breaks a block.
+         9: mine_block
          # CraftRecipeStackRequestAction is sent by the client the moment it begins crafting an item. This is the
          # first action sent, before the Consume and Create item stack request actions.
          # This action is also sent when an item is enchanted. Enchanting should be treated mostly the same way as
          # crafting, where the old item is consumed.
-         9: craft_recipe
+         10: craft_recipe
          # AutoCraftRecipeStackRequestAction is sent by the client similarly to the CraftRecipeStackRequestAction. The
          # only difference is that the recipe is automatically created and crafted by shift clicking the recipe book.
-         10: craft_recipe_auto  #recipe book?
+         11: craft_recipe_auto  #recipe book?
          # CraftCreativeStackRequestAction is sent by the client when it takes an item out fo the creative inventory.
          # The item is thus not really crafted, but instantly created.
-         11: craft_creative
+         12: craft_creative
          # CraftRecipeOptionalStackRequestAction is sent when using an anvil. When this action is sent, the
          # CustomNames field in the respective stack request is non-empty and contains the name of the item created
          # using the anvil.
-         12: optional
+         13: optional
          # CraftNonImplementedStackRequestAction is an action sent for inventory actions that aren't yet implemented
          # in the new system. These include, for example, anvils.
-         13: non_implemented  #anvils aren't fully implemented yet
+         14: non_implemented  #anvils aren't fully implemented yet
          # CraftResultsDeprecatedStackRequestAction is an additional, deprecated packet sent by the client after
          # crafting. It holds the final results and the amount of times the recipe was crafted. It shouldn't be used.
          # This action is also sent when an item is enchanted. Enchanting should be treated mostly the same way as
          # crafting, where the old item is consumed.
-         14: results_deprecated
+         15: results_deprecated
       _: type_id ?
          if take or place:
             count: u8
@@ -687,6 +801,15 @@ ItemStackRequests: []varint
             # PrimaryEffect and SecondaryEffect are the effects that were selected from the beacon.
             primary_effect: zigzag32
             secondary_effect: zigzag32
+         if mine_block:
+            # // Unknown1 ... TODO: Find out what this is for
+            unknown1: zigzag32
+            # PredictedDurability is the durability of the item that the client assumes to be present at the time
+            predicted_durability: zigzag32
+            # StackNetworkID is the unique stack ID that the client assumes to be present at the time. The server
+            # must check if these IDs match. If they do not match, servers should reject the stack request that the
+            # action holding this info was in.
+            network_id: zigzag32 
          if craft_recipe or craft_recipe_auto:
             # RecipeNetworkID is the network ID of the recipe that is about to be crafted. This network ID matches
             # one of the recipes sent in the CraftingData packet, where each of the recipes have a RecipeNetworkID as
@@ -710,17 +833,43 @@ ItemStackRequests: []varint
    # * Used for the server to determine which strings should be filtered. Used in anvils to verify a renamed item.
    custom_names: string[]varint
 
+# ItemStackResponse is a response to an individual ItemStackRequest.
 ItemStackResponses: []varint
-   result: u8
+	# Status specifies if the request with the RequestID below was successful. If this is the case, the
+	# ContainerInfo below will have information on what slots ended up changing. If not, the container info
+	# will be empty.
+	# A non-0 status means an error occurred and will result in the action being reverted.
+   status: u8 =>
+      0: ok
+      1: error
+   # RequestID is the unique ID of the request that this response is in reaction to. If rejected, the client
+   # will undo the actions from the request with this ID.
    request_id: varint32
+   # ContainerInfo holds information on the containers that had their contents changed as a result of the
+   # request.
    containers: []varint
-      container_id: u8
+      # ContainerID is the container ID of the container that the slots that follow are in. For the main
+      # inventory, this value seems to be 0x1b. For the cursor, this value seems to be 0x3a. For the crafting
+      # grid, this value seems to be 0x0d.
+      # * actually, this is ContainerSlotType - used by the inventory system that specifies the type of slot
+      slot_type: ContainerSlotType
+      # SlotInfo holds information on what item stack should be present in specific slots in the container.
       slots: []varint
+         # Slot and HotbarSlot seem to be the same value every time: The slot that was actually changed. I'm not
+         # sure if these slots ever differ.
          slot: u8
          hotbar_slot: u8
+         # Count is the total count of the item stack. This count will be shown client-side after the response is
+         # sent to the client.
          count: u8
+         # StackNetworkID is the network ID of the new stack at a specific slot.
          item_stack_id: varint32
+         # CustomName is the custom name of the item stack. It is used in relation to text filtering.
          custom_name: string
+         # DurabilityCorrection is the current durability of the item stack. This durability will be shown
+         # client-side after the response is sent to the client.
+         durability_correction: zigzag32
+
 
 ItemComponentList: []varint
    # Name is the name of the item, which is a name like 'minecraft:stick'.
@@ -826,6 +975,68 @@ WindowType: u8 =>
    31: hud
    32: jigsaw_editor
    33: smithing_table
+
+ContainerSlotType: u8 =>
+   - anvil_input
+   - anvil_material
+   - anvil_result
+   - smithing_table_input
+   - smithing_table_material
+   - smithing_table_result
+   - armor
+   - container
+   - beacon_payment
+   - brewing_input
+   - brewing_result
+   - brewing_fuel
+   - hotbar_and_inventory
+   - crafting_input
+   - crafting_output
+   - recipe_construction
+   - recipe_nature
+   - recipe_items
+   - recipe_search
+   - recipe_search_bar
+   - recipe_equipment
+   - enchanting_input
+   - enchanting_lapis
+   - furnace_fuel
+   - furnace_ingredient
+   - furnace_output
+   - horse_equip
+   - hotbar
+   - inventory
+   - shulker
+   - trade_ingredient1
+   - trade_ingredient2
+   - trade_result
+   - offhand
+   - compcreate_input
+   - compcreate_output
+   - elemconstruct_output
+   - matreduce_input
+   - matreduce_output
+   - labtable_input
+   - loom_input
+   - loom_dye
+   - loom_material
+   - loom_result
+   - blast_furnace_ingredient
+   - smoker_ingredient
+   - trade2_ingredient1
+   - trade2_ingredient2
+   - trade2_result
+   - grindstone_input
+   - grindstone_additional
+   - grindstone_result
+   - stonecutter_input
+   - stonecutter_result
+   - cartography_input
+   - cartography_additional
+   - cartography_result
+   - barrel
+   - cursor
+   - creative_output
 
 # TODO: remove?
 LegacyEntityType: li32 =>
