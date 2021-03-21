@@ -7,6 +7,7 @@
  */
 const fs = require('fs')
 const { ProtoDefCompiler } = require('protodef').Compiler
+const { Versions } = require('../src/options')
 const { join } = require('path')
 
 function getJSON (path) {
@@ -47,31 +48,43 @@ function genProtoSchema () {
 }
 
 // Compile the ProtoDef JSON into JS
-function createProtocol (version) {
+function createProtocol () {
   const compiler = new ProtoDefCompiler()
-  const protocol = getJSON(`../${version}/protocol.json`).types
+  const protocol = getJSON('./protocol.json').types
   compiler.addTypes(require('../src/datatypes/compiler-minecraft'))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
   compiler.addTypesToCompile(protocol)
 
-  fs.writeFileSync(`../${version}/read.js`, 'module.exports = ' + compiler.readCompiler.generate())
-  fs.writeFileSync(`../${version}/write.js`, 'module.exports = ' + compiler.writeCompiler.generate())
-  fs.writeFileSync(`../${version}/size.js`, 'module.exports = ' + compiler.sizeOfCompiler.generate())
+  fs.writeFileSync('./read.js', 'module.exports = ' + compiler.readCompiler.generate())
+  fs.writeFileSync('./write.js', 'module.exports = ' + compiler.writeCompiler.generate())
+  fs.writeFileSync('./size.js', 'module.exports = ' + compiler.sizeOfCompiler.generate())
 
   const compiledProto = compiler.compileProtoDefSync()
   return compiledProto
 }
 
-function main (ver = 'latest') {
-  process.chdir(join(__dirname, '/../data/', ver))
+function copyLatest () {
+  process.chdir(join(__dirname, '/../data/latest'))
   const version = genProtoSchema()
-
   fs.writeFileSync(`../${version}/protocol.json`, JSON.stringify({ types: getJSON('./proto.json') }, null, 2))
   fs.unlinkSync('./proto.json') // remove temp file
   fs.unlinkSync('./packet_map.yml') // remove temp file
-
-  console.log('Generating JS...')
-  createProtocol(version)
+  return version
 }
 
-main()
+function main (ver = 'latest') {
+  if (ver === 'latest') ver = copyLatest()
+  process.chdir(join(__dirname, '/../data/', ver))
+  console.log('Generating JS...', ver)
+  createProtocol(ver)
+}
+
+// If no argument, build everything
+if (!process.argv[2]) {
+  copyLatest()
+  for (const version in Versions) {
+    main(version)
+  }
+} else { // build the specified version
+  main(process.argv[2])
+}
