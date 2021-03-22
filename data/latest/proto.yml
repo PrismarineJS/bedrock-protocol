@@ -753,6 +753,10 @@ packet_update_attributes:
    attributes: PlayerAttributes
    tick: varint64
 
+# InventoryTransaction is a packet sent by the client. It essentially exists out of multiple sub-packets,
+# each of which have something to do with the inventory in one way or another. Some of these sub-packets
+# directly relate to the inventory, others relate to interaction with the world, that could potentially
+# result in a change in the inventory.
 packet_inventory_transaction:
    !id: 0x1e
    !bound: both
@@ -821,37 +825,7 @@ packet_player_action:
    runtime_entity_id: varint
    # ActionType is the ID of the action that was executed by the player. It is one of the constants that may
    # be found above.
-   action: zigzag32 =>
-      0: start_break
-      1: abort_break
-      2: stop_break
-      3: get_updated_block
-      4: drop_item
-      5: start_sleeping
-      6: stop_sleeping
-      7: respawn
-      8: jump
-      9: start_sprint
-      10: stop_sprint
-      11: start_sneak
-      12: stop_sneak
-      13: creative_player_destroy_block
-      # sent when spawning in a different dimension to tell the server we spawned
-      14: dimension_change_ack
-      15: start_glide
-      16: stop_glide
-      17: build_denied
-      18: crack_break
-      19: change_skin
-      # no longer used
-      20: set_enchatnment_seed
-      21: swimming
-      22: stop_swimming
-      23: start_spin_attack
-      24: stop_spin_attack
-      25: ineract_block
-      26: predict_break
-      27: continue_break
+   action: Action
    # BlockPosition is the position of the target block, if the action with the ActionType set concerned a
    # block. If that is not the case, the block position will be zero.
    position: BlockCoordinates
@@ -2127,10 +2101,11 @@ packet_player_auth_input:
    # InputMode specifies the way that the client inputs data to the screen. It is one of the constants that
    # may be found above.
    input_mode: varint =>
-      0: mouse
-      1: touch
-      2: game_pad
-      3: motion_controller
+      0: unknown
+      1: mouse
+      2: touch
+      3: game_pad
+      4: motion_controller
    # PlayMode specifies the way that the player is playing. The values it holds, which are rather random,
    # may be found above.
    play_mode: varint =>
@@ -2154,49 +2129,67 @@ packet_player_auth_input:
    # Delta was the delta between the old and the new position. There isn't any practical use for this field
    # as it can be calculated by the server itself.
    delta: vec3f
+   transaction: input_data.item_interact ?
+      if true:
+         legacy: TransactionLegacy
+         actions: TransactionActions
+         data: TransactionUseItem
+   item_stack_request: input_data.item_stack_request ?
+      if true: ItemStackRequest
+   block_action: input_data.block_action ?
+      if true: []zigzag32
+         action: Action
+         _: action?
+            if start_break or abort_break or crack_break or predict_break or continue_break:
+               # BlockPosition is the position of the target block, if the action with the ActionType set concerned a
+               # block. If that is not the case, the block position will be zero.
+               position: BlockCoordinates
+               # BlockFace is the face of the target block that was touched. If the action with the ActionType set
+               # concerned a block. If not, the face is always 0.
+               face: zigzag32
 
 #TODO: update to use the new `shift` option in bitflags
 InputFlag: [ "bitflags", {
-   "type": "varint",
-   "flags": {
-      "ascend":             0b1,
-      "descend":            0b10,
-      "north_jump":         0b100,
-      "jump_down":          0b1000,
-      "sprint_down":        0b10000,
-      "change_height":      0b100000,
-      "jumping":            0b1000000,
-      "auto_jumping_in_water": 0b10000000,
-      "sneaking":           0b100000000,
-      "sneak_down":         0b1000000000,
-      "up":                 0b10000000000,
-      "down":               0b100000000000,
-      "left":               0b1000000000000,
-      "right":              0b10000000000000,
-      "up_left":            0b100000000000000,
-      "up_right":           0b1000000000000000,
-      "want_up":            0b10000000000000000,
-      "want_down":          0b100000000000000000,
-      "want_down_slow":     0b1000000000000000000,
-      "want_up_slow":       0b10000000000000000000,
-      "sprinting":          0b100000000000000000000,
-      "ascend_scaffolding": 0b1000000000000000000000,
-      "descend_scaffolding": 0b10000000000000000000000,
-      "sneak_toggle_down":  0b100000000000000000000000,
-      "persist_sneak":      0b1000000000000000000000000,
-      "start_sprinting":    0b10000000000000000000000000,
-      "stop_sprinting":     0b100000000000000000000000000,
-      "start_sneaking":     0b1000000000000000000000000000,
-      "stop_sneaking":      0b1000000000000000000000000000,
-      "start_swimming":     0b10000000000000000000000000000,
-      "stop_swimming":      0b100000000000000000000000000000,
-      "start_jumping":      0b1000000000000000000000000000000,
-      "start_gliding":      0b10000000000000000000000000000000,
-      "stop_gliding":       0b100000000000000000000000000000000,
-      "item_interact":      0b1000000000000000000000000000000000,
-      "block_action":       0b10000000000000000000000000000000000,
-      "item_stack_request": 0b100000000000000000000000000000000000
-   }
+   "type": "varint64", "big": true,
+   "flags": [
+      "ascend",
+      "descend",
+      "north_jump",
+      "jump_down",
+      "sprint_down",
+      "change_height",
+      "jumping",
+      "auto_jumping_in_water",
+      "sneaking",
+      "sneak_down",
+      "up",
+      "down",
+      "left",
+      "right",
+      "up_left",
+      "up_right",
+      "want_up",
+      "want_down",
+      "want_down_slow",
+      "want_up_slow",
+      "sprinting",
+      "ascend_scaffolding",
+      "descend_scaffolding",
+      "sneak_toggle_down",
+      "persist_sneak",
+      "start_sprinting",
+      "stop_sprinting",
+      "start_sneaking",
+      "stop_sneaking",
+      "start_swimming",
+      "stop_swimming",
+      "start_jumping",
+      "start_gliding",
+      "stop_gliding",
+      "item_interact",
+      "block_action",
+      "item_stack_request"
+   ]
 }]
 
 packet_creative_content:
@@ -2209,10 +2202,14 @@ packet_player_enchant_options:
    !bound: client
    enchant_options: EnchantOptions
 
+# ItemStackRequest is sent by the client to change item stacks in an inventory. It is essentially a
+# replacement of the InventoryTransaction packet added in 1.16 for inventory specific actions, such as moving
+# items around or crafting. The InventoryTransaction packet is still used for actions such as placing blocks
+# and interacting with entities.
 packet_item_stack_request:
    !id: 0x93
    !bound: server
-   requests: ItemStackRequests
+   requests: ItemStackRequest[]varint
 
 packet_item_stack_response:
    !id: 0x94

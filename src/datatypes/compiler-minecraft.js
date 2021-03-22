@@ -81,57 +81,63 @@ SizeOf.nbt = ['native', minecraft.nbt[2]]
  */
 
 Read.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
-  if (shift) {
-    let i = 0
-    for (const key in flags) {
-      const val = flags[key]
-      flags[key] = val << i++
-    }
+  let fstr = JSON.stringify(flags)
+  if (Array.isArray(flags)) {
+    fstr = '{'
+    flags.map((v,k) => fstr += `"${v}": ${big ? 1n << BigInt(k) : 1 << k}` + (big ? 'n,' : ','))
+    fstr += '}'
+  } else if (shift) {
+    fstr = '{'
+    for (const key in flags) fstr += `"${key}": ${1 << flags[key]},`;
+    fstr += '}'
   }
   return compiler.wrapCode(`
     const { value: _value, size } = ${compiler.callType(type, 'offset')}
     const value = { _value }
-    const flags = ${JSON.stringify(flags)}
+    const flags = ${fstr}
     for (const key in flags) {
-      const v = ${big ? `BigInt(flags[key])` : 'flags[key]'}
-      value[key] = (_value & v) == v
+      value[key] = (_value & flags[key]) == flags[key]
     }
     return { value, size }
   `.trim())
 }]
 
 Write.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
-  if (shift) {
-    let i = 0
-    for (const key in flags) {
-      const val = flags[key]
-      flags[key] = val << i++
-    }
+  let fstr = JSON.stringify(flags)
+  if (Array.isArray(flags)) {
+    fstr = '{'
+    flags.map((v,k) => fstr += `"${v}": ${big ? 1n << BigInt(k) : 1 << k}` + (big ? 'n,' : ','))
+    fstr += '}'
+  } else if (shift) {
+    fstr = '{'
+    for (const key in flags) fstr += `"${key}": ${1 << flags[key]},`;
+    fstr += '}'
   }
   return compiler.wrapCode(`
-    const flags = ${JSON.stringify(flags)}
-    let val = value._value
+    const flags = ${fstr}
+    let val = value._value ${big ? '|| 0n' : ''}
     for (const key in flags) {
-      const v = ${big ? `BigInt(flags[key])` : 'flags[key]'}
-      if (value[key]) val |= v
+      if (value[key]) val |= flags[key]
     }
     return (ctx.${type})(val, buffer, offset)
   `.trim())
 }]
 
 SizeOf.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
-  if (shift) {
-    let i = 0
-    for (const key in flags) {
-      const val = flags[key]
-      flags[key] = val << i++
-    }
+  let fstr = JSON.stringify(flags)
+  if (Array.isArray(flags)) {
+    fstr = '{'
+    flags.map((v,k) => fstr += `"${v}": ${big ? 1n << BigInt(k) : 1 << k}` + (big ? 'n,' : ','))
+    fstr += '}'
+  } else if (shift) {
+    fstr = '{'
+    for (const key in flags) fstr += `"${key}": ${1 << flags[key]},`;
+    fstr += '}'
   }
   return compiler.wrapCode(`
-    const flags = ${JSON.stringify(flags)}
-    let val = value._value
+    const flags = ${fstr}
+    let val = value._value ${big ? '|| 0n' : ''}
     for (const key in flags) {
-      const v = ${big ? `BigInt(flags[key])` : 'flags[key]'}
       if (value[key]) val |= flags[key]
     }
     return (ctx.${type})(val)

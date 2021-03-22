@@ -744,80 +744,62 @@
         ]
       }
     ],
-    "Transaction": [
+    "TransactionUseItem": [
       "container",
       [
         {
-          "name": "legacy_request_id",
-          "type": "zigzag32"
-        },
-        {
-          "name": "legacy_transactions",
-          "type": [
-            "switch",
-            {
-              "compareTo": "legacy_request_id",
-              "fields": {
-                "0": "void"
-              },
-              "default": [
-                "array",
-                {
-                  "countType": "varint",
-                  "type": [
-                    "container",
-                    [
-                      {
-                        "name": "container_id",
-                        "type": "u8"
-                      },
-                      {
-                        "name": "changed_slots",
-                        "type": [
-                          "array",
-                          {
-                            "countType": "varint",
-                            "type": [
-                              "container",
-                              [
-                                {
-                                  "name": "slot_id",
-                                  "type": "u8"
-                                }
-                              ]
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "transaction_type",
+          "name": "action_type",
           "type": [
             "mapper",
             {
               "type": "varint",
               "mappings": {
-                "0": "normal",
-                "1": "inventory_mismatch",
-                "2": "item_use",
-                "3": "item_use_on_entity",
-                "4": "item_release"
+                "0": "click_block",
+                "1": "click_air",
+                "2": "break_block"
               }
             }
           ]
         },
         {
+          "name": "block_position",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "face",
+          "type": "varint"
+        },
+        {
+          "name": "hotbar_slot",
+          "type": "varint"
+        },
+        {
+          "name": "held_item",
+          "type": "Item"
+        },
+        {
+          "name": "player_pos",
+          "type": "vec3f"
+        },
+        {
+          "name": "click_pos",
+          "type": "vec3f"
+        },
+        {
+          "name": "block_runtime_id",
+          "type": "varint"
+        }
+      ]
+    ],
+    "TransactionActions": [
+      "container",
+      [
+        {
           "name": "network_ids",
           "type": "bool"
         },
         {
-          "name": "inventory_actions",
+          "name": "actions",
           "type": [
             "array",
             {
@@ -928,6 +910,89 @@
               ]
             }
           ]
+        }
+      ]
+    ],
+    "TransactionLegacy": [
+      "container",
+      [
+        {
+          "name": "legacy_request_id",
+          "type": "zigzag32"
+        },
+        {
+          "name": "legacy_transactions",
+          "type": [
+            "switch",
+            {
+              "compareTo": "legacy_request_id",
+              "fields": {
+                "0": "void"
+              },
+              "default": [
+                "array",
+                {
+                  "countType": "varint",
+                  "type": [
+                    "container",
+                    [
+                      {
+                        "name": "container_id",
+                        "type": "u8"
+                      },
+                      {
+                        "name": "changed_slots",
+                        "type": [
+                          "array",
+                          {
+                            "countType": "varint",
+                            "type": [
+                              "container",
+                              [
+                                {
+                                  "name": "slot_id",
+                                  "type": "u8"
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    ],
+    "Transaction": [
+      "container",
+      [
+        {
+          "name": "legacy",
+          "type": "TransactionLegacy"
+        },
+        {
+          "name": "transaction_type",
+          "type": [
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "normal",
+                "1": "inventory_mismatch",
+                "2": "item_use",
+                "3": "item_use_on_entity",
+                "4": "item_release"
+              }
+            }
+          ]
+        },
+        {
+          "name": "actions",
+          "type": "TransactionActions"
         },
         {
           "name": "transaction_data",
@@ -938,53 +1003,7 @@
               "fields": {
                 "normal": "void",
                 "inventory_mismatch": "void",
-                "item_use": [
-                  "container",
-                  [
-                    {
-                      "name": "action_type",
-                      "type": [
-                        "mapper",
-                        {
-                          "type": "varint",
-                          "mappings": {
-                            "0": "click_block",
-                            "1": "click_air",
-                            "2": "break_block"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "name": "block_position",
-                      "type": "BlockCoordinates"
-                    },
-                    {
-                      "name": "face",
-                      "type": "varint"
-                    },
-                    {
-                      "name": "hotbar_slot",
-                      "type": "varint"
-                    },
-                    {
-                      "name": "held_item",
-                      "type": "Item"
-                    },
-                    {
-                      "name": "player_pos",
-                      "type": "vec3f"
-                    },
-                    {
-                      "name": "click_pos",
-                      "type": "vec3f"
-                    },
-                    {
-                      "name": "block_runtime_id",
-                      "type": "varint"
-                    }
-                  ]
-                ],
+                "item_use": "TransactionUseItem",
                 "item_use_on_entity": [
                   "container",
                   [
@@ -2009,6 +2028,42 @@
         ]
       }
     ],
+    "Action": [
+      "mapper",
+      {
+        "type": "zigzag32",
+        "mappings": {
+          "0": "start_break",
+          "1": "abort_break",
+          "2": "stop_break",
+          "3": "get_updated_block",
+          "4": "drop_item",
+          "5": "start_sleeping",
+          "6": "stop_sleeping",
+          "7": "respawn",
+          "8": "jump",
+          "9": "start_sprint",
+          "10": "stop_sprint",
+          "11": "start_sneak",
+          "12": "stop_sneak",
+          "13": "creative_player_destroy_block",
+          "14": "dimension_change_ack",
+          "15": "start_glide",
+          "16": "stop_glide",
+          "17": "build_denied",
+          "18": "crack_break",
+          "19": "change_skin",
+          "20": "set_enchatnment_seed",
+          "21": "swimming",
+          "22": "stop_swimming",
+          "23": "start_spin_attack",
+          "24": "stop_spin_attack",
+          "25": "ineract_block",
+          "26": "predict_break",
+          "27": "continue_break"
+        }
+      }
+    ],
     "StackRequestSlotInfo": [
       "container",
       [
@@ -2026,272 +2081,266 @@
         }
       ]
     ],
-    "ItemStackRequests": [
-      "array",
-      {
-        "countType": "varint",
-        "type": [
-          "container",
-          [
+    "ItemStackRequest": [
+      "container",
+      [
+        {
+          "name": "request_id",
+          "type": "zigzag32"
+        },
+        {
+          "name": "actions",
+          "type": [
+            "array",
             {
-              "name": "request_id",
-              "type": "zigzag32"
-            },
-            {
-              "name": "actions",
+              "countType": "varint",
               "type": [
-                "array",
-                {
-                  "countType": "varint",
-                  "type": [
-                    "container",
-                    [
+                "container",
+                [
+                  {
+                    "name": "type_id",
+                    "type": [
+                      "mapper",
                       {
-                        "name": "type_id",
-                        "type": [
-                          "mapper",
-                          {
-                            "type": "u8",
-                            "mappings": {
-                              "0": "take",
-                              "1": "place",
-                              "2": "swap",
-                              "3": "drop",
-                              "4": "destroy",
-                              "5": "consume",
-                              "6": "create",
-                              "7": "lab_table_combine",
-                              "8": "beacon_payment",
-                              "9": "mine_block",
-                              "10": "craft_recipe",
-                              "11": "craft_recipe_auto",
-                              "12": "craft_creative",
-                              "13": "optional",
-                              "14": "non_implemented",
-                              "15": "results_deprecated"
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "anon": true,
-                        "type": [
-                          "switch",
-                          {
-                            "compareTo": "type_id",
-                            "fields": {
-                              "take": [
-                                "container",
-                                [
-                                  {
-                                    "name": "count",
-                                    "type": "u8"
-                                  },
-                                  {
-                                    "name": "source",
-                                    "type": "StackRequestSlotInfo"
-                                  },
-                                  {
-                                    "name": "destination",
-                                    "type": "StackRequestSlotInfo"
-                                  }
-                                ]
-                              ],
-                              "place": [
-                                "container",
-                                [
-                                  {
-                                    "name": "count",
-                                    "type": "u8"
-                                  },
-                                  {
-                                    "name": "source",
-                                    "type": "StackRequestSlotInfo"
-                                  },
-                                  {
-                                    "name": "destination",
-                                    "type": "StackRequestSlotInfo"
-                                  }
-                                ]
-                              ],
-                              "swap": [
-                                "container",
-                                [
-                                  {
-                                    "name": "source",
-                                    "type": "StackRequestSlotInfo"
-                                  },
-                                  {
-                                    "name": "destination",
-                                    "type": "StackRequestSlotInfo"
-                                  }
-                                ]
-                              ],
-                              "drop": [
-                                "container",
-                                [
-                                  {
-                                    "name": "count",
-                                    "type": "u8"
-                                  },
-                                  {
-                                    "name": "source",
-                                    "type": "StackRequestSlotInfo"
-                                  },
-                                  {
-                                    "name": "randomly",
-                                    "type": "bool"
-                                  }
-                                ]
-                              ],
-                              "destroy": [
-                                "container",
-                                [
-                                  {
-                                    "name": "count",
-                                    "type": "u8"
-                                  },
-                                  {
-                                    "name": "source",
-                                    "type": "StackRequestSlotInfo"
-                                  }
-                                ]
-                              ],
-                              "consume": [
-                                "container",
-                                [
-                                  {
-                                    "name": "count",
-                                    "type": "u8"
-                                  },
-                                  {
-                                    "name": "source",
-                                    "type": "StackRequestSlotInfo"
-                                  }
-                                ]
-                              ],
-                              "create": [
-                                "container",
-                                [
-                                  {
-                                    "name": "result_slot_id",
-                                    "type": "u8"
-                                  }
-                                ]
-                              ],
-                              "beacon_payment": [
-                                "container",
-                                [
-                                  {
-                                    "name": "primary_effect",
-                                    "type": "zigzag32"
-                                  },
-                                  {
-                                    "name": "secondary_effect",
-                                    "type": "zigzag32"
-                                  }
-                                ]
-                              ],
-                              "mine_block": [
-                                "container",
-                                [
-                                  {
-                                    "name": "unknown1",
-                                    "type": "zigzag32"
-                                  },
-                                  {
-                                    "name": "predicted_durability",
-                                    "type": "zigzag32"
-                                  },
-                                  {
-                                    "name": "network_id",
-                                    "type": "zigzag32"
-                                  }
-                                ]
-                              ],
-                              "craft_recipe": [
-                                "container",
-                                [
-                                  {
-                                    "name": "recipe_network_id",
-                                    "type": "varint"
-                                  }
-                                ]
-                              ],
-                              "craft_recipe_auto": [
-                                "container",
-                                [
-                                  {
-                                    "name": "recipe_network_id",
-                                    "type": "varint"
-                                  }
-                                ]
-                              ],
-                              "craft_creative": [
-                                "container",
-                                [
-                                  {
-                                    "name": "creative_item_network_id",
-                                    "type": "varint32"
-                                  }
-                                ]
-                              ],
-                              "optional": [
-                                "container",
-                                [
-                                  {
-                                    "name": "recipe_network_id",
-                                    "type": "varint"
-                                  },
-                                  {
-                                    "name": "filtered_string_index",
-                                    "type": "li32"
-                                  }
-                                ]
-                              ],
-                              "non_implemented": "void",
-                              "results_deprecated": [
-                                "container",
-                                [
-                                  {
-                                    "name": "result_items",
-                                    "type": [
-                                      "array",
-                                      {
-                                        "countType": "varint",
-                                        "type": "Item"
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "name": "times_crafted",
-                                    "type": "u8"
-                                  }
-                                ]
-                              ]
-                            },
-                            "default": "void"
-                          }
-                        ]
+                        "type": "u8",
+                        "mappings": {
+                          "0": "take",
+                          "1": "place",
+                          "2": "swap",
+                          "3": "drop",
+                          "4": "destroy",
+                          "5": "consume",
+                          "6": "create",
+                          "7": "lab_table_combine",
+                          "8": "beacon_payment",
+                          "9": "mine_block",
+                          "10": "craft_recipe",
+                          "11": "craft_recipe_auto",
+                          "12": "craft_creative",
+                          "13": "optional",
+                          "14": "non_implemented",
+                          "15": "results_deprecated"
+                        }
                       }
                     ]
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "custom_names",
-              "type": [
-                "array",
-                {
-                  "countType": "varint",
-                  "type": "string"
-                }
+                  },
+                  {
+                    "anon": true,
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "type_id",
+                        "fields": {
+                          "take": [
+                            "container",
+                            [
+                              {
+                                "name": "count",
+                                "type": "u8"
+                              },
+                              {
+                                "name": "source",
+                                "type": "StackRequestSlotInfo"
+                              },
+                              {
+                                "name": "destination",
+                                "type": "StackRequestSlotInfo"
+                              }
+                            ]
+                          ],
+                          "place": [
+                            "container",
+                            [
+                              {
+                                "name": "count",
+                                "type": "u8"
+                              },
+                              {
+                                "name": "source",
+                                "type": "StackRequestSlotInfo"
+                              },
+                              {
+                                "name": "destination",
+                                "type": "StackRequestSlotInfo"
+                              }
+                            ]
+                          ],
+                          "swap": [
+                            "container",
+                            [
+                              {
+                                "name": "source",
+                                "type": "StackRequestSlotInfo"
+                              },
+                              {
+                                "name": "destination",
+                                "type": "StackRequestSlotInfo"
+                              }
+                            ]
+                          ],
+                          "drop": [
+                            "container",
+                            [
+                              {
+                                "name": "count",
+                                "type": "u8"
+                              },
+                              {
+                                "name": "source",
+                                "type": "StackRequestSlotInfo"
+                              },
+                              {
+                                "name": "randomly",
+                                "type": "bool"
+                              }
+                            ]
+                          ],
+                          "destroy": [
+                            "container",
+                            [
+                              {
+                                "name": "count",
+                                "type": "u8"
+                              },
+                              {
+                                "name": "source",
+                                "type": "StackRequestSlotInfo"
+                              }
+                            ]
+                          ],
+                          "consume": [
+                            "container",
+                            [
+                              {
+                                "name": "count",
+                                "type": "u8"
+                              },
+                              {
+                                "name": "source",
+                                "type": "StackRequestSlotInfo"
+                              }
+                            ]
+                          ],
+                          "create": [
+                            "container",
+                            [
+                              {
+                                "name": "result_slot_id",
+                                "type": "u8"
+                              }
+                            ]
+                          ],
+                          "beacon_payment": [
+                            "container",
+                            [
+                              {
+                                "name": "primary_effect",
+                                "type": "zigzag32"
+                              },
+                              {
+                                "name": "secondary_effect",
+                                "type": "zigzag32"
+                              }
+                            ]
+                          ],
+                          "mine_block": [
+                            "container",
+                            [
+                              {
+                                "name": "unknown1",
+                                "type": "zigzag32"
+                              },
+                              {
+                                "name": "predicted_durability",
+                                "type": "zigzag32"
+                              },
+                              {
+                                "name": "network_id",
+                                "type": "zigzag32"
+                              }
+                            ]
+                          ],
+                          "craft_recipe": [
+                            "container",
+                            [
+                              {
+                                "name": "recipe_network_id",
+                                "type": "varint"
+                              }
+                            ]
+                          ],
+                          "craft_recipe_auto": [
+                            "container",
+                            [
+                              {
+                                "name": "recipe_network_id",
+                                "type": "varint"
+                              }
+                            ]
+                          ],
+                          "craft_creative": [
+                            "container",
+                            [
+                              {
+                                "name": "creative_item_network_id",
+                                "type": "varint32"
+                              }
+                            ]
+                          ],
+                          "optional": [
+                            "container",
+                            [
+                              {
+                                "name": "recipe_network_id",
+                                "type": "varint"
+                              },
+                              {
+                                "name": "filtered_string_index",
+                                "type": "li32"
+                              }
+                            ]
+                          ],
+                          "non_implemented": "void",
+                          "results_deprecated": [
+                            "container",
+                            [
+                              {
+                                "name": "result_items",
+                                "type": [
+                                  "array",
+                                  {
+                                    "countType": "varint",
+                                    "type": "Item"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "times_crafted",
+                                "type": "u8"
+                              }
+                            ]
+                          ]
+                        },
+                        "default": "void"
+                      }
+                    ]
+                  }
+                ]
               ]
             }
           ]
-        ]
-      }
+        },
+        {
+          "name": "custom_names",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "string"
+            }
+          ]
+        }
+      ]
     ],
     "ItemStackResponses": [
       "array",
@@ -4481,42 +4530,7 @@
         },
         {
           "name": "action",
-          "type": [
-            "mapper",
-            {
-              "type": "zigzag32",
-              "mappings": {
-                "0": "start_break",
-                "1": "abort_break",
-                "2": "stop_break",
-                "3": "get_updated_block",
-                "4": "drop_item",
-                "5": "start_sleeping",
-                "6": "stop_sleeping",
-                "7": "respawn",
-                "8": "jump",
-                "9": "start_sprint",
-                "10": "stop_sprint",
-                "11": "start_sneak",
-                "12": "stop_sneak",
-                "13": "creative_player_destroy_block",
-                "14": "dimension_change_ack",
-                "15": "start_glide",
-                "16": "stop_glide",
-                "17": "build_denied",
-                "18": "crack_break",
-                "19": "change_skin",
-                "20": "set_enchatnment_seed",
-                "21": "swimming",
-                "22": "stop_swimming",
-                "23": "start_spin_attack",
-                "24": "stop_spin_attack",
-                "25": "ineract_block",
-                "26": "predict_break",
-                "27": "continue_break"
-              }
-            }
-          ]
+          "type": "Action"
         },
         {
           "name": "position",
@@ -6821,10 +6835,11 @@
             {
               "type": "varint",
               "mappings": {
-                "0": "mouse",
-                "1": "touch",
-                "2": "game_pad",
-                "3": "motion_controller"
+                "0": "unknown",
+                "1": "mouse",
+                "2": "touch",
+                "3": "game_pad",
+                "4": "motion_controller"
               }
             }
           ]
@@ -6870,6 +6885,152 @@
         {
           "name": "delta",
           "type": "vec3f"
+        },
+        {
+          "name": "transaction",
+          "type": [
+            "switch",
+            {
+              "compareTo": "input_data.item_interact",
+              "fields": {
+                "true": [
+                  "container",
+                  [
+                    {
+                      "name": "legacy",
+                      "type": "TransactionLegacy"
+                    },
+                    {
+                      "name": "actions",
+                      "type": "TransactionActions"
+                    },
+                    {
+                      "name": "data",
+                      "type": "TransactionUseItem"
+                    }
+                  ]
+                ]
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "item_stack_request",
+          "type": [
+            "switch",
+            {
+              "compareTo": "input_data.item_stack_request",
+              "fields": {
+                "true": "ItemStackRequest"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "block_action",
+          "type": [
+            "switch",
+            {
+              "compareTo": "input_data.block_action",
+              "fields": {
+                "true": [
+                  "array",
+                  {
+                    "countType": "zigzag32",
+                    "type": [
+                      "container",
+                      [
+                        {
+                          "name": "action",
+                          "type": "Action"
+                        },
+                        {
+                          "anon": true,
+                          "type": [
+                            "switch",
+                            {
+                              "compareTo": "action",
+                              "fields": {
+                                "start_break": [
+                                  "container",
+                                  [
+                                    {
+                                      "name": "position",
+                                      "type": "BlockCoordinates"
+                                    },
+                                    {
+                                      "name": "face",
+                                      "type": "zigzag32"
+                                    }
+                                  ]
+                                ],
+                                "abort_break": [
+                                  "container",
+                                  [
+                                    {
+                                      "name": "position",
+                                      "type": "BlockCoordinates"
+                                    },
+                                    {
+                                      "name": "face",
+                                      "type": "zigzag32"
+                                    }
+                                  ]
+                                ],
+                                "crack_break": [
+                                  "container",
+                                  [
+                                    {
+                                      "name": "position",
+                                      "type": "BlockCoordinates"
+                                    },
+                                    {
+                                      "name": "face",
+                                      "type": "zigzag32"
+                                    }
+                                  ]
+                                ],
+                                "predict_break": [
+                                  "container",
+                                  [
+                                    {
+                                      "name": "position",
+                                      "type": "BlockCoordinates"
+                                    },
+                                    {
+                                      "name": "face",
+                                      "type": "zigzag32"
+                                    }
+                                  ]
+                                ],
+                                "continue_break": [
+                                  "container",
+                                  [
+                                    {
+                                      "name": "position",
+                                      "type": "BlockCoordinates"
+                                    },
+                                    {
+                                      "name": "face",
+                                      "type": "zigzag32"
+                                    }
+                                  ]
+                                ]
+                              },
+                              "default": "void"
+                            }
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              },
+              "default": "void"
+            }
+          ]
         }
       ]
     ],
@@ -6896,7 +7057,13 @@
       [
         {
           "name": "requests",
-          "type": "ItemStackRequests"
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "ItemStackRequest"
+            }
+          ]
         }
       ]
     ],
@@ -7304,72 +7471,72 @@
         "type": "zigzag64",
         "big": true,
         "shift": true,
-        "flags": {
-          "onfire": 0,
-          "sneaking": 1,
-          "riding": 2,
-          "sprinting": 3,
-          "action": 4,
-          "invisible": 5,
-          "tempted": 6,
-          "inlove": 7,
-          "saddled": 8,
-          "powered": 9,
-          "ignited": 10,
-          "baby": 11,
-          "converting": 12,
-          "critical": 13,
-          "can_show_nametag": 14,
-          "always_show_nametag": 15,
-          "no_ai": 16,
-          "silent": 17,
-          "wallclimbing": 18,
-          "can_climb": 19,
-          "swimmer": 20,
-          "can_fly": 21,
-          "walker": 22,
-          "resting": 23,
-          "sitting": 24,
-          "angry": 25,
-          "interested": 26,
-          "charged": 27,
-          "tamed": 28,
-          "orphaned": 29,
-          "leashed": 30,
-          "sheared": 31,
-          "gliding": 32,
-          "elder": 33,
-          "moving": 34,
-          "breathing": 35,
-          "chested": 36,
-          "stackable": 37,
-          "showbase": 38,
-          "rearing": 39,
-          "vibrating": 40,
-          "idling": 41,
-          "evoker_spell": 42,
-          "charge_attack": 43,
-          "wasd_controlled": 44,
-          "can_power_jump": 45,
-          "linger": 46,
-          "has_collision": 47,
-          "affected_by_gravity": 48,
-          "fire_immune": 49,
-          "dancing": 50,
-          "enchanted": 51,
-          "show_trident_rope": 52,
-          "container_private": 53,
-          "transforming": 54,
-          "spin_attack": 55,
-          "swimming": 56,
-          "bribed": 57,
-          "pregnant": 58,
-          "laying_egg": 59,
-          "rider_can_pick": 60,
-          "transition_sitting": 61,
-          "eating": 62,
-          "laying_down": 63
-        }
+        "flags": [
+          "onfire",
+          "sneaking",
+          "riding",
+          "sprinting",
+          "action",
+          "invisible",
+          "tempted",
+          "inlove",
+          "saddled",
+          "powered",
+          "ignited",
+          "baby",
+          "converting",
+          "critical",
+          "can_show_nametag",
+          "always_show_nametag",
+          "no_ai",
+          "silent",
+          "wallclimbing",
+          "can_climb",
+          "swimmer",
+          "can_fly",
+          "walker",
+          "resting",
+          "sitting",
+          "angry",
+          "interested",
+          "charged",
+          "tamed",
+          "orphaned",
+          "leashed",
+          "sheared",
+          "gliding",
+          "elder",
+          "moving",
+          "breathing",
+          "chested",
+          "stackable",
+          "showbase",
+          "rearing",
+          "vibrating",
+          "idling",
+          "evoker_spell",
+          "charge_attack",
+          "wasd_controlled",
+          "can_power_jump",
+          "linger",
+          "has_collision",
+          "affected_by_gravity",
+          "fire_immune",
+          "dancing",
+          "enchanted",
+          "show_trident_rope",
+          "container_private",
+          "transforming",
+          "spin_attack",
+          "swimming",
+          "bribed",
+          "pregnant",
+          "laying_egg",
+          "rider_can_pick",
+          "transition_sitting",
+          "eating",
+          "laying_down"
+        ]
       }
     ],
     "MetadataFlags2": [
@@ -7377,40 +7544,39 @@
       {
         "type": "zigzag64",
         "big": true,
-        "shift": true,
-        "flags": {
-          "sneezing": 64,
-          "trusting": 65,
-          "rolling": 66,
-          "scared": 67,
-          "in_scaffolding": 68,
-          "over_scaffolding": 69,
-          "fall_through_scaffolding": 70,
-          "blocking": 71,
-          "transition_blocking": 72,
-          "blocked_using_shield": 73,
-          "blocked_using_damaged_shield": 74,
-          "sleeping": 75,
-          "wants_to_wake": 76,
-          "trade_interest": 77,
-          "door_breaker": 78,
-          "breaking_obstruction": 79,
-          "door_opener": 80,
-          "illager_captain": 81,
-          "stunned": 82,
-          "roaring": 83,
-          "delayed_attacking": 84,
-          "avoiding_mobs": 85,
-          "avoiding_block": 86,
-          "facing_target_to_range_attack": 87,
-          "hidden_when_invisible": 88,
-          "is_in_ui": 89,
-          "stalking": 90,
-          "emoting": 91,
-          "celebrating": 92,
-          "admiring": 93,
-          "celebrating_special": 94
-        }
+        "flags": [
+          "sneezing",
+          "trusting",
+          "rolling",
+          "scared",
+          "in_scaffolding",
+          "over_scaffolding",
+          "fall_through_scaffolding",
+          "blocking",
+          "transition_blocking",
+          "blocked_using_shield",
+          "blocked_using_damaged_shield",
+          "sleeping",
+          "wants_to_wake",
+          "trade_interest",
+          "door_breaker",
+          "breaking_obstruction",
+          "door_opener",
+          "illager_captain",
+          "stunned",
+          "roaring",
+          "delayed_attacking",
+          "avoiding_mobs",
+          "avoiding_block",
+          "facing_target_to_range_attack",
+          "hidden_when_invisible",
+          "is_in_ui",
+          "stalking",
+          "emoting",
+          "celebrating",
+          "admiring",
+          "celebrating_special"
+        ]
       }
     ],
     "UpdateBlockFlags": [
@@ -7499,46 +7665,47 @@
     "InputFlag": [
       "bitflags",
       {
-        "type": "varint",
-        "flags": {
-          "ascend": 1,
-          "descend": 2,
-          "north_jump": 4,
-          "jump_down": 8,
-          "sprint_down": 16,
-          "change_height": 32,
-          "jumping": 64,
-          "auto_jumping_in_water": 128,
-          "sneaking": 256,
-          "sneak_down": 512,
-          "up": 1024,
-          "down": 2048,
-          "left": 4096,
-          "right": 8192,
-          "up_left": 16384,
-          "up_right": 32768,
-          "want_up": 65536,
-          "want_down": 131072,
-          "want_down_slow": 262144,
-          "want_up_slow": 524288,
-          "sprinting": 1048576,
-          "ascend_scaffolding": 2097152,
-          "descend_scaffolding": 4194304,
-          "sneak_toggle_down": 8388608,
-          "persist_sneak": 16777216,
-          "start_sprinting": 33554432,
-          "stop_sprinting": 67108864,
-          "start_sneaking": 134217728,
-          "stop_sneaking": 134217728,
-          "start_swimming": 268435456,
-          "stop_swimming": 536870912,
-          "start_jumping": 1073741824,
-          "start_gliding": 2147483648,
-          "stop_gliding": 4294967296,
-          "item_interact": 8589934592,
-          "block_action": 17179869184,
-          "item_stack_request": 34359738368
-        }
+        "type": "varint64",
+        "big": true,
+        "flags": [
+          "ascend",
+          "descend",
+          "north_jump",
+          "jump_down",
+          "sprint_down",
+          "change_height",
+          "jumping",
+          "auto_jumping_in_water",
+          "sneaking",
+          "sneak_down",
+          "up",
+          "down",
+          "left",
+          "right",
+          "up_left",
+          "up_right",
+          "want_up",
+          "want_down",
+          "want_down_slow",
+          "want_up_slow",
+          "sprinting",
+          "ascend_scaffolding",
+          "descend_scaffolding",
+          "sneak_toggle_down",
+          "persist_sneak",
+          "start_sprinting",
+          "stop_sprinting",
+          "start_sneaking",
+          "stop_sneaking",
+          "start_swimming",
+          "stop_swimming",
+          "start_jumping",
+          "start_gliding",
+          "stop_gliding",
+          "item_interact",
+          "block_action",
+          "item_stack_request"
+        ]
       }
     ],
     "ArmorDamageType": [

@@ -262,110 +262,112 @@ MetadataDictionary: []varint
          if vec3f: vec3f
 
 MetadataFlags1: [ "bitflags", {
-   "type": "zigzag64", "big": true, "shift": true,
-   "flags": {
-      "onfire": 0,
-      "sneaking": 1,
-      "riding": 2,
-      "sprinting": 3,
-      "action": 4,
-      "invisible": 5,
-      "tempted": 6,
-      "inlove": 7,
-      "saddled": 8,
-      "powered": 9,
-      "ignited": 10,
-      "baby": 11,
-      "converting": 12,
-      "critical": 13,
-      "can_show_nametag": 14,
-      "always_show_nametag": 15,
-      "no_ai": 16,
-      "silent": 17,
-      "wallclimbing": 18,
-      "can_climb": 19,
-      "swimmer": 20,
-      "can_fly": 21,
-      "walker": 22,
-      "resting": 23,
-      "sitting": 24,
-      "angry": 25,
-      "interested": 26,
-      "charged": 27,
-      "tamed": 28,
-      "orphaned": 29,
-      "leashed": 30,
-      "sheared": 31,
-      "gliding": 32,
-      "elder": 33,
-      "moving": 34,
-      "breathing": 35,
-      "chested": 36,
-      "stackable": 37,
-      "showbase": 38,
-      "rearing": 39,
-      "vibrating": 40,
-      "idling": 41,
-      "evoker_spell": 42,
-      "charge_attack": 43,
-      "wasd_controlled": 44,
-      "can_power_jump": 45,
-      "linger": 46,
-      "has_collision": 47,
-      "affected_by_gravity": 48,
-      "fire_immune": 49,
-      "dancing": 50,
-      "enchanted": 51,
-      "show_trident_rope": 52, # tridents show an animated rope when enchanted with loyalty after they are thrown and return to their owner. to be combined with data_owner_eid
-      "container_private": 53, #inventory is private, doesn't drop contents when killed if true
-      "transforming": 54,
-      "spin_attack": 55,
-      "swimming": 56,
-      "bribed": 57, #dolphins have this set when they go to find treasure for the player
-      "pregnant": 58,
-      "laying_egg": 59,
-      "rider_can_pick": 60, #???
-      "transition_sitting": 61,
-      "eating": 62,
-      "laying_down": 63,
-   }
+   "type": "zigzag64", 
+   "big": true,
+   "flags": [
+      "onfire",
+      "sneaking",
+      "riding",
+      "sprinting",
+      "action",
+      "invisible",
+      "tempted",
+      "inlove",
+      "saddled",
+      "powered",
+      "ignited",
+      "baby",
+      "converting",
+      "critical",
+      "can_show_nametag",
+      "always_show_nametag",
+      "no_ai",
+      "silent",
+      "wallclimbing",
+      "can_climb",
+      "swimmer",
+      "can_fly",
+      "walker",
+      "resting",
+      "sitting",
+      "angry",
+      "interested",
+      "charged",
+      "tamed",
+      "orphaned",
+      "leashed",
+      "sheared",
+      "gliding",
+      "elder",
+      "moving",
+      "breathing",
+      "chested",
+      "stackable",
+      "showbase",
+      "rearing",
+      "vibrating",
+      "idling",
+      "evoker_spell",
+      "charge_attack",
+      "wasd_controlled",
+      "can_power_jump",
+      "linger",
+      "has_collision",
+      "affected_by_gravity",
+      "fire_immune",
+      "dancing",
+      "enchanted",
+      "show_trident_rope", # tridents show an animated rope when enchanted with loyalty after they are thrown and return to their owner. to be combined with data_owner_eid
+      "container_private", #inventory is private, doesn't drop contents when killed if true
+      "transforming",
+      "spin_attack",
+      "swimming",
+      "bribed", #dolphins have this set when they go to find treasure for the player
+      "pregnant",
+      "laying_egg",
+      "rider_can_pick", #???
+      "transition_sitting",
+      "eating",
+      "laying_down"
+   ]
 }]
 
 MetadataFlags2: [ "bitflags", {
-   "type": "zigzag64","big": true, "shift": true,
-   "flags": {
-      "sneezing": 64,
-      "trusting": 65,
-      "rolling": 66,
-      "scared": 67,
-      "in_scaffolding": 68,
-      "over_scaffolding": 69,
-      "fall_through_scaffolding": 70,
-      "blocking": 71, #shield
-      "transition_blocking": 72,
-      "blocked_using_shield": 73,
-      "blocked_using_damaged_shield": 74,
-      "sleeping": 75,
-      "wants_to_wake": 76,
-      "trade_interest": 77,
-      "door_breaker": 78, #...
-      "breaking_obstruction": 79,
-      "door_opener": 80, #...
-      "illager_captain": 81,
-      "stunned": 82,
-      "roaring": 83,
-      "delayed_attacking": 84,
-      "avoiding_mobs": 85,
-      "avoiding_block": 86,
-      "facing_target_to_range_attack": 87,
-      "hidden_when_invisible": 88, #??????????????????
-      "is_in_ui": 89,
-      "stalking": 90,
-      "emoting": 91,
-      "celebrating": 92,
-      "admiring": 93,
-      "celebrating_special": 94,
-   }
+   "type": "zigzag64", 
+   "big": true,
+   "flags": [
+      "sneezing",
+      "trusting",
+      "rolling",
+      "scared",
+      "in_scaffolding",
+      "over_scaffolding",
+      "fall_through_scaffolding",
+      "blocking", #shield
+      "transition_blocking",
+      "blocked_using_shield",
+      "blocked_using_damaged_shield",
+      "sleeping",
+      "wants_to_wake",
+      "trade_interest",
+      "door_breaker", #...
+      "breaking_obstruction",
+      "door_opener", #...
+      "illager_captain",
+      "stunned",
+      "roaring",
+      "delayed_attacking",
+      "avoiding_mobs",
+      "avoiding_block",
+      "facing_target_to_range_attack",
+      "hidden_when_invisible", #??????????????????
+      "is_in_ui",
+      "stalking",
+      "emoting",
+      "celebrating",
+      "admiring",
+      "celebrating_special"
+   ]
 }]
 
 Link:
@@ -400,31 +402,44 @@ PlayerAttributes: []varint
    default: lf32
    name: string
 
-Transaction:
-   # LegacyRequestID is an ID that is only non-zero at times when sent by the client. The server should
-   # always send 0 for this. When this field is not 0, the LegacySetItemSlots slice below will have values
-   # in it.
-   # LegacyRequestID ties in with the ItemStackResponse packet. If this field is non-0, the server should
-   # respond with an ItemStackResponse packet. Some inventory actions such as dropping an item out of the
-   # hotbar are still one using this packet, and the ItemStackResponse packet needs to tie in with it.
-   legacy_request_id: zigzag32
-   # `legacy_transactions` are only present if the LegacyRequestID is non-zero. These item slots inform the
-   # server of the slots that were changed during the inventory transaction, and the server should send
-   # back an ItemStackResponse packet with these slots present in it. (Or false with no slots, if rejected.)
-   legacy_transactions: legacy_request_id?
-      if 0: void
-      default: []varint
-         container_id: u8
-         changed_slots: []varint
-            slot_id: u8
-   transaction_type: varint =>
-      0: normal
-      1: inventory_mismatch
-      2: item_use
-      3: item_use_on_entity
-      4: item_release
+# UseItemTransactionData represents an inventory transaction data object sent when the client uses an item on
+# a block. Also used in PlayerAuthoritativeInput packet
+TransactionUseItem:
+   # ActionType is the type of the UseItem inventory transaction. It is one of the action types found above,
+   # and specifies the way the player interacted with the block.
+   action_type: varint =>
+      0: click_block
+      1: click_air
+      2: break_block
+   # BlockPosition is the position of the block that was interacted with. This is only really a correct
+   # block position if ActionType is not UseItemActionClickAir.
+   block_position: BlockCoordinates
+   # BlockFace is the face of the block that was interacted with. When clicking the block, it is the face
+   # clicked. When breaking the block, it is the face that was last being hit until the block broke.
+   face: varint
+   # HotBarSlot is the hot bar slot that the player was holding while clicking the block. It should be used
+   # to ensure that the hot bar slot and held item are correctly synchronised with the server.
+   hotbar_slot: varint
+   # HeldItem is the item that was held to interact with the block. The server should check if this item
+   # is actually present in the HotBarSlot.
+   held_item: Item
+   # Position is the position of the player at the time of interaction. For clicking a block, this is the
+   # position at that time, whereas for breaking the block it is the position at the time of breaking.
+   player_pos: vec3f
+   # ClickedPosition is the position that was clicked relative to the block's base coordinate. It can be
+   # used to find out exactly where a player clicked the block.
+   click_pos: vec3f
+   # BlockRuntimeID is the runtime ID of the block that was clicked. It may be used by the server to verify
+   # that the player's world client-side is synchronised with the server's.
+   block_runtime_id: varint
+
+# Actions is a list of actions that took place, that form the inventory transaction together. Each of
+# these actions hold one slot in which one item was changed to another. In general, the combination of
+# all of these actions results in a balanced inventory transaction. This should be checked to ensure that
+# no items are cheated into the inventory.
+TransactionActions:
    network_ids: bool
-   inventory_actions: []varint
+   actions: []varint
       source_type: varint =>
          0: container
          1: global
@@ -444,40 +459,47 @@ Transaction:
       old_item: Item
       new_item: Item
       new_item_stack_id: ../network_ids?
-         if true:  zigzag32
+         if true: zigzag32
          default: void
+
+# The Minecraft bedrock inventory system was refactored, but not all inventory actions use the new packet.
+# This data structure holds actions that have not been updated to the new system.
+TransactionLegacy:
+   # LegacyRequestID is an ID that is only non-zero at times when sent by the client. The server should
+   # always send 0 for this. When this field is not 0, the LegacySetItemSlots slice below will have values
+   # in it.
+   # LegacyRequestID ties in with the ItemStackResponse packet. If this field is non-0, the server should
+   # respond with an ItemStackResponse packet. Some inventory actions such as dropping an item out of the
+   # hotbar are still one using this packet, and the ItemStackResponse packet needs to tie in with it.
+   legacy_request_id: zigzag32
+   # `legacy_transactions` are only present if the LegacyRequestID is non-zero. These item slots inform the
+   # server of the slots that were changed during the inventory transaction, and the server should send
+   # back an ItemStackResponse packet with these slots present in it. (Or false with no slots, if rejected.)
+   legacy_transactions: legacy_request_id?
+      if 0: void
+      default: []varint
+         container_id: u8
+         changed_slots: []varint
+            slot_id: u8
+
+Transaction:
+   # Old transaction system data
+   legacy: TransactionLegacy
+   # What type of transaction took place
+   transaction_type: varint =>
+      0: normal
+      1: inventory_mismatch
+      2: item_use
+      3: item_use_on_entity
+      4: item_release
+   # The list of inventory internal actions in this packet, e.g. inventory GUI actions
+   actions: TransactionActions
+   # Extra data if an intenal inventory transaction did not take place, e.g. use of an item 
    transaction_data: transaction_type?
       if normal or inventory_mismatch: void
       # UseItemTransactionData represents an inventory transaction data object sent when the client uses an item on
       # a block.
-      if item_use:
-         # ActionType is the type of the UseItem inventory transaction. It is one of the action types found above,
-         # and specifies the way the player interacted with the block.
-         action_type: varint =>
-            0: click_block
-            1: click_air
-            2: break_block
-         # BlockPosition is the position of the block that was interacted with. This is only really a correct
-         # block position if ActionType is not UseItemActionClickAir.
-         block_position: BlockCoordinates
-         # BlockFace is the face of the block that was interacted with. When clicking the block, it is the face
-         # clicked. When breaking the block, it is the face that was last being hit until the block broke.
-         face: varint
-         # HotBarSlot is the hot bar slot that the player was holding while clicking the block. It should be used
-         # to ensure that the hot bar slot and held item are correctly synchronised with the server.
-         hotbar_slot: varint
-         # HeldItem is the item that was held to interact with the block. The server should check if this item
-         # is actually present in the HotBarSlot.
-         held_item: Item
-         # Position is the position of the player at the time of interaction. For clicking a block, this is the
-         # position at that time, whereas for breaking the block it is the position at the time of breaking.
-         player_pos: vec3f
-         # ClickedPosition is the position that was clicked relative to the block's base coordinate. It can be
-         # used to find out exactly where a player clicked the block.
-         click_pos: vec3f
-         # BlockRuntimeID is the runtime ID of the block that was clicked. It may be used by the server to verify
-         # that the player's world client-side is synchronised with the server's.
-         block_runtime_id: varint
+      if item_use: TransactionUseItem
       # UseItemOnEntityTransactionData represents an inventory transaction data object sent when the client uses
       # an item on an entity.
       if item_use_on_entity:
@@ -698,15 +720,48 @@ EnchantOptions: []varint
    name: string
    option_id: zigzag32
 
+Action: zigzag32 =>
+   0: start_break
+   1: abort_break
+   2: stop_break
+   3: get_updated_block
+   4: drop_item
+   5: start_sleeping
+   6: stop_sleeping
+   7: respawn
+   8: jump
+   9: start_sprint
+   10: stop_sprint
+   11: start_sneak
+   12: stop_sneak
+   13: creative_player_destroy_block
+   # sent when spawning in a different dimension to tell the server we spawned
+   14: dimension_change_ack
+   15: start_glide
+   16: stop_glide
+   17: build_denied
+   18: crack_break
+   19: change_skin
+   # no longer used
+   20: set_enchatnment_seed
+   21: swimming
+   22: stop_swimming
+   23: start_spin_attack
+   24: stop_spin_attack
+   25: ineract_block
+   26: predict_break
+   27: continue_break
 
 StackRequestSlotInfo:
    container_id: u8
    slot_id: u8
    stack_id: zigzag32
 
-#
-
-ItemStackRequests: []varint
+# ItemStackRequest is sent by the client to change item stacks in an inventory. It is essentially a
+# replacement of the InventoryTransaction packet added in 1.16 for inventory specific actions, such as moving
+# items around or crafting. The InventoryTransaction packet is still used for actions such as placing blocks
+# and interacting with entities.
+ItemStackRequest:
    # RequestID is a unique ID for the request. This ID is used by the server to send a response for this
    # specific request in the ItemStackResponse packet.
    request_id: zigzag32
@@ -836,10 +891,10 @@ ItemStackRequests: []varint
 
 # ItemStackResponse is a response to an individual ItemStackRequest.
 ItemStackResponses: []varint
-	# Status specifies if the request with the RequestID below was successful. If this is the case, the
-	# ContainerInfo below will have information on what slots ended up changing. If not, the container info
-	# will be empty.
-	# A non-0 status means an error occurred and will result in the action being reverted.
+   # Status specifies if the request with the RequestID below was successful. If this is the case, the
+   # ContainerInfo below will have information on what slots ended up changing. If not, the container info
+   # will be empty.
+   # A non-0 status means an error occurred and will result in the action being reverted.
    status: u8 =>
       0: ok
       1: error
