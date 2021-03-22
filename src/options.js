@@ -16,7 +16,9 @@ const defaultOptions = {
   // client.status to ClientStatus.Initialized after sending the init packet.
   autoInitPlayer: true,
   // If true, do not authenticate with Xbox Live
-  offline: false
+  offline: false,
+  // Milliseconds to wait before aborting connection attempt
+  connectTimeout: 9000
 }
 
 module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions }

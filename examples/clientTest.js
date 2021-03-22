@@ -1,5 +1,5 @@
 process.env.DEBUG = 'minecraft-protocol raknet'
-const { Client } = require('../src/client')
+const { Client } = require('bedrock-protocol')
 
 async function test () {
   const client = new Client({

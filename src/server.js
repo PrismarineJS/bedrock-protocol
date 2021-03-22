@@ -14,8 +14,8 @@ class Server extends EventEmitter {
     this.deserializer = createDeserializer(this.options.version)
     this.clients = {}
     this.clientCount = 0
-    this.inLog = (...args) => console.debug('C -> S', ...args)
-    this.outLog = (...args) => console.debug('S -> C', ...args)
+    this.inLog = (...args) => debug('C -> S', ...args)
+    this.outLog = (...args) => debug('S -> C', ...args)
   }
 
   validateOptions () {
@@ -38,7 +38,7 @@ class Server extends EventEmitter {
   }
 
   onCloseConnection = (inetAddr, reason) => {
-    debug('close connection', inetAddr, reason)
+    console.debug('close connection', inetAddr, reason)
     delete this.clients[inetAddr]
     this.clientCount--
   }

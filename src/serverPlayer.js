@@ -62,6 +62,11 @@ class Player extends Connection {
     this.emit('server.client_handshake', { key }) // internal so we start encryption
 
     this.userData = userData.extraData
+    this.profile = {
+      name: userData.extraData?.displayName,
+      uuid: userData.extraData?.identity,
+      xuid: userData.extraData?.xuid
+    }
     this.version = clientVer
   }
 
@@ -126,7 +131,7 @@ class Player extends Connection {
         this.onHandshake()
         break
       case 'set_local_player_as_initialized':
-        this.state = ClientStatus.Initialized
+        this.status = ClientStatus.Initialized
         // Emit the 'spawn' event
         this.emit('spawn')
         break

@@ -15,7 +15,7 @@ const ClientStatus = {
 }
 
 class Connection extends EventEmitter {
-  state = ClientStatus.Disconnected
+  status = ClientStatus.Disconnected
 
   versionLessThan (version) {
     if (typeof version === 'string') {

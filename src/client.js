@@ -67,12 +67,20 @@ class Client extends Connection {
   connect = async (sessionData) => {
     const hostname = this.options.hostname
     const port = this.options.port
+    debug('[client] connecting to', hostname, port)
 
     this.connection = new RakClient({ useWorkers: true, hostname, port })
     this.connection.onConnected = () => this.sendLogin()
     this.connection.onCloseConnection = () => this.close()
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
+
+    this.connectTimer = setTimeout(() => {
+      if (this.status === ClientStatus.Disconnected) {
+        this.connection.close()
+        this.emit('error', 'connect timed out')
+      }
+    }, this.options.connectTimeout || 9000)
   }
 
   sendLogin () {
@@ -117,6 +125,7 @@ class Client extends Connection {
 
   close () {
     clearInterval(this.loop)
+    clearTimeout(this.connectTimeout)
     this.q = []
     this.q2 = []
     this.connection?.close()

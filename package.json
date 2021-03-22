@@ -42,7 +42,8 @@
     "buffer-equal": "^1.0.0",
     "mocha": "^8.3.2",
     "protodef-yaml": "^1.0.2",
-    "standard": "^16.0.3"
+    "standard": "^16.0.3",
+    "bedrock-protocol": "file:."
   },
   "standard": {
     "parser": "babel-eslint"

@@ -7470,7 +7470,6 @@
       {
         "type": "zigzag64",
         "big": true,
-        "shift": true,
         "flags": [
           "onfire",
           "sneaking",
