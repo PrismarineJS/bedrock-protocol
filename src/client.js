@@ -108,10 +108,8 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    // We're talking over UDP, so there is no connection to close, instead
-    // we stop communicating with the server
     console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
-    process.exit(1) // TODO: handle
+    this.emit('kick', packet)
   }
 
   onPlayStatus (statusPacket) {
@@ -125,6 +123,7 @@ class Client extends Connection {
   }
 
   close () {
+    this.emit('close')
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []
@@ -155,22 +154,13 @@ class Client extends Connection {
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
     this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100) */)
+    this.emit('packet', pakData)
 
     if (debugging) {
       // Packet verifying (decode + re-encode + match test)
       if (pakData.name) {
         this.tryRencode(pakData.name, pakData.params, packet)
       }
-
-      // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
-      // Packet dumping
-      try {
-        const root = __dirname + `../data/${this.options.version}/sample/`
-        if (!fs.existsSync(root + `packets/${pakData.name}.json`)) {
-          fs.writeFileSync(root + `packets/${pakData.name}.json`, serialize(pakData.params, 2))
-          fs.writeFileSync(root + `packets/${pakData.name}.txt`, packet.toString('hex'))
-        }
-      } catch { }
     }
 
     // Abstract some boilerplate before sending to listeners
@@ -187,8 +177,6 @@ class Client extends Connection {
       case 'play_status':
         this.onPlayStatus(pakData.params)
         break
-      default:
-      // console.log('Sending to listeners')
     }
 
     // Emit packet

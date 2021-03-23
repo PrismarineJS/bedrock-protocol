@@ -17,18 +17,18 @@ function fetchLatestStable () {
 }
 
 // Download + extract vanilla server and enter the directory
-async function download (os, version) {
+async function download (os, version, path = 'bds-') {
   process.chdir(__dirname)
   const verStr = version.split('.').slice(0, 3).join('.')
-  const dir = 'bds-' + version
+  const dir = path + version
 
   if (fs.existsSync(dir) && getFiles(dir).length) {
-    process.chdir('bds-' + version) // Enter server folder
+    process.chdir(path + version) // Enter server folder
     return verStr
   }
   try { fs.mkdirSync(dir) } catch { }
 
-  process.chdir('bds-' + version) // Enter server folder
+  process.chdir(path + version) // Enter server folder
   const url = (os, version) => `https://minecraft.azureedge.net/bin-${os}/bedrock-server-${version}.zip`
 
   let found = false
@@ -53,10 +53,18 @@ async function download (os, version) {
   return verStr
 }
 
+const defaultOptions = {
+  'level-generator': '2',
+  'server-port': '19130',
+  'online-mode': 'false'
+}
+
 // Setup the server
-function configure () {
+function configure (options = {}) {
+  const opts = { ...defaultOptions, ...options }
   let config = fs.readFileSync('./server.properties', 'utf-8')
-  config += '\nlevel-generator=2\nserver-port=19130\nplayer-idle-timeout=1\nallow-cheats=true\ndefault-player-permission-level=operator\nonline-mode=false'
+  config += '\nplayer-idle-timeout=1\nallow-cheats=true\ndefault-player-permission-level=operator'
+  for (const o in opts) config += `\n${o}=${opts[o]}`
   fs.writeFileSync('./server.properties', config)
 }
 
@@ -66,13 +74,13 @@ function run (inheritStdout = true) {
 }
 
 // Run the server
-async function startServer (version, onStart) {
+async function startServer (version, onStart, options = {}) {
   const os = process.platform === 'win32' ? 'win' : process.platform
   if (os !== 'win' && os !== 'linux') {
     throw Error('unsupported os ' + os)
   }
-  await download(os, version)
-  configure()
+  await download(os, version, options.path)
+  configure(options)
   const handle = run(!onStart)
   if (onStart) {
     handle.stdout.on('data', data => data.includes('Server started.') ? onStart() : null)
@@ -83,10 +91,10 @@ async function startServer (version, onStart) {
 }
 
 // Start the server and wait for it to be ready, with a timeout
-async function startServerAndWait (version, withTimeout) {
+async function startServerAndWait (version, withTimeout, options) {
   let handle
   await waitFor(async res => {
-    handle = await startServer(version, res)
+    handle = await startServer(version, res, options)
   }, withTimeout, () => {
     handle?.kill()
     throw new Error('Server did not start on time ' + withTimeout)
