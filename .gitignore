@@ -4,10 +4,8 @@ package-lock.json
 __*
 src/**/*.json
 # Runtime generated data
-data/*/sample
+data/**/sample
 data/**/read.js
 data/**/write.js
 data/**/size.js
-samples/*.txt
-samples/*.json
 tools/bds*
