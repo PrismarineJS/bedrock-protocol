@@ -80,13 +80,17 @@ class Player extends Connection {
   }
 
   /**
-   * Disconnects a client after it has joined
+   * Disconnects a client
    */
   disconnect (reason, hide = false) {
-    this.write('disconnect', {
-      hide_disconnect_screen: hide,
-      message: reason
-    })
+    if ([ClientStatus.Authenticating, ClientStatus.Initializing].includes(this.status)) {
+      this.sendDisconnectStatus('failed_server_full')
+    } else {
+      this.write('disconnect', {
+        hide_disconnect_screen: hide,
+        message: reason
+      })
+    }
     this.close()
   }
 

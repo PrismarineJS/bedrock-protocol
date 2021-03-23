@@ -19,17 +19,17 @@ class Connection extends EventEmitter {
 
   versionLessThan (version) {
     if (typeof version === 'string') {
-      return Versions[version] < this.options.version
+      return Versions[version] < this.options.protocolVersion
     } else {
-      return version < this.options.version
+      return version < this.options.protocolVersion
     }
   }
 
   versionGreaterThan (version) {
     if (typeof version === 'string') {
-      return Versions[version] > this.options.version
+      return Versions[version] > this.options.protocolVersion
     } else {
-      return version > this.options.version
+      return version > this.options.protocolVersion
     }
   }
 

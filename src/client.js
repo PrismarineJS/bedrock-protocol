@@ -14,6 +14,7 @@ const LoginVerify = require('./auth/loginVerify')
 const debugging = false
 
 class Client extends Connection {
+  // The RakNet connection
   connection
 
   /** @param {{ version: number, hostname: string, port: number }} options */
@@ -67,7 +68,7 @@ class Client extends Connection {
   connect = async (sessionData) => {
     const hostname = this.options.hostname
     const port = this.options.port
-    debug('[client] connecting to', hostname, port)
+    debug('[client] connecting to', hostname, port, sessionData)
 
     this.connection = new RakClient({ useWorkers: true, hostname, port })
     this.connection.onConnected = () => this.sendLogin()

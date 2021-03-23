@@ -12,6 +12,7 @@ class Server extends EventEmitter {
     this.validateOptions()
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
+    /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
     this.inLog = (...args) => debug('C -> S', ...args)
@@ -34,7 +35,7 @@ class Server extends EventEmitter {
     const player = new Player(this, conn)
     this.clients[conn.address] = player
     this.clientCount++
-    this.emit('connect', { client: player })
+    this.emit('connect', player)
   }
 
   onCloseConnection = (inetAddr, reason) => {
@@ -52,13 +53,23 @@ class Server extends EventEmitter {
     client.handle(buffer)
   }
 
-  async create (hostname = this.options.hostname, port = this.options.port) {
+  async listen (hostname = this.options.hostname, port = this.options.port) {
     this.raknet = new RakServer({ hostname, port })
     await this.raknet.listen()
     console.debug('Listening on', hostname, port)
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
     this.raknet.onEncapsulated = this.onEncapsulated
+  }
+
+  close (disconnectReason) {
+    for (const caddr in this.clients) {
+      const client = this.clients[caddr]
+      client.disconnect(disconnectReason)
+    }
+    this.raknet.close()
+    this.clients = {}
+    this.clientCount = 0
   }
 }
 
