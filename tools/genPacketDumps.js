@@ -1,20 +1,27 @@
-/* eslint-disable */
 // Collect sample packets needed for `serverTest.js`
 // process.env.DEBUG = 'minecraft-protocol'
 const fs = require('fs')
 const vanillaServer = require('../tools/startVanillaServer')
 const { Client } = require('../src/client')
-const { serialize, waitFor } = require('../src/datatypes/util')
+const { serialize, waitFor, getFiles } = require('../src/datatypes/util')
 const { CURRENT_VERSION } = require('../src/options')
 const { join } = require('path')
 
+function hasDumps (version) {
+  const root = join(__dirname, `../data/${version}/sample/packets/`)
+  if (!fs.existsSync(root) || getFiles(root).length < 10) {
+    return false
+  }
+  return true
+}
+
 let loop
 
-async function main() {
+async function dump (version, force) {
   const random = ((Math.random() * 100) | 0)
   const port = 19130 + random
 
-  const handle = await vanillaServer.startServerAndWait(CURRENT_VERSION, 1000 * 120, { 'server-port': port, path: 'bds_' })
+  const handle = await vanillaServer.startServerAndWait(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port, path: 'bds_' })
 
   console.log('Started server')
   const client = new Client({
@@ -25,9 +32,10 @@ async function main() {
   })
 
   return waitFor(async res => {
-    const root = join(__dirname, `../data/${client.options.version}/sample/packets/`)
-    if (!fs.existsSync(root)) {
-      fs.mkdirSync(root, { recursive: true })
+    const root = join(__dirname, `../data/${client.options.version}/sample/`)
+    if (!fs.existsSync(root + 'packets') || !fs.existsSync(root + 'chunks')) {
+      fs.mkdirSync(root + 'packets', { recursive: true })
+      fs.mkdirSync(root + 'chunks', { recursive: true })
     }
 
     client.once('resource_packs_info', (packet) => {
@@ -43,7 +51,6 @@ async function main() {
         })
       })
 
-
       client.queue('client_cache_status', { enabled: false })
       client.queue('request_chunk_radius', { chunk_radius: 1 })
       // client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
@@ -54,11 +61,17 @@ async function main() {
       }, 200)
     })
 
-    client.on('packet', pakData => { // Packet dumping
-      if (pakData.name == 'level_chunk') return
+    let i = 0
+
+    client.on('packet', async packet => { // Packet dumping
+      const { name, params } = packet.data
+      if (name === 'level_chunk') {
+        fs.writeFileSync(root + `chunks/${name}-${i++}.bin`, packet.buffer)
+        return
+      }
       try {
-        if (!fs.existsSync(root + `${pakData.name}.json`)) {
-          fs.promises.writeFile(root + `${pakData.name}.json`, serialize(pakData.params, 2))
+        if (!fs.existsSync(root + `packets/${name}.json`) || force) {
+          fs.writeFileSync(root + `packets/${name}.json`, serialize(params, 2))
         }
       } catch (e) { console.log(e) }
     })
@@ -78,6 +91,9 @@ async function main() {
   })
 }
 
-main().then(() => {
-  console.log('Successfully dumped packets')
-})
+if (!module.parent) {
+  dump(null, true).then(() => {
+    console.log('Successfully dumped packets')
+  })
+}
+module.exports = { dumpPackets: dump, hasDumps }
