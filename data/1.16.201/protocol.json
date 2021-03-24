@@ -4531,7 +4531,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "window_type",
@@ -4552,7 +4552,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "server",
@@ -4595,7 +4595,7 @@
       [
         {
           "name": "window_id",
-          "type": "varint"
+          "type": "WindowID"
         },
         {
           "name": "slot",
@@ -5481,7 +5481,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "window_type",
@@ -5526,7 +5526,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "window_type",
