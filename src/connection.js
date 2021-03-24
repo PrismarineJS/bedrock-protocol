@@ -16,6 +16,8 @@ const ClientStatus = {
 
 class Connection extends EventEmitter {
   status = ClientStatus.Disconnected
+  q = []
+  q2 = []
 
   versionLessThan (version) {
     if (typeof version === 'string') {
@@ -121,7 +123,7 @@ class Connection extends EventEmitter {
 
   // TODO: Rename this to sendEncapsulated
   sendMCPE (buffer, immediate) {
-    if (this.connection.connected === false) return
+    if (this.connection.connected === false || this.status === ClientStatus.Disconnected) return
     this.connection.sendReliable(buffer, immediate)
   }
 

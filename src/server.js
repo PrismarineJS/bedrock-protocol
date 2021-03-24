@@ -15,8 +15,8 @@ class Server extends EventEmitter {
     /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
-    this.inLog = (...args) => debug('C -> S', ...args)
-    this.outLog = (...args) => debug('S -> C', ...args)
+    this.inLog = (...args) => debug('S ->', ...args)
+    this.outLog = (...args) => debug('S <-', ...args)
   }
 
   validateOptions () {
@@ -40,6 +40,8 @@ class Server extends EventEmitter {
 
   onCloseConnection = (inetAddr, reason) => {
     console.debug('close connection', inetAddr, reason)
+    delete this.clients[inetAddr]?.connection // Prevent close loop
+    this.clients[inetAddr]?.close()
     delete this.clients[inetAddr]
     this.clientCount--
   }

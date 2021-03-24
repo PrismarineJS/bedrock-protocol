@@ -108,7 +108,7 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
+    console.warn(`C Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
     this.emit('kick', packet)
   }
 
@@ -130,7 +130,7 @@ class Client extends Connection {
     this.q2 = []
     this.connection?.close()
     this.removeAllListeners()
-    console.log('Closed!')
+    console.log('Client closed!')
   }
 
   tryRencode (name, params, actual) {
@@ -154,7 +154,7 @@ class Client extends Connection {
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
     this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100) */)
-    this.emit('packet', pakData)
+    this.emit('packet', des)
 
     if (debugging) {
       // Packet verifying (decode + re-encode + match test)
@@ -177,6 +177,11 @@ class Client extends Connection {
       case 'play_status':
         this.onPlayStatus(pakData.params)
         break
+      default:
+        if (this.status !== ClientStatus.Initializing && this.status !== ClientStatus.Initialized) {
+          this.inLog(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
+          return
+        }
     }
 
     // Emit packet
