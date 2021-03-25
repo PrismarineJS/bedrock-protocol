@@ -17,10 +17,10 @@ module.exports = (client, server, options) => {
 
     let pubKey = mcPubKeyToPem(getX5U(chain[0])) // the first one is client signed, allow it
     let finalKey = null
-    console.log(pubKey)
+    // console.log(pubKey)
     for (const token of chain) {
       const decoded = JWT.verify(token, pubKey, { algorithms: 'ES384' })
-      console.log('Decoded', decoded)
+      // console.log('Decoded', decoded)
 
       // Check if signed by Mojang key
       const x5u = getX5U(token)
@@ -69,7 +69,6 @@ function getX5U (token) {
 }
 
 function mcPubKeyToPem (mcPubKeyBuffer) {
-  console.log(mcPubKeyBuffer)
   if (mcPubKeyBuffer[0] === '-') return mcPubKeyBuffer
   let pem = '-----BEGIN PUBLIC KEY-----\n'
   let base64PubKey = mcPubKeyBuffer.toString('base64')

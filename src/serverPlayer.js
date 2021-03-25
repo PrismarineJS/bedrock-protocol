@@ -1,6 +1,7 @@
 const { ClientStatus, Connection } = require('./connection')
 const fs = require('fs')
 const Options = require('./options')
+const debug = require('debug')('minecraft-protocol')
 
 const { Encrypt } = require('./auth/encryption')
 const Login = require('./auth/login')
@@ -21,8 +22,8 @@ class Player extends Connection {
 
     this.startQueue()
     this.status = ClientStatus.Authenticating
-    this.inLog = (...args) => console.info('S ->', ...args)
-    this.outLog = (...args) => console.info('S <-', ...args)
+    this.inLog = (...args) => debug('S ->', ...args)
+    this.outLog = (...args) => debug('S <-', ...args)
   }
 
   getData () {
@@ -125,10 +126,9 @@ class Player extends Connection {
       throw e
     }
 
-    console.log('-> S', des)
     switch (des.data.name) {
       case 'login':
-        console.log(des)
+        // console.log(des)
         this.onLogin(des)
         return
       case 'client_to_server_handshake':
@@ -142,7 +142,7 @@ class Player extends Connection {
         this.emit('spawn')
         break
       default:
-        console.log('ignoring, unhandled')
+        // console.log('ignoring, unhandled')
     }
     this.emit(des.data.name, des.data.params)
   }
