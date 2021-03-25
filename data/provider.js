@@ -2,7 +2,7 @@ const { Versions } = require('../src/options')
 const { getFiles } = require('../src/datatypes/util')
 const { join } = require('path')
 
-const fileMap = {}
+let fileMap = {}
 
 // Walks all the directories for each of the supported versions in options.js
 // then builds a file map for each version
@@ -23,6 +23,8 @@ function loadVersions () {
 }
 
 module.exports = (protocolVersion) => {
+  fileMap = {}
+  loadVersions()
   return {
     // Returns the most recent file based on the specified protocolVersion
     // e.g. if `version` is 1.16 and a file for 1.16 doesn't exist, load from 1.15 file
@@ -40,5 +42,3 @@ module.exports = (protocolVersion) => {
     }
   }
 }
-
-loadVersions()

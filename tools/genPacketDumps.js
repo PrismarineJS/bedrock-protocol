@@ -87,6 +87,7 @@ async function dump (version, force) {
     })
   }, 1000 * 60, () => {
     clearInterval(loop)
+    handle.kill()
     throw Error('timed out')
   })
 }
