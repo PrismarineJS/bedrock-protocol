@@ -41,6 +41,7 @@ class Client extends Connection {
     }
 
     this.startGameData = {}
+    this.clientRuntimeId = null
 
     this.startQueue()
     this.inLog = (...args) => debug('C ->', ...args)
@@ -58,6 +59,10 @@ class Client extends Connection {
     if (this.options.protocolVersion < Options.MIN_VERSION) {
       throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
     }
+  }
+
+  get entityId () {
+    return this.startGameData.runtime_entity_id
   }
 
   onEncapsulated = (encapsulated, inetAddr) => {
@@ -108,30 +113,29 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    // We're talking over UDP, so there is no connection to close, instead
-    // we stop communicating with the server
-    console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
-    process.exit(1) // TODO: handle
+    console.warn(`C Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
+    this.emit('kick', packet)
   }
 
   onPlayStatus (statusPacket) {
     if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
       if (statusPacket.status === 'player_spawn') {
         this.status = ClientStatus.Initialized
-        this.write('set_local_player_as_initialized', { runtime_entity_id: this.startGameData.runtime_entity_id })
+        this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
         this.emit('spawn')
       }
     }
   }
 
   close () {
+    this.emit('close')
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []
     this.q2 = []
     this.connection?.close()
     this.removeAllListeners()
-    console.log('Closed!')
+    console.log('Client closed!')
   }
 
   tryRencode (name, params, actual) {
@@ -155,22 +159,13 @@ class Client extends Connection {
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
     this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100) */)
+    this.emit('packet', des)
 
     if (debugging) {
       // Packet verifying (decode + re-encode + match test)
       if (pakData.name) {
         this.tryRencode(pakData.name, pakData.params, packet)
       }
-
-      // console.info('->', JSON.stringify(pakData, (k,v) => typeof v == 'bigint' ? v.toString() : v))
-      // Packet dumping
-      try {
-        const root = __dirname + `../data/${this.options.version}/sample/`
-        if (!fs.existsSync(root + `packets/${pakData.name}.json`)) {
-          fs.writeFileSync(root + `packets/${pakData.name}.json`, serialize(pakData.params, 2))
-          fs.writeFileSync(root + `packets/${pakData.name}.txt`, packet.toString('hex'))
-        }
-      } catch { }
     }
 
     // Abstract some boilerplate before sending to listeners
@@ -188,7 +183,10 @@ class Client extends Connection {
         this.onPlayStatus(pakData.params)
         break
       default:
-      // console.log('Sending to listeners')
+        if (this.status !== ClientStatus.Initializing && this.status !== ClientStatus.Initialized) {
+          this.inLog(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
+          return
+        }
     }
 
     // Emit packet

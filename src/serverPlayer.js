@@ -1,6 +1,7 @@
 const { ClientStatus, Connection } = require('./connection')
 const fs = require('fs')
 const Options = require('./options')
+const debug = require('debug')('minecraft-protocol')
 
 const { Encrypt } = require('./auth/encryption')
 const Login = require('./auth/login')
@@ -21,8 +22,8 @@ class Player extends Connection {
 
     this.startQueue()
     this.status = ClientStatus.Authenticating
-    this.inLog = (...args) => console.info('S -> C', ...args)
-    this.outLog = (...args) => console.info('C -> S', ...args)
+    this.inLog = (...args) => debug('S ->', ...args)
+    this.outLog = (...args) => debug('S <-', ...args)
   }
 
   getData () {
@@ -82,7 +83,7 @@ class Player extends Connection {
   /**
    * Disconnects a client
    */
-  disconnect (reason, hide = false) {
+  disconnect (reason = 'Server closed', hide = false) {
     if ([ClientStatus.Authenticating, ClientStatus.Initializing].includes(this.status)) {
       this.sendDisconnectStatus('failed_server_full')
     } else {
@@ -110,6 +111,7 @@ class Player extends Connection {
     clearInterval(this.loop)
     this.connection?.close()
     this.removeAllListeners()
+    this.status = ClientStatus.Disconnected
   }
 
   readPacket (packet) {
@@ -124,10 +126,9 @@ class Player extends Connection {
       throw e
     }
 
-    console.log('-> S', des)
     switch (des.data.name) {
       case 'login':
-        console.log(des)
+        // console.log(des)
         this.onLogin(des)
         return
       case 'client_to_server_handshake':
@@ -136,11 +137,12 @@ class Player extends Connection {
         break
       case 'set_local_player_as_initialized':
         this.status = ClientStatus.Initialized
+        this.inLog('Server client spawned')
         // Emit the 'spawn' event
         this.emit('spawn')
         break
       default:
-        console.log('ignoring, unhandled')
+        // console.log('ignoring, unhandled')
     }
     this.emit(des.data.name, des.data.params)
   }

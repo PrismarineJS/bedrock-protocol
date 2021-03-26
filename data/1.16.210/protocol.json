@@ -2546,6 +2546,41 @@
         }
       }
     ],
+    "WindowIDVarint": [
+      "mapper",
+      {
+        "type": "varint",
+        "mappings": {
+          "0": "inventory",
+          "1": "first",
+          "100": "last",
+          "119": "offhand",
+          "120": "armor",
+          "121": "creative",
+          "122": "hotbar",
+          "123": "fixed_inventory",
+          "124": "ui",
+          "-100": "drop_contents",
+          "-24": "beacon",
+          "-23": "trading_output",
+          "-22": "trading_use_inputs",
+          "-21": "trading_input_2",
+          "-20": "trading_input_1",
+          "-17": "enchant_output",
+          "-16": "enchant_material",
+          "-15": "enchant_input",
+          "-13": "anvil_output",
+          "-12": "anvil_result",
+          "-11": "anvil_material",
+          "-10": "container_input",
+          "-5": "crafting_use_ingredient",
+          "-4": "crafting_result",
+          "-3": "crafting_remove_ingredient",
+          "-2": "crafting_add_ingredient",
+          "-1": "none"
+        }
+      }
+    ],
     "WindowType": [
       "mapper",
       {
@@ -3721,7 +3756,7 @@
         },
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "platform_chat_id",
@@ -3818,7 +3853,7 @@
         },
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "entity_type",
@@ -3892,7 +3927,7 @@
         },
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "item",
@@ -3937,7 +3972,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "target",
@@ -3950,7 +3985,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "flags",
@@ -4094,7 +4129,7 @@
         },
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "coordinates",
@@ -4268,7 +4303,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "event_id",
@@ -4346,7 +4381,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "event_id",
@@ -4401,7 +4436,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "item",
@@ -4426,7 +4461,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "helmet",
@@ -4465,7 +4500,7 @@
         },
         {
           "name": "target_runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "position",
@@ -4526,7 +4561,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "action",
@@ -4556,7 +4591,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "metadata",
@@ -4573,7 +4608,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "velocity",
@@ -4638,7 +4673,7 @@
         },
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         }
       ]
     ],
@@ -4663,7 +4698,7 @@
         },
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         }
       ]
     ],
@@ -4672,7 +4707,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "window_type",
@@ -4693,7 +4728,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "server",
@@ -4736,7 +4771,7 @@
       [
         {
           "name": "window_id",
-          "type": "varint"
+          "type": "WindowIDVarint"
         },
         {
           "name": "slot",
@@ -5286,7 +5321,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "status",
@@ -5653,7 +5688,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "window_type",
@@ -5698,7 +5733,7 @@
       [
         {
           "name": "window_id",
-          "type": "u8"
+          "type": "WindowID"
         },
         {
           "name": "window_type",
@@ -6065,7 +6100,7 @@
       [
         {
           "name": "runtime_entity_id",
-          "type": "varint"
+          "type": "varint64"
         },
         {
           "name": "unknown0",
