@@ -61,7 +61,7 @@ class Client extends Connection {
     }
   }
 
-  get entityId() {
+  get entityId () {
     return this.startGameData.runtime_entity_id
   }
 

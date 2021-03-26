@@ -5,7 +5,7 @@ const { ChunkColumn, Version } = require('bedrock-provider')
 async function test () {
   const client = new Client({
     hostname: '127.0.0.1',
-    port: 19130
+    port: 19132
     // You can specify version by adding :
     // version: '1.16.210'
   })
@@ -23,7 +23,6 @@ async function test () {
       })
     })
 
-
     client.queue('client_cache_status', { enabled: false })
     client.queue('request_chunk_radius', { chunk_radius: 1 })
     client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
@@ -32,7 +31,7 @@ async function test () {
   client.on('level_chunk', async packet => {
     const cc = new ChunkColumn(Version.v1_4_0, packet.x, packet.z)
     await cc.networkDecodeNoCache(packet.payload, packet.sub_chunk_count)
-    let blocks = []
+    const blocks = []
     for (let x = 0; x < 16; x++) {
       for (let z = 0; z < 16; z++) {
         blocks.push(cc.getBlock(x, 0, z)) // Read some blocks in this chunk
