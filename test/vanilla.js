@@ -2,6 +2,7 @@
 const vanillaServer = require('../tools/startVanillaServer')
 const { Client } = require('../src/client')
 const { waitFor } = require('../src/datatypes/util')
+const { ChunkColumn, Version } = require('bedrock-provider')
 
 async function test (version) {
   // Start the server, wait for it to accept clients, throws on timeout
@@ -41,6 +42,11 @@ async function test (version) {
       loop = setInterval(() => {
         client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: BigInt(Date.now()) })
       }, 200)
+
+      client.on('level_chunk', async packet => { // Chunk read test
+        const cc = new ChunkColumn(Version.v1_4_0, packet.x, packet.z)
+        await cc.networkDecodeNoCache(packet.payload, packet.sub_chunk_count)
+      })
 
       console.log('Awaiting join')
 

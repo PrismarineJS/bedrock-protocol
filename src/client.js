@@ -41,6 +41,7 @@ class Client extends Connection {
     }
 
     this.startGameData = {}
+    this.clientRuntimeId = null
 
     this.startQueue()
     this.inLog = (...args) => debug('C ->', ...args)
@@ -58,6 +59,10 @@ class Client extends Connection {
     if (this.options.protocolVersion < Options.MIN_VERSION) {
       throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
     }
+  }
+
+  get entityId() {
+    return this.startGameData.runtime_entity_id
   }
 
   onEncapsulated = (encapsulated, inetAddr) => {
@@ -116,7 +121,7 @@ class Client extends Connection {
     if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
       if (statusPacket.status === 'player_spawn') {
         this.status = ClientStatus.Initialized
-        this.write('set_local_player_as_initialized', { runtime_entity_id: this.startGameData.runtime_entity_id })
+        this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
         this.emit('spawn')
       }
     }
