@@ -79,7 +79,7 @@ async function startTest (version = '1.16.210', ok) {
         // client.queue('set_entity_data', get('packets/set_entity_data.json'))
 
         client.queue('game_rules_changed', get('packets/game_rules_changed.json'))
-        client.queue('respawn', get('packets/game_rules_changed.json'))
+        client.queue('respawn', get('packets/respawn.json'))
 
         for (const chunk of chunks) {
           client.queue('level_chunk', chunk)
