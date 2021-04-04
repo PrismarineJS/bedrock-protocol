@@ -840,11 +840,11 @@
                               }
                             ]
                           ],
-                          "creative": [
+                          "craft": [
                             "container",
                             [
                               {
-                                "name": "inventory_id",
+                                "name": "action",
                                 "type": "varint"
                               }
                             ]
@@ -854,15 +854,6 @@
                             [
                               {
                                 "name": "flags",
-                                "type": "varint"
-                              }
-                            ]
-                          ],
-                          "craft": [
-                            "container",
-                            [
-                              {
-                                "name": "action",
                                 "type": "varint"
                               }
                             ]
@@ -4870,7 +4861,20 @@
     ],
     "packet_gui_data_pick_item": [
       "container",
-      []
+      [
+        {
+          "name": "item_name",
+          "type": "string"
+        },
+        {
+          "name": "item_effects",
+          "type": "string"
+        },
+        {
+          "name": "hotbar_slot",
+          "type": "li32"
+        }
+      ]
     ],
     "packet_adventure_settings": [
       "container",
@@ -6283,14 +6287,14 @@
         },
         {
           "name": "entity_unique_id",
-          "type": "varint"
+          "type": "zigzag64"
         },
         {
           "name": "transition_type",
           "type": [
             "mapper",
             {
-              "type": "varint",
+              "type": "varint64",
               "mappings": {
                 "0": "entity",
                 "1": "create",
@@ -7162,7 +7166,7 @@
           "type": [
             "switch",
             {
-              "compareTo": "types.feet",
+              "compareTo": "type.feet",
               "fields": {
                 "true": "zigzag32"
               },

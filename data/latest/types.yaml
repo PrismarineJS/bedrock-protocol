@@ -448,7 +448,7 @@ TransactionActions:
          100: craft_slot
          99999: craft
       _: source_type?
-         if container or creative:
+         if container or craft:
             inventory_id: varint
          if world_interaction:
             flags: varint

@@ -23,12 +23,13 @@ class RakNativeClient extends EventEmitter {
     this.raknet.on('encapsulated', ({ buffer, address }) => {
       this.onEncapsulated(buffer, address)
     })
-    this.raknet.on('connected', () => {
+
+    this.raknet.on('connect', () => {
       this.connected = true
       this.onConnected()
     })
 
-    this.raknet.on('disconnected', ({ reason }) => {
+    this.raknet.on('disconnect', ({ reason }) => {
       this.connected = false
       this.onCloseConnection(reason)
     })

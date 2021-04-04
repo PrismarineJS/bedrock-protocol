@@ -3,7 +3,7 @@ const { createDeserializer, createSerializer } = require('./transforms/serialize
 const { Player } = require('./serverPlayer')
 const { RakServer } = require('./rak')
 const Options = require('./options')
-const debug = require('debug')('minecraft-protocol')
+const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
 class Server extends EventEmitter {
   constructor (options) {
@@ -62,6 +62,7 @@ class Server extends EventEmitter {
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
     this.raknet.onEncapsulated = this.onEncapsulated
+    return { hostname, port }
   }
 
   close (disconnectReason) {
