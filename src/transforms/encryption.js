@@ -1,5 +1,6 @@
 const { Transform } = require('readable-stream')
-const crypto = require('crypto')
+const crypto = globalThis.isElectron ? require('browserify-cipher/browser') : require('crypto')
+const { createHash } = require('crypto')
 const aesjs = require('aes-js')
 const Zlib = require('zlib')
 
@@ -52,7 +53,7 @@ class Decipher extends Transform {
 }
 
 function computeCheckSum (packetPlaintext, sendCounter, secretKeyBytes) {
-  const digest = crypto.createHash('sha256')
+  const digest = createHash('sha256')
   const counter = Buffer.alloc(8)
   counter.writeBigInt64LE(sendCounter, 0)
   digest.update(counter)
@@ -70,10 +71,12 @@ function createEncryptor (client, iv) {
   // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
 
   function process (chunk) {
-    const buffer = Zlib.deflateRawSync(chunk, { level: 7 })
-    const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
-    client.sendCounter++
-    client.cipher.write(packet)
+    Zlib.deflateRaw(chunk, { level: 7 }, (err, buffer) => {
+      if (err) throw err
+      const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
+      client.sendCounter++
+      client.cipher.write(packet)
+    })
   }
 
   client.cipher.on('data', client.onEncryptedPacket)
