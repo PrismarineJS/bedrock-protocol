@@ -1,4 +1,3 @@
-/* eslint-disable */
 const { Version } = require('bedrock-provider')
 const { WorldView } = require('prismarine-viewer/viewer')
 const World = require('prismarine-world')()
@@ -10,7 +9,7 @@ class BotProvider extends WorldView {
   lastSentPos
   positionUpdated = true
 
-  constructor() {
+  constructor () {
     super()
     this.connect()
     this.listenToBot()
@@ -18,7 +17,7 @@ class BotProvider extends WorldView {
     this.movements = new MovementManager(this)
   }
 
-  handleChunk(packet, render = true) {
+  handleChunk (packet, render = true) {
     const hash = (packet.x << 4) + ',' + (packet.z << 4)
     if (this.loadChunk[hash]) return
     const cc = new ChunkColumn(Version.v1_4_0, packet.x, packet.z)
@@ -31,24 +30,15 @@ class BotProvider extends WorldView {
     })
   }
 
-  updatePlayerCamera(id, pos, yaw, pitch, updateState) {
-    // TODO: do this properly
-    window.viewer.viewer.entities.update({
-      name: 'player',
-      id,
-      pos,
-      width: 0.6,
-      height: 1.8,
-      yaw,
-      pitch
-    })
+  updatePlayerCamera (id, position, yaw, pitch, updateState) {
+    this.emit('playerMove', id, { position, yaw, pitch })
 
     if (updateState) {
-      this.movements.updatePosition(pos, yaw, pitch)
+      this.movements.updatePosition(position, yaw, pitch)
     }
   }
 
-  stopBot() {
+  stopBot () {
     clearInterval(this.tickLoop)
     this.movements.stopPhys()
   }

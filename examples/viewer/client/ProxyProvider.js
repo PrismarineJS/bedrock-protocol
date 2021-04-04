@@ -26,6 +26,7 @@ class ProxyProvider extends BotProvider {
           this.movements.init('', params.player_position, null, params.rotation.z, params.rotation.x, 0)
         } else if (name === 'play_status') {
           this.movements.startPhys()
+          this.emit('spawn', { position: this.movements.lastPos, firstPerson: true })
           console.info('Started physics!')
         } else if (name === 'move_player') {
           console.log('move_player', params)

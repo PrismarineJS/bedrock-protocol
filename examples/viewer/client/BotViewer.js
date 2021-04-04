@@ -29,11 +29,33 @@ class BotViewer {
     // Link WorldView and Viewer
     this.viewer.listen(this.bot)
 
-    this.bot.on('spawn', ({ position }) => {
+    this.bot.on('spawn', ({ position, firstPerson }) => {
       // Initialize viewer, load chunks
       this.bot.init(position)
       // Start listening for keys
       this.registerBrowserEvents()
+
+      if (firstPerson && this.bot.movements) {
+        this.firstPerson = true
+      } else {
+        this.viewer.camera.position.set(position.x, position.y, position.z)
+      }
+    })
+
+    this.bot.on('playerMove', (id, pos) => {
+      if (this.firstPerson && id === 1) {
+        this.setFirstPersonCamera(pos)
+      }
+
+      window.viewer.viewer.entities.update({
+        name: 'player',
+        id,
+        pos: pos.position,
+        width: 0.6,
+        height: 1.8,
+        yaw: pos.yaw,
+        pitch: pos.pitch
+      })
     })
 
     this.controls.update()
@@ -41,7 +63,7 @@ class BotViewer {
     // Browser animation loop
     const animate = () => {
       window.requestAnimationFrame(animate)
-      if (this.controls) this.controls.update()
+      if (this.controls && !this.firstPerson) this.controls.update()
       this.viewer.update()
       this.renderer.render(this.viewer.scene, this.viewer.camera)
     }
@@ -60,6 +82,10 @@ class BotViewer {
 
   registerBrowserEvents () {
     this.renderer.domElement.parentElement.addEventListener('keydown', this.onKeyDown)
+  }
+
+  setFirstPersonCamera (entity) {
+    this.viewer.setFirstPersonCamera(entity.position, entity.yaw, entity.pitch * 2)
   }
 }
 
