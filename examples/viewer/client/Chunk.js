@@ -1,16 +1,16 @@
 const { ChunkColumn, Version } = require('bedrock-provider')
 const { SubChunk } = require('bedrock-provider/js/SubChunk')
-try { var v8 = require('v8') } catch { }
+try { const v8 = require('v8') } catch { }
 
 const Block = require('prismarine-block')('1.16.1')
 
 class ChunkColumnWrapped extends ChunkColumn { // pchunk compatiblity wrapper
   // Block access
-  setBlockStateId(pos, stateId) {
+  setBlockStateId (pos, stateId) {
     super.setBlock(pos.x, pos.y, pos.z, Block.fromStateId(stateId))
   }
 
-  getBlockStateId(pos) {
+  getBlockStateId (pos) {
     return super.getBlock(pos.x, pos.y, pos.z)?.stateId
   }
 

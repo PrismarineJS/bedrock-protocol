@@ -2,19 +2,20 @@
 const { Viewer, MapControls } = require('prismarine-viewer/viewer')
 const { Vec3 } = require('vec3')
 const { BotProvider } = require('./BotProvider')
+const { ProxyProvider } = require('./ProxyProvider')
 global.THREE = require('three')
 
 const MCVER = '1.16.1'
 
 class BotViewer {
-  constructor() {
-    // Create viewer data provider
-    this.world = new BotProvider()
+  constructor () {
+
   }
 
-  start() {
-    this.worldView = new BotProvider()
-
+  start () {
+    // this.bot = new BotProvider()
+    this.bot = new ProxyProvider()
+    // return
     // Create three.js context, add to page
     this.renderer = new THREE.WebGLRenderer()
     this.renderer.setPixelRatio(window.devicePixelRatio || 1)
@@ -31,11 +32,13 @@ class BotViewer {
     this.controls.dampingFactor = 0.09
     console.info('Registered handlers')
     // Link WorldView and Viewer
-    this.viewer.listen(this.worldView)
+    this.viewer.listen(this.bot)
 
-    this.worldView.on('spawn', ({ position }) => {
+    this.bot.on('spawn', ({ position }) => {
       // Initialize viewer, load chunks
-      this.worldView.init(position)
+      this.bot.init(position)
+      // Start listening for keys
+      this.registerBrowserEvents()
     })
 
     this.controls.update()
@@ -56,12 +59,14 @@ class BotViewer {
     })
   }
 
-  onKeyDown = () => {
-
+  onKeyDown = (evt) => {
+    console.log('Key down', evt)
+    // this.bot.initPhys()
+    // this.bot.startPhys()
   }
 
-  registerBrowserEvents() {
-    this.renderer.domElement.addEventListener('keydown', this.onKeyDown)
+  registerBrowserEvents () {
+    this.renderer.domElement.parentElement.addEventListener('keydown', this.onKeyDown)
   }
 }
 
