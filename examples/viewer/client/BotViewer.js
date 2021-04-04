@@ -1,21 +1,16 @@
 /* global THREE */
 const { Viewer, MapControls } = require('prismarine-viewer/viewer')
-const { Vec3 } = require('vec3')
-const { BotProvider } = require('./BotProvider')
+// const { Vec3 } = require('vec3')
+// const { BotProvider } = require('./BotProvider')
 const { ProxyProvider } = require('./ProxyProvider')
 global.THREE = require('three')
 
 const MCVER = '1.16.1'
 
 class BotViewer {
-  constructor () {
-
-  }
-
   start () {
     // this.bot = new BotProvider()
     this.bot = new ProxyProvider()
-    // return
     // Create three.js context, add to page
     this.renderer = new THREE.WebGLRenderer()
     this.renderer.setPixelRatio(window.devicePixelRatio || 1)
@@ -61,8 +56,6 @@ class BotViewer {
 
   onKeyDown = (evt) => {
     console.log('Key down', evt)
-    // this.bot.initPhys()
-    // this.bot.startPhys()
   }
 
   registerBrowserEvents () {

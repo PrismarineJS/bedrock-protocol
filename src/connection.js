@@ -24,7 +24,7 @@ class Connection extends EventEmitter {
   }
 
   set status (val) {
-    this.inLog('* new status', val)
+    debug('* new status', val)
     this.#status = val
   }
 
@@ -126,7 +126,7 @@ class Connection extends EventEmitter {
 
   sendEncryptedBatch (batch) {
     const buf = batch.stream.getBuffer()
-    debug('Sending encrypted batch', batch)
+    // debug('Sending encrypted batch', batch)
     this.encrypt(buf)
   }
 

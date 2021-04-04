@@ -1,6 +1,6 @@
 const { Relay } = require('bedrock-protocol')
 const { BotProvider } = require('./BotProvider')
-const vec3 = require('vec3')
+const { diff } = require('./util')
 
 class ProxyProvider extends BotProvider {
   lastPlayerMovePacket
@@ -15,61 +15,36 @@ class ProxyProvider extends BotProvider {
         port: 19132
       }
     })
-
     proxy.listen()
-
     console.info('Waiting for connect')
-
-    const maxChunks = 40
 
     proxy.on('join', (client, server) => {
       client.on('clientbound', ({ name, params }) => {
-        if (name == 'level_chunk') {
-          // maxChunks--
-          // if (maxChunks >= 0) {
-          //   this.handleChunk(params)
-          // }
+        if (name === 'level_chunk') {
           this.handleChunk(params, true)
-        } else if (name == 'start_game') {
-          this.initPhys(params.player_position, null, params.rotation.z, params.rotation.x, 0)
+        } else if (name === 'start_game') {
+          this.movements.init('', params.player_position, null, params.rotation.z, params.rotation.x, 0)
         } else if (name === 'play_status') {
-          // this.emit('spawn', { position: server.startGameData.player_position })
-
-          this.startPhys()
+          this.movements.startPhys()
           console.info('Started physics!')
         } else if (name === 'move_player') {
-          console.log('move_player', packet)
-          // if (packet.runtime_id === server.entityId) {
-          //   this.updatePosition(packet.position)
-          //   if (this.lastServerMovement.x == packet.position.x && this.lastServerMovement.y == packet.position.y && this.lastServerMovement.z == packet.position.z) {
-
-          //   } else {
-          //     console.log('Server computed', packet.position)
-          //   }
-          //   this.lastServerMovement = { ...packet.position }
-          // }
+          console.log('move_player', params)
+          this.movements.updatePosition(params.position, params.yaw, params.pitch, params.head_yaw, params.tick)
         }
+
         if (name.includes('entity') || name.includes('network_chunk_publisher_update') || name.includes('tick') || name.includes('level')) return
         console.log('CB', name)
       })
 
       client.on('serverbound', ({ name, params }) => {
         // { name, params }
-        if (name == 'player_auth_input') {
-          // console.log('player_auth_input', this.lastPlayerMovePacket, params)
-
-          // this.controls.forward = params.input_data.up
-          // this.controls.back = params.input_data.down
-          // this.controls.left = params.input_data.left
-          // this.controls.right = params.input_data.right
-          // this.player.entity.pitch = params.pitch
-          // this.player.entity.yaw = params.yaw
-          this.pushInputState(params.input_data, params.yaw, params.pitch)
-          this.pushCamera(params)
-          this.lastMovePacket = params
+        if (name === 'player_auth_input') {
+          this.movements.pushInputState(params.input_data, params.yaw, params.pitch)
+          this.movements.pushCameraControl(params, 1)
 
           // Log Movement deltas
           {
+            this.lastMovePacket = params
             if (this.firstPlayerMovePacket) {
               const id = diff(this.firstPlayerMovePacket.input_data, params.input_data)
               const md = diff(this.firstPlayerMovePacket.move_vector, params.move_vector)
@@ -108,19 +83,6 @@ class ProxyProvider extends BotProvider {
     this.proxy?.close()
   }
 }
-
-const difference = (o1, o2) => Object.keys(o2).reduce((diff, key) => {
-  if (o1[key] === o2[key]) return diff
-  return {
-    ...diff,
-    [key]: o2[key]
-  }
-}, {})
-
-// console.log = () => {}
-// console.debug = () => {}
-
-const diff = (o1, o2) => { const dif = difference(o1, o2); return Object.keys(dif).length ? dif : null }
 
 module.exports = { ProxyProvider }
 globalThis.logging = true
