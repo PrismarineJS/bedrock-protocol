@@ -1,5 +1,5 @@
 const path = require('path')
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, globalShortcut } = require('electron')
 
 function createMainWindow () {
   const window = new BrowserWindow({
@@ -28,6 +28,10 @@ function createMainWindow () {
 
 app.on('ready', () => {
   createMainWindow()
+
+  globalShortcut.register('CommandOrControl+W', () => {
+    // no op
+  })
 })
 
 app.on('window-all-closed', function () {

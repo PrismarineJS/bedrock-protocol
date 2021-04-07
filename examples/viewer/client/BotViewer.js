@@ -1,7 +1,7 @@
 /* global THREE */
 const { Viewer, MapControls } = require('prismarine-viewer/viewer')
 // const { Vec3 } = require('vec3')
-// const { BotProvider } = require('./BotProvider')
+const { ClientProvider } = require('./ClientProvider')
 const { ProxyProvider } = require('./ProxyProvider')
 global.THREE = require('three')
 
@@ -9,8 +9,8 @@ const MCVER = '1.16.1'
 
 class BotViewer {
   start () {
-    // this.bot = new BotProvider()
-    this.bot = new ProxyProvider()
+    this.bot = new ClientProvider()
+    // this.bot = new ProxyProvider()
     // Create three.js context, add to page
     this.renderer = new THREE.WebGLRenderer()
     this.renderer.setPixelRatio(window.devicePixelRatio || 1)
@@ -36,15 +36,18 @@ class BotViewer {
       this.registerBrowserEvents()
 
       if (firstPerson && this.bot.movements) {
+        this.viewer.camera.position.set(position.x, position.y, position.z)
         this.firstPerson = true
+        this.controls.enabled = false
       } else {
         this.viewer.camera.position.set(position.x, position.y, position.z)
       }
     })
 
     this.bot.on('playerMove', (id, pos) => {
-      if (this.firstPerson && id === 1) {
+      if (this.firstPerson && id < 10) {
         this.setFirstPersonCamera(pos)
+        return
       }
 
       window.viewer.viewer.entities.update({
@@ -56,6 +59,13 @@ class BotViewer {
         yaw: pos.yaw,
         pitch: pos.pitch
       })
+    })
+
+    this.bot.on('startSprint', () => {
+      this.viewer.camera.fov += 20
+    })
+    this.bot.on('stopSprint', () => {
+      this.viewer.camera.fov -= 20
     })
 
     this.controls.update()
@@ -76,12 +86,43 @@ class BotViewer {
     })
   }
 
-  onKeyDown = (evt) => {
-    console.log('Key down', evt)
+  onMouseMove = (e) => {
+    if (this.firstPerson) {
+      this.bot.entity.pitch -= e.movementY * 0.005
+      this.bot.entity.yaw -= e.movementX * 0.004
+    }
+  }
+
+  onPointerLockChange = () => {
+    const e = this.renderer.domElement
+    if (document.pointerLockElement === e) {  
+      e.parentElement.addEventListener('mousemove', this.onMouseMove, { passive: true })
+    } else {
+      e.parentElement.removeEventListener('mousemove', this.onMouseMove, false)
+    }
+  }
+
+  onMouseDown = () => {
+    if (this.firstPerson && !document.pointerLockElement) {
+      this.renderer.domElement.requestPointerLock()
+    }
   }
 
   registerBrowserEvents () {
-    this.renderer.domElement.parentElement.addEventListener('keydown', this.onKeyDown)
+    const e = this.renderer.domElement
+    e.parentElement.addEventListener('keydown', this.bot.onKeyDown)
+    e.parentElement.addEventListener('keyup', this.bot.onKeyUp)
+    e.parentElement.addEventListener('mousedown', this.onMouseDown)
+    document.addEventListener('pointerlockchange', this.onPointerLockChange, false)
+  }
+
+  unregisterBrowserEvents () {
+    const e = this.renderer.domElement
+    e.parentElement.removeEventListener('keydown', this.bot.onKeyDown)
+    e.parentElement.removeEventListener('keyup', this.bot.onKeyUp)
+    e.parentElement.removeEventListener('mousemove', this.onMouseMove)
+    e.parentElement.removeEventListener('mousedown', this.onMouseDown)
+    document.removeEventListener('pointerlockchange', this.onPointerLockChange, false)
   }
 
   setFirstPersonCamera (entity) {

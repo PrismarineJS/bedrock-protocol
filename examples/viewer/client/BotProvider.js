@@ -15,7 +15,18 @@ class BotProvider extends WorldView {
     this.listenToBot()
     this.world = new World()
     this.movements = new MovementManager(this)
+
+    this.onKeyDown = () => {}
+    this.onKeyUp = () => {}
+
+    this.removeAllListeners('mouseClick')
   }
+
+  raycast () {
+    // TODO : fix
+  }
+
+  get entity () { return this.movements.player.entity }
 
   handleChunk (packet, render = true) {
     const hash = (packet.x << 4) + ',' + (packet.z << 4)

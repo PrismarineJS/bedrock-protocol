@@ -19,9 +19,7 @@ class MovementManager {
 
   get lastPos () { return this.player.entity.position.clone() }
   set lastPos (newPos) { this.player.entity.position.set(newPos.x, newPos.y, newPos.z) }
-
   get lastRot () { return vec3(this.player.entity.yaw, this.player.entity.pitch, this.player.entity.headYaw) }
-
   set lastRot (rot) {
     this.player.entity.yaw = rot.x
     this.player.entity.pitch = rot.y
@@ -33,10 +31,10 @@ class MovementManager {
     const positionUpdated = !this.lastSentPos || !this.lastPos.equals(this.lastSentPos)
     const rotationUpdated = !this.lastSentRot || !this.lastRot.equals(this.lastSentRot)
 
-    if (positionUpdated) {
+    if (positionUpdated || rotationUpdated) {
       this.lastSentPos = this.lastPos.clone()
-      console.log('We computed', this.lastPos)
-      this.bot.updatePlayerCamera(2, this.lastSentPos, this.playerState.yaw, this.playerState.pitch)
+      // console.log('We computed', this.lastPos)
+      this.bot.updatePlayerCamera(2, this.lastSentPos, this.playerState.yaw, this.playerState.pitch || this.player.entity.pitch)
       if (this.serverMovements) {
         this.client.queue('player_auth_input', {
           pitch: this.player.pitch,
@@ -175,6 +173,7 @@ class MovementManager {
         stop_gliding: false
       })
       this.timeAccumulator -= PHYSICS_TIMESTEP
+      this.tick++
     }
   }
 
@@ -185,16 +184,29 @@ class MovementManager {
     }, PHYSICS_INTERVAL_MS)
   }
 
+  /**
+   * Sets the active control state and also keeps track of key toggles.
+   * @param {'forward' | 'back' | 'left' | 'right' | 'jump' | 'sprint' | 'sneak'} control
+   * @param {boolean} state
+   */
   setControlState (control, state) {
+    // HACK ! switch left and right, fixes control issue
+    if (control === 'left') control = 'right'
+    else if (control === 'right') control = 'left'
+
     if (this.controls[control] === state) return
     if (control === 'sprint') {
       this.player.events.startSprint = state
       this.player.events.stopSprint = !state
+      if (state) this.bot.emit('startSprint')
+      else this.bot.emit('stopSprint')
       this.controls.sprint = true
     } else if (control === 'sneak') {
       this.player.events.startSneak = state
       this.player.events.stopSneak = !state
       this.controls.sprint = true
+    } else {
+      this.controls[control] = state
     }
   }
 
