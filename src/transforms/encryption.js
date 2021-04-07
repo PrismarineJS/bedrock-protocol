@@ -1,8 +1,7 @@
 const { Transform } = require('readable-stream')
-const crypto = globalThis.isElectron ? require('browserify-cipher/browser') : require('crypto')
-const { createHash } = require('crypto')
-const aesjs = require('aes-js')
+const crypto = require('crypto')
 const Zlib = require('zlib')
+if (globalThis.isElectron) var { CipherCFB8 } = require('raknet-native') // eslint-ignore-line
 
 const CIPHER_ALG = 'aes-256-cfb8'
 
@@ -23,37 +22,28 @@ function createDecipher (secret, initialValue) {
 class Cipher extends Transform {
   constructor (secret, iv) {
     super()
-    this.aes = new aesjs.ModeOfOperation.cfb(secret, iv, 1) // eslint-disable-line new-cap
+    this.aes = new CipherCFB8(secret, iv)
   }
 
   _transform (chunk, enc, cb) {
-    try {
-      const res = this.aes.encrypt(chunk)
-      cb(null, res)
-    } catch (e) {
-      cb(e)
-    }
+    const ciphered = this.aes.cipher(chunk)
+    cb(null, ciphered)
   }
 }
 
 class Decipher extends Transform {
   constructor (secret, iv) {
     super()
-    this.aes = new aesjs.ModeOfOperation.cfb(secret, iv, 1) // eslint-disable-line new-cap
+    this.aes = new CipherCFB8(secret, iv)
   }
 
   _transform (chunk, enc, cb) {
-    try {
-      const res = this.aes.decrypt(chunk)
-      cb(null, res)
-    } catch (e) {
-      cb(e)
-    }
+    cb(null, this.aes.decipher(chunk))
   }
 }
 
 function computeCheckSum (packetPlaintext, sendCounter, secretKeyBytes) {
-  const digest = createHash('sha256')
+  const digest = crypto.createHash('sha256')
   const counter = Buffer.alloc(8)
   counter.writeBigInt64LE(sendCounter, 0)
   digest.update(counter)
