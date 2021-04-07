@@ -3,7 +3,7 @@ const { Client } = require('./client')
 const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol relay')
-const { serialize } = require('./datatypes/util')
+// const { serialize } = require('./datatypes/util')
 
 /** @typedef {{ hostname: string, port: number, auth: 'client' | 'server' | null, destination?: { hostname: string, port: number } }} Options  */
 

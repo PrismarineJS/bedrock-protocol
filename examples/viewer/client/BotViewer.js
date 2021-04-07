@@ -95,7 +95,7 @@ class BotViewer {
 
   onPointerLockChange = () => {
     const e = this.renderer.domElement
-    if (document.pointerLockElement === e) {  
+    if (document.pointerLockElement === e) {
       e.parentElement.addEventListener('mousemove', this.onMouseMove, { passive: true })
     } else {
       e.parentElement.removeEventListener('mousemove', this.onMouseMove, false)

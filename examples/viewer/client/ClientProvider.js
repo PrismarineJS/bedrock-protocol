@@ -14,7 +14,7 @@ class ClientProvider extends BotProvider {
   downKeys = new Set()
 
   connect () {
-    const client = new Client({ hostname: '127.0.0.1', version: '1.16.210', port: 19132, connectTimeout: 100000 })
+    const client = new Client({ hostname: '127.0.0.1', version: '1.16.210', username: 'notch', offline: true, port: 19132, connectTimeout: 100000 })
 
     client.once('resource_packs_info', (packet) => {
       client.write('resource_pack_client_response', {
@@ -50,7 +50,7 @@ class ClientProvider extends BotProvider {
     })
     this.client.on('start_game', packet => {
       this.updatePosition(packet.player_position)
-      this.movements.init('', packet.player_position, null, packet.rotation.z, packet.rotation.x, 0)
+      this.movements.init('server', packet.player_position, /* vel */ null, packet.rotation.z || 0, packet.rotation.x || 0, 0)
     })
 
     this.client.on('spawn', () => {
@@ -68,7 +68,9 @@ class ClientProvider extends BotProvider {
     })
 
     this.client.on('move_player', packet => {
-      if (packet.runtime_id === this.client.entityId) { this.movements.updatePosition(packet.position, packet.yaw, packet.pitch, packet.head_yaw, packet.tick) }
+      if (packet.runtime_id === this.client.entityId) {
+        this.movements.updatePosition(packet.position, packet.yaw, packet.pitch, packet.head_yaw, packet.tick)
+      }
     })
 
     this.client.on('set_entity_motion', packet => {
@@ -96,7 +98,7 @@ class ClientProvider extends BotProvider {
 
   onKeyUp = (evt) => {
     const code = evt.code
-    if (code == 'ControlLeft' && this.downKeys.has('ControlLeft')) {
+    if (code === 'ControlLeft' && this.downKeys.has('ControlLeft')) {
       this.movements.setControlState('sprint', false)
     }
     for (const control in controlMap) {

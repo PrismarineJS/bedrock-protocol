@@ -1,7 +1,7 @@
 const { Transform } = require('readable-stream')
 const crypto = require('crypto')
 const Zlib = require('zlib')
-if (globalThis.isElectron) var { CipherCFB8 } = require('raknet-native') // eslint-ignore-line
+if (globalThis.isElectron) var { CipherCFB8 } = require('raknet-native') // eslint-disable-line
 
 const CIPHER_ALG = 'aes-256-cfb8'
 

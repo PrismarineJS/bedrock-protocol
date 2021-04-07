@@ -1,6 +1,6 @@
 const { Physics, PlayerState } = require('prismarine-physics')
 const { performance } = require('perf_hooks')
-const { d2r } = require('./util')
+const { d2r, r2d } = require('./util')
 const vec3 = require('vec3')
 
 const PHYSICS_INTERVAL_MS = 50
@@ -21,9 +21,9 @@ class MovementManager {
   set lastPos (newPos) { this.player.entity.position.set(newPos.x, newPos.y, newPos.z) }
   get lastRot () { return vec3(this.player.entity.yaw, this.player.entity.pitch, this.player.entity.headYaw) }
   set lastRot (rot) {
-    this.player.entity.yaw = rot.x
-    this.player.entity.pitch = rot.y
-    if (rot.z) this.player.entity.headYaw = rot.z
+    if (!isNaN(rot.x)) this.player.entity.yaw = rot.x
+    if (!isNaN(rot.y)) this.player.entity.pitch = rot.y
+    if (!isNaN(rot.z)) this.player.entity.headYaw = rot.z
   }
 
   // Ask the server to be in a new position
@@ -36,28 +36,29 @@ class MovementManager {
       // console.log('We computed', this.lastPos)
       this.bot.updatePlayerCamera(2, this.lastSentPos, this.playerState.yaw, this.playerState.pitch || this.player.entity.pitch)
       if (this.serverMovements) {
-        this.client.queue('player_auth_input', {
-          pitch: this.player.pitch,
-          yaw: this.player.yaw,
+        globalThis.movePayload = {
+          pitch: r2d(this.player.entity.pitch),
+          yaw: r2d(this.player.entity.yaw), // r2d(this.player.entity.yaw),
           position: {
             x: this.lastPos.x,
-            y: this.lastPos.y,
+            y: this.lastPos.y + 1.62,
             z: this.lastPos.z
           },
           move_vector: { // Minecraft coords, N: Z+1, S: Z-1, W: X+1, E: X-1
             x: inputState.left ? 1 : (inputState.right ? -1 : 0),
             z: inputState.up ? 1 : (inputState.down ? -1 : 0)
           },
-          head_yaw: this.player.headYaw,
+          head_yaw: r2d(this.player.entity.yaw), // r2d(this.player.entity.headYaw),
           input_data: inputState,
           input_mode: 'mouse',
           play_mode: 'screen',
           tick: this.tick,
           delta: this.lastSentPos?.minus(this.lastPos) ?? { x: 0, y: 0, z: 0 }
-        })
-        this.positionUpdated = false
+        }
+        this.bot.client.queue('player_auth_input', globalThis.movePayload)
       }
 
+      this.positionUpdated = false
       this.lastSentPos = this.lastPos
       this.lastSentRot = this.lastRot
     }
@@ -126,8 +127,8 @@ class MovementManager {
       const q = this.inputQueue.shift()
       if (q) {
         Object.assign(this.playerState.control, q)
-        if (q.yaw) this.player.entity.yaw = q.yaw
-        if (q.pitch) this.player.entity.pitch = q.pitch
+        if (!isNaN(q.yaw)) this.player.entity.yaw = q.yaw
+        if (!isNaN(q.pitch)) this.player.entity.pitch = q.pitch
       }
       this.playerState = new PlayerState(this.player, this.controls)
       this.physics.simulatePlayer(this.playerState, this.world.sync).apply(this.player)
@@ -147,8 +148,8 @@ class MovementManager {
         sneak_down: false,
         up: this.controls.forward,
         down: this.controls.back,
-        left: this.controls.left,
-        right: this.controls.right,
+        left: this.controls.right,
+        right: this.controls.left,
         up_left: false,
         up_right: false,
         want_up: this.controls.jump, // Jump
@@ -247,9 +248,7 @@ class MovementManager {
   }
 
   onViewerCameraMove (newYaw, newPitch, newHeadYaw) {
-    this.player.yaw = newYaw
-    this.player.pitch = newPitch
-    this.player.headYaw = newHeadYaw
+    this.lastRot = { x: newYaw, y: newPitch, z: newHeadYaw }
   }
 }
 
