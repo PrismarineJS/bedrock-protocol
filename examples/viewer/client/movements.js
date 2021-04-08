@@ -5,6 +5,7 @@ const vec3 = require('vec3')
 
 const PHYSICS_INTERVAL_MS = 50
 const PHYSICS_TIMESTEP = PHYSICS_INTERVAL_MS / 1000
+const AXES = ['forward', 'back', 'left', 'right']
 
 class MovementManager {
   // Server auth movement : we send inputs, server calculates position & sends back
@@ -38,7 +39,7 @@ class MovementManager {
       if (this.serverMovements) {
         globalThis.movePayload = {
           pitch: r2d(this.player.entity.pitch),
-          yaw: r2d(this.player.entity.yaw), // r2d(this.player.entity.yaw),
+          yaw: r2d(this.player.entity.yaw),
           position: {
             x: this.lastPos.x,
             y: this.lastPos.y + 1.62,
@@ -48,7 +49,7 @@ class MovementManager {
             x: inputState.left ? 1 : (inputState.right ? -1 : 0),
             z: inputState.up ? 1 : (inputState.down ? -1 : 0)
           },
-          head_yaw: r2d(this.player.entity.yaw), // r2d(this.player.entity.headYaw),
+          head_yaw: r2d(this.player.entity.yaw),
           input_data: inputState,
           input_mode: 'mouse',
           play_mode: 'screen',
@@ -93,6 +94,7 @@ class MovementManager {
         startSneak: false,
         stopSneak: false
       },
+      sprinting: false,
       jumpTicks: 0,
       jumpQueued: false,
       downJump: false
@@ -185,36 +187,80 @@ class MovementManager {
     }, PHYSICS_INTERVAL_MS)
   }
 
+  get sprinting() {
+    return this.player.sprinting
+  }
+
+  set sprinting(val) {
+    this.player.events.startSprint = val
+    this.player.events.stopSprint = !val
+    if (val && !this.player.sprinting) {
+      this.bot.emit('startSprint')
+    } else {
+      this.bot.emit('stopSprint')
+    }
+    this.player.sprinting = val
+  }
+
+  _lastInput = { control: '', time: 0 }
+
   /**
    * Sets the active control state and also keeps track of key toggles.
    * @param {'forward' | 'back' | 'left' | 'right' | 'jump' | 'sprint' | 'sneak'} control
    * @param {boolean} state
    */
-  setControlState (control, state) {
+  setControlState (control, state, time = Date.now()) {
     // HACK ! switch left and right, fixes control issue
     if (control === 'left') control = 'right'
     else if (control === 'right') control = 'left'
 
     if (this.controls[control] === state) return
-    if (control === 'sprint') {
-      this.player.events.startSprint = state
-      this.player.events.stopSprint = !state
-      if (state) this.bot.emit('startSprint')
-      else this.bot.emit('stopSprint')
-      this.controls.sprint = true
-    } else if (control === 'sneak') {
-      this.player.events.startSneak = state
-      this.player.events.stopSneak = !state
-      this.controls.sprint = true
-    } else {
-      this.controls[control] = state
+
+    const isAxis = AXES.includes(control)
+    let hasOtherAxisKeyDown = false
+    for (const c of AXES) {
+      if (this.controls[c] && c != control) {
+        hasOtherAxisKeyDown = true
+      }
     }
+
+    if (control === 'sprint') {
+      if (state && hasOtherAxisKeyDown) { // sprint down + a axis movement key
+        this.sprinting = true
+      } else if ((!state || !hasOtherAxisKeyDown) && this.sprinting) { // sprint up or movement key up & current sprinting
+        this.bot.emit('stopSprint')
+        this.sprinting = false
+      }
+    } else if (isAxis && this.controls.sprint) {
+      if (!state && !hasOtherAxisKeyDown) {
+        this.sprinting = false
+      } else if (state && !hasOtherAxisKeyDown) {
+        this.sprinting = true
+      }
+    } else if (control === 'sneak') {
+      if (state) {
+        this.player.events.startSneak = true
+        this.bot.emit('startSneak')
+      } else {
+        this.player.events.stopSneak = true
+        this.bot.emit('stopSneak')
+      }
+    } else if (control === 'forward' && this._lastInput.control === 'forward' && (Date.now() - this._lastInput.time) < 100 && !this.controls.sprint) {
+      // double tap forward within 0.5 seconds, toggle sprint
+      // this.controls.sprint = true
+      // this.sprinting = true
+    }
+
+    this._lastInput = { control, time }
+    this.controls[control] = state
   }
 
   stopPhys () {
     clearInterval(this.physicsLoop)
   }
 
+  // Called when a proxy player sends a PlayerInputPacket. We need to apply these inputs tick-by-tick
+  // as these packets are sent by the client every tick.
   pushInputState (state, yaw, pitch) {
     const yawRad = d2r(yaw)
     const pitchRad = d2r(pitch)
@@ -232,6 +278,9 @@ class MovementManager {
     globalThis.debugYaw = [yaw, yawRad]
   }
 
+
+  // Called when a proxy player sends a PlayerInputPacket. We need to apply these inputs tick-by-tick
+  // as these packets are sent by the client every tick.
   pushCameraControl (state, id = 1) {
     let { x, y, z } = state.position
     if (id === 1) y -= 1.62 // account for player bb
@@ -247,6 +296,7 @@ class MovementManager {
     if (tick) this.tick = tick
   }
 
+  // User has moved the camera. Update the movements stored.
   onViewerCameraMove (newYaw, newPitch, newHeadYaw) {
     this.lastRot = { x: newYaw, y: newPitch, z: newHeadYaw }
   }

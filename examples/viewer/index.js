@@ -1,7 +1,7 @@
 const path = require('path')
 const { app, BrowserWindow, globalShortcut } = require('electron')
 
-function createMainWindow () {
+function createMainWindow() {
   const window = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,
@@ -27,10 +27,13 @@ function createMainWindow () {
 }
 
 app.on('ready', () => {
-  createMainWindow()
+  const win = createMainWindow()
 
   globalShortcut.register('CommandOrControl+W', () => {
-    // no op
+    win.webContents.sendInputEvent({
+      type: 'keyDown',
+      keyCode: 'W'
+    })
   })
 })
 

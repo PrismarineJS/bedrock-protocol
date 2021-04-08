@@ -2,7 +2,7 @@
 const { Viewer, MapControls } = require('prismarine-viewer/viewer')
 // const { Vec3 } = require('vec3')
 const { ClientProvider } = require('./ClientProvider')
-const { ProxyProvider } = require('./ProxyProvider')
+// const { ProxyProvider } = require('./ProxyProvider')
 global.THREE = require('three')
 
 const MCVER = '1.16.1'
@@ -61,12 +61,29 @@ class BotViewer {
       })
     })
 
-    this.bot.on('startSprint', () => {
-      this.viewer.camera.fov += 20
-    })
-    this.bot.on('stopSprint', () => {
-      this.viewer.camera.fov -= 20
-    })
+    const oldFov = this.viewer.camera.fov
+    const sprintFov = this.viewer.camera.fov + 20
+    const sneakFov = this.viewer.camera.fov - 10
+
+    const onSprint = () => {
+      this.viewer.camera.fov = sprintFov
+      this.viewer.camera.updateProjectionMatrix()
+    }
+
+    const onSneak = () => {
+      this.viewer.camera.fov = sneakFov
+      this.viewer.camera.updateProjectionMatrix()
+    }
+
+    const onRelease = () => {
+      this.viewer.camera.fov = oldFov
+      this.viewer.camera.updateProjectionMatrix()
+    }
+
+    this.bot.on('startSprint', onSprint)
+    this.bot.on('startSneak', onSneak)
+    this.bot.on('stopSprint', onRelease)
+    this.bot.on('stopSneak', onRelease)
 
     this.controls.update()
 
