@@ -103,7 +103,8 @@ function read_player_position(stream) {
     ret.on_ground = Boolean(stream.readU8())
     ret.position = read_player_position(stream)
     let __movement_reason = stream.readU8()
-    switch (__movement_reason) {
+    let movement_reason = { 0: 'player_jump', 1: 'player_autojump', 2: 'player_sneak', 3: 'player_sprint', 4: 'player_fall' }[__movement_reason]
+    switch (movement_reason) {
         case 'player_jump':
         case 'player_autojump':
             ret.original_position = read_player_position(stream)
