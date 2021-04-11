@@ -1,8 +1,10 @@
 CONTRIBUTING.md
 
+Contributions are always welcome :)
+
 ## Updating
 
-Good sources for the Minecraft bedrock protocol are [gophertunnel](https://github.com/Sandertv/gophertunnel/tree/master/minecraft/protocol/packet) and [ClouburstMC's protocol library](https://github.com/CloudburstMC/Protocol).
+Good sources for the Minecraft bedrock protocol are [gophertunnel](https://github.com/Sandertv/gophertunnel/tree/master/minecraft/protocol/packet), [ClouburstMC's protocol library](https://github.com/CloudburstMC/Protocol) and [PocketMine](https://github.com/pmmp/PocketMine-MP/tree/stable/src/pocketmine/network/mcpe/protocol).
 
 Steps to update:
 * Add the version to src/options.js
@@ -14,14 +16,14 @@ Steps to update:
 ## Packet serialization
 
 This project uses ProtoDef to serialize and deserialize Minecraft packets. See the documentation [here](https://github.com/ProtoDef-io/node-protodef).
-The ProtoDef schema is JSON can be found here for use in other languages.
+The ProtoDef schema is JSON can be found [here](https://github.com/PrismarineJS/bedrock-protocol/blob/4169453835790de7eeaa8fb6f5a6b4344f71036b/data/1.16.210/protocol.json) for use in other languages.
 
 In bedrock-protocol, JavaScript code is generated from the JSON through the node-protodef compiler.
 
 #### YAML syntax
 
 For easier maintainability, the JSON is generated from a more human readable YAML format. You can read more [here](https://github.com/extremeheat/protodef-yaml).
- Some documentation is below, and more can be found here.
+ Some documentation is below.
 
 Packets should go in proto.yml and extra types should go in types.yml.
 
