@@ -1,4 +1,3 @@
-// process.env.DEBUG = 'minecraft-protocol raknet'
 const { Client } = require('./client')
 const assert = require('assert')
 
