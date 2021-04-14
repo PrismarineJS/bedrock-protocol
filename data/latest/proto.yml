@@ -769,7 +769,7 @@ packet_mob_equipment:
    item: Item
    slot: u8
    selected_slot: u8
-   windows_id: WindowID
+   window_id: WindowID
 
 packet_mob_armor_equipment:
    !id: 0x20
@@ -793,7 +793,7 @@ packet_interact:
       6: open_inventory
    # TargetEntityRuntimeID is the runtime ID of the entity that the player interacted with. This is empty
    # for the InteractActionOpenInventory action type.
-   target_runtime_entity_id: varint64
+   target_entity_id: varint64
    # Position associated with the ActionType above. For the InteractActionMouseOverEntity, this is the
    # position relative to the entity moused over over which the player hovered with its mouse/touch. For the
    # InteractActionLeaveVehicle, this is the position that the player spawns at after leaving the vehicle.
@@ -947,7 +947,7 @@ packet_inventory_content:
    !bound: both
    # WindowID is the ID that identifies one of the windows that the client currently has opened, or one of
    # the consistent windows such as the main inventory.
-   inventory_id: varint
+   window_id: WindowIDVarint
    # Content is the new content of the inventory. The length of this slice must be equal to the full size of
    # the inventory window updated.
    input: ItemStacks

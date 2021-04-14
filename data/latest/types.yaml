@@ -548,7 +548,7 @@ ItemStack:
    # StackNetworkID is the network ID of the item stack. If the stack is empty, 0 is always written for this
    # field. If not, the field should be set to 1 if the server authoritative inventories are disabled in the
    # StartGame packet, or to a unique stack ID if it is enabled.
-   runtime_id: zigzag32
+   stack_id: varint
    # Stack is the actual item stack of the item instance.
    item: Item
 
@@ -577,16 +577,16 @@ PotionContainerChangeRecipes: []varint
 
 Recipes: []varint
    type: zigzag32 =>
-      '0': 'shapeless' #'ENTRY_SHAPELESS',
-      '1': 'shaped' #'ENTRY_SHAPED',
-      '2': 'furnace' # 'ENTRY_FURNACE',
+      0: shapeless #'ENTRY_SHAPELESS',
+      1: shaped #'ENTRY_SHAPED',
+      2: furnace # 'ENTRY_FURNACE',
       # `furnace_with_metadata` is a recipe specifically used for furnace-type crafting stations. It is equal to
       # `furnace`, except it has an input item with a specific metadata value, instead of any metadata value.
-      '3': 'furnace_with_metadata' # 'ENTRY_FURNACE_DATA', // has metadata
-      '4': 'multi' #'ENTRY_MULTI', //TODO
-      '5': 'shulker_box' #'ENTRY_SHULKER_BOX', //TODO
-      '6': 'shapeless_chemistry' #'ENTRY_SHAPELESS_CHEMISTRY', //TODO
-      '7': 'shaped_chemistry' #'ENTRY_SHAPED_CHEMISTRY', //TODO
+      3: furnace_with_metadata # 'ENTRY_FURNACE_DATA', // has metadata
+      4: multi #'ENTRY_MULTI', //TODO
+      5: shulker_box #'ENTRY_SHULKER_BOX', //TODO
+      6: shapeless_chemistry #'ENTRY_SHAPELESS_CHEMISTRY', //TODO
+      7: shaped_chemistry #'ENTRY_SHAPED_CHEMISTRY', //TODO
    recipe: type?
       if shapeless or shulker_box or shapeless_chemistry:
          recipe_id: string
@@ -595,7 +595,7 @@ Recipes: []varint
          uuid: uuid
          block: string
          priority: zigzag32
-         network_id: zigzag32
+         network_id: varint
       if shaped or shaped_chemistry:
          recipe_id: string
          width: zigzag32
@@ -608,7 +608,7 @@ Recipes: []varint
          uuid: uuid
          block: string
          priority: zigzag32
-         network_id: zigzag32
+         network_id: varint
       if furnace:
          input_id: zigzag32
          output: Item
@@ -620,7 +620,7 @@ Recipes: []varint
          block: string
       if multi:
          uuid: uuid
-         network_id: zigzag32
+         network_id: varint
 
 SkinImage:
    width: li32
@@ -748,13 +748,20 @@ Action: zigzag32 =>
    22: stop_swimming
    23: start_spin_attack
    24: stop_spin_attack
-   25: ineract_block
+   25: interact_block
    26: predict_break
    27: continue_break
 
+# Source and Destination point to the source slot from which Count of the item stack were taken and the
+# destination slot to which this item was moved.
 StackRequestSlotInfo:
-   container_id: u8
-   slot_id: u8
+   # ContainerID is the ID of the container that the slot was in.
+   slot_type: ContainerSlotType
+   # Slot is the index of the slot within the container with the ContainerID above. 
+   slot: u8
+   # StackNetworkID is the unique stack ID that the client assumes to be present in this slot. The server
+   # must check if these IDs match. If they do not match, servers should reject the stack request that the
+   # action holding this info was in.
    stack_id: zigzag32
 
 # ItemStackRequest is sent by the client to change item stacks in an inventory. It is essentially a
@@ -764,7 +771,7 @@ StackRequestSlotInfo:
 ItemStackRequest:
    # RequestID is a unique ID for the request. This ID is used by the server to send a response for this
    # specific request in the ItemStackResponse packet.
-   request_id: zigzag32
+   request_id: varint
    actions: []varint
       type_id: u8 =>
          # TakeStackRequestAction is sent by the client to the server to take x amount of items from one slot in a
@@ -872,9 +879,9 @@ ItemStackRequest:
             # of 1.16.
             recipe_network_id: varint
          if craft_creative:
-            # CreativeItemNetworkID is the network ID of the creative item that is being created. This is one of the
-            # creative item network IDs sent in the CreativeContent packet.
-            creative_item_network_id: varint32
+            # The stack ID of the creative item that is being created. This is one of the
+            # creative item stack IDs sent in the CreativeContent packet.
+            item_id: varint32
          if optional:
             # For the cartography table, if a certain MULTI recipe is being called, this points to the network ID that was assigned.
             recipe_network_id: varint
@@ -901,30 +908,32 @@ ItemStackResponses: []varint
    # RequestID is the unique ID of the request that this response is in reaction to. If rejected, the client
    # will undo the actions from the request with this ID.
    request_id: varint32
-   # ContainerInfo holds information on the containers that had their contents changed as a result of the
-   # request.
-   containers: []varint
-      # ContainerID is the container ID of the container that the slots that follow are in. For the main
-      # inventory, this value seems to be 0x1b. For the cursor, this value seems to be 0x3a. For the crafting
-      # grid, this value seems to be 0x0d.
-      # * actually, this is ContainerSlotType - used by the inventory system that specifies the type of slot
-      slot_type: ContainerSlotType
-      # SlotInfo holds information on what item stack should be present in specific slots in the container.
-      slots: []varint
-         # Slot and HotbarSlot seem to be the same value every time: The slot that was actually changed. I'm not
-         # sure if these slots ever differ.
-         slot: u8
-         hotbar_slot: u8
-         # Count is the total count of the item stack. This count will be shown client-side after the response is
-         # sent to the client.
-         count: u8
-         # StackNetworkID is the network ID of the new stack at a specific slot.
-         item_stack_id: varint32
-         # CustomName is the custom name of the item stack. It is used in relation to text filtering.
-         custom_name: string
-         # DurabilityCorrection is the current durability of the item stack. This durability will be shown
-         # client-side after the response is sent to the client.
-         durability_correction: zigzag32
+   _: status ?
+      if ok:
+         # ContainerInfo holds information on the containers that had their contents changed as a result of the
+         # request.
+         containers: []varint
+            # ContainerID is the container ID of the container that the slots that follow are in. For the main
+            # inventory, this value seems to be 0x1b. For the cursor, this value seems to be 0x3a. For the crafting
+            # grid, this value seems to be 0x0d.
+            # * actually, this is ContainerSlotType - used by the inventory system that specifies the type of slot
+            slot_type: ContainerSlotType
+            # SlotInfo holds information on what item stack should be present in specific slots in the container.
+            slots: []varint
+               # Slot and HotbarSlot seem to be the same value every time: The slot that was actually changed. I'm not
+               # sure if these slots ever differ.
+               slot: u8
+               hotbar_slot: u8
+               # Count is the total count of the item stack. This count will be shown client-side after the response is
+               # sent to the client.
+               count: u8
+               # StackNetworkID is the network ID of the new stack at a specific slot.
+               item_stack_id: varint32
+               # CustomName is the custom name of the item stack. It is used in relation to text filtering.
+               custom_name: string
+               # DurabilityCorrection is the current durability of the item stack. This durability will be shown
+               # client-side after the response is sent to the client.
+               durability_correction: zigzag32
 
 
 ItemComponentList: []varint
@@ -1025,7 +1034,9 @@ WindowIDVarint: varint =>
    123: fixed_inventory
    124: ui
 
-WindowType: u8 =>
+WindowType: i8 =>
+   -9: none
+   -1: inventory
    0: container
    1: workbench
    2: furnace
@@ -1061,6 +1072,7 @@ WindowType: u8 =>
    32: jigsaw_editor
    33: smithing_table
 
+# Used in inventory transactions. 
 ContainerSlotType: u8 =>
    - anvil_input
    - anvil_material

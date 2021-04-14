@@ -1074,8 +1074,8 @@
       "container",
       [
         {
-          "name": "runtime_id",
-          "type": "zigzag32"
+          "name": "stack_id",
+          "type": "varint"
         },
         {
           "name": "item",
@@ -1256,7 +1256,7 @@
                         },
                         {
                           "name": "network_id",
-                          "type": "zigzag32"
+                          "type": "varint"
                         }
                       ]
                     ],
@@ -1301,7 +1301,7 @@
                         },
                         {
                           "name": "network_id",
-                          "type": "zigzag32"
+                          "type": "varint"
                         }
                       ]
                     ],
@@ -1346,7 +1346,7 @@
                         },
                         {
                           "name": "network_id",
-                          "type": "zigzag32"
+                          "type": "varint"
                         }
                       ]
                     ],
@@ -1405,7 +1405,7 @@
                         },
                         {
                           "name": "network_id",
-                          "type": "zigzag32"
+                          "type": "varint"
                         }
                       ]
                     ],
@@ -1464,7 +1464,7 @@
                         },
                         {
                           "name": "network_id",
-                          "type": "zigzag32"
+                          "type": "varint"
                         }
                       ]
                     ],
@@ -1515,7 +1515,7 @@
                         },
                         {
                           "name": "network_id",
-                          "type": "zigzag32"
+                          "type": "varint"
                         }
                       ]
                     ]
@@ -2049,7 +2049,7 @@
           "22": "stop_swimming",
           "23": "start_spin_attack",
           "24": "stop_spin_attack",
-          "25": "ineract_block",
+          "25": "interact_block",
           "26": "predict_break",
           "27": "continue_break"
         }
@@ -2059,11 +2059,11 @@
       "container",
       [
         {
-          "name": "container_id",
-          "type": "u8"
+          "name": "slot_type",
+          "type": "ContainerSlotType"
         },
         {
-          "name": "slot_id",
+          "name": "slot",
           "type": "u8"
         },
         {
@@ -2077,7 +2077,7 @@
       [
         {
           "name": "request_id",
-          "type": "zigzag32"
+          "type": "varint"
         },
         {
           "name": "actions",
@@ -2273,7 +2273,7 @@
                             "container",
                             [
                               {
-                                "name": "creative_item_network_id",
+                                "name": "item_id",
                                 "type": "varint32"
                               }
                             ]
@@ -2358,58 +2358,75 @@
               "type": "varint32"
             },
             {
-              "name": "containers",
+              "anon": true,
               "type": [
-                "array",
+                "switch",
                 {
-                  "countType": "varint",
-                  "type": [
-                    "container",
-                    [
-                      {
-                        "name": "slot_type",
-                        "type": "ContainerSlotType"
-                      },
-                      {
-                        "name": "slots",
-                        "type": [
-                          "array",
-                          {
-                            "countType": "varint",
-                            "type": [
-                              "container",
-                              [
-                                {
-                                  "name": "slot",
-                                  "type": "u8"
-                                },
-                                {
-                                  "name": "hotbar_slot",
-                                  "type": "u8"
-                                },
-                                {
-                                  "name": "count",
-                                  "type": "u8"
-                                },
-                                {
-                                  "name": "item_stack_id",
-                                  "type": "varint32"
-                                },
-                                {
-                                  "name": "custom_name",
-                                  "type": "string"
-                                },
-                                {
-                                  "name": "durability_correction",
-                                  "type": "zigzag32"
-                                }
+                  "compareTo": "status",
+                  "fields": {
+                    "ok": [
+                      "container",
+                      [
+                        {
+                          "name": "containers",
+                          "type": [
+                            "array",
+                            {
+                              "countType": "varint",
+                              "type": [
+                                "container",
+                                [
+                                  {
+                                    "name": "slot_type",
+                                    "type": "ContainerSlotType"
+                                  },
+                                  {
+                                    "name": "slots",
+                                    "type": [
+                                      "array",
+                                      {
+                                        "countType": "varint",
+                                        "type": [
+                                          "container",
+                                          [
+                                            {
+                                              "name": "slot",
+                                              "type": "u8"
+                                            },
+                                            {
+                                              "name": "hotbar_slot",
+                                              "type": "u8"
+                                            },
+                                            {
+                                              "name": "count",
+                                              "type": "u8"
+                                            },
+                                            {
+                                              "name": "item_stack_id",
+                                              "type": "varint32"
+                                            },
+                                            {
+                                              "name": "custom_name",
+                                              "type": "string"
+                                            },
+                                            {
+                                              "name": "durability_correction",
+                                              "type": "zigzag32"
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
                               ]
-                            ]
-                          }
-                        ]
-                      }
+                            }
+                          ]
+                        }
+                      ]
                     ]
-                  ]
+                  },
+                  "default": "void"
                 }
               ]
             }
@@ -2575,7 +2592,7 @@
     "WindowType": [
       "mapper",
       {
-        "type": "u8",
+        "type": "i8",
         "mappings": {
           "0": "container",
           "1": "workbench",
@@ -2610,7 +2627,9 @@
           "30": "cartography",
           "31": "hud",
           "32": "jigsaw_editor",
-          "33": "smithing_table"
+          "33": "smithing_table",
+          "-9": "none",
+          "-1": "inventory"
         }
       }
     ],
@@ -4442,7 +4461,7 @@
           "type": "u8"
         },
         {
-          "name": "windows_id",
+          "name": "window_id",
           "type": "WindowID"
         }
       ]
@@ -4490,7 +4509,7 @@
           ]
         },
         {
-          "name": "target_runtime_entity_id",
+          "name": "target_entity_id",
           "type": "varint64"
         },
         {
@@ -4748,8 +4767,8 @@
       "container",
       [
         {
-          "name": "inventory_id",
-          "type": "varint"
+          "name": "window_id",
+          "type": "WindowIDVarint"
         },
         {
           "name": "input",

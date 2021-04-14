@@ -32,7 +32,7 @@ function createRelay () {
     }
   })
 
-  relay.create()
+  relay.listen()
 }
 
 createRelay()
