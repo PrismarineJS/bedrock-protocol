@@ -15,9 +15,18 @@ const ClientStatus = {
 }
 
 class Connection extends EventEmitter {
-  status = ClientStatus.Disconnected
+  #status = ClientStatus.Disconnected
   q = []
   q2 = []
+
+  get status () {
+    return this.#status
+  }
+
+  set status (val) {
+    debug('* new status', val)
+    this.#status = val
+  }
 
   versionLessThan (version) {
     if (typeof version === 'string') {
@@ -117,7 +126,7 @@ class Connection extends EventEmitter {
 
   sendEncryptedBatch (batch) {
     const buf = batch.stream.getBuffer()
-    debug('Sending encrypted batch', batch)
+    // debug('Sending encrypted batch', batch)
     this.encrypt(buf)
   }
 
@@ -132,7 +141,7 @@ class Connection extends EventEmitter {
     this.outLog('Enc buf', buf)
     const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
 
-    this.outLog('Sending wrapped encrypted batch', packet)
+    // this.outLog('Sending wrapped encrypted batch', packet)
     this.sendMCPE(packet)
   }
 

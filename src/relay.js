@@ -2,8 +2,8 @@
 const { Client } = require('./client')
 const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
-const debug = require('debug')('minecraft-protocol relay')
-const { serialize } = require('./datatypes/util')
+const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol relay')
+// const { serialize } = require('./datatypes/util')
 
 /** @typedef {{ hostname: string, port: number, auth: 'client' | 'server' | null, destination?: { hostname: string, port: number } }} Options  */
 
@@ -22,10 +22,10 @@ class RelayPlayer extends Player {
     })
     this.downQ = []
     this.upQ = []
-    this.upInLog = (...msg) => console.info('** Backend -> Proxy', ...msg)
-    this.upOutLog = (...msg) => console.info('** Proxy -> Backend', ...msg)
-    this.downInLog = (...msg) => console.info('** Client -> Proxy', ...msg)
-    this.downOutLog = (...msg) => console.info('** Proxy -> Client', ...msg)
+    this.upInLog = (...msg) => console.debug('** Backend -> Proxy', ...msg)
+    this.upOutLog = (...msg) => console.debug('** Proxy -> Backend', ...msg)
+    this.downInLog = (...msg) => console.debug('** Client -> Proxy', ...msg)
+    this.downOutLog = (...msg) => console.debug('** Proxy -> Client', ...msg)
 
     if (!server.options.logging) {
       this.upInLog = () => { }
@@ -52,11 +52,11 @@ class RelayPlayer extends Player {
       this.downQ.push(packet)
       return
     }
-    this.upInLog('Recv packet', packet)
+    // this.upInLog('Recv packet', packet)
     const des = this.server.deserializer.parsePacketBuffer(packet)
     const name = des.data.name
     const params = des.data.params
-    this.upInLog('~ Bounce B->C', name, serialize(params).slice(0, 100))
+    // this.upInLog('~ Bounce B->C', name, serialize(params).slice(0, 100))
     // this.upInLog('~ ', des.buffer)
     if (name === 'play_status' && params.status === 'login_success') return // We already sent this, this needs to be sent ASAP or client will disconnect
 
@@ -72,6 +72,8 @@ class RelayPlayer extends Player {
 
     this.queue(name, params)
     // this.sendBuffer(packet)
+
+    this.emit('clientbound', des.data)
   }
 
   // Send queued packets to the connected client
@@ -105,7 +107,7 @@ class RelayPlayer extends Player {
         return
       }
       this.flushUpQueue() // Send queued packets
-      this.downInLog('Recv packet', packet)
+      // this.downInLog('Recv packet', packet)
       // TODO: If we fail to parse a packet, proxy it raw and log an error
       const des = this.server.deserializer.parsePacketBuffer(packet)
 
@@ -129,6 +131,7 @@ class RelayPlayer extends Player {
           this.downInLog('Relaying', des.data)
           this.upstream.sendBuffer(packet)
       }
+      this.emit('serverbound', des.data)
     } else {
       super.readPacket(packet)
     }
@@ -162,6 +165,8 @@ class Relay extends Server {
       ds.flushUpQueue()
       console.log('Connected to upstream server')
       client.readPacket = (packet) => ds.readUpstream(packet)
+
+      this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
     })
     this.upstreams.set(clientAddr.hash, client)
   }
@@ -183,7 +188,7 @@ class Relay extends Server {
       const player = new this.RelayPlayer(this, conn)
       console.debug('New connection from', conn.address)
       this.clients[conn.address] = player
-      this.emit('connect', { client: player })
+      this.emit('connect', player)
       this.openUpstreamConnection(player, conn.address)
     }
   }

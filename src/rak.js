@@ -5,8 +5,9 @@ const Reliability = require('jsp-raknet/protocol/reliability')
 const RakClient = require('jsp-raknet/client')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
+const ServerName = require('./server/advertisement')
 try {
-  var { Client, Server, PacketPriority, PacketReliability, McPingMessage } = require('raknet-native') // eslint-disable-line
+  var { Client, Server, PacketPriority, PacketReliability } = require('raknet-native') // eslint-disable-line
 } catch (e) {
   console.debug('[raknet] native not found, using js', e)
 }
@@ -19,16 +20,17 @@ class RakNativeClient extends EventEmitter {
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
 
-    this.raknet = new Client(options.hostname, options.port, 'minecraft')
+    this.raknet = new Client(options.hostname, options.port, { protocolVersion: 10 })
     this.raknet.on('encapsulated', ({ buffer, address }) => {
       this.onEncapsulated(buffer, address)
     })
-    this.raknet.on('connected', () => {
+
+    this.raknet.on('connect', () => {
       this.connected = true
       this.onConnected()
     })
 
-    this.raknet.on('disconnected', ({ reason }) => {
+    this.raknet.on('disconnect', ({ reason }) => {
       this.connected = false
       this.onCloseConnection(reason)
     })
@@ -64,16 +66,17 @@ class RakNativeClient extends EventEmitter {
 }
 
 class RakNativeServer extends EventEmitter {
-  constructor (options = {}) {
+  constructor (options = {}, server) {
     super()
     this.onOpenConnection = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
     this.raknet = new Server(options.hostname, options.port, {
       maxConnections: options.maxConnections || 3,
-      minecraft: {},
-      message: new McPingMessage().toBuffer()
+      protocolVersion: 10,
+      message: ServerName.getServerName(server)
     })
+    // TODO: periodically update the server name until we're closed
 
     this.raknet.on('openConnection', (client) => {
       client.sendReliable = function (buffer, immediate) {
@@ -90,7 +93,6 @@ class RakNativeServer extends EventEmitter {
     })
 
     this.raknet.on('encapsulated', ({ buffer, address }) => {
-      // console.log('ENCAP',thingy)
       this.onEncapsulated(buffer, address)
     })
   }

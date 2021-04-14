@@ -1,5 +1,6 @@
 const JWT = require('jsonwebtoken')
 const constants = require('./constants')
+const debug = require('debug')('minecraft-protocol')
 
 module.exports = (client, server, options) => {
   // Refer to the docs:
@@ -19,14 +20,14 @@ module.exports = (client, server, options) => {
     let finalKey = null
     // console.log(pubKey)
     for (const token of chain) {
-      const decoded = JWT.verify(token, pubKey, { algorithms: 'ES384' })
+      const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
       // console.log('Decoded', decoded)
 
       // Check if signed by Mojang key
       const x5u = getX5U(token)
       if (x5u === constants.PUBLIC_KEY && !data.extraData?.XUID) {
         // didVerify = true
-        console.log('verified with mojang key!', x5u)
+        debug('Verified client with mojang key', x5u)
       }
 
       // TODO: Handle `didVerify` = false
@@ -41,7 +42,7 @@ module.exports = (client, server, options) => {
 
   function verifySkin (publicKey, token) {
     const pubKey = mcPubKeyToPem(publicKey)
-    const decoded = JWT.verify(token, pubKey, { algorithms: 'ES384' })
+    const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
     return decoded
   }
 

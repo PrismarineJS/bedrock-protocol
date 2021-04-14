@@ -39,4 +39,8 @@ function uuidFrom (string) {
   return UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: string })
 }
 
-module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom }
+function nextUUID () {
+  return uuidFrom(Date.now().toString())
+}
+
+module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom, nextUUID }

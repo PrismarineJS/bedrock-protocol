@@ -244,7 +244,7 @@ class MinecraftTokenManager {
     const token = this.cache.mca
     debug('[mc] token cache', this.cache)
     if (!token) return
-    console.log('TOKEN', token)
+    debug('Auth token', token)
     const jwt = token.chain[0]
     const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
 

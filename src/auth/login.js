@@ -3,6 +3,7 @@ const JWT = require('jsonwebtoken')
 const DataProvider = require('../../data/provider')
 const ecPem = require('ec-pem')
 const curve = 'secp384r1'
+const { nextUUID } = require('../datatypes/util')
 
 module.exports = (client, server, options) => {
   const skinGeom = fs.readFileSync(DataProvider(options.protocolVersion).getPath('skin_geom.txt'), 'utf-8')
@@ -45,10 +46,10 @@ module.exports = (client, server, options) => {
       CapeImageHeight: 0,
       CapeImageWidth: 0,
       CapeOnClassicSkin: false,
-      ClientRandomId: 1, // TODO make biggeer
+      ClientRandomId: Date.now(),
       CurrentInputMode: 1,
       DefaultInputMode: 1,
-      DeviceId: '2099de18-429a-465a-a49b-fc4710a17bb3', // TODO random
+      DeviceId: nextUUID(),
       DeviceModel: '',
       DeviceOS: client.session?.deviceOS || 7,
       GameVersion: options.version || '1.16.201',
@@ -64,7 +65,7 @@ module.exports = (client, server, options) => {
       // inside of PlayFab.
       PlayFabId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0', // 1.16.210
       PremiumSkin: false,
-      SelfSignedId: '78eb38a6-950e-3ab9-b2cf-dd849e343701',
+      SelfSignedId: '78eb38a6-950e-3ab9-b2cf-dd849e343702',
       ServerAddress: `${options.hostname}:${options.port}`,
       SkinAnimationData: '',
       SkinColor: '#ffffcd96',

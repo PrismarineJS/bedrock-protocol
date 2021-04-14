@@ -1,7 +1,7 @@
 const { Transform } = require('readable-stream')
 const crypto = require('crypto')
-const aesjs = require('aes-js')
 const Zlib = require('zlib')
+if (globalThis.isElectron) var { CipherCFB8 } = require('raknet-native') // eslint-disable-line
 
 const CIPHER_ALG = 'aes-256-cfb8'
 
@@ -22,32 +22,23 @@ function createDecipher (secret, initialValue) {
 class Cipher extends Transform {
   constructor (secret, iv) {
     super()
-    this.aes = new aesjs.ModeOfOperation.cfb(secret, iv, 1) // eslint-disable-line new-cap
+    this.aes = new CipherCFB8(secret, iv)
   }
 
   _transform (chunk, enc, cb) {
-    try {
-      const res = this.aes.encrypt(chunk)
-      cb(null, res)
-    } catch (e) {
-      cb(e)
-    }
+    const ciphered = this.aes.cipher(chunk)
+    cb(null, ciphered)
   }
 }
 
 class Decipher extends Transform {
   constructor (secret, iv) {
     super()
-    this.aes = new aesjs.ModeOfOperation.cfb(secret, iv, 1) // eslint-disable-line new-cap
+    this.aes = new CipherCFB8(secret, iv)
   }
 
   _transform (chunk, enc, cb) {
-    try {
-      const res = this.aes.decrypt(chunk)
-      cb(null, res)
-    } catch (e) {
-      cb(e)
-    }
+    cb(null, this.aes.decipher(chunk))
   }
 }
 
@@ -70,10 +61,12 @@ function createEncryptor (client, iv) {
   // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
 
   function process (chunk) {
-    const buffer = Zlib.deflateRawSync(chunk, { level: 7 })
-    const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
-    client.sendCounter++
-    client.cipher.write(packet)
+    Zlib.deflateRaw(chunk, { level: 7 }, (err, buffer) => {
+      if (err) throw err
+      const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
+      client.sendCounter++
+      client.cipher.write(packet)
+    })
   }
 
   client.cipher.on('data', client.onEncryptedPacket)

@@ -769,7 +769,7 @@ packet_mob_equipment:
    item: Item
    slot: u8
    selected_slot: u8
-   windows_id: WindowID
+   window_id: WindowID
 
 packet_mob_armor_equipment:
    !id: 0x20
@@ -793,7 +793,7 @@ packet_interact:
       6: open_inventory
    # TargetEntityRuntimeID is the runtime ID of the entity that the player interacted with. This is empty
    # for the InteractActionOpenInventory action type.
-   target_runtime_entity_id: varint64
+   target_entity_id: varint64
    # Position associated with the ActionType above. For the InteractActionMouseOverEntity, this is the
    # position relative to the entity moused over over which the player hovered with its mouse/touch. For the
    # InteractActionLeaveVehicle, this is the position that the player spawns at after leaving the vehicle.
@@ -845,10 +845,16 @@ packet_set_entity_data:
    metadata: MetadataDictionary
    tick: varint
 
+# SetActorMotion is sent by the server to change the client-side velocity of an entity. It is usually used
+# in combination with server-side movement calculation.
 packet_set_entity_motion:
    !id: 0x28
    !bound: both
+   # EntityRuntimeID is the runtime ID of the entity. The runtime ID is unique for each world session, and
+   # entities are generally identified in packets using this runtime ID.
    runtime_entity_id: varint64
+   # Velocity is the new velocity the entity gets. This velocity will initiate the client-side movement of
+   # the entity.
    velocity: vec3f
 
 # SetActorLink is sent by the server to initiate an entity link client-side, meaning one entity will start
@@ -941,7 +947,7 @@ packet_inventory_content:
    !bound: both
    # WindowID is the ID that identifies one of the windows that the client currently has opened, or one of
    # the consistent windows such as the main inventory.
-   inventory_id: varint
+   window_id: WindowIDVarint
    # Content is the new content of the inventory. The length of this slice must be equal to the full size of
    # the inventory window updated.
    input: ItemStacks
@@ -1007,10 +1013,19 @@ packet_crafting_event:
    # Output is a list of items that were obtained as a result of crafting the recipe.
    result: Item[]varint
 
-
+# GUIDataPickItem is sent by the server to make the client 'select' a hot bar slot. It currently appears to
+# be broken however, and does not actually set the selected slot to the hot bar slot set in the packet.
 packet_gui_data_pick_item:
    !id: 0x36
    !bound: client
+   # ItemName is the name of the item that shows up in the top part of the popup that shows up when
+   # selecting an item. It is shown as if an item was selected by the player itself.
+   item_name: string
+   # ItemEffects is the line under the ItemName, where the effects of the item are usually situated.
+   item_effects: string
+   # HotBarSlot is the hot bar slot to be selected/picked. This does not currently work, so it does not
+   # matter what number this is.
+   hotbar_slot: li32
 
 # AdventureSettings is sent by the server to update game-play related features, in particular permissions to
 # access these features for the client. It includes allowing the player to fly, build and mine, and attack
@@ -1745,11 +1760,11 @@ packet_update_block_synced:
    # entity transitions from.
    # Note that for both possible values for TransitionType, the EntityUniqueID should point to the falling
    # block entity involved.
-   entity_unique_id: varint
+   entity_unique_id: zigzag64
    # TransitionType is the type of the transition that happened. It is either BlockToEntityTransition, when
    # a block placed becomes a falling entity, or EntityToBlockTransition, when a falling entity hits the
    # ground and becomes a solid block again.
-   transition_type: varint =>
+   transition_type: varint64 =>
       # For falling sand, when a sand turns to an entity
       0: entity
       # When sand turns back to a new block
@@ -2231,7 +2246,7 @@ packet_player_armor_damage:
       if true: zigzag32
    leggings_damage: type.legs ?
       if true: zigzag32
-   boots_damage: types.feet ?
+   boots_damage: type.feet ?
       if true: zigzag32
 
 ArmorDamageType: [ "bitflags",

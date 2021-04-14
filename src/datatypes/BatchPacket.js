@@ -38,10 +38,8 @@ class BatchPacket {
 
   encode () {
     const buf = this.stream.getBuffer()
-    console.log('Encoding payload', buf)
     const def = Zlib.deflateRawSync(buf, { level: this.compressionLevel })
     const ret = Buffer.concat([Buffer.from([0xfe]), def])
-    console.log('Compressed', ret)
     return ret
   }
 
