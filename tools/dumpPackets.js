@@ -1,5 +1,6 @@
 // dumps (up to 5 of each) packet encountered until 'spawn' event
 // uses the same format as prismarine-packet-dumper
+const assert = require('assert')
 const fs = require('fs')
 const vanillaServer = require('../tools/startVanillaServer')
 const { Client } = require('../src/client')
@@ -7,7 +8,7 @@ const { serialize, waitFor } = require('../src/datatypes/util')
 const { CURRENT_VERSION } = require('../src/options')
 const path = require('path')
 
-const output = path.resolve('output')
+const output = path.resolve(process.argv[3] ?? 'output')
 
 let loop
 
@@ -79,7 +80,7 @@ async function dump (version) {
       clearInterval(loop)
       client.close()
       handle.kill()
-      res()
+      res(kindCounter)
     })
   }, 1000 * 60, () => {
     clearInterval(loop)
@@ -87,9 +88,77 @@ async function dump (version) {
     throw Error('timed out')
   })
 }
+
+const makeDropdownStart = (name, arr) => {
+  arr.push(`<details><summary>${name}</summary>`)
+  arr.push('<p>')
+  arr.push('')
+}
+const makeDropdownEnd = (arr) => {
+  arr.push('')
+  arr.push('</p>')
+  arr.push('</details>')
+}
+
+function makeMarkdown (data) {
+  const str = []
+  const { collected, missing } = data
+
+  makeDropdownStart(`Collected (${collected.length})`, str)
+  str.push('| Packet |')
+  str.push('| --- |')
+  collected.forEach(elem => {
+    str.push(`| ${elem} |`)
+  })
+  makeDropdownEnd(str)
+
+  makeDropdownStart(`Missing (${missing.length})`, str)
+  str.push('| Packet |')
+  str.push('| --- |')
+  missing.forEach(elem => {
+    str.push(`| ${elem} |`)
+  })
+  makeDropdownEnd(str)
+
+  return str.join('\n')
+}
+
+function parsePacketCounter (version, kindCounter) {
+  const protocol = require(`../data/${version}/protocol.json`)
+  // record packets
+  return {
+    collectedPackets: Object.keys(kindCounter),
+    allPackets: Object.keys(protocol)
+      .filter(o => o.startsWith('packet_'))
+      .map(o => o.replace('packet_', ''))
+  }
+}
+
+async function makeStats (kindCounter, version) {
+  const { collectedPackets, allPackets } = parsePacketCounter(version, kindCounter)
+  // write packet data
+  const data = {
+    collected: collectedPackets,
+    missing: allPackets.filter(o => !collectedPackets.includes(o))
+  }
+  const metadataFolder = path.join(output, 'metadata')
+
+  await fs.promises.writeFile(path.join(output, 'README.md'), makeMarkdown(data))
+  await fs.promises.mkdir(metadataFolder)
+  await fs.promises.writeFile(path.join(metadataFolder, 'packets_info.json'), JSON.stringify(data, null, 2))
+}
+
 async function main () {
+  const version = process.argv[2]
+  if (!version) {
+    console.error('Usage: node dumpPackets.js <version> [outputPath]')
+  }
+  const vers = Object.keys(require('../src/options').Versions)
+  assert(vers.includes(version), 'Version not supported')
   if (fs.existsSync(output)) fs.promises.rm(output, { force: true, recursive: true })
-  await dump(null, true)
+  const kindCounter = await dump(version)
+  await fs.promises.rm(path.join(output, '..', `bds-${version}`), { recursive: true })
+  await makeStats(kindCounter, version)
   console.log('Successfully dumped packets')
 }
 
