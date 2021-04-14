@@ -1,7 +1,7 @@
 const { Client } = require('./client')
 const assert = require('assert')
 
-module.exports = createClient
+module.exports = { createClient }
 
 /** @param {{ version?: number, hostname: string, port?: number }} options */
 function createClient (options) {
