@@ -1,8 +1,8 @@
 # Documentation
 
-## be.createServer(options)
+## be.createClient(options)
 
-Returns a `Server` instance and starts listening. All clients will be
+Returns a `Client` instance and starts listening. All clients will be
 automatically logged in and validated against microsoft's auth.
 
 `options` is an object containing the properties :
