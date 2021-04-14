@@ -3,5 +3,5 @@ module.exports = {
   ...require('./src/server'),
   ...require('./src/serverPlayer'),
   ...require('./src/relay'),
-  createClient: require('./src/createClient')
+  ...require('./src/createClient')
 }
