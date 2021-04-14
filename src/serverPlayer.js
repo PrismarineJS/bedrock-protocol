@@ -57,7 +57,7 @@ class Player extends Connection {
       // TODO: disconnect user
       throw new Error('Failed to verify user')
     }
-    console.log('Verified user', 'got pub key', key, userData)
+    debug('Verified user pub key', key, userData)
 
     this.emit('login', { user: userData.extraData }) // emit events for user
     this.emit('server.client_handshake', { key }) // internal so we start encryption
