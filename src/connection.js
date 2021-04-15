@@ -2,7 +2,7 @@ const BinaryStream = require('@jsprismarine/jsbinaryutils').default
 const BatchPacket = require('./datatypes/BatchPacket')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
-const Versions = require('./options')
+const { Versions } = require('./options')
 const debug = require('debug')('minecraft-protocol')
 
 const SKIP_BATCH = ['level_chunk', 'client_cache_blob_status', 'client_cache_miss_response']
@@ -29,19 +29,11 @@ class Connection extends EventEmitter {
   }
 
   versionLessThan (version) {
-    if (typeof version === 'string') {
-      return Versions[version] < this.options.protocolVersion
-    } else {
-      return version < this.options.protocolVersion
-    }
+    return this.options.protocolVersion < (typeof version === 'string' ? Versions[version] : version)
   }
 
   versionGreaterThan (version) {
-    if (typeof version === 'string') {
-      return Versions[version] > this.options.protocolVersion
-    } else {
-      return version > this.options.protocolVersion
-    }
+    return this.options.protocolVersion > (typeof version === 'string' ? Versions[version] : version)
   }
 
   startEncryption (iv) {
