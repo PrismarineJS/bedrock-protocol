@@ -7,7 +7,7 @@ module.exports = { createClient }
 /** @param {{ version?: number, hostname: string, port?: number, connectTimeout?: number }} options */
 function createClient (options) {
   assert(options)
-  options.hostname ??= options.host
+  if (options.host) options.hostname = options.host
   const client = new Client({ port: 19132, ...options })
 
   if (options.skipPing) {

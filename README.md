@@ -5,7 +5,7 @@
 [![Try it on gitpod](https://img.shields.io/badge/try-on%20gitpod-brightgreen.svg)](https://gitpod.io/#https://github.com/PrismarineJS/bedrock-protocol)
 
 
-Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [CONTRIBUTE.md](CONTRIBUTE.md).
+Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [CONTRIBUTING.md](CONTRIBUTING.md).
 
 This is a work in progress. You can track the progress in https://github.com/PrismarineJS/bedrock-protocol/pull/34.
 
@@ -28,14 +28,13 @@ This is a work in progress. You can track the progress in https://github.com/Pri
  * Robust test coverage.
  * Easily extend with many other PrismarineJS projects, world providers, and more 
  * Optimized for rapidly staying up to date with Minecraft protocol updates.
- 
+
+
 Want to contribute on something important for PrismarineJS ? go to https://github.com/PrismarineJS/mineflayer/wiki/Big-Prismarine-projects
 
-## Projects Using bedrock-protocol
+## Installation
 
- * [mineflayer](https://github.com/PrismarineJS/mineflayer/) - create bots with a stable, high level API.
- * [pakkit](https://github.com/Heath123/pakkit) To monitor your packets
- * [flying-squid](https://github.com/PrismarineJS/flying-squid/) - create minecraft bots with a stable, high level API.
+`npm install bedrock-protocol`
 
 ## Usage
 
@@ -60,12 +59,12 @@ client.on('text', (packet) => { // Listen for chat messages and echo them back.
 })
 ```
 
-### Hello World server example
+### Server example
 
 ```js
 const bedrock = require('bedrock-protocol')
 const server = new bedrock.createServer({
-  hostname: '0.0.0.0',   // optional
+  host: '0.0.0.0',       // optional. Hostname to bind as.
   port: 19132,           // optional
   version: '1.16.220'    // optional. The server version, latest if not specified. 
 })
@@ -81,15 +80,18 @@ server.on('connect', client => {
 })
 ```
 
-## Installation
-
-`npm install bedrock-protocol`
+*Can't connect locally on Windows? See the [faq](FAQ.md)*
 
 ## Documentation
 
 See [doc](API.md)
 See [faq](FAQ.md)
 
+## Projects Using bedrock-protocol
+
+ * [mineflayer](https://github.com/PrismarineJS/mineflayer/) - create bots with a stable, high level API.
+ * [pakkit](https://github.com/Heath123/pakkit) To monitor your packets
+ * [flying-squid](https://github.com/PrismarineJS/flying-squid/) - create minecraft bots with a stable, high level API.
 
 ## Testing
 
