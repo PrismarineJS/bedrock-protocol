@@ -1,13 +1,14 @@
 # Created from MiNET and gophertunnel docs
 # The version below is the latest version this protocol schema was updated for.
 # The output protocol.json will be in the folder for the version
-!version: 1.16.210
+!version: 1.16.220
 
 # Some ProtoDef aliases
 string: ["pstring",{"countType":"varint"}]
 ByteArray: ["buffer",{"countType":"varint"}]
 SignedByteArray: ["buffer",{"countType":"zigzag32"}]
 LittleString: ["pstring",{"countType":"li32"}]
+ShortArray: ["buffer",{"countType":"li16"}]
 varint32: varint
 bool: native
 zigzag32: native
@@ -622,17 +623,45 @@ packet_level_event:
       1060: sound_armor_stand_break  
       1061: sound_armor_stand_hit  
       1062: sound_armor_stand_fall  
-      1063: sound_armor_stand_place  
+      1063: sound_armor_stand_place
+      1064: pointed_dripstone_land
+      1065: dye_used
+      1066: ink_sack_used  
       2000: particle_shoot   #TODO: check 2000-2017
       2001: particle_destroy  
       2002: particle_splash  
       2003: particle_eye_despawn  
       2004: particle_spawn  
-      2006: guardian_curse  
+      2005: particle_crop_growth
+      2006: particle_guardian_curse
+      2007: particle_death_smoke  
       2008: particle_block_force_field  
-      2009: particle_projectile_hit  
+      2009: particle_projectile_hit
+      2010: particle_dragon_egg_teleport
+      2011: particle_crop_eaten
+      2012: particle_critical  
       2013: particle_enderman_teleport  
-      2014: particle_punch_block  
+      2014: particle_punch_block
+      2015: particle_bubble
+      2016: particle_evaporate 
+      2017: particle_destroy_armor_stand 
+      2018: particle_breaking_egg
+      2019: particle_destroy_egg 
+      2020: particle_evaporate_water 
+      2021: particle_destroy_block_no_sound 
+      2022: particle_knockback_roar 
+      2023: particle_teleport_trail 
+      2024: particle_point_cloud 
+      2025: particle_explosion 
+      2026: particle_block_explosion 
+      2027: particle_vibration_signal 
+      2028: particle_dripstone_drip
+      2029: particle_fizz_effect
+      2030: particle_wax_on
+      2031: particle_wax_off
+      2032: particle_scrape
+      2033: particle_electric_spark
+
       3001: start_rain  
       3002: start_thunder  
       3003: stop_rain  
@@ -966,7 +995,7 @@ packet_inventory_slot:
    slot: varint
    # NewItem is the item to be put in the slot at Slot. It will overwrite any item that may currently
    # be present in that slot.
-   item: ItemStack
+   item: Item
 
 # ContainerSetData is sent by the server to update specific data of a single container, meaning a block such
 # as a furnace or a brewing stand. This data is usually used by the client to display certain features
@@ -1385,6 +1414,8 @@ packet_available_commands:
       constraints: []varint
          constraint: u8 =>
             0: cheats_enabled
+            1: operator_permissions
+            2: host_permissions
 
 # ParamOptionCollapseEnum specifies if the enum (only if the Type is actually an enum type. If not,
 # setting this to true has no effect) should be collapsed. This means that the options of the enum are
@@ -1878,10 +1909,14 @@ packet_biome_definition_list:
    !bound: client
    nbt: nbt
 
+# LevelSoundEvent is sent by the server to make any kind of built-in sound heard to a player. It is sent to,
+# for example, play a stepping sound or a shear sound. The packet is also sent by the client, in which case
+# it could be forwarded by the server to the other players online. If possible, the packets from the client
+# should be ignored however, and the server should play them on its own accord.
 packet_level_sound_event:
    !id: 0x7b
    !bound: both
-   sound_id: varint
+   sound_id: SoundType
    position: vec3f
    block_id: zigzag32
    entity_type: string
@@ -2210,7 +2245,9 @@ InputFlag: [ "bitflags", {
 packet_creative_content:
    !id: 0x91
    !bound: client
-   items: ItemStacks
+   items: []varint
+      entry_id: varint
+      item: ItemLegacy
 
 packet_player_enchant_options:
    !id: 0x92

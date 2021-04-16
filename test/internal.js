@@ -1,17 +1,15 @@
 // process.env.DEBUG = 'minecraft-protocol raknet'
 const { Server, Client } = require('../')
-const { dumpPackets, hasDumps } = require('../tools/genPacketDumps')
+const { dumpPackets } = require('../tools/genPacketDumps')
 const DataProvider = require('../data/provider')
 
 // First we need to dump some packets that a vanilla server would send a vanilla
 // client. Then we can replay those back in our custom server.
 function prepare (version) {
-  if (!hasDumps(version)) {
-    return dumpPackets(version)
-  }
+  return dumpPackets(version)
 }
 
-async function startTest (version = '1.16.210', ok) {
+async function startTest (version = '1.16.201', ok) {
   await prepare(version)
   const Item = require('../types/Item')(version)
   const port = 19130
@@ -36,7 +34,7 @@ async function startTest (version = '1.16.210', ok) {
   // server logic
   server.on('connect', client => {
     client.on('join', () => {
-      console.log('Client joined', client.getData())
+      console.log('Client joined server', client.getData())
 
       client.write('resource_packs_info', {
         must_accept: false,

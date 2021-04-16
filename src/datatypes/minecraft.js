@@ -2,7 +2,8 @@
 const nbt = require('prismarine-nbt')
 const UUID = require('uuid-1345')
 
-const proto = nbt.protos.littleVarint
+const protoLE = nbt.protos.little
+const protoLEV = nbt.protos.littleVarint
 // TODO: deal with this:
 const zigzag = require('prismarine-nbt/compiler-zigzag')
 
@@ -20,16 +21,32 @@ function writeUUID (value, buffer, offset) {
   return offset + 16
 }
 
+// Little Endian + varints
+
 function readNbt (buffer, offset) {
-  return proto.read(buffer, offset, 'nbt')
+  return protoLEV.read(buffer, offset, 'nbt')
 }
 
 function writeNbt (value, buffer, offset) {
-  return proto.write(value, buffer, offset, 'nbt')
+  return protoLEV.write(value, buffer, offset, 'nbt')
 }
 
 function sizeOfNbt (value) {
-  return proto.sizeOf(value, 'nbt')
+  return protoLEV.sizeOf(value, 'nbt')
+}
+
+// Little Endian
+
+function readNbtLE (buffer, offset) {
+  return protoLE.read(buffer, offset, 'nbt')
+}
+
+function writeNbtLE (value, buffer, offset) {
+  return protoLE.write(value, buffer, offset, 'nbt')
+}
+
+function sizeOfNbtLE (value) {
+  return protoLE.sizeOf(value, 'nbt')
 }
 
 function readEntityMetadata (buffer, offset, _ref) {
@@ -131,6 +148,7 @@ function sizeOfEndOfArray (value, typeArgs) {
 module.exports = {
   uuid: [readUUID, writeUUID, 16],
   nbt: [readNbt, writeNbt, sizeOfNbt],
+  lnbt: [readNbtLE, writeNbtLE, sizeOfNbtLE],
   entityMetadataLoop: [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
   ipAddress: [readIpAddress, writeIpAddress, 4],
   endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],

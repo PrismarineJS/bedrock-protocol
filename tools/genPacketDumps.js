@@ -27,6 +27,7 @@ async function dump (version, force) {
   const client = new Client({
     hostname: '127.0.0.1',
     port,
+    version,
     username: 'Boat' + random,
     offline: true
   })
