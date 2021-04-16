@@ -65,7 +65,7 @@ module.exports = (client, server, options) => {
       // inside of PlayFab.
       PlayFabId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0', // 1.16.210
       PremiumSkin: false,
-      SelfSignedId: '78eb38a6-950e-3ab9-b2cf-dd849e343702',
+      SelfSignedId: nextUUID(),
       ServerAddress: `${options.hostname}:${options.port}`,
       SkinAnimationData: '',
       SkinColor: '#ffffcd96',

@@ -11,6 +11,14 @@ class ServerName {
   gamemode = 'Creative'
   serverId = '0'
 
+  fromString (str) {
+    const [header, motd, protocol, version, playersOnline, playersMax, serverId, name, gamemode] = str.split(';')
+    if (playersOnline) this.players.online = playersOnline
+    if (playersMax) this.players.max = playersMax
+    Object.assign(this, { header, motd, protocol, version, serverId, name, gamemode })
+    return this
+  }
+
   toString (version) {
     return [
       'MCPE',
@@ -35,5 +43,8 @@ module.exports = {
   ServerName,
   getServerName (client) {
     return new ServerName().toBuffer()
+  },
+  fromServerName (string) {
+    return new ServerName().fromString(string)
   }
 }

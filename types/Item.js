@@ -37,6 +37,8 @@ module.exports = (version) =>
           network_id: this.networkId,
           count: this.count,
           metadata: this.metadata,
+          has_stack_id: this.stackId,
+          stack_id: this.stackId,
           extra: {
             has_nbt: !!this.nbt,
             nbt: { version: 1, nbt: this.nbt },

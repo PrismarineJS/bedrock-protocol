@@ -57,7 +57,12 @@ class Server extends EventEmitter {
 
   async listen (hostname = this.options.hostname, port = this.options.port) {
     this.raknet = new RakServer({ hostname, port })
-    await this.raknet.listen()
+    try {
+      await this.raknet.listen()
+    } catch (e) {
+      console.warn(`Failed to bind server on [${this.options.hostname}]/${this.options.port}, is the port free?`)
+      throw e
+    }
     console.debug('Listening on', hostname, port)
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
