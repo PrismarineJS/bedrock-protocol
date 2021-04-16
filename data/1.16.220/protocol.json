@@ -475,10 +475,6 @@
                     "type": "varint"
                   },
                   {
-                    "name": "block_runtime_id",
-                    "type": "zigzag32"
-                  },
-                  {
                     "name": "has_stack_id",
                     "type": "u8"
                   },
@@ -494,6 +490,10 @@
                         "default": "zigzag32"
                       }
                     ]
+                  },
+                  {
+                    "name": "block_runtime_id",
+                    "type": "zigzag32"
                   },
                   {
                     "name": "extra",

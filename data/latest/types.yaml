@@ -126,7 +126,6 @@ Item:
       default:
          count: lu16
          metadata: varint
-         block_runtime_id: zigzag32
          # When server authoritative inventory is enabled, all allocated items have a unique ID used to identify
          # a specifc item instance.
          has_stack_id: u8
@@ -136,6 +135,7 @@ Item:
          stack_id: has_stack_id ?
             if 0: void
             default: zigzag32
+         block_runtime_id: zigzag32
          extra: network_id ?
             if 355: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
             default: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithoutBlockingTick" }]'
