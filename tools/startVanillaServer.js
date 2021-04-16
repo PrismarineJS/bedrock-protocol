@@ -48,7 +48,7 @@ async function download (os, version, path = 'bds-') {
   get(found, 'bds.zip')
   console.info('⚡ Unzipping')
   // Unzip server
-  if (process.platform === 'linux') cp.execSync('unzip bds.zip')
+  if (process.platform === 'linux') cp.execSync('unzip bds.zip && chmod +777 ./bedrock_server')
   else cp.execSync('tar -xf bds.zip')
   return verStr
 }
@@ -83,7 +83,11 @@ async function startServer (version, onStart, options = {}) {
   configure(options)
   const handle = run(!onStart)
   if (onStart) {
-    handle.stdout.on('data', data => data.includes('Server started.') ? onStart() : null)
+    let stdout = ''
+    handle.stdout.on('data', data => {
+      stdout += data
+      if (stdout.includes('Server started')) onStart()
+    })
     handle.stdout.pipe(process.stdout)
     handle.stderr.pipe(process.stdout)
   }

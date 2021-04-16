@@ -1,7 +1,7 @@
 {
   "name": "bedrock-protocol",
   "version": "3.0.0",
-  "description": "Parse and serialize Minecraft Bedrock Edition packets",
+  "description": "Minecraft Bedrock Edition protocol library",
   "main": "index.js",
   "scripts": {
     "build": "cd tools && node compileProtocol.js",
@@ -15,6 +15,7 @@
   },
   "keywords": [
     "minecraft",
+    "bedrock",
     "pocket-edition",
     "protocol"
   ],
@@ -24,27 +25,25 @@
     "@jsprismarine/jsbinaryutils": "^2.1.8",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "asn1": "^0.2.4",
-    "browserify-cipher": "^1.0.1",
-    "bedrock-provider": "^1.0.0",
     "debug": "^4.3.1",
     "ec-pem": "^0.18.0",
     "jsonwebtoken": "^8.5.1",
     "jsp-raknet": "github:extremeheat/raknet#client",
-    "leveldb-zlib": "0.0.26",
     "minecraft-folder-path": "^1.1.0",
     "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
     "protodef": "^1.11.0",
-    "raknet-native": "^1.0.0",
+    "raknet-native": "^1.0.1",
     "uuid-1345": "^1.0.2"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.10",
+    "bedrock-provider": "^1.0.0",
     "babel-eslint": "^10.1.0",
-    "buffer-equal": "^1.0.0",
     "mocha": "^8.3.2",
-    "protodef-yaml": "^1.0.2",
+    "protodef-yaml": "^1.0.3",
     "standard": "^16.0.3",
+    "leveldb-zlib": "0.0.26",
     "bedrock-protocol": "file:."
   },
   "standard": {
