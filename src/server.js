@@ -2,6 +2,7 @@ const { EventEmitter } = require('events')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { Player } = require('./serverPlayer')
 const { RakServer } = require('./rak')
+const { sleep } = require('./datatypes/util')
 const Options = require('./options')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
@@ -70,14 +71,18 @@ class Server extends EventEmitter {
     return { hostname, port }
   }
 
-  close (disconnectReason) {
+  async close (disconnectReason) {
     for (const caddr in this.clients) {
       const client = this.clients[caddr]
       client.disconnect(disconnectReason)
     }
-    setTimeout(() => this.raknet.close(), 100) // Allow some time for client to get disconnect before closing connection.
+
     this.clients = {}
     this.clientCount = 0
+
+    // Allow some time for client to get disconnect before closing connection.
+    await sleep(60)
+    this.raknet.close()
   }
 }
 

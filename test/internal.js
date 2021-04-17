@@ -136,8 +136,9 @@ async function startTest (version = '1.16.220', ok) {
     setTimeout(() => {
       client.close()
 
-      server.close()
-      ok?.()
+      server.close().then(() => {
+        ok?.()
+      })
     }, 500)
     clearInterval(loop)
   })
