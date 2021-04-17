@@ -5,12 +5,17 @@
 Returns a `Client` instance and connects to the server.
 
 `options` is an object containing the properties :
- * host : required. hostname to connect to, for example `127.0.0.1`.
- * port (optional) : port to connect to, default to 19132
- * version (optional) : default to latest stable version
- * autoInitPlayer (optional) : default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.
- * offline (optional) : default to false, whether to auth with microsoft
- * connectTimeout (optional) : default to 9000, ms to wait before aborting connection attempt
+
+| Paramater   | Optionality | Description |
+| ----------- | ----------- |-|
+| host        | **Required** |  Hostname to connect to, for example `127.0.0.1`. |
+| port        | *optional* |  port to connect to, default to **19132**     |
+| version     | *optional* |  Version to connect as. <br/>(Future feature, see [#69][1]) If not specified, should automatically match server version. <br/>(Current feature) Defaults to latest version. |
+| offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
+| username    | Conditional | Required if `offline` set to true : Username to connect to server as.     |
+| connectTimeout | *optional* | default to **9000ms**. How long to wait in milliseconds while trying to connect to server. |
+| onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
+| autoInitPlayer | optional |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 
 
 ## be.createServer(options) : Server
@@ -19,15 +24,21 @@ Returns a `Server` instance and starts listening for clients. All clients will b
 authenticated unless offline is set to true.
 
 `options` is an object containing the properties :
- * host : required. the hostname to bind to. use `0.0.0.0` to bind all IPv4 addresses.
- * port (optional) : the port to bind to, default 19132
- * version (optional) : default to latest stable version
- * offline (optional) : default to false, whether to auth with microsoft
- * connectTimeout (optional) : default to 9000, ms to wait before aborting connection attempt
+
+| Paramater   | Optionality | Description |
+| ----------- | ----------- |-|
+| host        | **Required** | The hostname to bind to. use `0.0.0.0` to bind all IPv4 addresses. |
+| port        | *optional* |  the port to bind to, default **19132**     |
+| version     | *optional* |  Version to run server as. Clients below this version will be kicked, clients above will still be permitted. |
+| offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth enforcement.   |
+| maxPlayers | *[Future][1]* | default to **3**. Set this to change the maximum number of players connected.   |
+| kickTimeout | *[Future][1]* | How long to wait before kicking a unresponsive client. |
+| motd        | *[Future][1]* | ServerAdvertisment instance. The server advertisment shown to clients, including the message of the day, level name. |
+| advertismentFn | *[Future][1]* | optional. Custom function to call that should return a ServerAdvertisment, used for setting the RakNet server PONG data. Overrides `motd`. |
 
 ## Methods
 
-[See the type defintions for this library for more information on methods.](../index.d.ts).
+[See the type defintions for this library for more information on methods.](../index.d.ts)
 
 Both Client and Server classes have `write(name, params)` and `queue(name, params)` methods. The former sends a packet immediately, and the latter queues them to be sent in the next packet batch. Prefer the latter for better performance and less blocking.
 
@@ -80,13 +91,13 @@ const client = bedrock.createClient({
 ```js
 // The 'join' event is emitted after the player has authenticated
 // and is ready to recieve chunks and start game packets
-server.on('join', client => console.log('Player has joined!'))
+client.on('join', client => console.log('Player has joined!'))
 
 // The 'spawn' event is emitted. The chunks have been sent and all is well.
-server.on('join', client => console.log('Player has spawned!'))
+client.on('join', client => console.log('Player has spawned!'))
 
 // We can listen for text packets. See proto.yml for documentation.
-server.on('text', (packet) => {
+client.on('text', (packet) => {
   console.log('Client got text packet', packet)
 })
 ```
@@ -96,3 +107,5 @@ Order of client event emisions:
 * 'login' - emitted after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake
 * 'spawn' - emitted after the client has permission from the server to spawn
+
+[1]: https://github.com/PrismarineJS/bedrock-protocol/issues/69

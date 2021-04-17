@@ -20,8 +20,10 @@ declare module "bedrock-protocol" {
   export class Connection extends EventEmitter {
     readonly status: ClientStatus
 
+    // Check if the passed version is less than or greater than the current connected client version.
     versionLessThan(version: string | number)
     versionGreaterThan(version: string | number)
+
     // Writes a Minecraft bedrock packet and sends it without queue batching
     write(name: string, params: object)
     // Adds a Minecraft bedrock packet to be sent in the next outgoing batch
@@ -50,6 +52,8 @@ declare module "bedrock-protocol" {
 
   export class Client extends Connection {
     constructor(options: Options)
+    // The client's EntityID returned by the server
+    readonly entityId: BigInt
 
     /**
      * Close the connection, leave the server. 
@@ -57,9 +61,12 @@ declare module "bedrock-protocol" {
     close()
   }
 
+  /**
+   * `Player` represents a player connected to the server. 
+   */
   export class Player extends Connection {
     /**
-     * Disconnects a client before it has joined
+     * Disconnects a client before it has logged in via a PlayStatus packet.
      * @param {string} playStatus
      */
     sendDisconnectStatus(playStatus: PlayStatus)

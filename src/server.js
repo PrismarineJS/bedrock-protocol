@@ -75,7 +75,7 @@ class Server extends EventEmitter {
       const client = this.clients[caddr]
       client.disconnect(disconnectReason)
     }
-    this.raknet.close()
+    setTimeout(() => this.raknet.close(), 100) // Allow some time for client to get disconnect before closing connection.
     this.clients = {}
     this.clientCount = 0
   }
