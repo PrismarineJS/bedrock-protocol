@@ -31,7 +31,7 @@ class Server extends EventEmitter {
   }
 
   onOpenConnection = (conn) => {
-    this.inLog('new connection', conn)
+    console.debug('new connection', conn?.address)
     const player = new Player(this, conn)
     this.clients[conn.address] = player
     this.clientCount++
@@ -39,7 +39,7 @@ class Server extends EventEmitter {
   }
 
   onCloseConnection = (inetAddr, reason) => {
-    console.debug('close connection', inetAddr, reason)
+    console.debug('close connection', inetAddr?.address, reason)
     delete this.clients[inetAddr]?.connection // Prevent close loop
     this.clients[inetAddr]?.close()
     delete this.clients[inetAddr]

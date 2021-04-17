@@ -38,7 +38,7 @@ class Player extends Connection {
     const clientVer = body.protocol_version
     if (this.server.options.protocolVersion) {
       if (this.server.options.protocolVersion < clientVer) {
-        this.sendDisconnectStatus('failed_client')
+        this.sendDisconnectStatus('failed_spawn')
         return
       }
     } else if (clientVer < Options.MIN_VERSION) {
@@ -76,23 +76,22 @@ class Player extends Connection {
    * @param {string} playStatus
    */
   sendDisconnectStatus (playStatus) {
+    if (this.status === ClientStatus.Disconnected) return
     this.write('play_status', { status: playStatus })
-    this.close()
+    this.close('kick')
   }
 
   /**
    * Disconnects a client
    */
   disconnect (reason = 'Server closed', hide = false) {
-    if ([ClientStatus.Authenticating, ClientStatus.Initializing].includes(this.status)) {
-      this.sendDisconnectStatus('failed_server_full')
-    } else {
-      this.write('disconnect', {
-        hide_disconnect_screen: hide,
-        message: reason
-      })
-    }
-    this.close()
+    if (this.status === ClientStatus.Disconnected) return
+    this.write('disconnect', {
+      hide_disconnect_screen: hide,
+      message: reason
+    })
+    console.debug('Kicked ', this.connection?.address, reason)
+    setTimeout(() => this.close('kick'), 100) // Allow time for message to be recieved.
   }
 
   // After sending Server to Client Handshake, this handles the client's
@@ -105,7 +104,11 @@ class Player extends Connection {
     this.emit('join')
   }
 
-  close () {
+  close (reason) {
+    if (this.status !== ClientStatus.Disconnected) {
+      this.emit('close') // Emit close once
+      if (!reason) console.trace('Client closed connection', this.connection?.address)
+    }
     this.q = []
     this.q2 = []
     clearInterval(this.loop)

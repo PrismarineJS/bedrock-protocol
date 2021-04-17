@@ -91,7 +91,7 @@ class Client extends Connection {
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
 
-    this.connectTimer = setTimeout(() => {
+    this.connectTimeout = setTimeout(() => {
       if (this.status === ClientStatus.Disconnected) {
         this.connection.close()
         this.emit('error', 'connect timed out')
@@ -139,14 +139,17 @@ class Client extends Connection {
   }
 
   close () {
-    this.emit('close')
+    if (this.status !== ClientStatus.Disconnected) {
+      this.emit('close') // Emit close once
+      console.log('Client closed!')
+    }
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []
     this.q2 = []
     this.connection?.close()
     this.removeAllListeners()
-    console.log('Client closed!')
+    this.status = ClientStatus.Disconnected
   }
 
   tryRencode (name, params, actual) {

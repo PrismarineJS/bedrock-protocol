@@ -9,11 +9,11 @@ function prepare (version) {
   return dumpPackets(version)
 }
 
-async function startTest (version = '1.16.201', ok) {
+async function startTest (version = '1.16.220', ok) {
   await prepare(version)
   const Item = require('../types/Item')(version)
   const port = 19130
-  const server = new Server({ hostname: '0.0.0.0', port, version })
+  const server = new Server({ hostname: '0.0.0.0', port, version, offline: true })
 
   function getPath (packetPath) {
     return DataProvider(server.options.protocolVersion).getPath(packetPath)
@@ -141,6 +141,8 @@ async function startTest (version = '1.16.201', ok) {
     }, 500)
     clearInterval(loop)
   })
+
+  client.connect()
 }
 
 const { ChunkColumn, Version } = require('bedrock-provider')
