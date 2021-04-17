@@ -5,7 +5,7 @@
 [![Try it on gitpod](https://img.shields.io/badge/try-on%20gitpod-brightgreen.svg)](https://gitpod.io/#https://github.com/PrismarineJS/bedrock-protocol)
 
 
-Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [CONTRIBUTING.md](CONTRIBUTING.md).
+Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [contribute](CONTRIBUTING.md).
 
 This is a work in progress. You can track the progress in https://github.com/PrismarineJS/bedrock-protocol/pull/34.
 
@@ -61,6 +61,7 @@ client.on('text', (packet) => { // Listen for chat messages and echo them back.
 
 ### Server example
 
+*Can't connect locally on Windows? See the [faq](FAQ.md)*
 ```js
 const bedrock = require('bedrock-protocol')
 const server = new bedrock.createServer({
@@ -71,16 +72,11 @@ const server = new bedrock.createServer({
 
 server.on('connect', client => {
   client.on('join', () => { // The client has joined the server.
-    const d = new Date()  // Once client is in the server, send a colorful hello
-    client.write('disconnect', {
-      hide_disconnect_reason: false,
-      message: `Good ${d.getHours() < 12 ? '§emorning§r' : '§3afternoon§r'} :)\n\nMy time is ${d.toLocaleString()} !`
-    })
+    const d = new Date()  // Once client is in the server, send a colorful kick message
+    client.disconnect(`Good ${d.getHours() < 12 ? '§emorning§r' : '§3afternoon§r'} :)\n\nMy time is ${d.toLocaleString()} !`)
   })
 })
 ```
-
-*Can't connect locally on Windows? See the [faq](FAQ.md)*
 
 ## Documentation
 
