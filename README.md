@@ -19,7 +19,7 @@ This is a work in progress. You can track the progress in https://github.com/Pri
    - Authentication and login
    - Encryption
    - Online mode servers
-   - Ping a server for status
+   - [Ping a server for status](docs/API.md)
  - Server
    - Autheticate clients with Xbox Live 
    - Ping status
@@ -80,14 +80,14 @@ server.on('connect', client => {
 
 ## Documentation
 
-See [doc](API.md)
-See [faq](FAQ.md)
+See [API documentation](docs/api.md)
+See [faq](docs/FAQ.md)
 
-## Projects Using bedrock-protocol
+<!-- ## Projects Using bedrock-protocol
 
  * [mineflayer](https://github.com/PrismarineJS/mineflayer/) - create bots with a stable, high level API.
  * [pakkit](https://github.com/Heath123/pakkit) To monitor your packets
- * [flying-squid](https://github.com/PrismarineJS/flying-squid/) - create minecraft bots with a stable, high level API.
+ * [flying-squid](https://github.com/PrismarineJS/flying-squid/) - create minecraft bots with a stable, high level API. -->
 
 ## Testing
 
@@ -107,6 +107,6 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) and https://github.com/Prismarine
 
 See [history](HISTORY.md)
 
-## Related
+<!-- ## Related
 
-* [map-colors](https://github.com/AresRPG/aresrpg-map-colors) can be used to convert any image into a buffer of minecraft compatible colors
+* [map-colors](https://github.com/AresRPG/aresrpg-map-colors) can be used to convert any image into a buffer of minecraft compatible colors -->

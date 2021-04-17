@@ -1,8 +1,7 @@
 const { Client } = require('./client')
+const { RakClient } = require('./rak')
 const assert = require('assert')
 const advertisement = require('./server/advertisement')
-
-module.exports = { createClient }
 
 /** @param {{ version?: number, hostname: string, port?: number, connectTimeout?: number }} options */
 function createClient (options) {
@@ -66,3 +65,12 @@ function connect (client) {
     clearInterval(keepalive)
   })
 }
+
+async function ping ({ host, port }) {
+  const con = new RakClient({ hostname: host, port })
+  const ret = await con.ping()
+  con.close()
+  return ret
+}
+
+module.exports = { createClient, ping }

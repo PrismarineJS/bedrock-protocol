@@ -2,6 +2,7 @@
 const { Server, Client } = require('../')
 const { dumpPackets } = require('../tools/genPacketDumps')
 const DataProvider = require('../data/provider')
+const { ping } = require('../src/createClient')
 
 // First we need to dump some packets that a vanilla server would send a vanilla
 // client. Then we can replay those back in our custom server.
@@ -25,6 +26,9 @@ async function startTest (version = '1.16.220', ok) {
 
   server.listen()
   console.log('Started server')
+
+  const pongData = await ping({ host: '127.0.0.1', port })
+  console.assert(pongData, 'did not get valid pong data from server')
 
   const respawnPacket = get('packets/respawn.json')
   const chunks = await requestChunks(respawnPacket.x, respawnPacket.z, 1)

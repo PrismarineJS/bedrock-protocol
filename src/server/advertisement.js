@@ -1,8 +1,10 @@
+const { Versions, CURRENT_VERSION } = require('../options')
+
 class ServerName {
   motd = 'Bedrock Protocol Server'
   name = 'bedrock-protocol'
-  protocol = 408
-  version = '1.16.20'
+  protocol = Versions[CURRENT_VERSION]
+  version = CURRENT_VERSION
   players = {
     online: 0,
     max: 5

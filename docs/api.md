@@ -33,8 +33,12 @@ authenticated unless offline is set to true.
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth enforcement.   |
 | maxPlayers | *[Future][1]* | default to **3**. Set this to change the maximum number of players connected.   |
 | kickTimeout | *[Future][1]* | How long to wait before kicking a unresponsive client. |
-| motd        | *[Future][1]* | ServerAdvertisment instance. The server advertisment shown to clients, including the message of the day, level name. |
-| advertismentFn | *[Future][1]* | optional. Custom function to call that should return a ServerAdvertisment, used for setting the RakNet server PONG data. Overrides `motd`. |
+| motd        | *[Future][1]* | ServerAdvertisement instance. The server advertisment shown to clients, including the message of the day, level name. |
+| advertismentFn | *[Future][1]* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
+
+## be.ping({ host, port }) : ServerAdvertisement
+
+Ping a server and get the response. See type definitions for the structure.
 
 ## Methods
 

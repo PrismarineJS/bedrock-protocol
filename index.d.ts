@@ -91,6 +91,21 @@ declare module "bedrock-protocol" {
     close(disconnectReason: string)
   }
 
+  class ServerAdvertisement {
+    motd: string
+    name: string
+    protocol: number
+    version: string
+    players: {
+      online: number,
+      max: number
+    }
+    gamemode: string
+    serverId: string
+  }
+
   export function createClient(options: Options): Client
   export function createServer(options: Options): Server
+
+  export function ping({ host, port }) : ServerAdvertisement
 }
