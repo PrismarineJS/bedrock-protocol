@@ -19,7 +19,7 @@ This is a work in progress. You can track the progress in https://github.com/Pri
    - Authentication and login
    - Encryption
    - Online mode servers
-   - [Ping a server for status](docs/API.md)
+   - [Ping a server for status](docs/API.md#beping-host-port---serveradvertisement)
  - Server
    - Autheticate clients with Xbox Live 
    - Ping status
@@ -61,7 +61,7 @@ client.on('text', (packet) => { // Listen for chat messages and echo them back.
 
 ### Server example
 
-*Can't connect locally on Windows? See the [faq](FAQ.md)*
+*Can't connect locally on Windows? See the [faq](docs/FAQ.md)*
 ```js
 const bedrock = require('bedrock-protocol')
 const server = new bedrock.createServer({
@@ -78,9 +78,19 @@ server.on('connect', client => {
 })
 ```
 
+### Ping example
+
+```js
+const { ping } = require('bedrock-protocol')
+ping({ host: 'play.cubecraft.net', port: 19132 }).then(res => {
+  console.log(res)
+})
+```
+
 ## Documentation
 
-See [API documentation](docs/api.md)
+See [API documentation](docs/API.md)
+
 See [faq](docs/FAQ.md)
 
 <!-- ## Projects Using bedrock-protocol

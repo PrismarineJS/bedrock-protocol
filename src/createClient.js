@@ -70,7 +70,7 @@ async function ping ({ host, port }) {
   const con = new RakClient({ hostname: host, port })
   const ret = await con.ping()
   con.close()
-  return ret
+  return advertisement.fromServerName(ret)
 }
 
 module.exports = { createClient, ping }
