@@ -31,7 +31,7 @@ async function dump (version, force) {
     username: 'Boat' + random,
     offline: true
   })
-
+  client.connect()
   return waitFor(async res => {
     const root = join(__dirname, `../data/${client.options.version}/sample/`)
     if (!fs.existsSync(root + 'packets') || !fs.existsSync(root + 'chunks')) {

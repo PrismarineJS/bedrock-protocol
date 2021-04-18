@@ -19,6 +19,7 @@ async function test (version) {
   })
 
   console.log('Started client')
+  client.connect()
 
   let loop
 

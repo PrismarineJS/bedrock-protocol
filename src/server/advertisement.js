@@ -1,8 +1,10 @@
+const { Versions, CURRENT_VERSION } = require('../options')
+
 class ServerName {
   motd = 'Bedrock Protocol Server'
   name = 'bedrock-protocol'
-  protocol = 408
-  version = '1.16.20'
+  protocol = Versions[CURRENT_VERSION]
+  version = CURRENT_VERSION
   players = {
     online: 0,
     max: 5
@@ -10,6 +12,14 @@ class ServerName {
 
   gamemode = 'Creative'
   serverId = '0'
+
+  fromString (str) {
+    const [header, motd, protocol, version, playersOnline, playersMax, serverId, name, gamemode] = str.split(';')
+    if (playersOnline) this.players.online = playersOnline
+    if (playersMax) this.players.max = playersMax
+    Object.assign(this, { header, motd, protocol, version, serverId, name, gamemode })
+    return this
+  }
 
   toString (version) {
     return [
@@ -35,5 +45,8 @@ module.exports = {
   ServerName,
   getServerName (client) {
     return new ServerName().toBuffer()
+  },
+  fromServerName (string) {
+    return new ServerName().fromString(string)
   }
 }

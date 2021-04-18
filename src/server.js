@@ -2,6 +2,7 @@ const { EventEmitter } = require('events')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { Player } = require('./serverPlayer')
 const { RakServer } = require('./rak')
+const { sleep } = require('./datatypes/util')
 const Options = require('./options')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
@@ -31,7 +32,7 @@ class Server extends EventEmitter {
   }
 
   onOpenConnection = (conn) => {
-    this.inLog('new connection', conn)
+    console.debug('new connection', conn?.address)
     const player = new Player(this, conn)
     this.clients[conn.address] = player
     this.clientCount++
@@ -39,7 +40,7 @@ class Server extends EventEmitter {
   }
 
   onCloseConnection = (inetAddr, reason) => {
-    console.debug('close connection', inetAddr, reason)
+    console.debug('close connection', inetAddr?.address, reason)
     delete this.clients[inetAddr]?.connection // Prevent close loop
     this.clients[inetAddr]?.close()
     delete this.clients[inetAddr]
@@ -57,7 +58,12 @@ class Server extends EventEmitter {
 
   async listen (hostname = this.options.hostname, port = this.options.port) {
     this.raknet = new RakServer({ hostname, port })
-    await this.raknet.listen()
+    try {
+      await this.raknet.listen()
+    } catch (e) {
+      console.warn(`Failed to bind server on [${this.options.hostname}]/${this.options.port}, is the port free?`)
+      throw e
+    }
     console.debug('Listening on', hostname, port)
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
@@ -65,14 +71,18 @@ class Server extends EventEmitter {
     return { hostname, port }
   }
 
-  close (disconnectReason) {
+  async close (disconnectReason) {
     for (const caddr in this.clients) {
       const client = this.clients[caddr]
       client.disconnect(disconnectReason)
     }
-    this.raknet.close()
+
     this.clients = {}
     this.clientCount = 0
+
+    // Allow some time for client to get disconnect before closing connection.
+    await sleep(60)
+    this.raknet.close()
   }
 }
 

@@ -9,6 +9,7 @@ async function test () {
     // You can specify version by adding :
     // version: '1.16.210'
   })
+  client.connect()
 
   client.once('resource_packs_info', (packet) => {
     client.write('resource_pack_client_response', {

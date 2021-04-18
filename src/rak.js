@@ -36,7 +36,7 @@ class RakNativeClient extends EventEmitter {
     })
   }
 
-  async ping () {
+  async ping (timeout = 1000) {
     this.raknet.ping()
     return waitFor((done) => {
       this.raknet.on('pong', (ret) => {
@@ -44,7 +44,7 @@ class RakNativeClient extends EventEmitter {
           done(ret.extra.toString())
         }
       })
-    }, 1000)
+    }, timeout, () => { throw new Error('Ping timed out') })
   }
 
   connect () {

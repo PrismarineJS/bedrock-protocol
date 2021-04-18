@@ -75,7 +75,7 @@ class Connection extends EventEmitter {
       if (this.q.length) {
         // TODO: can we just build Batch before the queue loop?
         const batch = new BatchPacket()
-        this.outLog('<- BATCH', this.q2)
+        this.outLog('<- Batch', this.q2)
         const sending = []
         for (let i = 0; i < this.q.length; i++) {
           const packet = this.q.shift()

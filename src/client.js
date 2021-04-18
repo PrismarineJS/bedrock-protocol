@@ -29,23 +29,28 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    this.on('session', this.connect)
-
-    if (options.offline) {
-      console.debug('offline mode, not authenticating', this.options)
-      auth.createOfflineSession(this, this.options)
-    } else if (options.password) {
-      auth.authenticatePassword(this, this.options)
-    } else {
-      auth.authenticateDeviceCode(this, this.options)
-    }
+    const hostname = this.options.hostname
+    const port = this.options.port
+    this.connection = new RakClient({ useWorkers: true, hostname, port })
 
     this.startGameData = {}
     this.clientRuntimeId = null
 
-    this.startQueue()
     this.inLog = (...args) => debug('C ->', ...args)
     this.outLog = (...args) => debug('C <-', ...args)
+  }
+
+  connect () {
+    this.on('session', this._connect)
+
+    if (this.options.offline) {
+      console.debug('offline mode, not authenticating', this.options)
+      auth.createOfflineSession(this, this.options)
+    } else {
+      auth.authenticateDeviceCode(this, this.options)
+    }
+
+    this.startQueue()
   }
 
   validateOptions () {
@@ -70,18 +75,23 @@ class Client extends Connection {
     this.handle(buffer)
   }
 
-  connect = async (sessionData) => {
-    const hostname = this.options.hostname
-    const port = this.options.port
-    debug('[client] connecting to', hostname, port, sessionData)
+  async ping () {
+    try {
+      return await this.connection.ping(this.options.connectTimeout)
+    } catch (e) {
+      console.warn(`Unable to connect to [${this.options.hostname}]/${this.options.port}. Is the server running?`)
+      throw e
+    }
+  }
 
-    this.connection = new RakClient({ useWorkers: true, hostname, port })
+  _connect = async (sessionData) => {
+    debug('[client] connecting to', this.options.hostname, this.options.port, sessionData, this.connection)
     this.connection.onConnected = () => this.sendLogin()
     this.connection.onCloseConnection = () => this.close()
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
 
-    this.connectTimer = setTimeout(() => {
+    this.connectTimeout = setTimeout(() => {
       if (this.status === ClientStatus.Disconnected) {
         this.connection.close()
         this.emit('error', 'connect timed out')
@@ -115,6 +125,7 @@ class Client extends Connection {
   onDisconnectRequest (packet) {
     console.warn(`C Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
     this.emit('kick', packet)
+    this.close()
   }
 
   onPlayStatus (statusPacket) {
@@ -128,21 +139,24 @@ class Client extends Connection {
   }
 
   close () {
-    this.emit('close')
+    if (this.status !== ClientStatus.Disconnected) {
+      this.emit('close') // Emit close once
+      console.log('Client closed!')
+    }
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []
     this.q2 = []
     this.connection?.close()
     this.removeAllListeners()
-    console.log('Client closed!')
+    this.status = ClientStatus.Disconnected
   }
 
   tryRencode (name, params, actual) {
     const packet = this.serializer.createPacketBuffer({ name, params })
 
-    console.assert(packet.toString('hex') === actual.toString('hex'))
-    if (packet.toString('hex') !== actual.toString('hex')) {
+    console.assert(packet.equals(actual))
+    if (!packet.equals(actual)) {
       const ours = packet.toString('hex').match(/.{1,16}/g).join('\n')
       const theirs = actual.toString('hex').match(/.{1,16}/g).join('\n')
 

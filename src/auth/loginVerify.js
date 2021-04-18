@@ -14,7 +14,7 @@ module.exports = (client, server, options) => {
     // from Xbox with addition user profile data
     // We verify that at least one of the tokens in the chain has been properly
     // signed by Mojang by checking the x509 public key in the JWT headers
-    // let didVerify = false
+    let didVerify = false
 
     let pubKey = mcPubKeyToPem(getX5U(chain[0])) // the first one is client signed, allow it
     let finalKey = null
@@ -26,16 +26,19 @@ module.exports = (client, server, options) => {
       // Check if signed by Mojang key
       const x5u = getX5U(token)
       if (x5u === constants.PUBLIC_KEY && !data.extraData?.XUID) {
-        // didVerify = true
+        didVerify = true
         debug('Verified client with mojang key', x5u)
       }
 
-      // TODO: Handle `didVerify` = false
       pubKey = decoded.identityPublicKey ? mcPubKeyToPem(decoded.identityPublicKey) : x5u
       finalKey = decoded.identityPublicKey || finalKey // non pem
       data = { ...data, ...decoded }
     }
     // console.log('Result', data)
+
+    if (!didVerify && !options.offline) {
+      client.disconnect('disconnectionScreen.notAuthenticated')
+    }
 
     return { key: finalKey, data }
   }

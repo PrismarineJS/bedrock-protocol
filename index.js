@@ -3,5 +3,6 @@ module.exports = {
   ...require('./src/server'),
   ...require('./src/serverPlayer'),
   ...require('./src/relay'),
-  ...require('./src/createClient')
+  ...require('./src/createClient'),
+  ...require('./src/createServer')
 }
