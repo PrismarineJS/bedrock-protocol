@@ -1,36 +1,36 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 
-class ServerName {
+class ServerAdvertisement {
   motd = 'Bedrock Protocol Server'
-  name = 'bedrock-protocol'
+  levelName = 'bedrock-protocol'
   protocol = Versions[CURRENT_VERSION]
   version = CURRENT_VERSION
-  players = {
-    online: 0,
-    max: 5
-  }
+  playersOnline = 0
+  playersMax = 5
 
   gamemode = 'Creative'
   serverId = '0'
 
+  constructor (obj, version) {
+    Object.assign(this, obj)
+  }
+
   fromString (str) {
-    const [header, motd, protocol, version, playersOnline, playersMax, serverId, name, gamemode] = str.split(';')
-    if (playersOnline) this.players.online = playersOnline
-    if (playersMax) this.players.max = playersMax
-    Object.assign(this, { header, motd, protocol, version, serverId, name, gamemode })
+    const [header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode] = str.split(';')
+    Object.assign(this, { header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode })
     return this
   }
 
-  toString (version) {
+  toString () {
     return [
       'MCPE',
       this.motd,
       this.protocol,
       this.version,
-      this.players.online,
-      this.players.max,
+      this.playersOnline,
+      this.playersMax,
       this.serverId,
-      this.name,
+      this.levelName,
       this.gamemode
     ].join(';') + ';'
   }
@@ -42,11 +42,11 @@ class ServerName {
 }
 
 module.exports = {
-  ServerName,
+  ServerAdvertisement,
   getServerName (client) {
-    return new ServerName().toBuffer()
+    return new ServerAdvertisement().toBuffer()
   },
   fromServerName (string) {
-    return new ServerName().fromString(string)
+    return new ServerAdvertisement().fromString(string)
   }
 }

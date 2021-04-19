@@ -12,18 +12,15 @@ This is a work in progress. You can track the progress in https://github.com/Pri
 ## Features
 
  - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220
- - Parses and serialize all packets with JavaScript objects
- - Send a packet by supplying fields as a JavaScript object
+ - Parse and serialize packets as JavaScript objects
  - Automatically respond to keep-alive packets
  - Client
-   - Authentication and login
+   - Authentication
    - Encryption
-   - Online mode servers
    - [Ping a server for status](docs/API.md#beping-host-port---serveradvertisement)
  - Server
    - Autheticate clients with Xbox Live 
    - Ping status
-   - Automatically respond to keep-alive packets
 
  * Robust test coverage.
  * Easily extend with many other PrismarineJS projects, world providers, and more 
@@ -88,6 +85,8 @@ ping({ host: 'play.cubecraft.net', port: 19132 }).then(res => {
 ```
 
 ## Documentation
+
+For documentation on the protocol, and packets/fields see the [proto.yml](data/latest/proto.yml) and [types.yml](data/latest/proto.yml) files.
 
 See [API documentation](docs/API.md)
 

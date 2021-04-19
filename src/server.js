@@ -3,6 +3,7 @@ const { createDeserializer, createSerializer } = require('./transforms/serialize
 const { Player } = require('./serverPlayer')
 const { RakServer } = require('./rak')
 const { sleep } = require('./datatypes/util')
+const { ServerAdvertisement } = require('./server/advertisement')
 const Options = require('./options')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
@@ -13,6 +14,8 @@ class Server extends EventEmitter {
     this.validateOptions()
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
+    this.advertisement = new ServerAdvertisement(this.options.motd)
+    this.advertisement.playersMax = options.maxPlayers ?? 3
     /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
@@ -56,18 +59,31 @@ class Server extends EventEmitter {
     client.handle(buffer)
   }
 
+  getAdvertisement () {
+    if (this.options.advertisementFn) {
+      return this.options.advertisementFn()
+    }
+    this.advertisement.playersOnline = this.clientCount
+    return this.advertisement
+  }
+
   async listen (hostname = this.options.hostname, port = this.options.port) {
-    this.raknet = new RakServer({ hostname, port })
+    this.raknet = new RakServer({ hostname, port }, this)
     try {
       await this.raknet.listen()
     } catch (e) {
       console.warn(`Failed to bind server on [${this.options.hostname}]/${this.options.port}, is the port free?`)
       throw e
     }
-    console.debug('Listening on', hostname, port)
+    console.debug('Listening on', hostname, port, this.options.version)
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
     this.raknet.onEncapsulated = this.onEncapsulated
+
+    this.serverTimer = setInterval(() => {
+      this.raknet.updateAdvertisement()
+    }, 1000)
+
     return { hostname, port }
   }
 
@@ -77,6 +93,7 @@ class Server extends EventEmitter {
       client.disconnect(disconnectReason)
     }
 
+    clearInterval(this.serverTimer)
     this.clients = {}
     this.clientCount = 0
 

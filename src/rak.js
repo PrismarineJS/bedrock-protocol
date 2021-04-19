@@ -5,7 +5,6 @@ const Reliability = require('jsp-raknet/protocol/reliability')
 const RakClient = require('jsp-raknet/client')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
-const ServerName = require('./server/advertisement')
 try {
   var { Client, Server, PacketPriority, PacketReliability } = require('raknet-native') // eslint-disable-line
 } catch (e) {
@@ -72,10 +71,15 @@ class RakNativeServer extends EventEmitter {
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
     this.raknet = new Server(options.hostname, options.port, {
-      maxConnections: options.maxConnections || 3,
+      maxConnections: options.maxPlayers || 3,
       protocolVersion: 10,
-      message: ServerName.getServerName(server)
+      message: server.getAdvertisement().toBuffer()
     })
+
+    this.updateAdvertisement = () => {
+      this.raknet.setOfflineMessage(server.getAdvertisement().toBuffer())
+    }
+
     // TODO: periodically update the server name until we're closed
 
     this.raknet.on('openConnection', (client) => {

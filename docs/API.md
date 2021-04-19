@@ -6,7 +6,7 @@ Returns a `Client` instance and connects to the server.
 
 `options` is an object containing the properties :
 
-| Paramater   | Optionality | Description |
+| Parameter   | Optionality | Description |
 | ----------- | ----------- |-|
 | host        | **Required** |  Hostname to connect to, for example `127.0.0.1`. |
 | port        | *optional* |  port to connect to, default to **19132**     |
@@ -15,6 +15,7 @@ Returns a `Client` instance and connects to the server.
 | username    | Conditional | Required if `offline` set to true : Username to connect to server as.     |
 | connectTimeout | *optional* | default to **9000ms**. How long to wait in milliseconds while trying to connect to server. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
+| profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
 | autoInitPlayer | optional |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 
 
@@ -25,16 +26,16 @@ authenticated unless offline is set to true.
 
 `options` is an object containing the properties :
 
-| Paramater   | Optionality | Description |
+| Parameter   | Optionality | Description |
 | ----------- | ----------- |-|
 | host        | **Required** | The hostname to bind to. use `0.0.0.0` to bind all IPv4 addresses. |
 | port        | *optional* |  the port to bind to, default **19132**     |
 | version     | *optional* |  Version to run server as. Clients below this version will be kicked, clients above will still be permitted. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth enforcement.   |
-| maxPlayers | *[Future][1]* | default to **3**. Set this to change the maximum number of players connected.   |
+| maxPlayers | *optional* | default to **3**. Set this to change the maximum number of players connected.   |
 | kickTimeout | *[Future][1]* | How long to wait before kicking a unresponsive client. |
-| motd        | *[Future][1]* | ServerAdvertisement instance. The server advertisment shown to clients, including the message of the day, level name. |
-| advertismentFn | *[Future][1]* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
+| motd        | *optional* | The "message of the day" for the server, the message shown to players in the server list. See usage below. |
+| advertismentFn | *optional* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
 
 ## be.ping({ host, port }) : ServerAdvertisement
 
@@ -56,7 +57,11 @@ const bedrock = require('bedrock-protocol')
 const server = bedrock.createServer({
   host: '0.0.0.0',   // the hostname to bind to, use '0.0.0.0' to bind all hostnames
   port: 19132,       // optional, port to bind to, default 19132
-  offline: false     // default false. verify connections with XBL
+  offline: false,    // default false. verify connections with XBL
+  motd: {
+    name: 'Funtime Server', // Top level message shown in server list
+    levelName: 'Wonderland' // Sub-level header
+  }
 })
 ```
 
@@ -73,7 +78,7 @@ server.on('connect', (client) => {
 
 ```
 
-Order of server client event emisions:
+Order of server client event emissions:
 * 'connect' - emitted by `Server` after a client first joins the server. Second paramater is a `ServerPlayer` instance.
 * 'login' - emitted by client after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
@@ -87,8 +92,7 @@ const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
   host: '127.0.0.1',  // the hostname to bind to, use '0.0.0.0' to bind all hostnames
   port: 19132,        // optional, port to bind to, default 19132
-  username: 'Notch'   // Any profile name, only used internally for account caching. You'll
-                      // be asked to sign-in with Xbox Live the first time.
+  username: 'Notch'   // Any profile name, only used internally for account caching when in online mode. In offline mode, the username to connect with.
 })
 ```
 
@@ -106,10 +110,14 @@ client.on('text', (packet) => {
 })
 ```
 
-Order of client event emisions:
+Order of client event emissions:
 * 'connect' - emitted after a client first joins the server
 * 'login' - emitted after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake
 * 'spawn' - emitted after the client has permission from the server to spawn
+
+### Protocol docs
+
+For documentation on the protocol, and packets/fields see the [proto.yml](data/latest/proto.yml) and [types.yml](data/latest/proto.yml) files. More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
 [1]: https://github.com/PrismarineJS/bedrock-protocol/issues/69
