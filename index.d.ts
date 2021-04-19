@@ -10,7 +10,16 @@ declare module "bedrock-protocol" {
     // For the server, the hostname to bind to (default: 0.0.0.0)
     host: string,
     // The port to connect or bind to, default: 19132
-    port: number
+    port: number,
+    // The maximum number of players allowed on the server at any time.
+    maxPlayers: number,
+
+    motd: {
+      // The header for the MOTD shown in the server list.
+      motd: string,
+      // The sub-header for the MOTD shown in the server list.
+      levelName: string
+    }
   }
 
   enum ClientStatus {

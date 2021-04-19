@@ -16,7 +16,7 @@ const DataProvider = require('../data/provider')
 const { waitFor } = require('../src/datatypes/util')
 const { loadWorld } = require('./serverChunks')
 
-async function startServer (version = '1.16.210', ok) {
+async function startServer (version = '1.16.220', ok) {
   if (!hasDumps(version)) {
     throw Error('You need to dump some packets first. Run tools/genPacketDumps.js')
   }
@@ -33,7 +33,7 @@ async function startServer (version = '1.16.210', ok) {
   console.log('Started server')
 
   // Find the center position from the dumped packets
-  const respawnPacket = get('packets/respawn.json')
+  const respawnPacket = get('respawn')
   const world = await loadWorld(version)
   const chunks = await world.requestChunks(respawnPacket.x, respawnPacket.z, 2)
 

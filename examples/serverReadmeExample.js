@@ -1,9 +1,13 @@
 /* eslint-disable */
 const bedrock = require('bedrock-protocol')
 const server = new bedrock.createServer({
-  host: '0.0.0.0',   // optional
-  port: 19132,           // optional
-  version: '1.16.220'    // The server version
+  host: '0.0.0.0',        // optional
+  port: 19132,            // optional
+  version: '1.16.220',    // The server version
+  motd: {                 // The message of the day
+    motd: 'Funtime Server',
+    levelName: 'Wonderland'
+  }
 })
 
 server.on('connect', client => {
