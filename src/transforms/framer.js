@@ -4,7 +4,7 @@ const zlib = require('zlib')
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
   constructor () {
-    // Decoding
+    // Encoding
     this.packets = []
     this.compressionLevel = 7
   }
@@ -15,10 +15,8 @@ class Framer {
 
     // Decode the payload
     zlib.inflateRaw(buf.slice(1), { chunkSize: 1024 * 1024 * 2 }, (err, inflated) => {
-      if (err) {
-        throw err
-        // console.error(err)
-      } else cb(Framer.getPackets(inflated))
+      if (err) throw err
+      cb(Framer.getPackets(inflated))
     })
   }
 
