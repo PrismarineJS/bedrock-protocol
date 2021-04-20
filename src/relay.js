@@ -138,6 +138,7 @@ class Relay extends Server {
 
   openUpstreamConnection (ds, clientAddr) {
     const client = new Client({
+      version: this.options.version,
       hostname: this.options.destination.hostname,
       port: this.options.destination.port,
       encrypt: this.options.encrypt,
@@ -177,6 +178,13 @@ class Relay extends Server {
       this.emit('connect', player)
       this.openUpstreamConnection(player, conn.address)
     }
+  }
+
+  close (...a) {
+    for (const [, v] of this.upstreams) {
+      v.close(...a)
+    }
+    super.close(...a)
   }
 }
 

@@ -120,4 +120,25 @@ Order of client event emissions:
 
 For documentation on the protocol, and packets/fields see the [proto.yml](data/latest/proto.yml) and [types.yml](data/latest/proto.yml) files. More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
+
+### Proxy docs
+
+You can create a proxy ("Relay") to create a machine-in-the-middle (MITM) connection to a server. You can observe and intercept packets as they go through. The Relay is a server+client combo with some special packet handling and forwarding that takes care of the authentication and encryption on the server side. You'll be asked to login if `offline` is not specified once you connect.
+
+```js
+const { Relay } = require('bedrock-protocol')
+const relay = new Relay({
+  version: '1.16.220', // The version
+  /* Hostname and port to listen for clients on */
+  hostname: '0.0.0.0',
+  port: 19132,
+  /* Where to send upstream packets to */
+  destination: {
+    hostname: '127.0.0.1',
+    port: 19131
+  }
+})
+relay.listen() // Tell the server to start listening.
+```
+
 [1]: https://github.com/PrismarineJS/bedrock-protocol/issues/69

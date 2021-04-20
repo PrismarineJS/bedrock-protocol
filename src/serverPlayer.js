@@ -90,7 +90,7 @@ class Player extends Connection {
       hide_disconnect_screen: hide,
       message: reason
     })
-    console.debug('Kicked ', this.connection?.address, reason)
+    this.server.conLog('Kicked ', this.connection?.address, reason)
     setTimeout(() => this.close('kick'), 100) // Allow time for message to be recieved.
   }
 
