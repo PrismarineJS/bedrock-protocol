@@ -21,11 +21,12 @@ class Server extends EventEmitter {
     this.clientCount = 0
     this.inLog = (...args) => debug('S ->', ...args)
     this.outLog = (...args) => debug('S <-', ...args)
+    this.conLog = debug
   }
 
   validateOptions () {
     if (!Options.Versions[this.options.version]) {
-      console.warn('Supported versions: ', Options.Versions)
+      console.warn('Supported versions', Options.Versions)
       throw Error(`Unsupported version ${this.options.version}`)
     }
     this.options.protocolVersion = Options.Versions[this.options.version]
@@ -35,7 +36,7 @@ class Server extends EventEmitter {
   }
 
   onOpenConnection = (conn) => {
-    console.debug('new connection', conn?.address)
+    this.conLog('new connection', conn?.address)
     const player = new Player(this, conn)
     this.clients[conn.address] = player
     this.clientCount++
@@ -43,7 +44,7 @@ class Server extends EventEmitter {
   }
 
   onCloseConnection = (inetAddr, reason) => {
-    console.debug('close connection', inetAddr?.address, reason)
+    this.conLog('close connection', inetAddr?.address, reason)
     delete this.clients[inetAddr]?.connection // Prevent close loop
     this.clients[inetAddr]?.close()
     delete this.clients[inetAddr]
@@ -75,7 +76,7 @@ class Server extends EventEmitter {
       console.warn(`Failed to bind server on [${this.options.hostname}]/${this.options.port}, is the port free?`)
       throw e
     }
-    console.debug('Listening on', hostname, port, this.options.version)
+    this.conLog('Listening on', hostname, port, this.options.version)
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
     this.raknet.onEncapsulated = this.onEncapsulated

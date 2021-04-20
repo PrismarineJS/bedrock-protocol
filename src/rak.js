@@ -80,8 +80,6 @@ class RakNativeServer extends EventEmitter {
       this.raknet.setOfflineMessage(server.getAdvertisement().toBuffer())
     }
 
-    // TODO: periodically update the server name until we're closed
-
     this.raknet.on('openConnection', (client) => {
       client.sendReliable = function (buffer, immediate) {
         const priority = immediate ? PacketPriority.IMMEDIATE_PRIORITY : PacketPriority.MEDIUM_PRIORITY
@@ -91,8 +89,6 @@ class RakNativeServer extends EventEmitter {
     })
 
     this.raknet.on('closeConnection', (client) => {
-      console.warn('! Client closed connection')
-      // TODO: need to handle this properly..
       this.onCloseConnection(client)
     })
 
