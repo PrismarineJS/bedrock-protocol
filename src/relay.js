@@ -3,15 +3,11 @@ const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
-/** @typedef {{ hostname: string, port: number, auth: 'client' | 'server' | null, destination?: { hostname: string, port: number } }} Options  */
-
 const debugging = true // Do re-encoding tests
 
 class RelayPlayer extends Player {
   constructor (server, conn) {
     super(server, conn)
-    this.server = server
-    this.conn = conn
 
     this.startRelaying = false
     this.once('join', () => { // The client has joined our proxy
@@ -58,8 +54,8 @@ class RelayPlayer extends Player {
       }
     }
 
-    this.queue(name, params)
     this.emit('clientbound', des.data)
+    this.queue(name, params)
   }
 
   // Send queued packets to the connected client
@@ -99,13 +95,15 @@ class RelayPlayer extends Player {
 
       if (debugging) { // some packet encode/decode testing stuff
         const rpacket = this.server.serializer.createPacketBuffer(des.data)
-        if (rpacket.toString('hex') !== packet.toString('hex')) {
+        if (!rpacket.equals(packet)) {
           console.warn('New', rpacket.toString('hex'))
           console.warn('Old', packet.toString('hex'))
           console.log('Failed to re-encode', des.data)
           process.exit(1)
         }
       }
+
+      this.emit('serverbound', des.data)
 
       switch (des.data.name) {
         case 'client_cache_status':
@@ -114,9 +112,8 @@ class RelayPlayer extends Player {
         default:
           // Emit the packet as-is back to the upstream server
           this.downInLog('Relaying', des.data)
-          this.upstream.sendBuffer(packet)
+          this.upstream.queue(des.data.name, des.data.params)
       }
-      this.emit('serverbound', des.data)
     } else {
       super.readPacket(packet)
     }
@@ -145,7 +142,7 @@ class Relay extends Server {
       autoInitPlayer: false
     })
     client.connect()
-    console.log('CONNECTING TO', this.options.destination.hostname, this.options.destination.port)
+    this.conLog('Connecting to', this.options.destination.hostname, this.options.destination.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
     client.once('join', () => { // Intercept once handshaking done
