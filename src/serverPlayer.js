@@ -26,7 +26,7 @@ class Player extends Connection {
     this.outLog = (...args) => debug('S <-', ...args)
   }
 
-  getData () {
+  getUserData () {
     return this.userData
   }
 
@@ -51,24 +51,25 @@ class Player extends Connection {
     const skinChain = body.params.client_data
 
     try {
-      var { key, userData, chain } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
+      var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
     } catch (e) {
       console.error(e)
-      // TODO: disconnect user
-      throw new Error('Failed to verify user')
+      this.disconnect('Server authentication error')
+      return
     }
     debug('Verified user pub key', key, userData)
 
-    this.emit('login', { user: userData.extraData }) // emit events for user
     this.emit('server.client_handshake', { key }) // internal so we start encryption
 
     this.userData = userData.extraData
+    this.skinData = skinData
     this.profile = {
       name: userData.extraData?.displayName,
       uuid: userData.extraData?.identity,
       xuid: userData.extraData?.xuid
     }
     this.version = clientVer
+    this.emit('login', { user: userData.extraData }) // emit events for user
   }
 
   /**
@@ -90,7 +91,7 @@ class Player extends Connection {
       hide_disconnect_screen: hide,
       message: reason
     })
-    console.debug('Kicked ', this.connection?.address, reason)
+    this.server.conLog('Kicked ', this.connection?.address, reason)
     setTimeout(() => this.close('kick'), 100) // Allow time for message to be recieved.
   }
 
@@ -118,20 +119,17 @@ class Player extends Connection {
   }
 
   readPacket (packet) {
-    // console.log('packet', packet)
     try {
       var des = this.server.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
       this.disconnect('Server error')
       console.warn('Packet parsing failed! Writing dump to ./packetdump.bin')
-      fs.writeFileSync('packetdump.bin', packet)
-      fs.writeFileSync('packetdump.txt', packet.toString('hex'))
-      throw e
+      fs.writeFile('packetdump.bin', packet)
+      return
     }
 
     switch (des.data.name) {
       case 'login':
-        // console.log(des)
         this.onLogin(des)
         return
       case 'client_to_server_handshake':
@@ -145,7 +143,10 @@ class Player extends Connection {
         this.emit('spawn')
         break
       default:
-        // console.log('ignoring, unhandled')
+        if (this.status === ClientStatus.Disconnected || this.status === ClientStatus.Authenticating) {
+          this.inLog('ignoring', des.data.name)
+          return
+        }
     }
     this.emit(des.data.name, des.data.params)
   }

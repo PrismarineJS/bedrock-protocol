@@ -41,7 +41,7 @@ async function startServer (version = '1.16.220', ok) {
   server.on('connect', client => {
     // Join is emitted after the client has been authenticated and encryption has started
     client.on('join', () => {
-      console.log('Client joined', client.getData())
+      console.log('Client joined', client.getUserData())
 
       // ResourcePacksInfo is sent by the server to inform the client on what resource packs the server has. It
       // sends a list of the resource packs it has and basic information on them like the version and description.

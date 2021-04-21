@@ -38,7 +38,7 @@ async function startTest (version = '1.16.220', ok) {
   // server logic
   server.on('connect', client => {
     client.on('join', () => {
-      console.log('Client joined server', client.getData())
+      console.log('Client joined server', client.getUserData())
 
       client.write('resource_packs_info', {
         must_accept: false,

@@ -95,9 +95,26 @@ declare module "bedrock-protocol" {
 
   export class Server extends EventEmitter {
     clients: Map<string, Player>
+    // Connection logging function
+    conLog: Function
     constructor(options: Options)
     // Disconnects all currently connected clients
     close(disconnectReason: string)
+  }
+
+  type RelayOptions = Options & {
+    hostname: string,
+    port: number,
+    // Toggle packet logging.
+    logging: boolean,
+    // Where to proxy requests to.
+    destination: {
+      hostname: string,
+      port: number
+    }
+  }
+  export class Relay extends Server {
+    constructor(options: RelayOptions)
   }
 
   class ServerAdvertisement {

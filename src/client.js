@@ -188,6 +188,7 @@ class Client extends Connection {
         this.emit('client.server_handshake', des.data.params)
         break
       case 'disconnect': // Client kicked
+        this.emit(des.data.name, des.data.params) // Emit before we kill all listeners.
         this.onDisconnectRequest(des.data.params)
         break
       case 'start_game':

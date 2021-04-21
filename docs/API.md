@@ -120,4 +120,44 @@ Order of client event emissions:
 
 For documentation on the protocol, and packets/fields see the [proto.yml](data/latest/proto.yml) and [types.yml](data/latest/proto.yml) files. More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
+
+### Proxy docs
+
+You can create a proxy ("Relay") to create a machine-in-the-middle (MITM) connection to a server. You can observe and intercept packets as they go through. The Relay is a server+client combo with some special packet handling and forwarding that takes care of the authentication and encryption on the server side. You'll be asked to login if `offline` is not specified once you connect.
+
+```js
+const { Relay } = require('bedrock-protocol')
+const relay = new Relay({
+  version: '1.16.220', // The version
+  /* Hostname and port to listen for clients on */
+  hostname: '0.0.0.0',
+  port: 19132,
+  /* Where to send upstream packets to */
+  destination: {
+    hostname: '127.0.0.1',
+    port: 19131
+  }
+})
+relay.listen() // Tell the server to start listening.
+
+relay.on('connect', player => {
+  console.log('New connection', player.connection.address)
+
+  // Server is sending a message to the client.
+  player.on('clientbound', ({ name, params }) => {
+    if (name === 'disconnect') { // Intercept kick
+      params.message = 'Intercepted' // Change kick message to "Intercepted"
+    }
+  })
+  // Client is sending a message to the server
+  player.on('serverbound', ({ name, params }) => {
+    if (name === 'text') { // Intercept chat message to server and append time.
+      params.message += `, on ${new Date().toLocaleString()}`
+    }
+  })
+})
+```
+
+'Relay' emits 'clientbound' and 'serverbound' events, along with the data for the outgoing packet that can be modified. You can send a packet to the client with `player.queue()` or to the backend server with `player.upstream.queue()`.
+
 [1]: https://github.com/PrismarineJS/bedrock-protocol/issues/69

@@ -12,6 +12,9 @@ Steps to update:
 * Save and make sure to update the !version field at the top of the file
 * Run `npm run build` and `npm test` to test
 
+## Code structure
+
+The code structure is similar to node-minecraft-protocol. For raknet, raknet-native is used for Raknet communication.
 
 ## Packet serialization
 
@@ -29,7 +32,7 @@ Packets should go in proto.yml and extra types should go in types.yml.
 
 ```yml
 # This defines a new data structure, a ProtoDef container.
-PlayerPosition:
+Position:
     # Variable `x` in this struct has a type of `li32`, a little-endian 32-bit integer
     x: li32
     # `z` is a 32-bit LE *unsigned* integer
@@ -45,7 +48,7 @@ packet_player_position:
 
     # Read `on_ground` as a boolean
     on_ground: bool
-    # Read `position` as custom data type `PlayerPosition` defined above.
+    # Read `position` as custom data type `Position` defined above.
     position: Position
 
     # Reads a 8-bit unsigned integer, then maps it to a string
@@ -90,7 +93,7 @@ packet_player_position:
 
 The above roughly translates to the following JavaScript code to read a packet:
 ```js
-function read_player_position(stream) {
+function read_position(stream) {
     const ret = {}
     ret.x = stream.readSignedInt32LE()
     ret.z = stream.readUnsignedInt32LE()
