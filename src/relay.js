@@ -135,6 +135,7 @@ class Relay extends Server {
 
   openUpstreamConnection (ds, clientAddr) {
     const client = new Client({
+      offline: this.options.offline,
       version: this.options.version,
       hostname: this.options.destination.hostname,
       port: this.options.destination.port,

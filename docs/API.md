@@ -158,5 +158,6 @@ relay.on('connect', player => {
 })
 ```
 
+'Relay' emits 'clientbound' and 'serverbound' events, along with the data for the outgoing packet that can be modified. You can send a packet to the client with `player.queue()` or to the backend server with `player.upstream.queue()`.
 
 [1]: https://github.com/PrismarineJS/bedrock-protocol/issues/69
