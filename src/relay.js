@@ -136,12 +136,14 @@ class Relay extends Server {
   openUpstreamConnection (ds, clientAddr) {
     const client = new Client({
       offline: this.options.offline,
+      username: this.options.offline ? ds.profile.name : null,
       version: this.options.version,
       hostname: this.options.destination.hostname,
       port: this.options.destination.port,
-      encrypt: this.options.encrypt,
       autoInitPlayer: false
     })
+    // Set the login payload unless `noLoginForward` option
+    if (!client.noLoginForward) client.skinData = ds.skinData
     client.connect()
     this.conLog('Connecting to', this.options.destination.hostname, this.options.destination.port)
     client.outLog = ds.upOutLog
@@ -174,7 +176,9 @@ class Relay extends Server {
       this.conLog('New connection from', conn.address)
       this.clients[conn.address] = player
       this.emit('connect', player)
-      this.openUpstreamConnection(player, conn.address)
+      player.on('login', () => {
+        this.openUpstreamConnection(player, conn.address)
+      })
     }
   }
 

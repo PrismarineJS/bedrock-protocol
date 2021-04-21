@@ -37,7 +37,7 @@ function proxyTest (version, timeout = 1000 * 20) {
 
     console.debug('Proxy started', server.options.version)
 
-    const client = createClient({ hostname: '127.0.0.1', version, offline: true })
+    const client = createClient({ hostname: '127.0.0.1', version, username: 'Boat', offline: true })
 
     console.debug('Client started')
 

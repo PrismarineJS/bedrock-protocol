@@ -79,7 +79,7 @@ module.exports = (client, server, options) => {
       ThirdPartyNameOnly: false,
       UIProfile: 0
     }
-    const customPayload = options.userData || {}
+    const customPayload = options.skinData || {}
     payload = { ...payload, ...customPayload }
 
     client.clientUserChain = JWT.sign(payload, privateKey,
