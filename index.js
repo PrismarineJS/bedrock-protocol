@@ -8,7 +8,7 @@ const { Client } = require('./src/client')
 const { Server } = require('./src/server')
 const { Relay } = require('./src/relay')
 const { createClient, ping } = require('./src/createClient')
-const { createServer } = require('./src/createClient')
+const { createServer } = require('./src/createServer')
 
 module.exports = {
   Client,
