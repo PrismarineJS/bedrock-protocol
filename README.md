@@ -63,7 +63,7 @@ client.on('text', (packet) => { // Listen for chat messages and echo them back.
 ```js
 const bedrock = require('bedrock-protocol')
 const server = new bedrock.createServer({
-  host: '0.0.0.0',       // optional. Hostname to bind as.
+  host: '0.0.0.0',       // optional. host to bind as.
   port: 19132,           // optional
   version: '1.16.220'    // optional. The server version, latest if not specified. 
 })

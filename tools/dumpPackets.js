@@ -20,7 +20,7 @@ async function dump (version) {
 
   console.log('Started server')
   const client = new Client({
-    hostname: '127.0.0.1',
+    host: '127.0.0.1',
     port,
     username: 'dumpBot',
     offline: true

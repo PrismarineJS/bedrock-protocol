@@ -8,7 +8,7 @@ Returns a `Client` instance and connects to the server.
 
 | Parameter   | Optionality | Description |
 | ----------- | ----------- |-|
-| host        | **Required** |  Hostname to connect to, for example `127.0.0.1`. |
+| host        | **Required** |  host to connect to, for example `127.0.0.1`. |
 | port        | *optional* |  port to connect to, default to **19132**     |
 | version     | *optional* |  Version to connect as. <br/>(Future feature, see [#69][1]) If not specified, should automatically match server version. <br/>(Current feature) Defaults to latest version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
@@ -28,7 +28,7 @@ authenticated unless offline is set to true.
 
 | Parameter   | Optionality | Description |
 | ----------- | ----------- |-|
-| host        | **Required** | The hostname to bind to. use `0.0.0.0` to bind all IPv4 addresses. |
+| host        | **Required** | The host to bind to. use `0.0.0.0` to bind all IPv4 addresses. |
 | port        | *optional* |  the port to bind to, default **19132**     |
 | version     | *optional* |  Version to run server as. Clients below this version will be kicked, clients above will still be permitted. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth enforcement.   |
@@ -55,7 +55,7 @@ You can create a server as such:
 ```js
 const bedrock = require('bedrock-protocol')
 const server = bedrock.createServer({
-  host: '0.0.0.0',   // the hostname to bind to, use '0.0.0.0' to bind all hostnames
+  host: '0.0.0.0',   // the host to bind to, use '0.0.0.0' to bind all hosts
   port: 19132,       // optional, port to bind to, default 19132
   offline: false,    // default false. verify connections with XBL
   motd: {
@@ -90,7 +90,7 @@ You can create a server as such:
 ```js
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
-  host: '127.0.0.1',  // the hostname to bind to, use '0.0.0.0' to bind all hostnames
+  host: '127.0.0.1',  // the host to bind to, use '0.0.0.0' to bind all hosts
   port: 19132,        // optional, port to bind to, default 19132
   username: 'Notch'   // Any profile name, only used internally for account caching when in online mode. In offline mode, the username to connect with.
 })
@@ -129,12 +129,12 @@ You can create a proxy ("Relay") to create a machine-in-the-middle (MITM) connec
 const { Relay } = require('bedrock-protocol')
 const relay = new Relay({
   version: '1.16.220', // The version
-  /* Hostname and port to listen for clients on */
-  hostname: '0.0.0.0',
+  /* host and port to listen for clients on */
+  host: '0.0.0.0',
   port: 19132,
   /* Where to send upstream packets to */
   destination: {
-    hostname: '127.0.0.1',
+    host: '127.0.0.1',
     port: 19131
   }
 })

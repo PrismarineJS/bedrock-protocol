@@ -14,7 +14,7 @@ async function startTest (version = '1.16.220', ok) {
   await prepare(version)
   const Item = require('../types/Item')(version)
   const port = 19130
-  const server = new Server({ hostname: '0.0.0.0', port, version, offline: true })
+  const server = new Server({ host: '0.0.0.0', port, version, offline: true })
 
   function getPath (packetPath) {
     return DataProvider(server.options.protocolVersion).getPath(packetPath)
@@ -108,7 +108,7 @@ async function startTest (version = '1.16.220', ok) {
 
   // client logic
   const client = new Client({
-    hostname: '127.0.0.1',
+    host: '127.0.0.1',
     port,
     username: 'Notch',
     version,

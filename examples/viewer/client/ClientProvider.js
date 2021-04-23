@@ -14,7 +14,7 @@ class ClientProvider extends BotProvider {
   downKeys = new Set()
 
   connect () {
-    const client = new Client({ hostname: '127.0.0.1', version: '1.16.210', username: 'notch', offline: true, port: 19132, connectTimeout: 100000 })
+    const client = new Client({ host: '127.0.0.1', version: '1.16.210', username: 'notch', offline: true, port: 19132, connectTimeout: 100000 })
 
     client.once('resource_packs_info', (packet) => {
       client.write('resource_pack_client_response', {

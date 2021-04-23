@@ -17,7 +17,7 @@ class Client extends Connection {
   // The RakNet connection
   connection
 
-  /** @param {{ version: number, hostname: string, port: number }} options */
+  /** @param {{ version: number, host: string, port: number }} options */
   constructor (options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
@@ -29,9 +29,9 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    const hostname = this.options.hostname
+    const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: true, hostname, port })
+    this.connection = new RakClient({ useWorkers: true, host, port })
 
     this.startGameData = {}
     this.clientRuntimeId = null
@@ -54,7 +54,7 @@ class Client extends Connection {
   }
 
   validateOptions () {
-    if (!this.options.hostname || this.options.port == null) throw Error('Invalid hostname/port')
+    if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
 
     if (!Options.Versions[this.options.version]) {
       console.warn('Supported versions: ', Options.Versions)
@@ -79,13 +79,13 @@ class Client extends Connection {
     try {
       return await this.connection.ping(this.options.connectTimeout)
     } catch (e) {
-      console.warn(`Unable to connect to [${this.options.hostname}]/${this.options.port}. Is the server running?`)
+      console.warn(`Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`)
       throw e
     }
   }
 
   _connect = async (sessionData) => {
-    debug('[client] connecting to', this.options.hostname, this.options.port, sessionData, this.connection)
+    debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
     this.connection.onConnected = () => this.sendLogin()
     this.connection.onCloseConnection = () => this.close()
     this.connection.onEncapsulated = this.onEncapsulated
