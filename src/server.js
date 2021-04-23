@@ -68,15 +68,15 @@ class Server extends EventEmitter {
     return this.advertisement
   }
 
-  async listen (hostname = this.options.hostname, port = this.options.port) {
-    this.raknet = new RakServer({ hostname, port }, this)
+  async listen (host = this.options.host, port = this.options.port) {
+    this.raknet = new RakServer({ host, port }, this)
     try {
       await this.raknet.listen()
     } catch (e) {
-      console.warn(`Failed to bind server on [${this.options.hostname}]/${this.options.port}, is the port free?`)
+      console.warn(`Failed to bind server on [${this.options.host}]/${this.options.port}, is the port free?`)
       throw e
     }
-    this.conLog('Listening on', hostname, port, this.options.version)
+    this.conLog('Listening on', host, port, this.options.version)
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
     this.raknet.onEncapsulated = this.onEncapsulated
@@ -85,7 +85,7 @@ class Server extends EventEmitter {
       this.raknet.updateAdvertisement()
     }, 1000)
 
-    return { hostname, port }
+    return { host, port }
   }
 
   async close (disconnectReason) {

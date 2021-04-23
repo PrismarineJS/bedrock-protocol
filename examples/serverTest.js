@@ -23,7 +23,7 @@ async function startServer (version = '1.16.220', ok) {
 
   const Item = require('../types/Item')(version)
   const port = 19132
-  const server = new Server({ hostname: '0.0.0.0', port, version })
+  const server = new Server({ host: '0.0.0.0', port, version })
   let loop
 
   const getPath = (packetPath) => DataProvider(server.options.protocolVersion).getPath(packetPath)

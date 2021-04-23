@@ -138,14 +138,14 @@ class Relay extends Server {
       offline: this.options.offline,
       username: this.options.offline ? ds.profile.name : null,
       version: this.options.version,
-      hostname: this.options.destination.hostname,
+      host: this.options.destination.host,
       port: this.options.destination.port,
       autoInitPlayer: false
     })
     // Set the login payload unless `noLoginForward` option
     if (!client.noLoginForward) client.skinData = ds.skinData
     client.connect()
-    this.conLog('Connecting to', this.options.destination.hostname, this.options.destination.port)
+    this.conLog('Connecting to', this.options.destination.host, this.options.destination.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
     client.once('join', () => { // Intercept once handshaking done

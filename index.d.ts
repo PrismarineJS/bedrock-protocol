@@ -6,8 +6,8 @@ declare module "bedrock-protocol" {
   export interface Options {
     // The string version to start the client or server as
     version: number,
-    // For the client, the hostname of the server to connect to (default: 127.0.0.1)
-    // For the server, the hostname to bind to (default: 0.0.0.0)
+    // For the client, the host of the server to connect to (default: 127.0.0.1)
+    // For the server, the host to bind to (default: 0.0.0.0)
     host: string,
     // The port to connect or bind to, default: 19132
     port: number,
@@ -103,13 +103,13 @@ declare module "bedrock-protocol" {
   }
 
   type RelayOptions = Options & {
-    hostname: string,
+    host: string,
     port: number,
     // Toggle packet logging.
     logging: boolean,
     // Where to proxy requests to.
     destination: {
-      hostname: string,
+      host: string,
       port: number
     }
   }

@@ -3,10 +3,9 @@ const { RakClient } = require('./rak')
 const assert = require('assert')
 const advertisement = require('./server/advertisement')
 
-/** @param {{ version?: number, hostname: string, port?: number, connectTimeout?: number }} options */
+/** @param {{ version?: number, host: string, port?: number, connectTimeout?: number }} options */
 function createClient (options) {
   assert(options)
-  if (options.host) options.hostname = options.host
   const client = new Client({ port: 19132, ...options })
 
   if (options.skipPing) {
@@ -67,7 +66,7 @@ function connect (client) {
 }
 
 async function ping ({ host, port }) {
-  const con = new RakClient({ hostname: host, port })
+  const con = new RakClient({ host, port })
   const ret = await con.ping()
   con.close()
   return advertisement.fromServerName(ret)

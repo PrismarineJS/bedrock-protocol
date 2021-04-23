@@ -23,12 +23,12 @@ function proxyTest (version, timeout = 1000 * 20) {
     const relay = new Relay({
       version,
       offline: true,
-      /* Hostname and port for clients to listen to */
-      hostname: '0.0.0.0',
+      /* host and port for clients to listen to */
+      host: '0.0.0.0',
       port: 19132,
       /* Where to send upstream packets to */
       destination: {
-        hostname: '127.0.0.1',
+        host: '127.0.0.1',
         port: 19131
       }
     })
@@ -37,7 +37,7 @@ function proxyTest (version, timeout = 1000 * 20) {
 
     console.debug('Proxy started', server.options.version)
 
-    const client = createClient({ hostname: '127.0.0.1', version, username: 'Boat', offline: true })
+    const client = createClient({ host: '127.0.0.1', version, username: 'Boat', offline: true })
 
     console.debug('Client started')
 

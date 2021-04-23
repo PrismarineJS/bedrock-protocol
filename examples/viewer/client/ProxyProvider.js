@@ -7,11 +7,11 @@ class ProxyProvider extends BotProvider {
 
   connect () {
     const proxy = new Relay({
-      hostname: '0.0.0.0',
+      host: '0.0.0.0',
       port: 19130,
       // logging: true,
       destination: {
-        hostname: '127.0.0.1',
+        host: '127.0.0.1',
         port: 19132
       }
     })

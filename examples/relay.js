@@ -5,12 +5,12 @@ const { Relay } = require('bedrock-protocol')
 // Start the proxy server
 const relay = new Relay({
   version: '1.16.220', // The version
-  /* Hostname and port to listen for clients on */
-  hostname: '0.0.0.0',
+  /* host and port to listen for clients on */
+  host: '0.0.0.0',
   port: 19132,
   /* Where to send upstream packets to */
   destination: {
-    hostname: '127.0.0.1',
+    host: '127.0.0.1',
     port: 19131
   }
 })

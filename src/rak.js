@@ -19,7 +19,7 @@ class RakNativeClient extends EventEmitter {
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
 
-    this.raknet = new Client(options.hostname, options.port, { protocolVersion: 10 })
+    this.raknet = new Client(options.host, options.port, { protocolVersion: 10 })
     this.raknet.on('encapsulated', ({ buffer, address }) => {
       this.onEncapsulated(buffer, address)
     })
@@ -70,7 +70,7 @@ class RakNativeServer extends EventEmitter {
     this.onOpenConnection = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
-    this.raknet = new Server(options.hostname, options.port, {
+    this.raknet = new Server(options.host, options.port, {
       maxConnections: options.maxPlayers || 3,
       protocolVersion: 10,
       message: server.getAdvertisement().toBuffer()
@@ -120,8 +120,8 @@ class RakJsClient extends EventEmitter {
     }
   }
 
-  workerConnect (hostname = this.options.hostname, port = this.options.port) {
-    this.worker = ConnWorker.connect(hostname, port)
+  workerConnect (host = this.options.host, port = this.options.port) {
+    this.worker = ConnWorker.connect(host, port)
 
     this.worker.on('message', (evt) => {
       switch (evt.type) {
@@ -138,12 +138,12 @@ class RakJsClient extends EventEmitter {
     })
   }
 
-  async plainConnect (hostname = this.options.hostname, port = this.options.port) {
-    this.raknet = new RakClient(hostname, port)
+  async plainConnect (host = this.options.host, port = this.options.port) {
+    this.raknet = new RakClient(host, port)
     await this.raknet.connect()
 
     this.raknet.on('connecting', () => {
-      console.log(`[client] connecting to ${hostname}/${port}`)
+      console.log(`[client] connecting to ${host}/${port}`)
     })
 
     this.raknet.on('connected', this.onConnected)
@@ -180,7 +180,7 @@ class RakJsServer extends EventEmitter {
 
   async plainListen () {
     this.raknet = new Listener()
-    await this.raknet.listen(this.options.hostname, this.options.port)
+    await this.raknet.listen(this.options.host, this.options.port)
     this.raknet.on('openConnection', (conn) => {
       conn.sendReliable = function (buffer, immediate) {
         const sendPacket = new EncapsulatedPacket()

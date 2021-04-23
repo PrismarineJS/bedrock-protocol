@@ -3,10 +3,10 @@ const { Worker, isMainThread, parentPort } = require('worker_threads')
 const EncapsulatedPacket = require('jsp-raknet/protocol/encapsulated_packet')
 const Reliability = require('jsp-raknet/protocol/reliability')
 
-function connect (hostname, port) {
+function connect (host, port) {
   if (isMainThread) {
     const worker = new Worker(__filename)
-    worker.postMessage({ type: 'connect', hostname, port })
+    worker.postMessage({ type: 'connect', host, port })
     return worker
   }
 }
@@ -16,15 +16,15 @@ let raknet
 function main () {
   parentPort.on('message', (evt) => {
     if (evt.type === 'connect') {
-      const { hostname, port } = evt
-      raknet = new RakClient(hostname, port)
+      const { host, port } = evt
+      raknet = new RakClient(host, port)
 
       raknet.connect().then(() => {
         console.log('Raknet Connected!')
       })
 
       raknet.on('connecting', () => {
-        console.log(`[client] connecting to ${hostname}/${port}`)
+        console.log(`[client] connecting to ${host}/${port}`)
         parentPort.postMessage('message', { type: 'connecting' })
         console.log('Raknet', raknet)
       })
