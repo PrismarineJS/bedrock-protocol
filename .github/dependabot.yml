@@ -1,0 +1,18 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: raknet-native
+    versions:
+    - 0.2.0
+    - 1.0.0
+  - dependency-name: bedrock-provider
+    versions:
+    - 1.0.0
+  - dependency-name: mocha
+    versions:
+    - 8.3.1
