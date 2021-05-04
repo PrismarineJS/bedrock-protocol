@@ -1,3 +1,10 @@
+## 3.1.0
+* Add support for 1.16
+* New docs and examples
+* Ping support
+* Add microsoft authentication
+* Codebase refactor
+
 ## 2.4.0
 * Update to version 1.12.0
 * Add option to provide protocol.json
