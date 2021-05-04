@@ -5829,18 +5829,42 @@
             {
               "compareTo": "update_flags.texture",
               "fields": {
-                "pixels": [
-                  "array",
-                  {
-                    "count": "width",
-                    "type": [
-                      "array",
-                      {
-                        "count": "height",
-                        "type": "varint"
-                      }
-                    ]
-                  }
+                "true": [
+                  "container",
+                  [
+                    {
+                      "name": "px_width",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "px_height",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "x_offset",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "y_offset",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "pixels",
+                      "type": [
+                        "array",
+                        {
+                          "count": "px_width",
+                          "type": [
+                            "array",
+                            {
+                              "count": "px_height",
+                              "type": "varint"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 ]
               },
               "default": "void"
