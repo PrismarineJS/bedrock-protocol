@@ -956,100 +956,92 @@
       ]
     ],
     "TransactionActions": [
-      "container",
-      [
-        {
-          "name": "actions",
-          "type": [
-            "array",
+      "array",
+      {
+        "countType": "varint",
+        "type": [
+          "container",
+          [
             {
-              "countType": "varint",
+              "name": "source_type",
               "type": [
-                "container",
-                [
-                  {
-                    "name": "source_type",
-                    "type": [
-                      "mapper",
-                      {
-                        "type": "varint",
-                        "mappings": {
-                          "0": "container",
-                          "1": "global",
-                          "2": "world_interaction",
-                          "3": "creative",
-                          "100": "craft_slot",
-                          "99999": "craft"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anon": true,
-                    "type": [
-                      "switch",
-                      {
-                        "compareTo": "source_type",
-                        "fields": {
-                          "container": [
-                            "container",
-                            [
-                              {
-                                "name": "inventory_id",
-                                "type": "varint"
-                              }
-                            ]
-                          ],
-                          "craft": [
-                            "container",
-                            [
-                              {
-                                "name": "action",
-                                "type": "varint"
-                              }
-                            ]
-                          ],
-                          "world_interaction": [
-                            "container",
-                            [
-                              {
-                                "name": "flags",
-                                "type": "varint"
-                              }
-                            ]
-                          ],
-                          "craft_slot": [
-                            "container",
-                            [
-                              {
-                                "name": "action",
-                                "type": "varint"
-                              }
-                            ]
-                          ]
-                        },
-                        "default": "void"
-                      }
-                    ]
-                  },
-                  {
-                    "name": "slot",
-                    "type": "varint"
-                  },
-                  {
-                    "name": "old_item",
-                    "type": "Item"
-                  },
-                  {
-                    "name": "new_item",
-                    "type": "Item"
+                "mapper",
+                {
+                  "type": "varint",
+                  "mappings": {
+                    "0": "container",
+                    "1": "global",
+                    "2": "world_interaction",
+                    "3": "creative",
+                    "100": "craft_slot",
+                    "99999": "craft"
                   }
-                ]
+                }
               ]
+            },
+            {
+              "anon": true,
+              "type": [
+                "switch",
+                {
+                  "compareTo": "source_type",
+                  "fields": {
+                    "container": [
+                      "container",
+                      [
+                        {
+                          "name": "inventory_id",
+                          "type": "WindowIDVarint"
+                        }
+                      ]
+                    ],
+                    "craft": [
+                      "container",
+                      [
+                        {
+                          "name": "action",
+                          "type": "varint"
+                        }
+                      ]
+                    ],
+                    "world_interaction": [
+                      "container",
+                      [
+                        {
+                          "name": "flags",
+                          "type": "varint"
+                        }
+                      ]
+                    ],
+                    "craft_slot": [
+                      "container",
+                      [
+                        {
+                          "name": "action",
+                          "type": "varint"
+                        }
+                      ]
+                    ]
+                  },
+                  "default": "void"
+                }
+              ]
+            },
+            {
+              "name": "slot",
+              "type": "varint"
+            },
+            {
+              "name": "old_item",
+              "type": "Item"
+            },
+            {
+              "name": "new_item",
+              "type": "Item"
             }
           ]
-        }
-      ]
+        ]
+      }
     ],
     "TransactionLegacy": [
       "container",
@@ -2653,6 +2645,79 @@
               "default": "void"
             }
           ]
+        }
+      ]
+    ],
+    "TrackedObject": [
+      "container",
+      [
+        {
+          "name": "type",
+          "type": [
+            "mapper",
+            {
+              "type": "li32",
+              "mappings": {
+                "0": "entity",
+                "1": "block"
+              }
+            }
+          ]
+        },
+        {
+          "name": "entity_unique_id",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type",
+              "fields": {
+                "entity": "zigzag64"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "block_position",
+          "type": [
+            "switch",
+            {
+              "compareTo": "type",
+              "fields": {
+                "block": "BlockCoordinates"
+              },
+              "default": "void"
+            }
+          ]
+        }
+      ]
+    ],
+    "MapDecoration": [
+      "container",
+      [
+        {
+          "name": "type",
+          "type": "u8"
+        },
+        {
+          "name": "rotation",
+          "type": "u8"
+        },
+        {
+          "name": "x",
+          "type": "u8"
+        },
+        {
+          "name": "y",
+          "type": "u8"
+        },
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "color_abgr",
+          "type": "varint"
         }
       ]
     ],
@@ -5673,8 +5738,132 @@
       "container",
       [
         {
-          "name": "mapinfo",
-          "type": "MapInfo"
+          "name": "map_id",
+          "type": "zigzag64"
+        },
+        {
+          "name": "update_flags",
+          "type": "UpdateMapFlags"
+        },
+        {
+          "name": "dimension",
+          "type": "u8"
+        },
+        {
+          "name": "locked",
+          "type": "bool"
+        },
+        {
+          "name": "included_in",
+          "type": [
+            "switch",
+            {
+              "compareTo": "update_flags.initialisation",
+              "fields": {
+                "true": [
+                  "array",
+                  {
+                    "countType": "varint",
+                    "type": "zigzag64"
+                  }
+                ]
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "scale",
+          "type": [
+            "switch",
+            {
+              "compareTo": "update_flags.initialisation || update_flags.decoration || update_flags.texture",
+              "fields": {
+                "true": "u8"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "tracked",
+          "type": [
+            "switch",
+            {
+              "compareTo": "update_flags.decoration",
+              "fields": {
+                "true": [
+                  "container",
+                  [
+                    {
+                      "name": "objects",
+                      "type": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "TrackedObject"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "decorations",
+                      "type": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "MapDecoration"
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "texture",
+          "type": [
+            "switch",
+            {
+              "compareTo": "update_flags.texture",
+              "fields": {
+                "true": [
+                  "container",
+                  [
+                    {
+                      "name": "width",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "height",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "x_offset",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "y_offset",
+                      "type": "zigzag32"
+                    },
+                    {
+                      "name": "pixels",
+                      "type": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "varint"
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              },
+              "default": "void"
+            }
+          ]
         }
       ]
     ],
@@ -8214,6 +8403,18 @@
           "build": 65792,
           "default": 66048
         }
+      }
+    ],
+    "UpdateMapFlags": [
+      "bitflags",
+      {
+        "type": "varint",
+        "flags": [
+          "void",
+          "texture",
+          "decoration",
+          "initialisation"
+        ]
       }
     ],
     "CommandFlags": [

@@ -90,6 +90,22 @@ SizeOf.nbtLoop = ['context', (value, buffer, offset) => {
 }]
 
 /**
+ * Read rotation float encoded as a byte
+ */
+Read.byterot = ['context', (buffer, offset) => {
+  const val = buffer.readUint8(buffer)
+  return { value: (val * (360 / 256)), size: 1 }
+}]
+Write.byterot = ['context', (value, buffer, offset) => {
+  const val = (value / (360 / 256))
+  buffer.writeUint8(val, offset)
+  return offset + 1
+}]
+SizeOf.byterot = ['context', (value, buffer, offset) => {
+  return 1
+}]
+
+/**
  * NBT
  */
 Read.nbt = ['native', minecraft.nbt[0]]
