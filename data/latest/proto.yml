@@ -1307,7 +1307,7 @@ packet_clientbound_map_item_data:
       if true:
          objects: TrackedObject[]varint
          decorations: Decorations[]varint
-	# Updates to the map contents itself (texture)
+   # Updates to the map contents itself (texture)
    texture: update_flags.texture ?
       # Width is the width of the texture area that was updated. The width may be a subset of the total width
       # of the map.
