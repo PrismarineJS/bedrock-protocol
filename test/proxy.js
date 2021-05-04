@@ -1,7 +1,7 @@
 const { createClient, createServer, Relay } = require('bedrock-protocol')
 const { sleep, waitFor } = require('../src/datatypes/util')
 
-function proxyTest (version, timeout = 1000 * 20) {
+function proxyTest (version, timeout = 1000 * 40) {
   return waitFor(res => {
     const server = createServer({
       host: '0.0.0.0', // optional
