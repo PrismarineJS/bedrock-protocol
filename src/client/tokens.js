@@ -103,9 +103,10 @@ class MsaTokenManager {
   }
 
   async verifyTokens () {
+    if (this.forceRefresh) try { await this.refreshTokens() } catch {}
     const at = this.getAccessToken()
     const rt = this.getRefreshToken()
-    if (!at || !rt || this.forceRefresh) {
+    if (!at || !rt) {
       return false
     }
     debug('[msa] have at, rt', at, rt)
