@@ -32,7 +32,7 @@ Want to contribute on something important for PrismarineJS ? go to https://githu
 
 ## Installation
 
-`npm install PrismarineJS/bedrock-protocol`
+`npm install bedrock-protocol`
 
 ## Usage
 
