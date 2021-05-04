@@ -465,12 +465,22 @@ packet_take_item_entity:
    runtime_entity_id: varint64
    target: varint
 
+# MoveActorAbsolute is sent by the server to move an entity to an absolute position. It is typically used
+# for movements where high accuracy isn't needed, such as for long range teleporting.
 packet_move_entity:
    !id: 0x12
    !bound: both
+   # EntityRuntimeID is the runtime ID of the entity. The runtime ID is unique for each world session, and
+   # entities are generally identified in packets using this runtime ID.
    runtime_entity_id: varint64
+   # Flags is a combination of flags that specify details of the movement. It is a combination of the flags
+   # above.
    flags: u8
+   # Position is the position to spawn the entity on. If the entity is on a distance that the player cannot
+   # see it, the entity will still show up if the player moves closer.
    position: vec3f
+   # Rotation is a Vec3 holding the X, Y and Z rotation of the entity after the movement. This is a Vec3 for
+   # the reason that projectiles like arrows don't have yaw/pitch, but do have roll.
    rotation: Rotation
 
 # MovePlayer is sent by players to send their movement to the server, and by the server to update the
@@ -1249,10 +1259,74 @@ packet_spawn_experience_orb:
    position: vec3f
    count: zigzag32
 
+UpdateMapFlags: [ "bitflags", {
+   "type": "varint",
+   "flags": [
+      "void",
+      "texture",
+      "decoration",
+      "initialisation"
+   ]
+}]
+
+# ClientBoundMapItemData is sent by the server to the client to update the data of a map shown to the client.
+# It is sent with a combination of flags that specify what data is updated.
+# The ClientBoundMapItemData packet may be used to update specific parts of the map only. It is not required
+# to send the entire map each time when updating one part.
 packet_clientbound_map_item_data:
    !id: 0x43
    !bound: client
-   mapinfo: MapInfo
+   # MapID is the unique identifier that represents the map that is updated over network. It remains
+   # consistent across sessions.
+   map_id: zigzag64
+   # UpdateFlags is a combination of flags found above that indicate what parts of the map should be updated
+   # client-side.
+   update_flags: UpdateMapFlags
+   # Dimension is the dimension of the map that should be updated, for example the overworld (0), the nether
+   # (1) or the end (2).
+   dimension: u8
+   # LockedMap specifies if the map that was updated was a locked map, which may be done using a cartography
+   # table.
+   locked: bool
+   # The following fields apply only for the MapUpdateFlagInitialisation.
+   # MapsIncludedIn holds an array of map IDs that the map updated is included in. This has to do with the
+   # scale of the map: Each map holds its own map ID and all map IDs of maps that include this map and have
+   # a bigger scale. This means that a scale 0 map will have 5 map IDs in this slice, whereas a scale 4 map
+   # will have only 1 (its own).
+   # The actual use of this field remains unknown.
+   included_in: update_flags.initialisation ?
+      if true: zigzag64[]varint
+   # Scale is the scale of the map as it is shown in-game. It is written when any of the MapUpdateFlags are
+   # set to the UpdateFlags field.
+   scale: update_flags.initialisation || update_flags.decoration || update_flags.texture ?
+      if true: u8
+   # The following fields apply only for the MapUpdateFlagDecoration.
+   # TrackedObjects is a list of tracked objects on the map, which may either be entities or blocks. The
+   # client makes sure these tracked objects are actually tracked. (position updated etc.)
+   tracked: update_flags.decoration ?
+      if true:
+         objects: TrackedObject[]varint
+         decorations: Decorations[]varint
+	# Updates to the map contents itself (texture)
+   texture: update_flags.texture ?
+      # Width is the width of the texture area that was updated. The width may be a subset of the total width
+      # of the map.
+      width: zigzag32
+      # Height is the height of the texture area that was updated. The height may be a subset of the total
+      # height of the map
+      height: zigzag32
+      # XOffset is the X offset in pixels at which the updated texture area starts. From this X, the updated
+      # texture will extend exactly Width pixels to the right.
+      x_offset: zigzag32
+      # YOffset is the Y offset in pixels at which the updated texture area starts. From this Y, the updated
+      # texture will extend exactly Height pixels up.
+      y_offset: zigzag32
+      # Pixels is a list of pixel colours for the new texture of the map. It is indexed as Pixels[y][x], with
+      # the length of the outer slice having to be exactly Height long and the inner slices exactly Width long.
+      # To access this array, use $width * y + x
+      pixels: []$width
+         _: varint[]$height
+
 
 packet_map_info_request:
    !id: 0x44

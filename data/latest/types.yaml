@@ -484,26 +484,25 @@ TransactionUseItem:
 # these actions hold one slot in which one item was changed to another. In general, the combination of
 # all of these actions results in a balanced inventory transaction. This should be checked to ensure that
 # no items are cheated into the inventory.
-TransactionActions:
-   actions: []varint
-      source_type: varint =>
-         0: container
-         1: global
-         2: world_interaction
-         3: creative
-         100: craft_slot
-         99999: craft
-      _: source_type?
-         if container or craft:
-            inventory_id: varint
-         if world_interaction:
-            flags: varint
-         if craft or craft_slot:
-            action: varint
-         default: void
-      slot: varint
-      old_item: Item
-      new_item: Item
+TransactionActions: []varint
+   source_type: varint =>
+      0: container
+      1: global
+      2: world_interaction
+      3: creative
+      100: craft_slot
+      99999: craft
+   _: source_type?
+      if container or craft:
+         inventory_id: WindowIDVarint
+      if world_interaction:
+         flags: varint
+      if craft or craft_slot:
+         action: varint
+      default: void
+   slot: varint
+   old_item: Item
+   new_item: Item
 
 # The Minecraft bedrock inventory system was refactored, but not all inventory actions use the new packet.
 # This data structure holds actions that have not been updated to the new system.
@@ -1010,6 +1009,39 @@ CommandOrigin:
    player_entity_id: type?
       if dev_console or test:
          player_entity_id: zigzag64
+
+# MapTrackedObject is an object on a map that is 'tracked' by the client, such as an entity or a block. This
+# object may move, which is handled client-side.
+TrackedObject:
+   # Type is the type of the tracked object. It is either MapObjectTypeEntity or MapObjectTypeBlock.
+   type: li32 =>
+      0: entity
+      1: block
+   # EntityUniqueID is the unique ID of the entity, if the tracked object was an entity. It needs not to be
+   # filled out if Type is not MapObjectTypeEntity.
+   entity_unique_id: type ?
+      if entity: zigzag64
+   # BlockPosition is the position of the block, if the tracked object was a block. It needs not to be
+   # filled out if Type is not MapObjectTypeBlock.
+   block_position: type ?
+      if block: BlockCoordinates
+
+# MapDecoration is a fixed decoration on a map: Its position or other properties do not change automatically
+# client-side.
+MapDecoration:
+   type: u8
+   # Rotation is the rotation of the map decoration. It is byte due to the 16 fixed directions that the
+   # map decoration may face.
+   rotation: u8
+   # X is the offset on the X axis in pixels of the decoration.
+   x: u8
+   # Y is the offset on the Y axis in pixels of the decoration.
+   y: u8
+   # Label is the name of the map decoration. This name may be of any value.
+   label: string
+   # Colour is the colour of the map decoration. Some map decoration types have a specific colour set
+   # automatically, whereas others may be changed.
+   color_abgr: varint
 
 # Some arbitrary definitions from CBMC, Window IDs are normally
 # unique + sequential
