@@ -92,7 +92,7 @@ SizeOf.nbtLoop = ['context', (value, buffer, offset) => {
 /**
  * Read rotation float encoded as a byte
  */
- Read.byterot = ['context', (buffer, offset) => {
+Read.byterot = ['context', (buffer, offset) => {
   const val = buffer.readUint8(buffer)
   return { value: (val * (360 / 256)), size: 1 }
 }]

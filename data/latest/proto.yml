@@ -1306,16 +1306,16 @@ packet_clientbound_map_item_data:
    tracked: update_flags.decoration ?
       if true:
          objects: TrackedObject[]varint
-         decorations: Decorations[]varint
+         decorations: MapDecoration[]varint
    # Updates to the map contents itself (texture)
    texture: update_flags.texture ?
       if true:
          # Width is the width of the texture area that was updated. The width may be a subset of the total width
          # of the map.
-         px_width: zigzag32
+         width: zigzag32
          # Height is the height of the texture area that was updated. The height may be a subset of the total
          # height of the map
-         px_height: zigzag32
+         height: zigzag32
          # XOffset is the X offset in pixels at which the updated texture area starts. From this X, the updated
          # texture will extend exactly Width pixels to the right.
          x_offset: zigzag32
@@ -1325,8 +1325,7 @@ packet_clientbound_map_item_data:
          # Pixels is a list of pixel colours for the new texture of the map. It is indexed as Pixels[y][x], with
          # the length of the outer slice having to be exactly Height long and the inner slices exactly Width long.
          # To access this array, use $width * y + x
-         pixels: []$px_width
-            _: varint[]$px_height
+         pixels: varint[]varint
 
 
 packet_map_info_request:

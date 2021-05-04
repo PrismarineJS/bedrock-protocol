@@ -5811,7 +5811,7 @@
                         "array",
                         {
                           "countType": "varint",
-                          "type": "Decorations"
+                          "type": "MapDecoration"
                         }
                       ]
                     }
@@ -5833,11 +5833,11 @@
                   "container",
                   [
                     {
-                      "name": "px_width",
+                      "name": "width",
                       "type": "zigzag32"
                     },
                     {
-                      "name": "px_height",
+                      "name": "height",
                       "type": "zigzag32"
                     },
                     {
@@ -5853,14 +5853,8 @@
                       "type": [
                         "array",
                         {
-                          "count": "px_width",
-                          "type": [
-                            "array",
-                            {
-                              "count": "px_height",
-                              "type": "varint"
-                            }
-                          ]
+                          "countType": "varint",
+                          "type": "varint"
                         }
                       ]
                     }
