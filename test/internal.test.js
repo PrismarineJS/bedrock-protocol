@@ -5,7 +5,7 @@ const { proxyTest } = require('./proxy')
 const { Versions } = require('../src/options')
 
 describe('internal client/server test', function () {
-  this.timeout(220 * 1000)
+  this.timeout(240 * 1000)
 
   for (const version in Versions) {
     it('connects ' + version, async () => {
