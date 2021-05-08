@@ -1,42 +1,15 @@
-const { Transform } = require('readable-stream')
 const crypto = require('crypto')
 const Zlib = require('zlib')
-if (globalThis.isElectron) var { CipherGCM, CipherCFB8 } = require('raknet-native') // eslint-disable-line
 
 function createCipher (secret, initialValue, cipherAlgorithm) {
   if (crypto.getCiphers().includes(cipherAlgorithm)) {
     return crypto.createCipheriv(cipherAlgorithm, secret, initialValue)
   }
-  return new Cipher(secret, initialValue)
 }
 
 function createDecipher (secret, initialValue, cipherAlgorithm) {
   if (crypto.getCiphers().includes(cipherAlgorithm)) {
     return crypto.createDecipheriv(cipherAlgorithm, secret, initialValue)
-  }
-  return new Decipher(secret, initialValue)
-}
-
-class Cipher extends Transform {
-  constructor (gcm, secret, iv) {
-    super()
-    this.aes = gcm ? new CipherGCM(secret, iv) : new CipherCFB8(secret, iv)
-  }
-
-  _transform (chunk, enc, cb) {
-    const ciphered = this.aes.cipher(chunk)
-    cb(null, ciphered)
-  }
-}
-
-class Decipher extends Transform {
-  constructor (gcm, secret, iv) {
-    super()
-    this.aes = gcm ? new CipherGCM(secret, iv) : new CipherCFB8(secret, iv)
-  }
-
-  _transform (chunk, enc, cb) {
-    cb(null, this.aes.decipher(chunk))
   }
 }
 

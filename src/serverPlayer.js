@@ -54,6 +54,7 @@ class Player extends Connection {
       var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
     } catch (e) {
       console.error(e)
+      console.debug(authChain.chain, skinChain)
       this.disconnect('Server authentication error')
       return
     }

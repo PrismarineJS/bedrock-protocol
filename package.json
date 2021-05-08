@@ -27,12 +27,12 @@
     "debug": "^4.3.1",
     "ec-pem": "^0.18.0",
     "jsonwebtoken": "^8.5.1",
-    "jsp-raknet": "^1.5.0",
+    "jsp-raknet": "^2.0.0",
     "minecraft-folder-path": "^1.1.0",
     "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
     "protodef": "^1.11.0",
-    "raknet-native": "^1.0.1",
+    "raknet-native": "^1.0.3",
     "uuid-1345": "^1.0.2"
   },
   "devDependencies": {
