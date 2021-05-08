@@ -1,4 +1,4 @@
-// process.env.DEBUG = 'minecraft-protocol raknet'
+process.env.DEBUG = 'minecraft-protocol raknet'
 const { Server, Client } = require('../')
 const { dumpPackets } = require('../tools/genPacketDumps')
 const DataProvider = require('../data/provider')
