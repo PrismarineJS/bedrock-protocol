@@ -32,8 +32,10 @@
     "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
     "protodef": "^1.11.0",
-    "raknet-native": "^1.0.3",
     "uuid-1345": "^1.0.2"
+  },
+  "optionalDependencies": {
+    "raknet-native": "^1.0.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.10",
