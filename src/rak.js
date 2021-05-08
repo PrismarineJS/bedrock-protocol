@@ -19,7 +19,9 @@ class RakNativeClient extends EventEmitter {
 
     this.raknet = new Client(options.host, options.port, { protocolVersion: 10 })
     this.raknet.on('encapsulated', ({ buffer, address }) => {
-      this.onEncapsulated(buffer, address)
+      if (this.connected) { // Discard packets that are queued to be sent to us after close
+        this.onEncapsulated(buffer, address)
+      }
     })
 
     this.raknet.on('connect', () => {

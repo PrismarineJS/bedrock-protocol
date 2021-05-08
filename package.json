@@ -31,7 +31,7 @@
     "minecraft-folder-path": "^1.1.0",
     "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
-    "protodef": "^1.11.0",
+    "protodef": "extremeheat/node-protodef#patch-1",
     "uuid-1345": "^1.0.2"
   },
   "optionalDependencies": {
