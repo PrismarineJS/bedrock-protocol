@@ -195,6 +195,11 @@ class Client extends Connection {
         this.startGameData = pakData.params
         break
       case 'play_status':
+        if (this.status === ClientStatus.Authenticating) {
+          this.inLog('Server wants to skip encryption')
+          this.emit('join')
+          this.status = ClientStatus.Initializing
+        }
         this.onPlayStatus(pakData.params)
         break
       default:
