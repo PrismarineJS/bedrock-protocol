@@ -2480,7 +2480,7 @@ packet_animate_entity:
    # Controller is the animation controller that is used to manage animations. These controllers decide when
    # to play which animation.
    controller: string
-   # BlendOutTime does not currently seem to be used.
+   # How long to move from the previous animation to the next.
    blend_out_time: lf32
    # EntityRuntimeIDs is list of runtime IDs of entities that the animation should be applied to.
    runtime_entity_ids: varint64[]varint

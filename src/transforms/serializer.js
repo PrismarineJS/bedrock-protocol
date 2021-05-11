@@ -2,6 +2,17 @@ const { ProtoDefCompiler, CompiledProtodef } = require('protodef').Compiler
 const { FullPacketParser, Serializer } = require('protodef')
 const { join } = require('path')
 
+class Parser extends FullPacketParser {
+  parsePacketBuffer (buffer) {
+    try {
+      return super.parsePacketBuffer(buffer)
+    } catch (e) {
+      console.error('While decoding', buffer.toString('hex'))
+      throw e
+    }
+  }
+}
+
 // Compiles the ProtoDef schema at runtime
 function createProtocol (version) {
   const protocol = require(join(__dirname, `../../data/${version}/protocol.json`)).types
@@ -40,7 +51,7 @@ function createSerializer (version) {
 
 function createDeserializer (version) {
   const proto = getProtocol(version)
-  return new FullPacketParser(proto, 'mcpe_packet')
+  return new Parser(proto, 'mcpe_packet')
 }
 
 module.exports = {

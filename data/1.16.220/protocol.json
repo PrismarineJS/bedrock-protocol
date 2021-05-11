@@ -1667,7 +1667,7 @@
         },
         {
           "name": "data",
-          "type": "string"
+          "type": "ByteArray"
         }
       ]
     ],
@@ -1734,7 +1734,7 @@
         },
         {
           "name": "premium",
-          "type": "string"
+          "type": "bool"
         },
         {
           "name": "persona",
@@ -1915,10 +1915,19 @@
         {
           "name": "verified",
           "type": [
-            "array",
+            "switch",
             {
-              "count": "records_count",
-              "type": "bool"
+              "compareTo": "type",
+              "fields": {
+                "add": [
+                  "array",
+                  {
+                    "count": "records_count",
+                    "type": "bool"
+                  }
+                ]
+              },
+              "default": "void"
             }
           ]
         }

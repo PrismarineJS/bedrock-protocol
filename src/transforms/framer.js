@@ -12,10 +12,14 @@ class Framer {
   static decode (buf, cb) {
     // Read header
     if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
+    const buffer = buf.slice(1)
 
     // Decode the payload
-    zlib.inflateRaw(buf.slice(1), { chunkSize: 1024 * 1024 * 2 }, (err, inflated) => {
-      if (err) throw err
+    zlib.inflateRaw(buffer, { chunkSize: 1024 * 1024 * 2 }, (err, inflated) => {
+      if (err) { // Try to decode without compression
+        Framer.getPackets(buffer)
+        return
+      }
       cb(Framer.getPackets(inflated))
     })
   }
