@@ -21,30 +21,30 @@ nbt: native
 # load the packet map file
 !import: packet_map.yml
 
-#todo: docs
 !StartDocs: Packets
 
 # # Login Sequence
 # The login process is as follows:
 #
-# C→S: [Login](#packet_login)
-# S→C: [Server To Client Handshake](#packet_server_to_client_handshake)
-# C→S: [Client To Server Handshake](#packet_client_to_server_handshake)
-# S→C: [Play Status (Login success)](#packet_play_status)
-# To spawn, the following packets should be sent, in order, after the ones above:
+# * C→S: [Login](#packet_login)
+# * S→C: [Server To Client Handshake](#packet_server_to_client_handshake)
+# * C→S: [Client To Server Handshake](#packet_client_to_server_handshake)
+# * S→C: [Play Status (Login success)](#packet_play_status)
+# * To spawn, the following packets should be sent, in order, after the ones above:
+# * S→C: [Resource Packs Info](#packet_resource_packs_info)
+# * C→S: [Resource Pack Client Response](#packet_resource_pack_client_response)
+# * S→C: [Resource Pack Stack](#packet_resource_pack_stack)
+# * C→S: [Resource Pack Client Response](#packet_resource_pack_client_response)
+# * S→C: [Start Game](#packet_start_game)
+# * S→C: [Creative Content](#packet_creative_content)
+# * S→C: [Biome Definition List](#packet_biome_definition_list)
+# * S→C: [Chunks](#packet_level_chunk)
+# * S→C: [Play Status (Player spawn)](#packet_play_status)
 #
-# S→C: [Resource Packs Info](#packet_resource_packs_info)
-# C→S: [Resource Pack Client Response](#packet_resource_pack_client_response)
-# S→C: [Resource Pack Stack](#packet_resource_pack_stack)
-# C→S: [Resource Pack Client Response](#packet_resource_pack_client_response)
-# S→C: [Start Game](#packet_start_game)
-# S→C: [Creative Content](#packet_creative_content)
-# S→C: [Biome Definition List](#packet_biome_definition_list)
-# S→C: [Chunks](#packet_level_chunk)
-# S→C: [Play Status (Player spawn)](#packet_play_status)
 # If there are no resource packs being sent, a Resource Pack Stack can be sent directly
 #  after Resource Packs Info to avoid the client responses.
-
+#
+# ===
 
 packet_login:
    !id: 0x01
@@ -366,15 +366,17 @@ packet_start_game:
    # results both client- and server-side.
    enchantment_seed: zigzag32
 
-   ## This is not sent anymore in protocol versions > 419 (Bedrock Edition v1.16.100)
-   ## A list of all blocks registered on the server.
-   block_palette: BlockPalette
+   # BlockProperties is a list of all the custom blocks registered on the server.
+   block_properties: BlockProperties
    # A list of all items with their legacy IDs which are available in the game.
    # Failing to send any of the items that are in the game will crash mobile clients.
    itemstates: Itemstates
    # A unique ID specifying the multi-player session of the player. 
    # A random UUID should be filled out for this field.
    multiplayer_correlation_id: string
+   # ServerAuthoritativeInventory specifies if the server authoritative inventory system is enabled. This
+   # is a new system introduced in 1.16. Backwards compatibility with the inventory transactions has to
+   # some extent been preserved, but will eventually be removed.
    server_authoritative_inventory: bool
 
 
@@ -1387,20 +1389,41 @@ packet_boss_event:
       # S2C: Not implemented :( Intended to alter bar appearance, but these currently produce no effect on client-side whatsoever.
       7: texture
    _: type?
-      if register_player or unregister_player:
-         player_id: zigzag64
-      if show:
+      if show_bar:
+         # BossBarTitle is the title shown above the boss bar. It currently does not function, and instead uses
+         # the name tag of the boss entity at all times. It is only set if the EventType is BossEventShow or
+         # BossEventTitle.
          title: string
-         bar_progress: lf32
+         # HealthPercentage is the percentage of health that is shown in the boss bar. It currently does not
+         # function, and instead uses the health percentage of the boss entity at all times. It is only set if the
+         # EventType is BossEventShow or BossEventHealthPercentage.
+         progress: lf32
+         # ScreenDarkening currently seems not to do anything.
+         screen_darkening: li16
+         # Colour is the colour of the boss bar that is shown when a player is subscribed. It currently does not
+         # function. It is only set if the EventType is BossEventShow, BossEventAppearanceProperties or
+         # BossEventTexture.
+         # Format is ARGB
+         color: varint
+         # Overlay is the overlay of the boss bar that is shown on top of the boss bar when a player is
+         # subscribed. It currently does not function. It is only set if the EventType is BossEventShow,
+         # BossEventAppearanceProperties or BossEventTexture.
+         overlay: varint
+      if register_player or unregister_player:
+         # PlayerUniqueID is the unique ID of the player that is registered to or unregistered from the boss
+         # fight. It is set if EventType is either BossEventRegisterPlayer or BossEventUnregisterPlayer.
+         player_id: zigzag64
+      if set_bar_progress:
+         progress: lf32
+      if set_bar_title:
+         title: string
       if update_properties:
-         darkness_factor: li16
+         screen_darkening: li16
+         color: varint
+         overlay: varint
       if texture:
          color: varint
          overlay: varint
-      if set_bar_progress:
-         bar_progress: lf32
-      if set_bar_title:
-         title: string
 
 packet_show_credits:
    !id: 0x4b
@@ -1418,8 +1441,9 @@ packet_available_commands:
    # The length of the enums for all the command paramaters in this packet
    values_len: varint
    # Not read from stream: instead calculated from the `values_len` field
-   # If the values_len < 0xff => byte
-   # If the values_len < 0xffff => short
+   #
+   # If the values_len < 0xff => byte,
+   # If the values_len < 0xffff => short,
    # If the values_len < 0xffffff => int
    _enum_type: '["enum_size_based_on_values_len"]'
    # Here all the enum values for all of the possible commands are stored to one array palette
