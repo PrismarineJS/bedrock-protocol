@@ -1,18 +1,15 @@
 const fs = require('fs')
 const JWT = require('jsonwebtoken')
 const DataProvider = require('../../data/provider')
-const ecPem = require('ec-pem')
-const curve = 'secp384r1'
 const { nextUUID } = require('../datatypes/util')
+const { PUBLIC_KEY } = require('./constants')
+const algorithm = 'ES384'
 
 module.exports = (client, server, options) => {
   const skinGeom = fs.readFileSync(DataProvider(options.protocolVersion).getPath('skin_geom.txt'), 'utf-8')
 
   client.createClientChain = (mojangKey, offline) => {
-    mojangKey = mojangKey || require('./constants').PUBLIC_KEY
-    const alice = client.ecdhKeyPair
-    const alicePEM = ecPem(alice, curve) // https://github.com/nodejs/node/issues/15116#issuecomment-384790125
-    const alicePEMPrivate = alicePEM.encodePrivateKey()
+    const privateKey = client.ecdhKeyPair.privateKey
 
     let token
     if (offline) {
@@ -25,16 +22,16 @@ module.exports = (client, server, options) => {
         certificateAuthority: true,
         identityPublicKey: client.clientX509
       }
-      token = JWT.sign(payload, alicePEMPrivate, { algorithm: 'ES384', notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509 } })
+      token = JWT.sign(payload, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509 } })
     } else {
       token = JWT.sign({
-        identityPublicKey: mojangKey,
+        identityPublicKey: mojangKey || PUBLIC_KEY,
         certificateAuthority: true
-      }, alicePEMPrivate, { algorithm: 'ES384', header: { x5u: client.clientX509 } })
+      }, privateKey, { algorithm, header: { x5u: client.clientX509 } })
     }
 
     client.clientIdentityChain = token
-    client.createClientUserChain(alicePEMPrivate)
+    client.createClientUserChain(privateKey)
   }
 
   client.createClientUserChain = (privateKey) => {
@@ -82,7 +79,6 @@ module.exports = (client, server, options) => {
     const customPayload = options.skinData || {}
     payload = { ...payload, ...customPayload }
 
-    client.clientUserChain = JWT.sign(payload, privateKey,
-      { algorithm: 'ES384', header: { x5u: client.clientX509 } })
+    client.clientUserChain = JWT.sign(payload, privateKey, { algorithm, header: { x5u: client.clientX509 } })
   }
 }
