@@ -7,9 +7,9 @@ const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
 
-const { Encrypt } = require('./auth/encryption')
-const Login = require('./auth/login')
-const LoginVerify = require('./auth/loginVerify')
+const { KeyExchange } = require('./handshake/keyExchange')
+const Login = require('./handshake/login')
+const LoginVerify = require('./handshake/loginVerify')
 
 const debugging = false
 
@@ -25,7 +25,7 @@ class Client extends Connection {
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
 
-    Encrypt(this, null, this.options)
+    KeyExchange(this, null, this.options)
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 

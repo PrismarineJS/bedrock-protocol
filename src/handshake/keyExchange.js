@@ -8,7 +8,8 @@ const curve = 'secp384r1'
 const pem = { format: 'pem', type: 'sec1' }
 const der = { format: 'der', type: 'spki' }
 
-function Encrypt (client, server, options) {
+function KeyExchange (client, server, options) {
+  // Generate a key pair at program start up
   client.ecdhKeyPair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
   client.publicKeyDER = client.ecdhKeyPair.publicKey.export(der)
   client.privateKeyPEM = client.ecdhKeyPair.privateKey.export(pem)
@@ -31,10 +32,9 @@ function Encrypt (client, server, options) {
     const secretHash = crypto.createHash('sha256')
     secretHash.update(SALT)
     secretHash.update(client.sharedSecret)
-    // console.log('[encrypt] Shared secret', client.sharedSecret)
 
     client.secretKeyBytes = secretHash.digest()
-    // console.log('[encrypt] Shared hash', client.secretKeyBytes)
+
     const token = JWT.sign({
       salt: toBase64(SALT),
       signedToken: client.clientX509
@@ -56,13 +56,14 @@ function Encrypt (client, server, options) {
       throw Error('Server did not return a valid JWT, cannot start encryption!')
     }
 
-    // TODO: Should we do some JWT signature validation here? Seems pointless
+    // No verification here, not needed
 
     const [header, payload] = jwt.split('.').map(k => Buffer.from(k, 'base64'))
     const head = JSON.parse(String(header))
     const body = JSON.parse(String(payload))
 
     const pubKeyDer = crypto.createPublicKey({ key: Buffer.from(head.x5u, 'base64'), ...der })
+
     // Shared secret from the client's public key + our private key
     client.sharedSecret = crypto.diffieHellman({ privateKey: client.ecdhKeyPair.privateKey, publicKey: pubKeyDer })
 
@@ -76,6 +77,7 @@ function Encrypt (client, server, options) {
     client.startEncryption(iv)
 
     // It works! First encrypted packet :)
+
     client.write('client_to_server_handshake', {})
     this.emit('join')
     client.status = ClientStatus.Initializing
@@ -89,4 +91,4 @@ function toBase64 (string) {
   return Buffer.from(string).toString('base64')
 }
 
-module.exports = { Encrypt }
+module.exports = { KeyExchange }

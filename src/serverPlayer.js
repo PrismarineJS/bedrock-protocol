@@ -3,9 +3,9 @@ const fs = require('fs')
 const Options = require('./options')
 const debug = require('debug')('minecraft-protocol')
 
-const { Encrypt } = require('./auth/encryption')
-const Login = require('./auth/login')
-const LoginVerify = require('./auth/loginVerify')
+const { KeyExchange } = require('./handshake/keyExchange')
+const Login = require('./handshake/login')
+const LoginVerify = require('./handshake/loginVerify')
 
 class Player extends Connection {
   constructor (server, connection) {
@@ -16,7 +16,7 @@ class Player extends Connection {
     this.connection = connection
     this.options = server.options
 
-    Encrypt(this, server, server.options)
+    KeyExchange(this, server, server.options)
     Login(this, server, server.options)
     LoginVerify(this, server, server.options)
 
