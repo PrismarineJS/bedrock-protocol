@@ -1,4 +1,4 @@
-# !StartDocs: Types
+!StartDocs: Types
 
 BehaviourPackInfos: []li16
    uuid: string
@@ -66,7 +66,7 @@ Blob:
    # Payload in it.
    payload: ByteArray
 
-BlockPalette: []varint
+BlockProperties: []varint
    name: string
    state: nbt
 
@@ -75,7 +75,7 @@ Itemstates: []varint
    runtime_id: li16
    component_based: bool
 
-# Start of item crap ...
+
 
 ItemExtraDataWithBlockingTick:
    has_nbt: lu16 =>
@@ -102,7 +102,7 @@ ItemExtraDataWithoutBlockingTick:
    can_place_on: ShortArray[]li32
    can_destroy: ShortArray[]li32
 
-# Same as below but without a "networkStackID" boolean ...
+# Same as below but without a "networkStackID" boolean
 ItemLegacy:
    network_id: zigzag32
    _: network_id?
@@ -139,8 +139,6 @@ Item:
          extra: network_id ?
             if 355: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
             default: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithoutBlockingTick" }]'
-
-# end of item crap
 
 vec3i:
    x: zigzag32
@@ -632,8 +630,7 @@ Recipes: []varint
          recipe_id: string
          width: zigzag32
          height: zigzag32
-         # todo: can this become
-         # RecipeIngredient[$height][$width] or RecipeIngredient[]$height[]$width ?
+         # 2D input array, size of width*height
          input: []$width
             _: RecipeIngredient[]$height
          output: ItemLegacy[]varint

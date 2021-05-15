@@ -212,7 +212,7 @@
         }
       ]
     ],
-    "BlockPalette": [
+    "BlockProperties": [
       "array",
       {
         "countType": "varint",
@@ -4287,8 +4287,8 @@
           "type": "zigzag32"
         },
         {
-          "name": "block_palette",
-          "type": "BlockPalette"
+          "name": "block_properties",
+          "type": "BlockProperties"
         },
         {
           "name": "itemstates",
@@ -5967,6 +5967,31 @@
             {
               "compareTo": "type",
               "fields": {
+                "show_bar": [
+                  "container",
+                  [
+                    {
+                      "name": "title",
+                      "type": "string"
+                    },
+                    {
+                      "name": "progress",
+                      "type": "lf32"
+                    },
+                    {
+                      "name": "screen_darkening",
+                      "type": "li16"
+                    },
+                    {
+                      "name": "color",
+                      "type": "varint"
+                    },
+                    {
+                      "name": "overlay",
+                      "type": "varint"
+                    }
+                  ]
+                ],
                 "register_player": [
                   "container",
                   [
@@ -5985,16 +6010,21 @@
                     }
                   ]
                 ],
-                "show": [
+                "set_bar_progress": [
+                  "container",
+                  [
+                    {
+                      "name": "progress",
+                      "type": "lf32"
+                    }
+                  ]
+                ],
+                "set_bar_title": [
                   "container",
                   [
                     {
                       "name": "title",
                       "type": "string"
-                    },
-                    {
-                      "name": "bar_progress",
-                      "type": "lf32"
                     }
                   ]
                 ],
@@ -6002,8 +6032,16 @@
                   "container",
                   [
                     {
-                      "name": "darkness_factor",
+                      "name": "screen_darkening",
                       "type": "li16"
+                    },
+                    {
+                      "name": "color",
+                      "type": "varint"
+                    },
+                    {
+                      "name": "overlay",
+                      "type": "varint"
                     }
                   ]
                 ],
@@ -6017,24 +6055,6 @@
                     {
                       "name": "overlay",
                       "type": "varint"
-                    }
-                  ]
-                ],
-                "set_bar_progress": [
-                  "container",
-                  [
-                    {
-                      "name": "bar_progress",
-                      "type": "lf32"
-                    }
-                  ]
-                ],
-                "set_bar_title": [
-                  "container",
-                  [
-                    {
-                      "name": "title",
-                      "type": "string"
                     }
                   ]
                 ]
