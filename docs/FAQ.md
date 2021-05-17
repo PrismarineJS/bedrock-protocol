@@ -5,3 +5,6 @@ This issue occurs due to loopback restrictions on Windows 10 UWP apps. To lift t
 ```ps
 CheckNetIsolation LoopbackExempt -a -n="Microsoft.MinecraftUWP_8wekyb3d8bbwe"
 ```
+## Kicked during login
+
+Some servers can kick you if you don't set `authTitle` as explained in the README. 

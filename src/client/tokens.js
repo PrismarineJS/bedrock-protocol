@@ -323,11 +323,7 @@ class XboxTokenManager {
       this.cache = {}
     }
 
-    this.headers = {
-      'Cache-Control': 'no-store, must-revalidate, no-cache',
-      'Accept-Encoding': 'gzip, deflate, compress',
-      'Accept-Language': 'en-US, en;q=0.9'
-    }
+    this.headers = { 'Cache-Control': 'no-store, must-revalidate, no-cache', 'x-xbl-contract-version': 1 }
   }
 
   getCachedUserToken () {
@@ -394,7 +390,7 @@ class XboxTokenManager {
     // Their backend servers use Windows epoch timestamps, account for that. The server is very picky,
     // bad percision or wrong epoch may fail the request.
     const windowsTimestamp = (BigInt((Date.now() / 1000) | 0) + 11644473600n) * 10000000n
-    // Similar to the C# .PathAndQuery API, only the /uri?and-query-string
+    // Only the /uri?and-query-string
     const pathAndQuery = new URL(url).pathname
 
     // Allocate the buffer for signature, TS, path, tokens and payload and NUL termination
@@ -453,11 +449,7 @@ class XboxTokenManager {
     const body = JSON.stringify(payload)
     const signature = this.sign(authConstants.XstsAuthorize, '', body).toString('base64')
 
-    const headers = {
-      ...this.headers,
-      'x-xbl-contract-version': 1,
-      Signature: signature
-    }
+    const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(authConstants.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
     const xsts = {
@@ -494,11 +486,7 @@ class XboxTokenManager {
 
     const signature = this.sign(authConstants.XboxDeviceAuth, '', body).toString('base64')
 
-    const headers = {
-      ...this.headers,
-      'x-xbl-contract-version': 1,
-      Signature: signature
-    }
+    const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(authConstants.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
     debug('Xbox Device Token', ret)

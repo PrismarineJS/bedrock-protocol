@@ -11,7 +11,7 @@ const { LiveTokenManager, MsaTokenManager, XboxTokenManager, MinecraftTokenManag
 const msalConfig = {
   auth: {
     // the minecraft client:
-    // clientId: "00000000441cc96b",
+    // clientId: "000000004C12AE6F",
     clientId: '389b1b32-b5d5-43b2-bddc-84ce938d6737', // token from https://github.com/microsoft/Office365APIEditor
     authority: 'https://login.microsoftonline.com/consumers'
   }
@@ -36,7 +36,7 @@ class MsAuthFlow {
     this.codeCallback = codeCallback
   }
 
-  async initTokenCaches (username, cacheDir) {
+  initTokenCaches (username, cacheDir) {
     const hash = sha1(username).substr(0, 6)
 
     let cachePath = cacheDir || mcDefaultFolderPath
@@ -57,7 +57,7 @@ class MsAuthFlow {
       bed: path.join(cachePath, `./${hash}_bed-cache.json`)
     }
 
-    if (this.options.authTitle) { // Login with login.live.com (no refresh)
+    if (this.options.authTitle) { // Login with login.live.com
       const scopes = ['service::user.auth.xboxlive.com::MBI_SSL']
       this.msa = new LiveTokenManager(this.options.authTitle, scopes, cachePaths.live)
     } else { // Login with microsoftonline.com (with refresh)
