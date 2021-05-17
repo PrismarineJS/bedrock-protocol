@@ -63,15 +63,10 @@ class LiveTokenManager {
       credentials: 'include' // This cookie handler does not work on node-fetch ...
     }
 
-    // console.debug('Refresh', codeRequest)
-
     const token = await fetch(authConstants.LiveTokenRequest, codeRequest).then(checkStatus)
     this.updateCachce(token)
     return token
   }
-
-  // minecraft-protocol [msa] device_code resp
-  // dc = { "authority": "https://login.live.com/", "uniqueId": "", "tenantId": "", "scopes": ["service::user.auth.xboxlive.com::MBI_SSL"], "account": null, "idToken": "", "idTokenClaims": {}, "accessToken": "==", "fromCache": false, "expiresOn": "2021-05-17T22:47:59.000Z", "extExpiresOn": "2021-05-17T22:47:59.000Z", "familyId": "", "tokenType": "bearer", "state": "", "cloudGraphHostName": "", "msGraphHost": "" } + 31s
 
   getAccessToken () {
     const token = this.cache.token
@@ -114,7 +109,7 @@ class LiveTokenManager {
       .then(res => {
         if (res.status !== 200) {
           res.text().then(console.warn)
-          throw Error('Failed to request device code')
+          throw Error('Failed to request live.com device code')
         }
         for (const cookie of Object.values(res.headers.raw()['set-cookie'])) {
           const [keyval] = cookie.split(';')
@@ -129,10 +124,6 @@ class LiveTokenManager {
       })
     const expireTime = acquireTime + (res.expires_in * 1000) - 100 /* for safety */
 
-    // console.log('Expire time', acquireTime, expireTime, res)
-    // console.log('Cookies', cookies)
-
-    // process.exit(1)
     this.polling = true
     while (this.polling && expireTime > Date.now()) {
       await new Promise(resolve => setTimeout(resolve, res.interval * 1000))
@@ -147,11 +138,9 @@ class LiveTokenManager {
             client_id: this.clientId,
             device_code: res.device_code,
             grant_type: 'urn:ietf:params:oauth:grant-type:device_code'
-
-            // client_id=00000000441cc96b&device_code=DcQSGqjIK4on79l9ugZHZG1xwnbSta2jJJowFCbLyLreMmbJKUNHjwgPAxGyKINPm4Lk6tj8W4cS%21Ln4OWE%21xwrcRNkKs1ek8oxJ%21v%2AdC08ARvGVPB%2ASia3LtCHeznJzAbXLIzgZmTWqUnczM77%2Ay8Y%24&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code
           }).toString()
         }
-        console.debug('Ver', authConstants.LiveTokenRequest, verifi)
+
         const token = await fetch(authConstants.LiveTokenRequest + '?client_id=' + this.clientId, verifi)
           .then(res => res.json()).then(res => {
             if (res.error) {
@@ -335,7 +324,6 @@ class XboxTokenManager {
     }
 
     this.headers = {
-      // 'User-Agent': 'MCPE/Android',
       'Cache-Control': 'no-store, must-revalidate, no-cache',
       'Accept-Encoding': 'gzip, deflate, compress',
       'Accept-Language': 'en-US, en;q=0.9'
@@ -408,7 +396,6 @@ class XboxTokenManager {
     const windowsTimestamp = (BigInt((Date.now() / 1000) | 0) + 11644473600n) * 10000000n
     // Similar to the C# .PathAndQuery API, only the /uri?and-query-string
     const pathAndQuery = new URL(url).pathname
-    // console.log('url', url, pathAndQuery, authorizationToken)
 
     // Allocate the buffer for signature, TS, path, tokens and payload and NUL termination
     const allocSize = /* sig */ 5 + /* ts */ 9 + /* POST */ 5 + pathAndQuery.length + 1 + authorizationToken.length + 1 + payload.length + 1
@@ -421,18 +408,14 @@ class XboxTokenManager {
     buf.writeStringNT(pathAndQuery)
     buf.writeStringNT(authorizationToken)
     buf.writeStringNT(payload)
-    // Get the signature from the payload
-    // console.log('signing', buf.toBuffer().toString('hex'), allocSize, buf.toBuffer().byteLength, allocSize === buf.toBuffer().byteLength)
-    const signature = crypto.sign('SHA256', buf.toBuffer(), { key: this.key.privateKey, dsaEncoding: 'ieee-p1363' })
-    // console.log('signed', signature, signature.length, this.key.privateKey)
 
-    const header = new SmartBuffer() // SmartBuffer.fromSize(signature.length + 12)
+    // Get the signature from the payload
+    const signature = crypto.sign('SHA256', buf.toBuffer(), { key: this.key.privateKey, dsaEncoding: 'ieee-p1363' })
+
+    const header = SmartBuffer.fromSize(signature.length + 12)
     header.writeInt32BE(1) // Policy Version
     header.writeBigUInt64BE(windowsTimestamp)
     header.writeBuffer(signature) // Add signature at end of header
-
-    // console.log('Done', windowsTimestamp, pathAndQuery, authorizationToken, payload)
-    // console.log('Done', header.toBuffer().length)
 
     return header.toBuffer()
   }
@@ -443,7 +426,7 @@ class XboxTokenManager {
   async getXSTSToken (xblUserToken, deviceToken, titleToken) {
     if (deviceToken && titleToken) return this.getXSTSTokenWithTitle(xblUserToken, deviceToken, titleToken)
 
-    debug('[xbl] LEGACY obtaining xsts token with xbox user token', xblUserToken.Token)
+    debug('[xbl] obtaining xsts token with xbox user token (with XboxReplay)', xblUserToken.Token)
     const xsts = await XboxLiveAuth.exchangeUserTokenForXSTSIdentity(xblUserToken.Token, { XSTSRelyingParty: this.relyingParty, raw: false })
     this.setCachedXstsToken(xsts)
     debug('[xbl] xsts', xsts)
@@ -475,12 +458,6 @@ class XboxTokenManager {
       'x-xbl-contract-version': 1,
       Signature: signature
     }
-
-    // const xsts = await XboxLiveAuth.exchangeTokensForXSTSIdentity(
-    //   { userToken: xblUserToken.Token, deviceToken, titleToken }, { XSTSRelyingParty: this.relyingParty, raw: false }
-    // )
-
-    // debug('XSTS payload', authConstants.XstsAuthorize, payload, headers)
 
     const ret = await fetch(authConstants.XstsAuthorize, { method: 'post', headers, body }).then(checkStatus)
     const xsts = {
@@ -523,22 +500,18 @@ class XboxTokenManager {
       Signature: signature
     }
 
-    // console.log('Xbox Device payload', authConstants.XboxDeviceAuth, payload, headers)
     const ret = await fetch(authConstants.XboxDeviceAuth, { method: 'post', headers, body }).then(checkStatus)
-    // console.log('Xbox Device Token', ret)
-
+    debug('Xbox Device Token', ret)
     return ret.Token
   }
 
+  // This *only* works with live.com auth
   async getTitleToken (msaAccessToken, deviceToken) {
-    // const azure = true // we use an azure token
-    // const prefix = azure ? 'd' : 't'
     const payload = {
       Properties: {
         AuthMethod: 'RPS',
         DeviceToken: deviceToken,
         RpsTicket: 't=' + msaAccessToken,
-        // `${prefix}=${msaAccessToken}`,
         SiteName: 'user.auth.xboxlive.com',
         ProofKey: this.jwk
       },
@@ -553,7 +526,7 @@ class XboxTokenManager {
       'x-xbl-contract-version': 1,
       Signature: signature
     }
-    // console.log('Xbox Title Req', payload, headers)
+
     const ret = await fetch(authConstants.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
     debug('Xbox Title Token', ret)
     return ret.Token

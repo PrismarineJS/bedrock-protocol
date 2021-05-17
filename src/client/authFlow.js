@@ -4,16 +4,6 @@ const fs = require('fs')
 const debug = require('debug')('minecraft-protocol')
 const mcDefaultFolderPath = require('minecraft-folder-path')
 const authConstants = require('./authConstants')
-// const msal = require('@azure/msal-common')
-// console.log(msal.Authority.prototype)
-// const request = msal.DeviceCodeClient.prototype.executePostRequestToDeviceCodeEndpoint
-// msal.DeviceCodeClient.prototype.executePostRequestToDeviceCodeEndpoint = function(e, q, ...args) {
-//   return request.call(this, 'https://login.live.com/oauth20_connect.srf', q + '&response_type=device_code&scope=XboxLive.signin', ...args)
-// }
-
-// Object.defineProperty(msal.Authority.prototype, 'deviceCodeEndpoint', { get: () => 'https://login.live.com/oauth20_connect.srf' })
-// msal.Authority.prototype.deviceCodeEndpoint = 'https://login.live.com/oauth20_connect.srf'
-// console.log(msal.Authority.prototype)
 const { LiveTokenManager, MsaTokenManager, XboxTokenManager, MinecraftTokenManager } = require('./tokens')
 
 // Initialize msal
@@ -24,15 +14,10 @@ const msalConfig = {
     // clientId: "00000000441cc96b",
     clientId: '389b1b32-b5d5-43b2-bddc-84ce938d6737', // token from https://github.com/microsoft/Office365APIEditor
     authority: 'https://login.microsoftonline.com/consumers'
-
-    // authority: 'https://login.live.com',
-    // knownAuthorities: ["login.live.com"],
-    // protocolMode: "OIDC"
   }
 }
 
 async function retry (methodFn, beforeRetry, times) {
-  times = 1
   while (times--) {
     if (times !== 0) {
       try { return await methodFn() } catch (e) { debug(e) }
@@ -47,7 +32,7 @@ async function retry (methodFn, beforeRetry, times) {
 class MsAuthFlow {
   constructor (username, cacheDir, options = {}, codeCallback) {
     this.options = options
-    this.initTokenCaches(username + '69', cacheDir)
+    this.initTokenCaches(username, cacheDir)
     this.codeCallback = codeCallback
   }
 
@@ -73,7 +58,6 @@ class MsAuthFlow {
     }
 
     if (this.options.authTitle) { // Login with login.live.com (no refresh)
-      // const scopes = ['urn:ietf:params:oauth:grant-type:device_code']
       const scopes = ['service::user.auth.xboxlive.com::MBI_SSL']
       this.msa = new LiveTokenManager(this.options.authTitle, scopes, cachePaths.live)
     } else { // Login with microsoftonline.com (with refresh)
@@ -115,7 +99,7 @@ class MsAuthFlow {
       if (ret.account) {
         console.info(`[msa] Signed in as ${ret.account.username}`)
       } else { // We don't get extra account data here per scope
-        console.info('[msa] Signed in with Xbox Live')
+        console.info('[msa] Signed in with Microsoft')
       }
 
       debug('[msa] got auth result', ret)
@@ -136,8 +120,6 @@ class MsAuthFlow {
         if (this.options.authTitle) {
           const deviceToken = await this.xbl.getDeviceToken({ DeviceType: 'Nintendo', Version: '0.0.0' })
           const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
-          console.assert(deviceToken)
-          console.assert(titleToken)
           const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken)
           return xsts
         } else {
