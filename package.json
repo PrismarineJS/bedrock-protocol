@@ -21,15 +21,17 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@azure/msal-node": "^1.0.0-beta.6",
+    "@azure/msal-node": "^1.1.0",
     "@xboxreplay/xboxlive-auth": "^3.3.3",
     "debug": "^4.3.1",
+    "jose-node-cjs-runtime": "^3.12.1",
     "jsonwebtoken": "^8.5.1",
     "jsp-raknet": "^2.1.0",
     "minecraft-folder-path": "^1.1.0",
     "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
     "protodef": "extremeheat/node-protodef#patch-1",
+    "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
   },
   "optionalDependencies": {
