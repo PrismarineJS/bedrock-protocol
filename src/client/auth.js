@@ -65,8 +65,6 @@ async function authenticatePassword (client, options) {
  * @param {object} options - Client Options
  */
 async function authenticateDeviceCode (client, options) {
-  // options.authTitle = '00000000441cc96b'
-
   try {
     const flow = new MsAuthFlow(options.username, options.profilesFolder, options, options.onMsaCode)
 
