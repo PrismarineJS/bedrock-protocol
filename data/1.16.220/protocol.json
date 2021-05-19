@@ -422,7 +422,7 @@
                       {
                         "compareTo": "network_id",
                         "fields": {
-                          "355": [
+                          "\"||global.ShieldItemID||355||\"": [
                             "encapsulated",
                             {
                               "lengthType": "varint",
@@ -502,7 +502,7 @@
                       {
                         "compareTo": "network_id",
                         "fields": {
-                          "355": [
+                          "\"||global.ShieldItemID||355||\"": [
                             "encapsulated",
                             {
                               "lengthType": "varint",

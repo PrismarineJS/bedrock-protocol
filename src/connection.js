@@ -113,7 +113,11 @@ class Connection extends EventEmitter {
 
   sendMCPE (buffer, immediate) {
     if (this.connection.connected === false || this.status === ClientStatus.Disconnected) return
-    this.connection.sendReliable(buffer, immediate)
+    try {
+      this.connection.sendReliable(buffer, immediate)
+    } catch (e) {
+      debug('while sending to', this.connection, e)
+    }
   }
 
   // These are callbacks called from encryption.js

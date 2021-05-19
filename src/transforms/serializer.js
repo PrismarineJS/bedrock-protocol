@@ -11,6 +11,18 @@ class Parser extends FullPacketParser {
       throw e
     }
   }
+
+  verify (deserialized, serializer) {
+    const { name, params } = deserialized.data
+    const oldBuffer = deserialized.fullBuffer
+    const newBuffer = serializer.createPacketBuffer({ name, params })
+    if (!newBuffer.equals(oldBuffer)) {
+      console.warn('New', newBuffer.toString('hex'))
+      console.warn('Old', oldBuffer.toString('hex'))
+      console.log('Failed to re-encode', name, params)
+      process.exit(1)
+    }
+  }
 }
 
 // Compiles the ProtoDef schema at runtime

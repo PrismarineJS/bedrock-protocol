@@ -2,7 +2,6 @@ const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { RakClient } = require('./rak')
 const { serialize } = require('./datatypes/util')
-const fs = require('fs')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
@@ -152,33 +151,16 @@ class Client extends Connection {
     this.status = ClientStatus.Disconnected
   }
 
-  tryRencode (name, params, actual) {
-    const packet = this.serializer.createPacketBuffer({ name, params })
-
-    console.assert(packet.equals(actual))
-    if (!packet.equals(actual)) {
-      const ours = packet.toString('hex').match(/.{1,16}/g).join('\n')
-      const theirs = actual.toString('hex').match(/.{1,16}/g).join('\n')
-
-      fs.writeFileSync('ours.txt', ours)
-      fs.writeFileSync('theirs.txt', theirs)
-      fs.writeFileSync('ours.json', serialize(params))
-      fs.writeFileSync('theirs.json', serialize(this.deserializer.parsePacketBuffer(packet).data.params))
-
-      throw new Error(name + ' Packet comparison failed!')
-    }
-  }
-
   readPacket (packet) {
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
-    this.inLog('-> C', pakData.name/*, serialize(pakData.params).slice(0, 100) */)
+    this.inLog('-> C', pakData.name, this.options.loggging ? serialize(pakData.params) : '')
     this.emit('packet', des)
 
     if (debugging) {
       // Packet verifying (decode + re-encode + match test)
       if (pakData.name) {
-        this.tryRencode(pakData.name, pakData.params, packet)
+        this.deserializer.verify(packet, this.serializer)
       }
     }
 
@@ -193,6 +175,11 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
+        this.startGameData.itemstates.forEach(state => {
+          if (state.name === 'minecraft:shield') {
+            global.ShieldItemID = state.runtime_id
+          }
+        })
         break
       case 'play_status':
         if (this.status === ClientStatus.Authenticating) {
