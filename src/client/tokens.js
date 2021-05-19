@@ -155,7 +155,6 @@ class LiveTokenManager {
           })
         if (!token) continue
         this.updateCachce(token)
-        console.log('token', token)
         this.polling = false
         return { accessToken: token.access_token }
       } catch (e) {
@@ -509,11 +508,7 @@ class XboxTokenManager {
     const body = JSON.stringify(payload)
     const signature = this.sign(authConstants.XboxTitleAuth, '', body).toString('base64')
 
-    const headers = {
-      ...this.headers,
-      'x-xbl-contract-version': 1,
-      Signature: signature
-    }
+    const headers = { ...this.headers, Signature: signature }
 
     const ret = await fetch(authConstants.XboxTitleAuth, { method: 'post', headers, body }).then(checkStatus)
     debug('Xbox Title Token', ret)

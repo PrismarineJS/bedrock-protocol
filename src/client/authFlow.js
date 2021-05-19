@@ -60,7 +60,7 @@ class MsAuthFlow {
     if (this.options.authTitle) { // Login with login.live.com
       const scopes = ['service::user.auth.xboxlive.com::MBI_SSL']
       this.msa = new LiveTokenManager(this.options.authTitle, scopes, cachePaths.live)
-    } else { // Login with microsoftonline.com (with refresh)
+    } else { // Login with microsoftonline.com
       const scopes = ['XboxLive.signin', 'offline_access']
       this.msa = new MsaTokenManager(msalConfig, scopes, cachePaths.msa)
     }
