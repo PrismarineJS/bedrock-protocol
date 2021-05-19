@@ -712,35 +712,6 @@ PlayerRecords:
    verified: type ?
       if add: bool[]$records_count
 
-ScoreEntries:
-   type: u8 =>
-      0: change
-      1: remove
-   entries: []varint
-      scoreboard_id: zigzag64
-      objective_name: string
-      score: li32
-      _: type?
-         if remove:
-            entry_type: i8 =>
-               1: player
-               2: entity
-               3: fake_player
-            entity_unique_id: entry_type?
-               if player or entity: zigzag64
-            custom_name: entry_type?
-               if fake_player: string
-
-ScoreboardIdentityEntries:
-   type: i8 =>
-      0: TYPE_REGISTER_IDENTITY
-      1: TYPE_CLEAR_IDENTITY
-   entries: []varint
-      scoreboard_id: zigzag64
-      entity_unique_id: type ?
-         if TYPE_REGISTER_IDENTITY: zigzag64
-         default: void
-
 Enchant:
    id: u8
    level: u8
