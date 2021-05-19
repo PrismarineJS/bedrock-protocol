@@ -143,6 +143,12 @@ class MsAuthFlow {
         const xsts = await this.getXboxToken()
         debug('[xbl] xsts data', xsts)
         const token = await this.mca.getAccessToken(publicKey, xsts)
+        // If we want to auth with a title ID, make sure there's a TitleID in the response
+        const body = JSON.parse(Buffer.from(token.chain[1].split('.')[1], 'base64').toString())
+        console.log(this.options.authTitle)
+        if (!body.extraData.titleId && this.options.authTitle) {
+          throw Error('missing titleId in response')
+        }
         return token.chain
       }, () => { this.xbl.forceRefresh = true }, 2)
     }
