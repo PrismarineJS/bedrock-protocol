@@ -66,7 +66,7 @@ async function authenticatePassword (client, options) {
  */
 async function authenticateDeviceCode (client, options) {
   try {
-    const flow = new MsAuthFlow(options.username, options.profilesFolder, options.onMsaCode)
+    const flow = new MsAuthFlow(options.username, options.profilesFolder, options, options.onMsaCode)
 
     const chain = await flow.getMinecraftToken(client.clientX509)
     // console.log('Chain', chain)

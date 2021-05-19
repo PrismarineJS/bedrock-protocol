@@ -65,7 +65,9 @@ const bedrock = require('bedrock-protocol')
 const server = new bedrock.createServer({
   host: '0.0.0.0',       // optional. host to bind as.
   port: 19132,           // optional
-  version: '1.16.220'    // optional. The server version, latest if not specified. 
+  version: '1.16.220',   // optional. The server version, latest if not specified. 
+  // Optional for some servers which verify the title ID:
+  // authTitle: bedrock.title.MinecraftNintendoSwitch
 })
 
 server.on('connect', client => {

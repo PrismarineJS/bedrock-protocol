@@ -9,6 +9,7 @@ const { Server } = require('./src/server')
 const { Relay } = require('./src/relay')
 const { createClient, ping } = require('./src/createClient')
 const { createServer } = require('./src/createServer')
+const Title = require('./src/client/titles')
 
 module.exports = {
   Client,
@@ -16,5 +17,6 @@ module.exports = {
   Relay,
   createClient,
   ping,
-  createServer
+  createServer,
+  title: Title
 }

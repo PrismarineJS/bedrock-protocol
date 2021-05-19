@@ -4,7 +4,7 @@ const fs = require('fs')
 const debug = require('debug')('minecraft-protocol')
 const mcDefaultFolderPath = require('minecraft-folder-path')
 const authConstants = require('./authConstants')
-const { MsaTokenManager, XboxTokenManager, MinecraftTokenManager } = require('./tokens')
+const { LiveTokenManager, MsaTokenManager, XboxTokenManager, MinecraftTokenManager } = require('./tokens')
 
 // Initialize msal
 // Docs: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-common/docs/request.md#public-apis-1
@@ -30,7 +30,8 @@ async function retry (methodFn, beforeRetry, times) {
 }
 
 class MsAuthFlow {
-  constructor (username, cacheDir, codeCallback) {
+  constructor (username, cacheDir, options = {}, codeCallback) {
+    this.options = options
     this.initTokenCaches(username, cacheDir)
     this.codeCallback = codeCallback
   }
@@ -50,14 +51,22 @@ class MsAuthFlow {
     }
 
     const cachePaths = {
+      live: path.join(cachePath, `./${hash}_live-cache.json`),
       msa: path.join(cachePath, `./${hash}_msa-cache.json`),
       xbl: path.join(cachePath, `./${hash}_xbl-cache.json`),
       bed: path.join(cachePath, `./${hash}_bed-cache.json`)
     }
 
-    const scopes = ['XboxLive.signin', 'offline_access']
-    this.msa = new MsaTokenManager(msalConfig, scopes, cachePaths.msa)
-    this.xbl = new XboxTokenManager(authConstants.XSTSRelyingParty, cachePaths.xbl)
+    if (this.options.authTitle) { // Login with login.live.com
+      const scopes = ['service::user.auth.xboxlive.com::MBI_SSL']
+      this.msa = new LiveTokenManager(this.options.authTitle, scopes, cachePaths.live)
+    } else { // Login with microsoftonline.com
+      const scopes = ['XboxLive.signin', 'offline_access']
+      this.msa = new MsaTokenManager(msalConfig, scopes, cachePaths.msa)
+    }
+
+    const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' })
+    this.xbl = new XboxTokenManager(authConstants.XSTSRelyingParty, keyPair, cachePaths.xbl)
     this.mca = new MinecraftTokenManager(cachePaths.bed)
   }
 
@@ -87,7 +96,11 @@ class MsAuthFlow {
         if (this.codeCallback) this.codeCallback(response)
       })
 
-      console.info(`[msa] Signed in as ${ret.account.username}`)
+      if (ret.account) {
+        console.info(`[msa] Signed in as ${ret.account.username}`)
+      } else { // We don't get extra account data here per scope
+        console.info('[msa] Signed in with Microsoft')
+      }
 
       debug('[msa] got auth result', ret)
       return ret.accessToken
@@ -96,15 +109,23 @@ class MsAuthFlow {
 
   async getXboxToken () {
     if (await this.xbl.verifyTokens()) {
-      debug('[xbl] Using existing tokens')
+      debug('[xbl] Using existing XSTS token')
       return this.xbl.getCachedXstsToken().data
     } else {
       debug('[xbl] Need to obtain tokens')
       return await retry(async () => {
         const msaToken = await this.getMsaToken()
-        const ut = await this.xbl.getUserToken(msaToken)
-        const xsts = await this.xbl.getXSTSToken(ut)
-        return xsts
+        const ut = await this.xbl.getUserToken(msaToken, !this.options.authTitle)
+
+        if (this.options.authTitle) {
+          const deviceToken = await this.xbl.getDeviceToken({ DeviceType: 'Nintendo', Version: '0.0.0' })
+          const titleToken = await this.xbl.getTitleToken(msaToken, deviceToken)
+          const xsts = await this.xbl.getXSTSToken(ut, deviceToken, titleToken)
+          return xsts
+        } else {
+          const xsts = await this.xbl.getXSTSToken(ut)
+          return xsts
+        }
       }, () => { this.msa.forceRefresh = true }, 2)
     }
   }
@@ -122,6 +143,12 @@ class MsAuthFlow {
         const xsts = await this.getXboxToken()
         debug('[xbl] xsts data', xsts)
         const token = await this.mca.getAccessToken(publicKey, xsts)
+        // If we want to auth with a title ID, make sure there's a TitleID in the response
+        const body = JSON.parse(Buffer.from(token.chain[1].split('.')[1], 'base64').toString())
+        console.log(this.options.authTitle)
+        if (!body.extraData.titleId && this.options.authTitle) {
+          throw Error('missing titleId in response')
+        }
         return token.chain
       }, () => { this.xbl.forceRefresh = true }, 2)
     }

@@ -3,6 +3,8 @@ import EventEmitter from "events"
 declare module "bedrock-protocol" {
   type Version = '1.16.220' | '1.16.210' | '1.16.201'
 
+  enum title { MinecraftNintendoSwitch, MinecraftJava }
+
   export interface Options {
     // The string version to start the client or server as
     version: number,

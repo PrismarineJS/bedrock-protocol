@@ -13,6 +13,7 @@ Returns a `Client` instance and connects to the server.
 | version     | *optional* |  Version to connect as. <br/>(Future feature, see [#69][1]) If not specified, should automatically match server version. <br/>(Current feature) Defaults to latest version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Conditional | Required if `offline` set to true : Username to connect to server as.     |
+| authTitle   | *optional* | The title ID to connect as, see the README for usage.     |
 | connectTimeout | *optional* | default to **9000ms**. How long to wait in milliseconds while trying to connect to server. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
