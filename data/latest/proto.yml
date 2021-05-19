@@ -1871,7 +1871,7 @@ packet_set_score:
       objective_name: string
       score: li32
       _: ../action ?
-         if remove:
+         if change:
             entry_type: i8 =>
                1: player
                2: entity

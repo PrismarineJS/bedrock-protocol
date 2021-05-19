@@ -6874,52 +6874,55 @@
                         "fields": {
                           "remove": [
                             "container",
-                            [
-                              {
-                                "name": "entry_type",
-                                "type": [
-                                  "mapper",
-                                  {
-                                    "type": "i8",
-                                    "mappings": {
-                                      "1": "player",
-                                      "2": "entity",
-                                      "3": "fake_player"
-                                    }
-                                  }
-                                ]
-                              },
-                              {
-                                "name": "entity_unique_id",
-                                "type": [
-                                  "switch",
-                                  {
-                                    "compareTo": "entry_type",
-                                    "fields": {
-                                      "player": "zigzag64",
-                                      "entity": "zigzag64"
-                                    },
-                                    "default": "void"
-                                  }
-                                ]
-                              },
-                              {
-                                "name": "custom_name",
-                                "type": [
-                                  "switch",
-                                  {
-                                    "compareTo": "entry_type",
-                                    "fields": {
-                                      "fake_player": "string"
-                                    },
-                                    "default": "void"
-                                  }
-                                ]
-                              }
-                            ]
+                            []
                           ]
                         },
-                        "default": "void"
+                        "default": [
+                          "container",
+                          [
+                            {
+                              "name": "entry_type",
+                              "type": [
+                                "mapper",
+                                {
+                                  "type": "i8",
+                                  "mappings": {
+                                    "1": "player",
+                                    "2": "entity",
+                                    "3": "fake_player"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "name": "entity_unique_id",
+                              "type": [
+                                "switch",
+                                {
+                                  "compareTo": "entry_type",
+                                  "fields": {
+                                    "player": "zigzag64",
+                                    "entity": "zigzag64"
+                                  },
+                                  "default": "void"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "custom_name",
+                              "type": [
+                                "switch",
+                                {
+                                  "compareTo": "entry_type",
+                                  "fields": {
+                                    "fake_player": "string"
+                                  },
+                                  "default": "void"
+                                }
+                              ]
+                            }
+                          ]
+                        ]
                       }
                     ]
                   }
