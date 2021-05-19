@@ -1859,10 +1859,10 @@ packet_set_display_objective:
 packet_set_score:
    !id: 0x6c
    !bound: client
-	# ActionType is the type of the action to execute upon the scoreboard with the entries that the packet
-	# has. If ActionType is ScoreboardActionModify, all entries will be added to the scoreboard if not yet
-	# present, or modified if already present. If set to ScoreboardActionRemove, all scoreboard entries set
-	# will be removed from the scoreboard.
+   # ActionType is the type of the action to execute upon the scoreboard with the entries that the packet
+   # has. If ActionType is ScoreboardActionModify, all entries will be added to the scoreboard if not yet
+   # present, or modified if already present. If set to ScoreboardActionRemove, all scoreboard entries set
+   # will be removed from the scoreboard.
    action: u8 =>
       0: change
       1: remove
