@@ -1,3 +1,11 @@
+## 3.2.0
+
+* Fix empty chunks on proxy spawn (#89)
+* Send skin data to server (#88) 
+* Support xbox title + live.com auth (#86)
+* Protocol updates and fixes
+* Fix third party servers, optional client encryption (#83)
+
 ## 3.1.0
 * Add support for 1.16
 * New docs and examples
