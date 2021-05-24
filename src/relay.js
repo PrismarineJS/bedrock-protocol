@@ -31,6 +31,7 @@ class RelayPlayer extends Player {
     this.outLog = this.downOutLog
     this.inLog = this.downInLog
     this.chunkSendCache = []
+    this.respawnPacket = []
   }
 
   // Called when we get a packet from backend server (Backend -> PROXY -> Client)
@@ -54,14 +55,21 @@ class RelayPlayer extends Player {
     // If we're sending a chunk, but player isn't yet initialized, wait until it is.
     // This is wrong and should not be an issue to send chunks before the client
     // is in the world; need to investigate further, but for now it's fine.
-    if (name === 'level_chunk' && this.status !== 3) {
-      this.chunkSendCache.push([name, params])
-      return
-    } else if (this.status === 3 && this.chunkSendCache.length) {
-      for (const chunk of this.chunkSendCache) {
-        this.queue(...chunk)
+    if (this.status !== 3) {
+      if (name === 'level_chunk') {
+        this.chunkSendCache.push([name, params])
+        return
       }
-      this.chunkSendCache = []
+      if (name === 'respawn') this.respawnPacket.push([name, params])
+    } else if (this.status === 3 && this.chunkSendCache.length) {
+        for (const chunk of this.chunkSendCache) {
+          this.queue(...chunk)
+        }
+        for (const rp of this.respawnPacket) {
+          this.queue(...rp)
+        }
+        this.chunkSendCache = []
+        this.respawnPacket = []
     }
     this.queue(name, params)
   }

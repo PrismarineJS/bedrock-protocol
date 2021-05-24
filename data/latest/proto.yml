@@ -923,7 +923,15 @@ packet_set_spawn_position:
 packet_animate:
    !id: 0x2c
    !bound: both
-   action_id: zigzag32
+   action_id: zigzag32 =>
+      0: none
+      1: swing_arm
+      2: unknown
+      3: wake_up
+      4: critical_hit
+      5: magic_critical_hit
+      6: row_right
+      7: row_left
    runtime_entity_id: varint64
 
 packet_respawn:
