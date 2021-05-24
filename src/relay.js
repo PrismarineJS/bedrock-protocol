@@ -30,6 +30,7 @@ class RelayPlayer extends Player {
 
     this.outLog = this.downOutLog
     this.inLog = this.downInLog
+    this.chunkSendCache = []
   }
 
   // Called when we get a packet from backend server (Backend -> PROXY -> Client)
@@ -45,16 +46,23 @@ class RelayPlayer extends Player {
     if (name === 'play_status' && params.status === 'login_success') return // We already sent this, this needs to be sent ASAP or client will disconnect
 
     if (debugging) { // some packet encode/decode testing stuff
-      const rpacket = this.server.serializer.createPacketBuffer({ name, params })
-      if (!rpacket.equals(packet)) {
-        console.warn('New', rpacket.toString('hex'))
-        console.warn('Old', packet.toString('hex'))
-        console.log('Failed to re-encode', name, params)
-        process.exit(1)
-      }
+      this.server.deserializer.verify(des, this.server.serializer)
     }
 
     this.emit('clientbound', des.data)
+
+    // If we're sending a chunk, but player isn't yet initialized, wait until it is.
+    // This is wrong and should not be an issue to send chunks before the client
+    // is in the world; need to investigate further, but for now it's fine.
+    if (name === 'level_chunk' && this.status !== 3) {
+      this.chunkSendCache.push([name, params])
+      return
+    } else if (this.status === 3 && this.chunkSendCache.length) {
+      for (const chunk of this.chunkSendCache) {
+        this.queue(...chunk)
+      }
+      this.chunkSendCache = []
+    }
     this.queue(name, params)
   }
 
@@ -82,32 +90,35 @@ class RelayPlayer extends Player {
 
   // Called when the server gets a packet from the downstream player (Client -> PROXY -> Backend)
   readPacket (packet) {
-    if (this.startRelaying) { // The downstream client conn is established & we got a packet to send to upstream server
-      if (!this.upstream) { // Upstream is still connecting/handshaking
+    // The downstream client conn is established & we got a packet to send to upstream server
+    if (this.startRelaying) {
+      // Upstream is still connecting/handshaking
+      if (!this.upstream) {
         this.downInLog('Got downstream connected packet but upstream is not connected yet, added to q', this.upQ.length)
         this.upQ.push(packet) // Put into a queue
         return
       }
-      this.flushUpQueue() // Send queued packets
+
+      // Send queued packets
+      this.flushUpQueue()
       this.downInLog('recv', packet)
+
       // TODO: If we fail to parse a packet, proxy it raw and log an error
       const des = this.server.deserializer.parsePacketBuffer(packet)
 
       if (debugging) { // some packet encode/decode testing stuff
-        const rpacket = this.server.serializer.createPacketBuffer(des.data)
-        if (!rpacket.equals(packet)) {
-          console.warn('New', rpacket.toString('hex'))
-          console.warn('Old', packet.toString('hex'))
-          console.log('Failed to re-encode', des.data)
-          process.exit(1)
-        }
+        this.server.deserializer.verify(des, this.server.serializer)
       }
 
       this.emit('serverbound', des.data)
 
       switch (des.data.name) {
         case 'client_cache_status':
+          // Force the chunk cache off.
           this.upstream.queue('client_cache_status', { enabled: false })
+          break
+        case 'set_local_player_as_initialized':
+          this.status = 3
           break
         default:
           // Emit the packet as-is back to the upstream server
@@ -149,6 +160,10 @@ class Relay extends Server {
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
     client.once('join', () => { // Intercept once handshaking done
+      // Tell the server to disable chunk cache for this connection as a client.
+      // Wait a bit for the server to ack and process, the continue with proxying
+      // otherwise the player can get stuck in an empty world.
+      client.write('client_cache_status', { enabled: false })
       ds.upstream = client
       ds.flushUpQueue()
       this.conLog('Connected to upstream server')

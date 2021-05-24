@@ -6,7 +6,10 @@ const { PUBLIC_KEY } = require('./constants')
 const algorithm = 'ES384'
 
 module.exports = (client, server, options) => {
-  const skinGeom = fs.readFileSync(DataProvider(options.protocolVersion).getPath('skin_geom.txt'), 'utf-8')
+  const dp = DataProvider(options.protocolVersion)
+  const skinTex = fs.readFileSync(dp.getPath('steveSkin.bin')).toString('base64')
+  const skinGeom = fs.readFileSync(dp.getPath('steveGeometry.json')).toString('base64')
+  const skinData = JSON.parse(fs.readFileSync(dp.getPath('steve.json'), 'utf-8'))
 
   client.createClientChain = (mojangKey, offline) => {
     const privateKey = client.ecdhKeyPair.privateKey
@@ -22,12 +25,12 @@ module.exports = (client, server, options) => {
         certificateAuthority: true,
         identityPublicKey: client.clientX509
       }
-      token = JWT.sign(payload, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509 } })
+      token = JWT.sign(payload, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509, typ: undefined } })
     } else {
       token = JWT.sign({
         identityPublicKey: mojangKey || PUBLIC_KEY,
         certificateAuthority: true
-      }, privateKey, { algorithm, header: { x5u: client.clientX509 } })
+      }, privateKey, { algorithm, header: { x5u: client.clientX509, typ: undefined } })
     }
 
     client.clientIdentityChain = token
@@ -36,49 +39,38 @@ module.exports = (client, server, options) => {
 
   client.createClientUserChain = (privateKey) => {
     let payload = {
-      AnimatedImageData: [],
-      ArmSize: 'wide',
-      CapeData: '',
-      CapeId: '',
-      CapeImageHeight: 0,
-      CapeImageWidth: 0,
-      CapeOnClassicSkin: false,
+      ...skinData,
+
       ClientRandomId: Date.now(),
       CurrentInputMode: 1,
       DefaultInputMode: 1,
       DeviceId: nextUUID(),
-      DeviceModel: '',
+      DeviceModel: 'PrismarineJS',
       DeviceOS: client.session?.deviceOS || 7,
       GameVersion: options.version || '1.16.201',
       GuiScale: -1,
       LanguageCode: 'en_GB', // TODO locale
-      PersonaPieces: [],
-      PersonaSkin: true,
-      PieceTintColors: [],
+
       PlatformOfflineId: '',
       PlatformOnlineId: '', // chat
       // PlayFabID is the PlayFab ID produced for the skin. PlayFab is the company that hosts the Marketplace,
       // skins and other related features from the game. This ID is the ID of the skin used to store the skin
       // inside of PlayFab.
-      PlayFabId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0', // 1.16.210
-      PremiumSkin: false,
+      PlayFabId: nextUUID().replace(/-/g, '').slice(0, 16), // 1.16.210
+
       SelfSignedId: nextUUID(),
       ServerAddress: `${options.host}:${options.port}`,
-      SkinAnimationData: '',
-      SkinColor: '#ffffcd96',
-      SkinData: 'AAAAAA==',
+      SkinData: skinTex,
       SkinGeometryData: skinGeom,
-      SkinId: '5eb65f73-af11-448e-82aa-1b7b165316ad.persona-e199672a8c1a87e0-0',
-      SkinImageHeight: 1,
-      SkinImageWidth: 1,
-      SkinResourcePatch: '',
+
       ThirdPartyName: client.profile.name,
       ThirdPartyNameOnly: false,
       UIProfile: 0
     }
     const customPayload = options.skinData || {}
     payload = { ...payload, ...customPayload }
+    payload.ServerAddress = `${options.host}:${options.port}`
 
-    client.clientUserChain = JWT.sign(payload, privateKey, { algorithm, header: { x5u: client.clientX509 } })
+    client.clientUserChain = JWT.sign(payload, privateKey, { algorithm, header: { x5u: client.clientX509, typ: undefined }, noTimestamp: true /* pocketmine.. */ })
   }
 }

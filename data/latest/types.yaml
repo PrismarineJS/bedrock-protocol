@@ -112,7 +112,8 @@ ItemLegacy:
          metadata: varint
          block_runtime_id: zigzag32
          extra: network_id ?
-            if 355: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
+            # The Shield Item ID is sent in the StartGame packet. It is usually 355 in vanilla.
+            if /ShieldItemID: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
             default: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithoutBlockingTick" }]'
 
 # An "ItemStack" here represents an Item instance. You can think about it like a pointer
@@ -137,7 +138,9 @@ Item:
             default: zigzag32
          block_runtime_id: zigzag32
          extra: network_id ?
-            if 355: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
+            # The Shield Item ID is sent in the StartGame packet. It is usually 355 in vanilla.
+            ## Really bad compiler hack to allow us to use a global variable
+            if /ShieldItemID: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
             default: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithoutBlockingTick" }]'
 
 vec3i:
@@ -707,35 +710,6 @@ PlayerRecords:
             uuid: uuid
    verified: type ?
       if add: bool[]$records_count
-
-ScoreEntries:
-   type: u8 =>
-      0: change
-      1: remove
-   entries: []varint
-      scoreboard_id: zigzag64
-      objective_name: string
-      score: li32
-      _: type?
-         if remove:
-            entry_type: i8 =>
-               1: player
-               2: entity
-               3: fake_player
-            entity_unique_id: entry_type?
-               if player or entity: zigzag64
-            custom_name: entry_type?
-               if fake_player: string
-
-ScoreboardIdentityEntries:
-   type: i8 =>
-      0: TYPE_REGISTER_IDENTITY
-      1: TYPE_CLEAR_IDENTITY
-   entries: []varint
-      scoreboard_id: zigzag64
-      entity_unique_id: type ?
-         if TYPE_REGISTER_IDENTITY: zigzag64
-         default: void
 
 Enchant:
    id: u8

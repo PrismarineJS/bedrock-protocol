@@ -38,14 +38,18 @@ function sizeOfNbt (value) {
 // Little Endian
 
 function readNbtLE (buffer, offset) {
-  return protoLE.read(buffer, offset, 'nbt')
+  const r = protoLE.read(buffer, offset, 'nbt')
+  if (r.value.type === 'end') return { value: r.value, size: 0 }
+  return r
 }
 
 function writeNbtLE (value, buffer, offset) {
+  if (value.type === 'end') return offset
   return protoLE.write(value, buffer, offset, 'nbt')
 }
 
 function sizeOfNbtLE (value) {
+  if (value.type === 'end') return 0
   return protoLE.sizeOf(value, 'nbt')
 }
 

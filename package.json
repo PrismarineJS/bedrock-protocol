@@ -30,7 +30,7 @@
     "minecraft-folder-path": "^1.1.0",
     "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
-    "protodef": "extremeheat/node-protodef#patch-1",
+    "protodef": "github:extremeheat/node-protodef#vars",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
   },
@@ -42,9 +42,9 @@
     "bedrock-provider": "^1.0.0",
     "babel-eslint": "^10.1.0",
     "mocha": "^8.3.2",
-    "protodef-yaml": "^1.0.3",
+    "protodef-yaml": "^1.1.0",
     "standard": "^16.0.3",
-    "leveldb-zlib": "0.0.26",
+    "leveldb-zlib": "^0.0.26",
     "bedrock-protocol": "file:."
   },
   "standard": {

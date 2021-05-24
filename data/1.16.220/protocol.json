@@ -422,7 +422,7 @@
                       {
                         "compareTo": "network_id",
                         "fields": {
-                          "355": [
+                          "/ShieldItemID": [
                             "encapsulated",
                             {
                               "lengthType": "varint",
@@ -502,7 +502,7 @@
                       {
                         "compareTo": "network_id",
                         "fields": {
-                          "355": [
+                          "/ShieldItemID": [
                             "encapsulated",
                             {
                               "lengthType": "varint",
@@ -1928,157 +1928,6 @@
                 ]
               },
               "default": "void"
-            }
-          ]
-        }
-      ]
-    ],
-    "ScoreEntries": [
-      "container",
-      [
-        {
-          "name": "type",
-          "type": [
-            "mapper",
-            {
-              "type": "u8",
-              "mappings": {
-                "0": "change",
-                "1": "remove"
-              }
-            }
-          ]
-        },
-        {
-          "name": "entries",
-          "type": [
-            "array",
-            {
-              "countType": "varint",
-              "type": [
-                "container",
-                [
-                  {
-                    "name": "scoreboard_id",
-                    "type": "zigzag64"
-                  },
-                  {
-                    "name": "objective_name",
-                    "type": "string"
-                  },
-                  {
-                    "name": "score",
-                    "type": "li32"
-                  },
-                  {
-                    "anon": true,
-                    "type": [
-                      "switch",
-                      {
-                        "compareTo": "type",
-                        "fields": {
-                          "remove": [
-                            "container",
-                            [
-                              {
-                                "name": "entry_type",
-                                "type": [
-                                  "mapper",
-                                  {
-                                    "type": "i8",
-                                    "mappings": {
-                                      "1": "player",
-                                      "2": "entity",
-                                      "3": "fake_player"
-                                    }
-                                  }
-                                ]
-                              },
-                              {
-                                "name": "entity_unique_id",
-                                "type": [
-                                  "switch",
-                                  {
-                                    "compareTo": "entry_type",
-                                    "fields": {
-                                      "player": "zigzag64",
-                                      "entity": "zigzag64"
-                                    },
-                                    "default": "void"
-                                  }
-                                ]
-                              },
-                              {
-                                "name": "custom_name",
-                                "type": [
-                                  "switch",
-                                  {
-                                    "compareTo": "entry_type",
-                                    "fields": {
-                                      "fake_player": "string"
-                                    },
-                                    "default": "void"
-                                  }
-                                ]
-                              }
-                            ]
-                          ]
-                        },
-                        "default": "void"
-                      }
-                    ]
-                  }
-                ]
-              ]
-            }
-          ]
-        }
-      ]
-    ],
-    "ScoreboardIdentityEntries": [
-      "container",
-      [
-        {
-          "name": "type",
-          "type": [
-            "mapper",
-            {
-              "type": "i8",
-              "mappings": {
-                "0": "TYPE_REGISTER_IDENTITY",
-                "1": "TYPE_CLEAR_IDENTITY"
-              }
-            }
-          ]
-        },
-        {
-          "name": "entries",
-          "type": [
-            "array",
-            {
-              "countType": "varint",
-              "type": [
-                "container",
-                [
-                  {
-                    "name": "scoreboard_id",
-                    "type": "zigzag64"
-                  },
-                  {
-                    "name": "entity_unique_id",
-                    "type": [
-                      "switch",
-                      {
-                        "compareTo": "type",
-                        "fields": {
-                          "TYPE_REGISTER_IDENTITY": "zigzag64"
-                        },
-                        "default": "void"
-                      }
-                    ]
-                  }
-                ]
-              ]
             }
           ]
         }
@@ -6983,8 +6832,101 @@
       "container",
       [
         {
+          "name": "action",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "change",
+                "1": "remove"
+              }
+            }
+          ]
+        },
+        {
           "name": "entries",
-          "type": "ScoreEntries"
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "scoreboard_id",
+                    "type": "zigzag64"
+                  },
+                  {
+                    "name": "objective_name",
+                    "type": "string"
+                  },
+                  {
+                    "name": "score",
+                    "type": "li32"
+                  },
+                  {
+                    "anon": true,
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "../action",
+                        "fields": {
+                          "change": [
+                            "container",
+                            [
+                              {
+                                "name": "entry_type",
+                                "type": [
+                                  "mapper",
+                                  {
+                                    "type": "i8",
+                                    "mappings": {
+                                      "1": "player",
+                                      "2": "entity",
+                                      "3": "fake_player"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "entity_unique_id",
+                                "type": [
+                                  "switch",
+                                  {
+                                    "compareTo": "entry_type",
+                                    "fields": {
+                                      "player": "zigzag64",
+                                      "entity": "zigzag64"
+                                    },
+                                    "default": "void"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "custom_name",
+                                "type": [
+                                  "switch",
+                                  {
+                                    "compareTo": "entry_type",
+                                    "fields": {
+                                      "fake_player": "string"
+                                    },
+                                    "default": "void"
+                                  }
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        "default": "void"
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
         }
       ]
     ],
@@ -7147,8 +7089,48 @@
       "container",
       [
         {
+          "name": "action",
+          "type": [
+            "mapper",
+            {
+              "type": "i8",
+              "mappings": {
+                "0": "register_identity",
+                "1": "clear_identity"
+              }
+            }
+          ]
+        },
+        {
           "name": "entries",
-          "type": "ScoreboardIdentityEntries"
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "scoreboard_id",
+                    "type": "zigzag64"
+                  },
+                  {
+                    "name": "entity_unique_id",
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "../action",
+                        "fields": {
+                          "register_identity": "zigzag64"
+                        },
+                        "default": "void"
+                      }
+                    ]
+                  }
+                ]
+              ]
+            }
+          ]
         }
       ]
     ],

@@ -1854,10 +1854,32 @@ packet_set_display_objective:
    criteria_name: string
    sort_order: zigzag32
 
+# SetScore is sent by the server to send the contents of a scoreboard to the player. It may be used to either
+# add, remove or edit entries on the scoreboard.
 packet_set_score:
    !id: 0x6c
    !bound: client
-   entries: ScoreEntries
+   # ActionType is the type of the action to execute upon the scoreboard with the entries that the packet
+   # has. If ActionType is ScoreboardActionModify, all entries will be added to the scoreboard if not yet
+   # present, or modified if already present. If set to ScoreboardActionRemove, all scoreboard entries set
+   # will be removed from the scoreboard.
+   action: u8 =>
+      0: change
+      1: remove
+   entries: []varint
+      scoreboard_id: zigzag64
+      objective_name: string
+      score: li32
+      _: ../action ?
+         if change:
+            entry_type: i8 =>
+               1: player
+               2: entity
+               3: fake_player
+            entity_unique_id: entry_type ?
+               if player or entity: zigzag64
+            custom_name: entry_type ?
+               if fake_player: string
 
 packet_lab_table:
    !id: 0x6d
@@ -1942,10 +1964,27 @@ DeltaMoveFlags: [ "bitflags",
    }
 ]
 
+# SetScoreboardIdentity is sent by the server to change the identity type of one of the entries on a
+# scoreboard. This is used to change, for example, an entry pointing to a player, to a fake player when it
+# leaves the server, and to change it back to a real player when it joins again.
+# In non-vanilla situations, the packet is quite useless.
 packet_set_scoreboard_identity:
    !id: 0x70
    !bound: client
-   entries: ScoreboardIdentityEntries
+   # ActionType is the type of the action to execute. The action is either ScoreboardIdentityActionRegister
+   # to associate an identity with the entry, or ScoreboardIdentityActionClear to remove associations with
+   # an entity.
+   action: i8 =>
+      0: register_identity
+      1: clear_identity
+   # Entries is a list of all entries in the packet. Each of these entries points to one of the entries on
+   # a scoreboard. Depending on ActionType, their identity will either be registered or cleared.
+   entries: []varint
+      scoreboard_id: zigzag64
+      entity_unique_id: ../action ?
+         if register_identity: zigzag64
+         default: void
+
 
 # SetLocalPlayerAsInitialised is sent by the client in response to a PlayStatus packet with the status set
 # to spawn. The packet marks the moment at which the client is fully initialised and can receive any packet

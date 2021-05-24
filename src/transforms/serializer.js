@@ -11,6 +11,18 @@ class Parser extends FullPacketParser {
       throw e
     }
   }
+
+  verify (deserialized, serializer) {
+    const { name, params } = deserialized.data
+    const oldBuffer = deserialized.fullBuffer
+    const newBuffer = serializer.createPacketBuffer({ name, params })
+    if (!newBuffer.equals(oldBuffer)) {
+      console.warn('New', newBuffer.toString('hex'))
+      console.warn('Old', oldBuffer.toString('hex'))
+      console.log('Failed to re-encode', name, params)
+      process.exit(1)
+    }
+  }
 }
 
 // Compiles the ProtoDef schema at runtime
@@ -31,11 +43,8 @@ function getProtocol (version) {
   compiler.addTypes(require(join(__dirname, '../datatypes/compiler-minecraft')))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
 
-  const compile = (compiler, file) => {
-    global.native = compiler.native // eslint-disable-line
-    const { PartialReadError } = require('protodef/src/utils') // eslint-disable-line
-    return require(file)() // eslint-disable-line
-  }
+  global.PartialReadError = require('protodef/src/utils').PartialReadError
+  const compile = (compiler, file) => require(file)(compiler.native)
 
   return new CompiledProtodef(
     compile(compiler.sizeOfCompiler, join(__dirname, `../../data/${version}/size.js`)),
