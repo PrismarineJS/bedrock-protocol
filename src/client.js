@@ -177,7 +177,8 @@ class Client extends Connection {
         this.startGameData = pakData.params
         this.startGameData.itemstates.forEach(state => {
           if (state.name === 'minecraft:shield') {
-            global.ShieldItemID = state.runtime_id
+            this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
+            this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
           }
         })
         break

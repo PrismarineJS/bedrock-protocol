@@ -113,8 +113,7 @@ ItemLegacy:
          block_runtime_id: zigzag32
          extra: network_id ?
             # The Shield Item ID is sent in the StartGame packet. It is usually 355 in vanilla.
-            ## Really bad compiler hack to allow us to use a global variable
-            if "||global.ShieldItemID||355||": '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
+            if /ShieldItemID: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
             default: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithoutBlockingTick" }]'
 
 # An "ItemStack" here represents an Item instance. You can think about it like a pointer
@@ -141,7 +140,7 @@ Item:
          extra: network_id ?
             # The Shield Item ID is sent in the StartGame packet. It is usually 355 in vanilla.
             ## Really bad compiler hack to allow us to use a global variable
-            if "||global.ShieldItemID||355||": '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
+            if /ShieldItemID: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithBlockingTick" }]'
             default: '["encapsulated", { "lengthType": "varint", "type": "ItemExtraDataWithoutBlockingTick" }]'
 
 vec3i:

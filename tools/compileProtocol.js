@@ -55,9 +55,9 @@ function createProtocol () {
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
   compiler.addTypesToCompile(protocol)
 
-  fs.writeFileSync('./read.js', 'module.exports = ' + compiler.readCompiler.generate())
-  fs.writeFileSync('./write.js', 'module.exports = ' + compiler.writeCompiler.generate())
-  fs.writeFileSync('./size.js', 'module.exports = ' + compiler.sizeOfCompiler.generate())
+  fs.writeFileSync('./read.js', 'module.exports = ' + compiler.readCompiler.generate().replace('() =>', 'native =>'))
+  fs.writeFileSync('./write.js', 'module.exports = ' + compiler.writeCompiler.generate().replace('() =>', 'native =>'))
+  fs.writeFileSync('./size.js', 'module.exports = ' + compiler.sizeOfCompiler.generate().replace('() =>', 'native =>'))
 
   const compiledProto = compiler.compileProtoDefSync()
   return compiledProto
