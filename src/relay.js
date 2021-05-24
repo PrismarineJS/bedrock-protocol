@@ -62,14 +62,14 @@ class RelayPlayer extends Player {
       }
       if (name === 'respawn') this.respawnPacket.push([name, params])
     } else if (this.status === 3 && this.chunkSendCache.length) {
-        for (const chunk of this.chunkSendCache) {
-          this.queue(...chunk)
-        }
-        for (const rp of this.respawnPacket) {
-          this.queue(...rp)
-        }
-        this.chunkSendCache = []
-        this.respawnPacket = []
+      for (const chunk of this.chunkSendCache) {
+        this.queue(...chunk)
+      }
+      for (const rp of this.respawnPacket) {
+        this.queue(...rp)
+      }
+      this.chunkSendCache = []
+      this.respawnPacket = []
     }
     this.queue(name, params)
   }
