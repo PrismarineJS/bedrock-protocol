@@ -4177,28 +4177,12 @@
           "type": "string"
         },
         {
-          "name": "x",
-          "type": "lf32"
+          "name": "position",
+          "type": "vec3f"
         },
         {
-          "name": "y",
-          "type": "lf32"
-        },
-        {
-          "name": "z",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_x",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_y",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_z",
-          "type": "lf32"
+          "name": "velocity",
+          "type": "vec3f"
         },
         {
           "name": "pitch",
@@ -4274,28 +4258,12 @@
           "type": "string"
         },
         {
-          "name": "x",
-          "type": "lf32"
+          "name": "position",
+          "type": "vec3f"
         },
         {
-          "name": "y",
-          "type": "lf32"
-        },
-        {
-          "name": "z",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_x",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_y",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_z",
-          "type": "lf32"
+          "name": "velocity",
+          "type": "vec3f"
         },
         {
           "name": "pitch",
@@ -4348,28 +4316,12 @@
           "type": "Item"
         },
         {
-          "name": "x",
-          "type": "lf32"
+          "name": "position",
+          "type": "vec3f"
         },
         {
-          "name": "y",
-          "type": "lf32"
-        },
-        {
-          "name": "z",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_x",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_y",
-          "type": "lf32"
-        },
-        {
-          "name": "speed_z",
-          "type": "lf32"
+          "name": "velocity",
+          "type": "vec3f"
         },
         {
           "name": "metadata",
@@ -4547,7 +4499,7 @@
         },
         {
           "name": "coordinates",
-          "type": "BlockCoordinates"
+          "type": "vec3f"
         },
         {
           "name": "direction",
@@ -5137,16 +5089,8 @@
       "container",
       [
         {
-          "name": "x",
-          "type": "lf32"
-        },
-        {
-          "name": "y",
-          "type": "lf32"
-        },
-        {
-          "name": "z",
-          "type": "lf32"
+          "name": "position",
+          "type": "vec3f"
         },
         {
           "name": "state",
@@ -7192,7 +7136,7 @@
       "container",
       [
         {
-          "name": "dimension_id",
+          "name": "dimension",
           "type": "u8"
         },
         {
