@@ -401,12 +401,8 @@ packet_add_player:
    # Nintendo Switch). It is otherwise an empty string, and is used to decide which players
    # are able to chat with each other.
    platform_chat_id: string
-   x: lf32
-   y: lf32
-   z: lf32
-   speed_x: lf32
-   speed_y: lf32
-   speed_z: lf32
+   position: vec3f
+   velocity: vec3f
    pitch: lf32
    yaw: lf32
    head_yaw: lf32
@@ -428,12 +424,8 @@ packet_add_entity:
    entity_id_self: zigzag64
    runtime_entity_id: varint64
    entity_type: string
-   x: lf32
-   y: lf32
-   z: lf32
-   speed_x: lf32
-   speed_y: lf32
-   speed_z: lf32
+   position: vec3f
+   velocity: vec3f
    pitch: lf32
    yaw: lf32
    head_yaw: lf32
@@ -452,12 +444,8 @@ packet_add_item_entity:
    entity_id_self: zigzag64
    runtime_entity_id: varint64
    item: Item
-   x: lf32
-   y: lf32
-   z: lf32
-   speed_x: lf32
-   speed_y: lf32
-   speed_z: lf32
+   position: vec3f
+   velocity: vec3f
    metadata: MetadataDictionary
    is_from_fishing: bool
 
@@ -573,7 +561,7 @@ packet_add_painting:
    !bound: client
    entity_id_self: zigzag64
    runtime_entity_id: varint64
-   coordinates: BlockCoordinates
+   coordinates: vec3f
    direction: zigzag32
    title: string
 
@@ -937,9 +925,7 @@ packet_animate:
 packet_respawn:
    !id: 0x2d
    !bound: both
-   x: lf32
-   y: lf32
-   z: lf32
+   position: vec3f
    state: u8
    runtime_entity_id: varint64
 
@@ -2023,7 +2009,7 @@ packet_script_custom_event:
 packet_spawn_particle_effect:
    !id: 0x76
    !bound: client
-   dimension_id: u8
+   dimension: u8
    entity_id: zigzag64
    position: vec3f
    particle_name: string
