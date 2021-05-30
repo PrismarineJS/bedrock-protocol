@@ -1015,8 +1015,9 @@ MapDecoration:
    # automatically, whereas others may be changed.
    color_abgr: varint
 
-# Some arbitrary definitions from CBMC, Window IDs are normally
-# unique + sequential
+# List of Window IDs. When a new container is opened (container_open), a new sequential Window ID is created.
+# Below window IDs are hard-coded and created when the game starts and the server does not 
+# send a `container_open` for them.
 WindowID: i8 =>
    -100: drop_contents
    -24: beacon
