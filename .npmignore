@@ -5,3 +5,7 @@ src/**/*.json
 # Runtime generated data
 data/**/sample
 tools/bds*
+# Extra data
+examples
+test
+.github

@@ -2,6 +2,7 @@ const { Client } = require('./client')
 const { RakClient } = require('./rak')
 const assert = require('assert')
 const advertisement = require('./server/advertisement')
+const { sleep } = require('./datatypes/util')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number }} options */
 function createClient (options) {
@@ -37,11 +38,13 @@ function connect (client) {
         response_status: 'completed',
         resourcepackids: []
       })
-      client.queue('request_chunk_radius', { chunk_radius: client.renderDistance || 10 })
     })
 
     client.queue('client_cache_status', { enabled: false })
     client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
+    if (client.viewDistance) {
+      sleep(500).then(() => client.queue('request_chunk_radius', { chunk_radius: client.viewDistance }))
+    }
   })
 
   const KEEPALIVE_INTERVAL = 10 // Send tick sync packets every 10 ticks
