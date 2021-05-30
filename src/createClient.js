@@ -42,9 +42,7 @@ function connect (client) {
 
     client.queue('client_cache_status', { enabled: false })
     client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
-    if (client.viewDistance) {
-      sleep(500).then(() => client.queue('request_chunk_radius', { chunk_radius: client.viewDistance }))
-    }
+    sleep(500).then(() => client.queue('request_chunk_radius', { chunk_radius: client.viewDistance || 10 }))
   })
 
   const KEEPALIVE_INTERVAL = 10 // Send tick sync packets every 10 ticks

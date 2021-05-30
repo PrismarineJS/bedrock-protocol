@@ -1,10 +1,14 @@
+## 3.2.1
+* Add `authTitle` option to Relay proxy [#92](https://github.com/PrismarineJS/bedrock-protocol/pull/92)
+* Protocol, type definition fixes
+
 ## 3.2.0
 
-* Fix empty chunks on proxy spawn (#89)
-* Send skin data to server (#88) 
-* Support xbox title + live.com auth (#86)
+* Fix empty chunks on proxy spawn [#89](https://github.com/PrismarineJS/bedrock-protocol/pull/89)
+* Send skin data to server [#88](https://github.com/PrismarineJS/bedrock-protocol/pull/88)
+* Support xbox title + live.com auth [#86](https://github.com/PrismarineJS/bedrock-protocol/pull/86)
 * Protocol updates and fixes
-* Fix third party servers, optional client encryption (#83)
+* Fix third party servers, optional client encryption [#83](https://github.com/PrismarineJS/bedrock-protocol/pull/83)
 
 ## 3.1.0
 * Add support for 1.16
