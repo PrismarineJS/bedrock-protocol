@@ -11,7 +11,9 @@ function proxyTest (version, timeout = 1000 * 40) {
     })
 
     server.on('connect', client => {
+      console.debug('Client has connected')
       client.on('join', () => { // The client has joined the server.
+        console.debug('Client has authenticated')
         setTimeout(() => {
           client.disconnect('Hello world !')
         }, 1000) // allow some time for client to connect
@@ -40,6 +42,8 @@ function proxyTest (version, timeout = 1000 * 40) {
     const client = createClient({ host: '127.0.0.1', version, username: 'Boat', offline: true })
 
     console.debug('Client started')
+
+    client.on('packet', console.log)
 
     client.on('disconnect', packet => {
       console.assert(packet.message === 'Hello world !')

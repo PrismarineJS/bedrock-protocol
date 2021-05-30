@@ -7114,7 +7114,7 @@
           "type": "lu64"
         },
         {
-          "name": "unknown_flag",
+          "name": "needs_response",
           "type": "u8"
         }
       ]

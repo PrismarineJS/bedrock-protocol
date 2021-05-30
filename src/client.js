@@ -43,7 +43,7 @@ class Client extends Connection {
     this.on('session', this._connect)
 
     if (this.options.offline) {
-      console.debug('offline mode, not authenticating', this.options)
+      debug('offline mode, not authenticating', this.options)
       auth.createOfflineSession(this, this.options)
     } else {
       auth.authenticateDeviceCode(this, this.options)
@@ -122,7 +122,7 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    console.warn(`C Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
+    console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
     this.emit('kick', packet)
     this.close()
   }
@@ -140,7 +140,7 @@ class Client extends Connection {
   close () {
     if (this.status !== ClientStatus.Disconnected) {
       this.emit('close') // Emit close once
-      console.log('Client closed!')
+      debug('Client closed!')
     }
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
