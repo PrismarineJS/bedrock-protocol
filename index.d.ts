@@ -7,15 +7,27 @@ declare module "bedrock-protocol" {
 
   export interface Options {
     // The string version to start the client or server as
-    version: number,
+    version: string
     // For the client, the host of the server to connect to (default: 127.0.0.1)
     // For the server, the host to bind to (default: 0.0.0.0)
-    host: string,
+    host: string
     // The port to connect or bind to, default: 19132
-    port: number,
-    // The maximum number of players allowed on the server at any time.
-    maxPlayers: number,
+    port: number
+    // For the client, if we should login with Microsoft/Xbox Live.
+    // For the server, if we should verify client's authentication with Xbox Live.
+    offline: boolean
+  }
 
+  export interface ClientOptions extends Options {
+    // The view distance in chunks
+    viewDistance: number,
+    // Specifies which game edition to sign in as. Optional, but some servers verify this.
+    authTitle: title | string
+  }
+
+  export interface ServerOptions extends Options {
+    // The maximum number of players allowed on the server at any time.
+    maxPlayers: number
     motd: {
       // The header for the MOTD shown in the server list.
       motd: string,
@@ -109,12 +121,19 @@ declare module "bedrock-protocol" {
     port: number,
     // Toggle packet logging.
     logging: boolean,
+    // Skip authentication for connecting clients?
+    offline: false,
+    // Specifies which game edition to sign in as to the destination server. Optional, but some servers verify this.
+    authTitle: title | string
     // Where to proxy requests to.
     destination: {
       host: string,
-      port: number
+      port: number,
+      // Skip authentication connecting to the remote server?
+      offline: false,
     }
   }
+
   export class Relay extends Server {
     constructor(options: RelayOptions)
   }
@@ -132,8 +151,8 @@ declare module "bedrock-protocol" {
     serverId: string
   }
 
-  export function createClient(options: Options): Client
-  export function createServer(options: Options): Server
+  export function createClient(options: ClientOptions): Client
+  export function createServer(options: ServerOptions): Server
 
   export function ping({ host, port }) : ServerAdvertisement
 }

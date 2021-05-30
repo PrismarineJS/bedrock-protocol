@@ -3,7 +3,7 @@ const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
-const debugging = true // Do re-encoding tests
+const debugging = false // Do re-encoding tests
 
 class RelayPlayer extends Player {
   constructor (server, conn) {
@@ -154,7 +154,8 @@ class Relay extends Server {
 
   openUpstreamConnection (ds, clientAddr) {
     const client = new Client({
-      offline: this.options.offline,
+      authTitle: this.options.authTitle,
+      offline: this.options.destination.offline ?? this.options.offline,
       username: this.options.offline ? ds.profile.name : null,
       version: this.options.version,
       host: this.options.destination.host,

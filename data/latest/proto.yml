@@ -1014,6 +1014,16 @@ packet_container_set_data:
    window_id: WindowID
    # Key is the key of the property. It is one of the constants that can be found above. Multiple properties
    # share the same key, but the functionality depends on the type of the container that the data is set to.
+   # IF FURNACE: 
+   #    0: furnace_tick_count
+   #    1: furnace_lit_time
+   #    2: furnace_lit_duration
+   #    3: furnace_stored_xp
+   #    4: furnace_fuel_aux
+   # IF BREWING STAND:
+   #    0: brew_time
+   #    1: brew_fuel_amount
+   #    2: brew_fuel_total
    property: zigzag32
    # Value is the value of the property. Its use differs per property. 
    value: zigzag32
@@ -1329,14 +1339,24 @@ packet_map_info_request:
    !bound: both
    map_id: zigzag64
 
+# RequestChunkRadius is sent by the client to the server to update the server on the chunk view radius that
+# it has set in the settings. The server may respond with a ChunkRadiusUpdated packet with either the chunk
+# radius requested, or a different chunk radius if the server chooses so.
 packet_request_chunk_radius:
    !id: 0x45
    !bound: both
+   # ChunkRadius is the requested chunk radius. This value is always the value set in the settings of the
+   # player.
    chunk_radius: zigzag32
 
+# ChunkRadiusUpdated is sent by the server in response to a RequestChunkRadius packet. It defines the chunk
+# radius that the server allows the client to have. This may be lower than the chunk radius requested by the
+# client in the RequestChunkRadius packet.
 packet_chunk_radius_update:
    !id: 0x46
    !bound: client
+   # ChunkRadius is the final chunk radius that the client will adapt when it receives the packet. It does
+   # not have to be the same as the requested chunk radius.
    chunk_radius: zigzag32
 
 packet_item_frame_drop_item:
@@ -1994,11 +2014,19 @@ packet_update_soft_enum:
    !id: 0x72
    !bound: client
 
+# NetworkStackLatency is sent by the server (and the client, on development builds) to measure the latency
+# over the entire Minecraft stack, rather than the RakNet latency. It has other usages too, such as the
+# ability to be used as some kind of acknowledgement packet, to know when the client has received a certain
+# other packet.
 packet_network_stack_latency:
    !id: 0x73
    !bound: both
+   # Timestamp is the timestamp of the network stack latency packet. The client will, if NeedsResponse is
+   # set to true, send a NetworkStackLatency packet with this same timestamp packet in response.
    timestamp: lu64
-   unknown_flag: u8
+   # NeedsResponse specifies if the sending side of this packet wants a response to the packet, meaning that
+   # the other side should send a NetworkStackLatency packet back.
+   needs_response: u8
 
 packet_script_custom_event:
    !id: 0x75
