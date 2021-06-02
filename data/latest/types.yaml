@@ -283,8 +283,12 @@ MetadataDictionary: []varint
       117: nearby_cured_discount_timestamp
       118: hitbox
       119: is_buoyant
-      120: buoyancy_data
-      121: goat_horn_count
+      120: freezing_effect_strength
+      121: buoyancy_data
+      122: goat_horn_count
+      123: base_runtime_id
+      124: define_properties
+      125: update_properties
    type: varint =>
       0: byte
       1: short
