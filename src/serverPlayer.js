@@ -47,8 +47,9 @@ class Player extends Connection {
     }
 
     // Parse login data
-    const authChain = JSON.parse(body.params.chain)
-    const skinChain = body.params.client_data
+    const tokens = body.params.tokens
+    const authChain = JSON.parse(tokens.identity)
+    const skinChain = tokens.client
 
     try {
       var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line

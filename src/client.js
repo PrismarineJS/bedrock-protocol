@@ -108,15 +108,15 @@ class Client extends Connection {
     ]
 
     const encodedChain = JSON.stringify({ chain })
-    const bodyLength = this.clientUserChain.length + encodedChain.length + 8
 
     debug('Auth chain', chain)
 
     this.write('login', {
       protocol_version: this.options.protocolVersion,
-      payload_size: bodyLength,
-      chain: encodedChain,
-      client_data: this.clientUserChain
+      tokens: {
+        identity: encodedChain,
+        client: this.clientUserChain
+      }
     })
     this.emit('loggingIn')
   }

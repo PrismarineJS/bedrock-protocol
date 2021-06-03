@@ -51,13 +51,14 @@ packet_login:
    !bound: server
    # Protocol version (Big Endian!)
    protocol_version: i32
-   # The combined size of the `chain` and `client_data`
-   payload_size: varint
+   tokens: '["encapsulated", { "lengthType": "varint", "type": "LoginTokens" }]'
+
+LoginTokens:
    # JSON array of JWT data: contains the display name, UUID and XUID
    # It should be signed by the Mojang public key
-   chain: LittleString
+   identity: LittleString
    # Skin related data
-   client_data: LittleString
+   client: LittleString
 
 packet_play_status:
    !id: 0x02
@@ -1156,7 +1157,6 @@ packet_player_input:
    jumping: bool
    sneaking: bool
 
-
 # LevelChunk is sent by the server to provide the client with a chunk of a world data (16xYx16 blocks).
 # Typically a certain amount of chunks is sent to the client before sending it the spawn PlayStatus packet,
 # so that the client spawns in a loaded world.
@@ -1558,10 +1558,55 @@ packet_command_request:
    interval: bool
 
 
+# CommandBlockUpdate is sent by the client to update a command block at a specific position. The command
+# block may be either a physical block or an entity.
 packet_command_block_update:
    !id: 0x4e
    !bound: server
+   # Block specifies if the command block updated was an actual physical block. If false, the command block
+   # is in a minecart and has an entity runtime ID instead.
    is_block: bool
+   # Position is the position of the command block updated. It is only set if Block is set to true. Nothing
+   # happens if no command block is set at this position.
+   _: is_block ?
+      if true:
+         # Position is the position of the command block updated. It is only set if Block is set to true. Nothing
+         # happens if no command block is set at this position.
+         position: BlockCoordinates
+         # Mode is the mode of the command block. It is either CommandBlockImpulse, CommandBlockChain or
+         # CommandBlockRepeat. It is only set if Block is set to true.
+         mode: varint =>
+            0: impulse
+            1: repeat
+            2: chain
+         # NeedsRedstone specifies if the command block needs to be powered by redstone to be activated. If false,
+         # the command block is always active. The field is only set if Block is set to true.
+         needs_redstone: bool
+         # Conditional specifies the behaviour of the command block if the command block before it (the opposite
+         # side of the direction the arrow if facing) fails to execute. If set to false, it will activate at all
+         # times, whereas if set to true, it will activate only if the previous command block executed
+         # successfully. The field is only set if Block is set to true.
+         conditional: bool
+      default:
+         minecart_entity_runtime_id: varint64
+   # Command is the command currently entered in the command block. This is the command that is executed
+   # when the command block is activated.
+   command: string
+   # LastOutput is the output of the last command executed by the command block. It may be left empty to
+   # show simply no output at all, in combination with setting ShouldTrackOutput to false.
+   last_output: string
+   # Name is the name of the command block updated. If not empty, it will show this name hovering above the
+   # command block when hovering over the block with the cursor.
+   name: string
+   # ShouldTrackOutput specifies if the command block tracks output. If set to false, the output box won't
+   # be shown within the command block.
+   should_track_output: bool
+   # TickDelay is the delay in ticks between executions of a command block, if it is a repeating command
+   # block.
+   tick_delay: li32
+   # ExecuteOnFirstTick specifies if the command block should execute on the first tick, AKA as soon as the
+   # command block is enabled.
+   execute_on_first_tick: bool
 
 packet_command_output:
    !id: 0x4f
@@ -1659,29 +1704,69 @@ packet_update_equipment:
    # make sure only saddles can be put in the saddle slot etc.
    inventory: nbt
 
+
+# ResourcePackDataInfo is sent by the server to the client to inform the client about the data contained in
+# one of the resource packs that are about to be sent.
 packet_resource_pack_data_info:
    !id: 0x52
    !bound: client
-   package_id: string
+   # UUID is the unique ID of the resource pack that the info concerns.
+   pack_id: string
+   # DataChunkSize is the maximum size in bytes of the chunks in which the total size of the resource pack
+   # to be sent will be divided. A size of 1MB (1024*1024) means that a resource pack of 15.5MB will be
+   # split into 16 data chunks.
    max_chunk_size: lu32
+   # ChunkCount is the total amount of data chunks that the sent resource pack will exist out of. It is the
+   # total size of the resource pack divided by the DataChunkSize field.
+   # The client doesn't actually seem to use this field. Rather, it divides the size by the chunk size to
+   # calculate it itself.
    chunk_count: lu32
-   compressed_package_size: lu64
+   # Size is the total size in bytes that the resource pack occupies. This is the size of the compressed
+   # archive (zip) of the resource pack.
+   size: lu64
+   # Hash is a SHA256 hash of the content of the resource pack.
    hash: ByteArray
+   # Premium specifies if the resource pack was a premium resource pack, meaning it was bought from the
+   # Minecraft store.
    is_premium: bool
-   pack_type: u8
+   # PackType is the type of the resource pack. It is one of the resource pack types listed.
+   pack_type: u8 =>
+      1: addon
+      2: cached
+      3: copy_protected
+      4: behavior
+      5: persona_piece
+      6: resources
+      7: skins
+      8: world_template
 
+# ResourcePackChunkData is sent to the client so that the client can download the resource pack. Each packet
+# holds a chunk of the compressed resource pack, of which the size is defined in the ResourcePackDataInfo
+# packet sent before.
 packet_resource_pack_chunk_data:
    !id: 0x53
    !bound: client
-   package_id: string
+   # UUID is the unique ID of the resource pack that the chunk of data is taken out of.
+   pack_id: string
+   # ChunkIndex is the current chunk index of the chunk. It is a number that starts at 0 and is incremented
+   # for each resource pack data chunk sent to the client.
    chunk_index: lu32
+   # DataOffset is the current progress in bytes or offset in the data that the resource pack data chunk is
+   # taken from.
    progress: lu64
+   # RawPayload is a byte slice containing a chunk of data from the resource pack. It must be of the same size or
+   # less than the DataChunkSize set in the ResourcePackDataInfo packet.
    payload: ByteArray
 
+# ResourcePackChunkRequest is sent by the client to request a chunk of data from a particular resource pack,
+# that it has obtained information about in a ResourcePackDataInfo packet.
 packet_resource_pack_chunk_request:
    !id: 0x54
    !bound: server
-   package_id: string
+   # UUID is the unique ID of the resource pack that the chunk of data is requested from.
+   pack_id: string
+   # ChunkIndex is the requested chunk index of the chunk. It is a number that starts at 0 and is
+   # incremented for each resource pack data chunk requested.
    chunk_index: lu32
 
 packet_transfer:
@@ -1739,19 +1824,66 @@ packet_add_behavior_tree:
    !bound: client
    behaviortree: string
 
+# StructureBlockUpdate is sent by the client when it updates a structure block using the in-game UI. The
+# data it contains depends on the type of structure block that it is. In Minecraft Bedrock Edition v1.11,
+# there is only the Export structure block type, but in v1.13 the ones present in Java Edition will,
+# according to the wiki, be added too.
 packet_structure_block_update:
    !id: 0x5a
    !bound: client
+   # Position is the position of the structure block that is updated.
+   position: BlockCoordinates
+   # StructureName is the name of the structure that was set in the structure block's UI. This is the name
+   # used to export the structure to a file.
+   structure_name: string
+   # DataField is the name of a function to run, usually used during natural generation. A description can
+   # be found here: https://minecraft.gamepedia.com/Structure_Block#Data.
+   data_field: string
+   # IncludePlayers specifies if the 'Include Players' toggle has been enabled, meaning players are also
+   # exported by the structure block.
+   include_players: bool
+   # ShowBoundingBox specifies if the structure block should have its bounds outlined. A thin line will
+   # encapsulate the bounds of the structure if set to true.
+   show_bounding_box: bool
+   # StructureBlockType is the type of the structure block updated. A list of structure block types that
+   # will be used can be found in the constants above.
+   structure_block_type: zigzag32
+   # Settings is a struct of settings that should be used for exporting the structure. These settings are
+   # identical to the last sent in the StructureBlockUpdate packet by the client.
+   settings: StructureBlockSettings
+   # RedstoneSaveMode is the mode that should be used to save the structure when used with redstone. In
+   # Java Edition, this is always stored in memory, but in Bedrock Edition it can be stored either to disk
+   # or memory. See the constants above for the options.
+   redstone_save_mode: zigzag32
+   # ShouldTrigger specifies if the structure block should be triggered immediately after this packet
+   # reaches the server.
+   should_trigger: bool
 
+# ShowStoreOffer is sent by the server to show a Marketplace store offer to a player. It opens a window
+# client-side that displays the item.
+# The ShowStoreOffer packet only works on the partnered servers: Servers that are not partnered will not have
+# a store buttons show up in the in-game pause menu and will, as a result, not be able to open store offers
+# on the client side. Sending the packet does therefore not work when using a proxy that is not connected to
+# with the domain of one of the partnered servers.
 packet_show_store_offer:
    !id: 0x5b
    !bound: client
-   unknown0: string
-   unknown1: bool
+   # OfferID is a string that identifies the offer for which a window should be opened. While typically a
+   # UUID, the ID could be anything.
+   offer_id: string
+   # ShowAll specifies if all other offers of the same 'author' as the one of the offer associated with the
+   # OfferID should also be displayed, alongside the target offer.
+   show_all: bool
 
+
+# PurchaseReceipt is sent by the client to the server to notify the server it purchased an item from the
+# Marketplace store that was offered by the server. The packet is only used for partnered servers.
 packet_purchase_receipt:
    !id: 0x5c
    !bound: server
+   # Receipts is a list of receipts, or proofs of purchases, for the offers that have been purchased by the
+   # player.
+   receipts: string[]varint
 
 packet_player_skin:
    !id: 0x5d
@@ -1762,20 +1894,40 @@ packet_player_skin:
    old_skin_name: string
    is_verified: bool
 
+# SubClientLogin is sent when a sub-client joins the server while another client is already connected to it.
+# The packet is sent as a result of split-screen game play, and allows up to four players to play using the
+# same network connection. After an initial Login packet from the 'main' client, each sub-client that
+# connects sends a SubClientLogin to request their own login.
 packet_sub_client_login:
    !id: 0x5e
    !bound: client
+   # ConnectionRequest is a string containing information about the player and JWTs that may be used to
+   # verify if the player is connected to XBOX Live. The connection request also contains the necessary
+   # client public key to initiate encryption.
+   # The ConnectionRequest in this packet is identical to the one found in the Login packet.
+   tokens: '["encapsulated", { "lengthType": "varint", "type": "LoginTokens" }]'
 
+# AutomationClientConnect is used to make the client connect to a websocket server. This websocket server has
+# the ability to execute commands on the behalf of the client and it can listen for certain events fired by
+# the client.
 packet_initiate_web_socket_connection:
    !id: 0x5f
    !bound: client
+   # ServerURI is the URI to make the client connect to. It can be, for example, 'localhost:8000/ws' to
+   # connect to a websocket server on the localhost at port 8000.
    server: string
 
+
+# SetLastHurtBy is sent by the server to let the client know what entity type it was last hurt by. At this
+# moment, the packet is useless and should not be used. There is no behaviour that depends on if this
+# packet is sent or not.
 packet_set_last_hurt_by:
    !id: 0x60
    !bound: client
-   unknown: varint
+   entity_type: varint
 
+# BookEdit is sent by the client when it edits a book. It is sent each time a modification was made and the
+# player stops its typing 'session', rather than simply after closing the book.
 packet_book_edit:
    !id: 0x61
    !bound: client
@@ -1790,6 +1942,7 @@ packet_book_edit:
       if replace_page or add_page:
          page_number: u8
          text: string
+         # Only available on Education Edition.
          photo_name: string
       if delete_page:
          page_number: u8
@@ -1802,46 +1955,103 @@ packet_book_edit:
          xuid: string
 
 
+# NPCRequest is sent by the client when it interacts with an NPC.
+# The packet is specifically made for Education Edition, where NPCs are available to use.
 packet_npc_request:
    !id: 0x62
    !bound: both
+   # EntityRuntimeID is the runtime ID of the NPC entity that the player interacted with. It is the same
+   # as sent by the server when spawning the entity.
    runtime_entity_id: varint64
-   unknown0: u8
-   unknown1: string
-   unknown2: u8
+   # RequestType is the type of the request, which depends on the permission that the player has. It will
+   # be either a type that indicates that the NPC should show its dialog, or that it should open the
+   # editing window.
+   request_type: u8 =>
+      0: set_actions
+      1: execute_action
+      2: execute_closing_commands
+      3: set_name
+      4: set_skin
+      5: set_interaction_text
+   # CommandString is the command string set in the NPC. It may consist of multiple commands, depending on
+   # what the player set in it.
+   command: string
+   # ActionType is the type of the action to execute.
+   action_type: u8
 
+# PhotoTransfer is sent by the server to transfer a photo (image) file to the client. It is typically used
+# to transfer photos so that the client can display it in a portfolio in Education Edition.
+# While previously usable in the default Bedrock Edition, the displaying of photos in books was disabled and
+# the packet now has little use anymore.
 packet_photo_transfer:
    !id: 0x63
    !bound: server
-   file_name: string
+   # PhotoName is the name of the photo to transfer. It is the exact file name that the client will download
+   # the photo as, including the extension of the file.
+   image_name: string
+   # PhotoData is the raw data of the photo image. The format of this data may vary: Formats such as JPEG or
+   # PNG work, as long as PhotoName has the correct extension.
    image_data: string
-   unknown2: string
+   # BookID is the ID of the book that the photo is associated with. If the PhotoName in a book with this ID
+   # is set to PhotoName, it will display the photo (provided Education Edition is used).
+   # The photo image is downloaded to a sub-folder with this book ID.
+   book_id: string
 
+# ModalFormRequest is sent by the server to make the client open a form. This form may be either a modal form
+# which has two options, a menu form for a selection of options and a custom form for properties.
 packet_modal_form_request:
    !id: 0x64
    !bound: client
+   # FormID is an ID used to identify the form. The ID is saved by the client and sent back when the player
+   # submits the form, so that the server can identify which form was submitted.
    form_id: varint
+   # FormData is a JSON encoded object of form data. The content of the object differs, depending on the
+   # type of the form sent, which is also set in the JSON.
    data: string
 
+# ModalFormResponse is sent by the client in response to a ModalFormRequest, after the player has submitted
+# the form sent. It contains the options/properties selected by the player, or a JSON encoded 'null' if
+# the form was closed by clicking the X at the top right corner of the form.
 packet_modal_form_response:
    !id: 0x65
    !bound: server
+   # FormID is the form ID of the form the client has responded to. It is the same as the ID sent in the
+   # ModalFormRequest, and may be used to identify which form was submitted.
    form_id: varint
+   # ResponseData is a JSON encoded value representing the response of the player. If the form was
+   # cancelled, a JSON encoded 'null' is in the response. For a modal form, the response is either true or
+   # false, for a menu form, the response is an integer specifying the index of the button clicked, and for
+   # a custom form, the response is an array containing a value for each element.
    data: string
 
+# ServerSettingsRequest is sent by the client to request the settings specific to the server. These settings
+# are shown in a separate tab client-side, and have the same structure as a custom form.
+# ServerSettingsRequest has no fields.
 packet_server_settings_request:
    !id: 0x66
    !bound: server
 
+# ServerSettingsResponse is optionally sent by the server in response to a ServerSettingsRequest from the
+# client. It is structured the same as a ModalFormRequest packet, and if filled out correctly, will show
+# a specific tab for the server in the settings of the client. A ModalFormResponse packet is sent by the
+# client in response to a ServerSettingsResponse, when the client fills out the settings and closes the
+# settings again.
 packet_server_settings_response:
    !id: 0x67
    !bound: client
+   # FormID is an ID used to identify the form. The ID is saved by the client and sent back when the player
+   # submits the form, so that the server can identify which form was submitted.
    form_id: varint
+   # FormData is a JSON encoded object of form data. The content of the object differs, depending on the
+   # type of the form sent, which is also set in the JSON.
    data: string
 
+# ShowProfile is sent by the server to show the XBOX Live profile of one player to another.
 packet_show_profile:
    !id: 0x68
    !bound: client
+   # XUID is the XBOX Live User ID of the player whose profile should be shown to the player. If it is not
+   # a valid XUID, the client ignores the packet.
    xuid: string
 
 # SetDefaultGameType is sent by the client when it toggles the default game type in the settings UI, and is
@@ -1854,18 +2064,33 @@ packet_set_default_game_type:
    # game type.
    gamemode: GameMode
 
+# RemoveObjective is sent by the server to remove a scoreboard objective. It is used to stop showing a
+# scoreboard to a player.
 packet_remove_objective:
    !id: 0x6a
    !bound: client
+   # ObjectiveName is the name of the objective that the scoreboard currently active has. This name must
+   # be identical to the one sent in the SetDisplayObjective packet.
    objective_name: string
 
+# SetDisplayObjective is sent by the server to display an object as a scoreboard to the player. Once sent,
+# it should be followed up by a SetScore packet to set the lines of the packet.
 packet_set_display_objective:
    !id: 0x6b
    !bound: client
+   # DisplaySlot is the slot in which the scoreboard should be displayed. Available options can be found in
+   # the constants above.
    display_slot: string
+   # ObjectiveName is the name of the objective that the scoreboard displays. Filling out a random unique
+   # value for this field works: It is not displayed in the scoreboard.
    objective_name: string
+   # DisplayName is the name, or title, that is displayed at the top of the scoreboard.
    display_name: string
+   # CriteriaName is the name of the criteria that need to be fulfilled in order for the score to be
+   # increased. This can be any kind of string and does not show up client-side.
    criteria_name: string
+   # SortOrder is the order in which entries on the scoreboard should be sorted. It is one of the constants
+   # that may be found above.
    sort_order: zigzag32
 
 # SetScore is sent by the server to send the contents of a scoreboard to the player. It may be used to either
@@ -1895,13 +2120,22 @@ packet_set_score:
             custom_name: entry_type ?
                if fake_player: string
 
+# LabTable is sent by the client to let the server know it started a chemical reaction in Education Edition,
+# and is sent by the server to other clients to show the effects.
+# The packet is only functional if Education features are enabled.
 packet_lab_table:
    !id: 0x6d
    !bound: both
-   useless_byte: u8
-   lab_table_x: varint
-   lab_table_y: varint
-   lab_table_z: varint
+   # ActionType is the type of the action that was executed. It is one of the constants above. Typically,
+   # only LabTableActionCombine is sent by the client, whereas LabTableActionReact is sent by the server.
+   action_type: u8 =>
+      0: combine
+      1: react
+   # Position is the position at which the lab table used was located.
+   position: vec3u
+   # ReactionType is the type of the reaction that took place as a result of the items put into the lab
+   # table. The reaction type can be either that of an item or a particle, depending on whatever the result
+   # was of the reaction.
    reaction_type: u8
 
 # UpdateBlockSynced is sent by the server to synchronise the falling of a falling block entity with the
@@ -2028,25 +2262,50 @@ packet_network_stack_latency:
    # the other side should send a NetworkStackLatency packet back.
    needs_response: u8
 
+# ScriptCustomEvent is sent by both the client and the server. It is a way to let scripts communicate with
+# the server, so that the client can let the server know it triggered an event, or the other way around.
+# It is essentially an RPC kind of system.
 packet_script_custom_event:
    !id: 0x75
    !bound: both
+   # EventName is the name of the event. The script and the server will use this event name to identify the
+   # data that is sent.
    event_name: string
+   # EventData is the data of the event. This data is typically a JSON encoded string, that the script is
+   # able to encode and decode too.
    event_data: string
 
+# SpawnParticleEffect is sent by the server to spawn a particle effect client-side. Unlike other packets that
+# result in the appearing of particles, this packet can show particles that are not hardcoded in the client.
+# They can be added and changed through behaviour packs to implement custom particles.
 packet_spawn_particle_effect:
    !id: 0x76
    !bound: client
+   # Dimension is the dimension that the particle is spawned in. Its exact usage is not clear, as the
+   # dimension has no direct effect on the particle.
    dimension: u8
+   # EntityUniqueID is the unique ID of the entity that the spawned particle may be attached to. If this ID
+   # is not -1, the Position below will be interpreted as relative to the position of the entity associated
+   # with this unique ID.
    entity_id: zigzag64
+   # Position is the position that the particle should be spawned at. If the position is too far away from
+   # the player, it will not show up.
+   # If EntityUniqueID is not -1, the position will be relative to the position of the entity.
    position: vec3f
+   # ParticleName is the name of the particle that should be shown. This name may point to a particle effect
+   # that is built-in, or to one implemented by behaviour packs.
    particle_name: string
 
+# AvailableActorIdentifiers is sent by the server at the start of the game to let the client know all
+# entities that are available on the server.
 packet_available_entity_identifiers:
    !id: 0x77
    !bound: client
+   # SerialisedEntityIdentifiers is a network NBT serialised compound of all entity identifiers that are
+   # available in the server.
    nbt: nbt
 
+# Not used. Use `packet_level_sound_event`.
 packet_level_sound_event_v2:
    !id: 0x78
    !bound: both
@@ -2057,15 +2316,32 @@ packet_level_sound_event_v2:
    is_baby_mob: bool
    is_global: bool
 
+# NetworkChunkPublisherUpdate is sent by the server to change the point around which chunks are and remain
+# loaded. This is useful for mini-game servers, where only one area is ever loaded, in which case the
+# NetworkChunkPublisherUpdate packet can be sent in the middle of it, so that no chunks ever need to be
+# additionally sent during the course of the game.
+# In reality, the packet is not extraordinarily useful, and most servers just send it constantly at the
+# position of the player.
+# If the packet is not sent at all, no chunks will be shown to the player, regardless of where they are sent.
 packet_network_chunk_publisher_update:
    !id: 0x79
    !bound: client
+   # Position is the block position around which chunks loaded will remain shown to the client. Most servers
+   # set this position to the position of the player itself.
    coordinates: BlockCoordinates
+   # Radius is the radius in blocks around Position that chunks sent show up in and will remain loaded in.
+   # Unlike the RequestChunkRadius and ChunkRadiusUpdated packets, this radius is in blocks rather than
+   # chunks, so the chunk radius needs to be multiplied by 16. (Or shifted to the left by 4.)
    radius: varint
 
+# BiomeDefinitionList is sent by the server to let the client know all biomes that are available and
+# implemented on the server side. It is much like the AvailableActorIdentifiers packet, but instead
+# functions for biomes.
 packet_biome_definition_list:
    !id: 0x7a
    !bound: client
+   # SerialisedBiomeDefinitions is a network NBT serialised compound of all definitions of biomes that are
+   # available on the server.
    nbt: nbt
 
 # LevelSoundEvent is sent by the server to make any kind of built-in sound heard to a player. It is sent to,
@@ -2075,11 +2351,24 @@ packet_biome_definition_list:
 packet_level_sound_event:
    !id: 0x7b
    !bound: both
+   # SoundType is the type of the sound to play. Some of the sound types
+   # require additional data, which is set in the EventData field.
    sound_id: SoundType
+   # Position is the position of the sound event. The player will be able to hear the direction of the sound
+   # based on what position is sent here.
    position: vec3f
-   block_id: zigzag32
+   # ExtraData is a packed integer that some sound types use to provide extra data. An example of this is
+   # the note sound, which is composed of a pitch and an instrument type.
+   extra_data: zigzag32
+   # EntityType is the string entity type of the entity that emitted the sound, for example
+   # 'minecraft:skeleton'. Some sound types use this entity type for additional data.
    entity_type: string
+   # BabyMob specifies if the sound should be that of a baby mob. It is most notably used for parrot
+   # imitations, which will change based on if this field is set to true or not.
    is_baby_mob: bool
+   # DisableRelativeVolume specifies if the sound should be played relatively or not. If set to true, the
+   # sound will have full volume, regardless of where the Position is, whereas if set to false, the sound's
+   # volume will be based on the distance to Position.
    is_global: bool
 
 # LevelEventGeneric is sent by the server to send a 'generic' level event to the client. This packet sends an
@@ -2113,6 +2402,7 @@ packet_lectern_update:
    # DropBook specifies if the book currently set on display in the lectern should be dropped server-side.
    drop_book: bool
 
+# This packet was removed.
 packet_video_stream_connect:
    !id: 0x7e
    !bound: client
@@ -2143,27 +2433,73 @@ packet_remove_ecs_entity:
    # EntityNetworkID is the network ID of the entity that should be removed.
    network_id: varint64
 
+# ClientCacheStatus is sent by the client to the server at the start of the game. It is sent to let the
+# server know if it supports the client-side blob cache. Clients such as Nintendo Switch do not support the
+# cache, and attempting to use it anyway will fail.
 packet_client_cache_status:
    !id: 0x81
    !bound: both
+   # Enabled specifies if the blob cache is enabled. If false, the server should not attempt to use the
+   # blob cache. If true, it may do so, but it may also choose not to use it.
    enabled: bool
 
+# OnScreenTextureAnimation is sent by the server to show a certain animation on the screen of the player.
+# The packet is used, as an example, for when a raid is triggered and when a raid is defeated.
 packet_on_screen_texture_animation:
    !id: 0x82
    !bound: client
+   # AnimationType is the type of the animation to show. The packet provides no further extra data to allow
+   # modifying the duration or other properties of the animation.
+   animation_type: lu32
 
+
+# MapCreateLockedCopy is sent by the server to create a locked copy of one map into another map. In vanilla,
+# it is used in the cartography table to create a map that is locked and cannot be modified.
 packet_map_create_locked_copy:
    !id: 0x83
    !bound: client
+   # OriginalMapID is the ID of the map that is being copied. The locked copy will obtain all content that
+   # is visible on this map, except the content will not change.
+   original_map_id: zigzag64
+   # NewMapID is the ID of the map that holds the locked copy of the map that OriginalMapID points to. Its
+   # contents will be impossible to change.
+   new_map_id: zigzag64
 
+
+# StructureTemplateDataRequest is sent by the client to request data of a structure.
 packet_structure_template_data_export_request:
    !id: 0x84
    !bound: client
+   # StructureName is the name of the structure that was set in the structure block's UI. This is the name
+   # used to export the structure to a file.
+   name: string
+   # Position is the position of the structure block that has its template data requested.
+   position: BlockCoordinates
+   # Settings is a struct of settings that should be used for exporting the structure. These settings are
+   # identical to the last sent in the StructureBlockUpdate packet by the client.
+   settings: StructureBlockSettings
+   # RequestType specifies the type of template data request that the player sent.
+   request_type: u8 =>
+      1: export_from_save
+      2: export_from_load
+      3: query_saved_structure
 
+# StructureTemplateDataResponse is sent by the server to send data of a structure to the client in response
+# to a StructureTemplateDataRequest packet.
 packet_structure_template_data_export_response:
    !id: 0x85
    !bound: client
+   name: string
+   success: bool
+   nbt: success ?
+      if true: nbt
+   # ResponseType specifies the response type of the packet. This depends on the RequestType field sent in
+   # the StructureTemplateDataRequest packet and is one of the constants above.
+   response_type: u8 =>
+      1: export
+      2: query
 
+# No longer used.
 packet_update_block_properties:
    !id: 0x86
    !bound: client
@@ -2401,17 +2737,31 @@ InputFlag: [ "bitflags", {
    ]
 }]
 
+# CreativeContent is a packet sent by the server to set the creative inventory's content for a player.
+# Introduced in 1.16, this packet replaces the previous method - sending an InventoryContent packet with
+# creative inventory window ID.
+# As of v1.16.100, this packet must be sent during the login sequence. Not sending it will stop the client
+# from joining the server.
 packet_creative_content:
    !id: 0x91
    !bound: client
+   # Items is a list of the items that should be added to the creative inventory.
    items: []varint
       entry_id: varint
       item: ItemLegacy
 
+# PlayerEnchantOptions is sent by the server to update the enchantment options displayed when the user opens
+# the enchantment table and puts an item in. This packet was added in 1.16 and allows the server to decide on
+# the enchantments that can be selected by the player.
+# The PlayerEnchantOptions packet should be sent once for every slot update of the enchantment table. The
+# vanilla server sends an empty PlayerEnchantOptions packet when the player opens the enchantment table
+# (air is present in the enchantment table slot) and sends the packet with actual enchantments in it when
+# items are put in that can have enchantments.
 packet_player_enchant_options:
    !id: 0x92
    !bound: client
-   enchant_options: EnchantOptions
+   # Options is a list of possible enchantment options for the item that was put into the enchantment table.
+   options: EnchantOption[]varint
 
 # ItemStackRequest is sent by the client to change item stacks in an inventory. It is essentially a
 # replacement of the InventoryTransaction packet added in 1.16 for inventory specific actions, such as moving
@@ -2422,9 +2772,16 @@ packet_item_stack_request:
    !bound: server
    requests: ItemStackRequest[]varint
 
+# ItemStackResponse is sent by the server in response to an ItemStackRequest packet from the client. This
+# packet is used to either approve or reject ItemStackRequests from the client. If a request is approved, the
+# client will simply continue as normal. If rejected, the client will undo the actions so that the inventory
+# should be in sync with the server again.
 packet_item_stack_response:
    !id: 0x94
    !bound: client
+   # Responses is a list of responses to ItemStackRequests sent by the client before. Responses either
+   # approve or reject a request from the client.
+   # Vanilla limits the size of this slice to 4096.
    responses: ItemStackResponses
 
 # PlayerArmourDamage is sent by the server to damage the armour of a player. It is a very efficient packet,
