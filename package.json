@@ -1,6 +1,6 @@
 {
   "name": "bedrock-protocol",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Minecraft Bedrock Edition protocol library",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "minecraft-folder-path": "^1.1.0",
     "node-fetch": "^2.6.1",
     "prismarine-nbt": "^1.5.0",
-    "protodef": "github:extremeheat/node-protodef#vars",
+    "protodef": "npm:protodef-compiler-fix@latest",
     "smart-buffer": "^4.1.0",
     "uuid-1345": "^1.0.2"
   },
@@ -39,13 +39,13 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.10",
-    "bedrock-provider": "^1.0.0",
     "babel-eslint": "^10.1.0",
+    "bedrock-protocol": "file:.",
+    "bedrock-provider": "^1.0.0",
+    "leveldb-zlib": "^0.0.26",
     "mocha": "^8.3.2",
     "protodef-yaml": "^1.1.0",
-    "standard": "^16.0.3",
-    "leveldb-zlib": "^0.0.26",
-    "bedrock-protocol": "file:."
+    "standard": "^16.0.3"
   },
   "standard": {
     "parser": "babel-eslint"
