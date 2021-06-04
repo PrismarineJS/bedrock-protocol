@@ -7,22 +7,22 @@ declare module "bedrock-protocol" {
 
   export interface Options {
     // The string version to start the client or server as
-    version: string
+    version?: string
     // For the client, the host of the server to connect to (default: 127.0.0.1)
     // For the server, the host to bind to (default: 0.0.0.0)
     host: string
     // The port to connect or bind to, default: 19132
-    port: number
+    port?: number
     // For the client, if we should login with Microsoft/Xbox Live.
     // For the server, if we should verify client's authentication with Xbox Live.
-    offline: boolean
+    offline?: boolean
   }
 
   export interface ClientOptions extends Options {
     // The view distance in chunks
-    viewDistance: number,
+    viewDistance?: number,
     // Specifies which game edition to sign in as. Optional, but some servers verify this.
-    authTitle: title | string
+    authTitle?: title | string
   }
 
   export interface ServerOptions extends Options {
