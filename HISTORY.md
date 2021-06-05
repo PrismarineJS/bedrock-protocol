@@ -1,3 +1,7 @@
+## 3.3.0
+* Protocol updates for 1.16, with some minor breaking changes to protocol fields [#95](https://github.com/PrismarineJS/bedrock-protocol/pull/95)
+* Fix npm install issues
+
 ## 3.2.1
 * Add `authTitle` option to Relay proxy [#92](https://github.com/PrismarineJS/bedrock-protocol/pull/92)
 * Protocol, type definition fixes
