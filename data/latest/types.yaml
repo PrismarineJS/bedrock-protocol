@@ -283,8 +283,12 @@ MetadataDictionary: []varint
       117: nearby_cured_discount_timestamp
       118: hitbox
       119: is_buoyant
-      120: buoyancy_data
-      121: goat_horn_count
+      120: freezing_effect_strength
+      121: buoyancy_data
+      122: goat_horn_count
+      123: base_runtime_id
+      124: define_properties
+      125: update_properties
    type: varint =>
       0: byte
       1: short
@@ -715,7 +719,7 @@ Enchant:
    id: u8
    level: u8
 
-EnchantOptions: []varint
+EnchantOption:
    cost: varint
    slot_flags: li32
    equip_enchants: Enchant[]varint
@@ -1014,6 +1018,42 @@ MapDecoration:
    # Colour is the colour of the map decoration. Some map decoration types have a specific colour set
    # automatically, whereas others may be changed.
    color_abgr: varint
+
+
+StructureBlockSettings:
+   # PaletteName is the name of the palette used in the structure. Currently, it seems that this field is
+   # always 'default'.
+   palette_name: string
+   # IgnoreEntities specifies if the structure should ignore entities or include them. If set to false,
+   # entities will also show up in the exported structure.
+   ignore_entities: bool
+   # IgnoreBlocks specifies if the structure should ignore blocks or include them. If set to false, blocks
+   # will show up in the exported structure.
+   ignore_blocks: bool
+   # Size is the size of the area that is about to be exported. The area exported will start at the
+   # Position + Offset, and will extend as far as Size specifies.
+   size: BlockCoordinates
+   # Offset is the offset position that was set in the structure block. The area exported is offset by this
+   # position.
+   # **TODO**: This will be renamed to offset soon
+   structure_offset: BlockCoordinates
+   # LastEditingPlayerUniqueID is the unique ID of the player that last edited the structure block that
+   # these settings concern.
+   last_editing_player_unique_id: zigzag64
+   # Rotation is the rotation that the structure block should obtain. See the constants above for available
+   # options.
+   rotation: u8
+   # Mirror specifies the way the structure should be mirrored. It is either no mirror at all, mirror on the
+   # x/z axis or both.
+   mirror: u8
+   # Integrity is usually 1, but may be set to a number between 0 and 1 to omit blocks randomly, using
+   # the Seed that follows.
+   integrity: lf32
+   # Seed is the seed used to omit blocks if Integrity is not equal to one. If the Seed is 0, a random
+   # seed is selected to omit blocks.
+   seed: lu32
+   # Pivot is the pivot around which the structure may be rotated.
+   pivot: vec3f
 
 # List of Window IDs. When a new container is opened (container_open), a new sequential Window ID is created.
 # Below window IDs are hard-coded and created when the game starts and the server does not 

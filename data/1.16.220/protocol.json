@@ -723,8 +723,12 @@
                     "117": "nearby_cured_discount_timestamp",
                     "118": "hitbox",
                     "119": "is_buoyant",
-                    "120": "buoyancy_data",
-                    "121": "goat_horn_count"
+                    "120": "freezing_effect_strength",
+                    "121": "buoyancy_data",
+                    "122": "goat_horn_count",
+                    "123": "base_runtime_id",
+                    "124": "define_properties",
+                    "125": "update_properties"
                   }
                 }
               ]
@@ -1946,62 +1950,56 @@
         }
       ]
     ],
-    "EnchantOptions": [
-      "array",
-      {
-        "countType": "varint",
-        "type": [
-          "container",
-          [
+    "EnchantOption": [
+      "container",
+      [
+        {
+          "name": "cost",
+          "type": "varint"
+        },
+        {
+          "name": "slot_flags",
+          "type": "li32"
+        },
+        {
+          "name": "equip_enchants",
+          "type": [
+            "array",
             {
-              "name": "cost",
-              "type": "varint"
-            },
-            {
-              "name": "slot_flags",
-              "type": "li32"
-            },
-            {
-              "name": "equip_enchants",
-              "type": [
-                "array",
-                {
-                  "countType": "varint",
-                  "type": "Enchant"
-                }
-              ]
-            },
-            {
-              "name": "held_enchants",
-              "type": [
-                "array",
-                {
-                  "countType": "varint",
-                  "type": "Enchant"
-                }
-              ]
-            },
-            {
-              "name": "self_enchants",
-              "type": [
-                "array",
-                {
-                  "countType": "varint",
-                  "type": "Enchant"
-                }
-              ]
-            },
-            {
-              "name": "name",
-              "type": "string"
-            },
-            {
-              "name": "option_id",
-              "type": "zigzag32"
+              "countType": "varint",
+              "type": "Enchant"
             }
           ]
-        ]
-      }
+        },
+        {
+          "name": "held_enchants",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "Enchant"
+            }
+          ]
+        },
+        {
+          "name": "self_enchants",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "Enchant"
+            }
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "option_id",
+          "type": "zigzag32"
+        }
+      ]
     ],
     "Action": [
       "mapper",
@@ -2576,6 +2574,55 @@
         {
           "name": "color_abgr",
           "type": "varint"
+        }
+      ]
+    ],
+    "StructureBlockSettings": [
+      "container",
+      [
+        {
+          "name": "palette_name",
+          "type": "string"
+        },
+        {
+          "name": "ignore_entities",
+          "type": "bool"
+        },
+        {
+          "name": "ignore_blocks",
+          "type": "bool"
+        },
+        {
+          "name": "size",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "structure_offset",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "last_editing_player_unique_id",
+          "type": "zigzag64"
+        },
+        {
+          "name": "rotation",
+          "type": "u8"
+        },
+        {
+          "name": "mirror",
+          "type": "u8"
+        },
+        {
+          "name": "integrity",
+          "type": "lf32"
+        },
+        {
+          "name": "seed",
+          "type": "lu32"
+        },
+        {
+          "name": "pivot",
+          "type": "vec3f"
         }
       ]
     ],
@@ -3563,15 +3610,26 @@
           "type": "i32"
         },
         {
-          "name": "payload_size",
-          "type": "varint"
-        },
+          "name": "tokens",
+          "type": [
+            "encapsulated",
+            {
+              "lengthType": "varint",
+              "type": "LoginTokens"
+            }
+          ]
+        }
+      ]
+    ],
+    "LoginTokens": [
+      "container",
+      [
         {
-          "name": "chain",
+          "name": "identity",
           "type": "LittleString"
         },
         {
-          "name": "client_data",
+          "name": "client",
           "type": "LittleString"
         }
       ]
@@ -6166,6 +6224,81 @@
         {
           "name": "is_block",
           "type": "bool"
+        },
+        {
+          "anon": true,
+          "type": [
+            "switch",
+            {
+              "compareTo": "is_block",
+              "fields": {
+                "true": [
+                  "container",
+                  [
+                    {
+                      "name": "position",
+                      "type": "BlockCoordinates"
+                    },
+                    {
+                      "name": "mode",
+                      "type": [
+                        "mapper",
+                        {
+                          "type": "varint",
+                          "mappings": {
+                            "0": "impulse",
+                            "1": "repeat",
+                            "2": "chain"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "needs_redstone",
+                      "type": "bool"
+                    },
+                    {
+                      "name": "conditional",
+                      "type": "bool"
+                    }
+                  ]
+                ]
+              },
+              "default": [
+                "container",
+                [
+                  {
+                    "name": "minecart_entity_runtime_id",
+                    "type": "varint64"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "name": "command",
+          "type": "string"
+        },
+        {
+          "name": "last_output",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "should_track_output",
+          "type": "bool"
+        },
+        {
+          "name": "tick_delay",
+          "type": "li32"
+        },
+        {
+          "name": "execute_on_first_tick",
+          "type": "bool"
         }
       ]
     ],
@@ -6316,7 +6449,7 @@
       "container",
       [
         {
-          "name": "package_id",
+          "name": "pack_id",
           "type": "string"
         },
         {
@@ -6328,7 +6461,7 @@
           "type": "lu32"
         },
         {
-          "name": "compressed_package_size",
+          "name": "size",
           "type": "lu64"
         },
         {
@@ -6341,7 +6474,22 @@
         },
         {
           "name": "pack_type",
-          "type": "u8"
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "1": "addon",
+                "2": "cached",
+                "3": "copy_protected",
+                "4": "behavior",
+                "5": "persona_piece",
+                "6": "resources",
+                "7": "skins",
+                "8": "world_template"
+              }
+            }
+          ]
         }
       ]
     ],
@@ -6349,7 +6497,7 @@
       "container",
       [
         {
-          "name": "package_id",
+          "name": "pack_id",
           "type": "string"
         },
         {
@@ -6370,7 +6518,7 @@
       "container",
       [
         {
-          "name": "package_id",
+          "name": "pack_id",
           "type": "string"
         },
         {
@@ -6478,24 +6626,72 @@
     ],
     "packet_structure_block_update": [
       "container",
-      []
+      [
+        {
+          "name": "position",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "structure_name",
+          "type": "string"
+        },
+        {
+          "name": "data_field",
+          "type": "string"
+        },
+        {
+          "name": "include_players",
+          "type": "bool"
+        },
+        {
+          "name": "show_bounding_box",
+          "type": "bool"
+        },
+        {
+          "name": "structure_block_type",
+          "type": "zigzag32"
+        },
+        {
+          "name": "settings",
+          "type": "StructureBlockSettings"
+        },
+        {
+          "name": "redstone_save_mode",
+          "type": "zigzag32"
+        },
+        {
+          "name": "should_trigger",
+          "type": "bool"
+        }
+      ]
     ],
     "packet_show_store_offer": [
       "container",
       [
         {
-          "name": "unknown0",
+          "name": "offer_id",
           "type": "string"
         },
         {
-          "name": "unknown1",
+          "name": "show_all",
           "type": "bool"
         }
       ]
     ],
     "packet_purchase_receipt": [
       "container",
-      []
+      [
+        {
+          "name": "receipts",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "string"
+            }
+          ]
+        }
+      ]
     ],
     "packet_player_skin": [
       "container",
@@ -6524,7 +6720,18 @@
     ],
     "packet_sub_client_login": [
       "container",
-      []
+      [
+        {
+          "name": "tokens",
+          "type": [
+            "encapsulated",
+            {
+              "lengthType": "varint",
+              "type": "LoginTokens"
+            }
+          ]
+        }
+      ]
     ],
     "packet_initiate_web_socket_connection": [
       "container",
@@ -6539,7 +6746,7 @@
       "container",
       [
         {
-          "name": "unknown",
+          "name": "entity_type",
           "type": "varint"
         }
       ]
@@ -6662,15 +6869,28 @@
           "type": "varint64"
         },
         {
-          "name": "unknown0",
-          "type": "u8"
+          "name": "request_type",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "set_actions",
+                "1": "execute_action",
+                "2": "execute_closing_commands",
+                "3": "set_name",
+                "4": "set_skin",
+                "5": "set_interaction_text"
+              }
+            }
+          ]
         },
         {
-          "name": "unknown1",
+          "name": "command",
           "type": "string"
         },
         {
-          "name": "unknown2",
+          "name": "action_type",
           "type": "u8"
         }
       ]
@@ -6679,7 +6899,7 @@
       "container",
       [
         {
-          "name": "file_name",
+          "name": "image_name",
           "type": "string"
         },
         {
@@ -6687,7 +6907,7 @@
           "type": "string"
         },
         {
-          "name": "unknown2",
+          "name": "book_id",
           "type": "string"
         }
       ]
@@ -6893,20 +7113,21 @@
       "container",
       [
         {
-          "name": "useless_byte",
-          "type": "u8"
+          "name": "action_type",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "combine",
+                "1": "react"
+              }
+            }
+          ]
         },
         {
-          "name": "lab_table_x",
-          "type": "varint"
-        },
-        {
-          "name": "lab_table_y",
-          "type": "varint"
-        },
-        {
-          "name": "lab_table_z",
-          "type": "varint"
+          "name": "position",
+          "type": "vec3u"
         },
         {
           "name": "reaction_type",
@@ -7225,7 +7446,7 @@
           "type": "vec3f"
         },
         {
-          "name": "block_id",
+          "name": "extra_data",
           "type": "zigzag32"
         },
         {
@@ -7330,19 +7551,95 @@
     ],
     "packet_on_screen_texture_animation": [
       "container",
-      []
+      [
+        {
+          "name": "animation_type",
+          "type": "lu32"
+        }
+      ]
     ],
     "packet_map_create_locked_copy": [
       "container",
-      []
+      [
+        {
+          "name": "original_map_id",
+          "type": "zigzag64"
+        },
+        {
+          "name": "new_map_id",
+          "type": "zigzag64"
+        }
+      ]
     ],
     "packet_structure_template_data_export_request": [
       "container",
-      []
+      [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "position",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "settings",
+          "type": "StructureBlockSettings"
+        },
+        {
+          "name": "request_type",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "1": "export_from_save",
+                "2": "export_from_load",
+                "3": "query_saved_structure"
+              }
+            }
+          ]
+        }
+      ]
     ],
     "packet_structure_template_data_export_response": [
       "container",
-      []
+      [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "success",
+          "type": "bool"
+        },
+        {
+          "name": "nbt",
+          "type": [
+            "switch",
+            {
+              "compareTo": "success",
+              "fields": {
+                "true": "nbt"
+              },
+              "default": "void"
+            }
+          ]
+        },
+        {
+          "name": "response_type",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "1": "export",
+                "2": "query"
+              }
+            }
+          ]
+        }
+      ]
     ],
     "packet_update_block_properties": [
       "container",
@@ -7792,8 +8089,14 @@
       "container",
       [
         {
-          "name": "enchant_options",
-          "type": "EnchantOptions"
+          "name": "options",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "EnchantOption"
+            }
+          ]
         }
       ]
     ],

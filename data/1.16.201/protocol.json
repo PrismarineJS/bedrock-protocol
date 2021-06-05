@@ -2948,15 +2948,26 @@
           "type": "i32"
         },
         {
-          "name": "payload_size",
-          "type": "varint"
-        },
+          "name": "tokens",
+          "type": [
+            "encapsulated",
+            {
+              "lengthType": "varint",
+              "type": "LoginTokens"
+            }
+          ]
+        }
+      ]
+    ],
+    "LoginTokens": [
+      "container",
+      [
         {
-          "name": "chain",
+          "name": "identity",
           "type": "LittleString"
         },
         {
-          "name": "client_data",
+          "name": "client",
           "type": "LittleString"
         }
       ]
