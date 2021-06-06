@@ -5,11 +5,17 @@ const { parse, genHTML } = require('protodef-yaml')
 
 let inputFile, includeComments
 
+const ci = process.env.GITHUB_ACTIONS || process.argv[3]
+
 function createDocs() {
   fs.writeFileSync('packet_map.yml', '!import: types.yaml')
   const inter = parse(inputFile = 'proto.yml', includeComments = true)
   const html = genHTML(inter, { includeHeader: true })
-  fs.writeFileSync('proto.html', html)
+  if (ci) {
+    const version = inter['!version']
+    fs.writeFileSync(`../${version}.html`, html)
+  }
+
   fs.unlinkSync('packet_map.yml')
 }
 
