@@ -40,6 +40,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./data  # default: public
+        publish_dir: ./data/publish  # default: public
         destination_dir: protocol
         exclude_assets: '*.js,*.json,*.yml,*.yaml'
