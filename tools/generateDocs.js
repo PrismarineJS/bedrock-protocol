@@ -10,9 +10,7 @@ function createDocs () {
   const inter = parse('proto.yml', true, true)
   const html = genHTML(inter, { includeHeader: true })
   if (ci) {
-    try { fs.mkdirSync('../publish') } catch {}
-    const version = inter['!version']
-    fs.writeFileSync(`../publish/${version}.html`, html)
+    fs.writeFileSync(`../${version}/index.html`, html)
   }
 
   fs.unlinkSync('packet_map.yml')
