@@ -2,6 +2,7 @@ const { Server, Client } = require('../')
 const { dumpPackets } = require('../tools/genPacketDumps')
 const DataProvider = require('../data/provider')
 const { ping } = require('../src/createClient')
+const { CURRENT_VERSION } = require('../src/options')
 
 // First we need to dump some packets that a vanilla server would send a vanilla
 // client. Then we can replay those back in our custom server.
@@ -9,7 +10,7 @@ function prepare (version) {
   return dumpPackets(version)
 }
 
-async function startTest (version = '1.16.220', ok) {
+async function startTest (version = CURRENT_VERSION, ok) {
   await prepare(version)
   const Item = require('../types/Item')(version)
   const port = 19130

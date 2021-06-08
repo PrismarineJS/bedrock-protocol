@@ -1,7 +1,7 @@
 # Created from MiNET and gophertunnel docs
 # The version below is the latest version this protocol schema was updated for.
 # The output protocol.json will be in the folder for the version
-!version: 1.16.220
+!version: 1.17.0
 
 # Some ProtoDef aliases
 string: ["pstring",{"countType":"varint"}]
@@ -379,7 +379,8 @@ packet_start_game:
    # is a new system introduced in 1.16. Backwards compatibility with the inventory transactions has to
    # some extent been preserved, but will eventually be removed.
    server_authoritative_inventory: bool
-
+   # The server's engine version, used for telemetry
+   engine: string
 
 packet_add_player:
    !id: 0x0c
@@ -629,8 +630,8 @@ packet_level_event:
       1065: dye_used
       1066: ink_sack_used  
       2000: particle_shoot   #TODO: check 2000-2017
-      2001: particle_destroy  
-      2002: particle_splash  
+      2001: particle_destroy 
+      2002: particle_splash
       2003: particle_eye_despawn  
       2004: particle_spawn  
       2005: particle_crop_growth
@@ -683,7 +684,7 @@ packet_level_event:
       3600: block_start_break  
       3601: block_stop_break  
       4000: set_data  
-      9800: players_sleeping  
+      9800: players_sleeping
       0x4000: add_particle_mask
    position: vec3f
    data: zigzag32
@@ -1243,7 +1244,7 @@ packet_event:
       9: agent_created 
       10: banner_pattern_removed
       11: commaned_executed 
-      12: fish_bucketed 
+      12: fish_bucketed
       13: mob_born 
       14: pet_died 
       15: cauldron_block_used 
@@ -1256,6 +1257,7 @@ packet_event:
       22: honey_harvested
       23: target_block_hit
       24: piglin_barter
+      25: waxed_or_unwaxed_copper
    use_player_id: u8
    event_data: restBuffer # Unknown data, TODO: add
 
@@ -3016,3 +3018,25 @@ packet_debug_renderer:
          alpha: lf32
          # Duration is how long the debug will last in the world for. It is measured in milliseconds.
          duration: li64
+
+# Sent by the server to synchronize/update entity properties as NBT, an alternative to Set Entity Data.
+packet_sync_entity_property:
+   !id: 0xa5
+   !bound: client
+   nbt: nbt
+
+# AddVolumeEntity sends a volume entity's definition and components from server to client.
+packet_add_volume_entity:
+   !id: 0xa6
+   !bound: client
+   # The Runtime Entity ID
+   entity_id: varint64
+   nbt: nbt
+
+# RemoveVolumeEntity indicates a volume entity to be removed from server to client.
+packet_remove_volume_entity:
+   !id: 0xa7
+   !bound: client
+   # The Runtime Entity ID
+   entity_id: varint64
+

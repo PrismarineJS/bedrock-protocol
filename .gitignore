@@ -9,3 +9,5 @@ data/**/read.js
 data/**/write.js
 data/**/size.js
 tools/bds*
+tools/*/*
+*.txt

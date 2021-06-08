@@ -1,3 +1,5 @@
+const { Versions } = require('../src/options')
+
 module.exports = (version) =>
   class Item {
     nbt
@@ -11,7 +13,7 @@ module.exports = (version) =>
     }
 
     static fromBedrock (obj) {
-      if (version === '1.16.220') {
+      if (Versions[version] >= Versions['1.16.220']) {
         return new Item({
           networkId: obj.network_id,
           stackId: obj.stack_id,
@@ -32,7 +34,7 @@ module.exports = (version) =>
     }
 
     toBedrock () {
-      if (version === '1.16.220') {
+      if (Versions[version] >= Versions['1.16.220']) {
         return {
           network_id: this.networkId,
           count: this.count,

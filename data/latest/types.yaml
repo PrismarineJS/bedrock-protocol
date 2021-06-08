@@ -45,6 +45,7 @@ GameMode: zigzag32 =>
 
 GameRule:
    name: string
+   editable: bool
    type: varint =>
       1: bool
       2: int
@@ -283,12 +284,11 @@ MetadataDictionary: []varint
       117: nearby_cured_discount_timestamp
       118: hitbox
       119: is_buoyant
-      120: freezing_effect_strength
-      121: buoyancy_data
-      122: goat_horn_count
-      123: base_runtime_id
-      124: define_properties
-      125: update_properties
+      120: base_runtime_id
+      121: freezing_effect_strength
+      122: buoyancy_data
+      123: goat_horn_count
+      124: update_properties
    type: varint =>
       0: byte
       1: short
@@ -418,7 +418,10 @@ MetadataFlags2: [ "bitflags", {
       "emoting",
       "celebrating",
       "admiring",
-      "celebrating_special"
+      "celebrating_special",
+      "unknown95",               # 95
+      "ram_attack",
+      "playing_dead"
    ]
 }]
 
@@ -1042,10 +1045,24 @@ StructureBlockSettings:
    last_editing_player_unique_id: zigzag64
    # Rotation is the rotation that the structure block should obtain. See the constants above for available
    # options.
-   rotation: u8
+   rotation: u8 =>
+      0: none
+      1: 90_deg
+      2: 180_deg
+      3: 270_deg
    # Mirror specifies the way the structure should be mirrored. It is either no mirror at all, mirror on the
    # x/z axis or both.
-   mirror: u8
+   mirror: u8 =>
+      0: none
+      1: x_axis
+      2: z_axis
+      3: both_axes
+   animation_mode: u8 =>
+      0: none
+      1: layers
+      2: blocks
+   # How long the duration for this animation is
+   animation_duration: lf32
    # Integrity is usually 1, but may be set to a number between 0 and 1 to omit blocks randomly, using
    # the Seed that follows.
    integrity: lf32
@@ -1553,6 +1570,31 @@ SoundType: varint =>
    - CaveVinesPickBerries
    - BigDripleafTiltDown
    - BigDripleafTiltUp
+   - unknown335
+   - unknown336
+   - unknown337
+   - unknown338
+   - copper_wax_on
+   - copper_wax_off
+   - scrape
+   - player_hurt_drown
+   - player_hurt_on_fire
+   - player_hurt_freeze
+   - use_spyglass
+   - stop_using_spyglass
+   - amethyst_block_chime
+   - ambient_screamer
+   - hurt_screamer
+   - death_screamer
+   - milk_screamer
+   - jump_to_block
+   - pre_ram
+   - pre_ram_screamer
+   - ram_impact
+   - ram_impact_screamer
+   - squid_ink_squirt
+   - glow_squid_ink_squirt
+   - convert_to_stray
    - Undefined
 
 # TODO: remove?
