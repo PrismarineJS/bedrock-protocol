@@ -31,3 +31,23 @@ jobs:
         body: ${{ steps.publish.outputs.version }}
         draft: false
         prerelease: false
+  document:
+    name: Generate docs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@master
+    - name: Set up Node.js
+      uses: actions/setup-node@master
+      with:
+        node-version: 14.0.0
+    - run: npm install
+    - run: npm run build
+    - run: npm run genDocs
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./data/publish  # default: public
+        destination_dir: protocol
+        exclude_assets: '*.js,*.json,*.yml,*.yaml'
