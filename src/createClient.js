@@ -15,7 +15,7 @@ function createClient (options) {
     client.ping().then(data => {
       const advert = advertisement.fromServerName(data)
       console.log(`Connecting to server ${advert.motd} (${advert.name}), version ${advert.version}`)
-      client.version = data.ping
+      client.version = options.version ?? advert.ping
       connect(client)
     }, client)
   }
