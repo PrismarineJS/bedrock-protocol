@@ -1,3 +1,8 @@
+## 3.4.0
+* Initial 1.17 support [#99](https://github.com/PrismarineJS/bedrock-protocol/pull/99)
+* update connect version based on ping response & fix typings (u9g) [#101](https://github.com/PrismarineJS/bedrock-protocol/pull/101)
+* fix: ping types. (JammSpread) [#100](https://github.com/PrismarineJS/bedrock-protocol/pull/100)
+
 ## 3.3.0
 * Protocol updates for 1.16, with some minor breaking changes to protocol fields [#95](https://github.com/PrismarineJS/bedrock-protocol/pull/95)
 * Fix npm install issues
