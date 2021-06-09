@@ -10,7 +10,7 @@ Returns a `Client` instance and connects to the server.
 | ----------- | ----------- |-|
 | host        | **Required** |  host to connect to, for example `127.0.0.1`. |
 | port        | *optional* |  port to connect to, default to **19132**     |
-| version     | *optional* |  Version to connect as. <br/>(Future feature, see [#69][1]) If not specified, should automatically match server version. <br/>(Current feature) Defaults to latest version. |
+| version     | *optional* |  Version to connect as. If not specified, automatically match server version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Conditional | Required if `offline` set to true : Username to connect to server as.     |
 | authTitle   | *optional* | The title ID to connect as, see the README for usage.     |
@@ -160,5 +160,3 @@ relay.on('connect', player => {
 ```
 
 'Relay' emits 'clientbound' and 'serverbound' events, along with the data for the outgoing packet that can be modified. You can send a packet to the client with `player.queue()` or to the backend server with `player.upstream.queue()`.
-
-[1]: https://github.com/PrismarineJS/bedrock-protocol/issues/69

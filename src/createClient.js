@@ -4,7 +4,7 @@ const assert = require('assert')
 const advertisement = require('./server/advertisement')
 const { sleep } = require('./datatypes/util')
 
-/** @param {{ version?: number, host: string, port?: number, connectTimeout?: number }} options */
+/** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
   assert(options)
   const client = new Client({ port: 19132, ...options })
@@ -15,7 +15,7 @@ function createClient (options) {
     client.ping().then(data => {
       const advert = advertisement.fromServerName(data)
       console.log(`Connecting to server ${advert.motd} (${advert.name}), version ${advert.version}`)
-      // TODO: update connect version based on ping response
+      client.version = options.version ?? advert.version
       connect(client)
     }, client)
   }
