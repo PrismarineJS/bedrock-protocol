@@ -154,5 +154,5 @@ declare module "bedrock-protocol" {
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
-  export function ping({ host, port }) : ServerAdvertisement
+  export function ping({ host, port }: { host: string, port: number }): Promise<ServerAdvertisement>
 }
