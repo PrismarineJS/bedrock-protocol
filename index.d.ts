@@ -22,7 +22,9 @@ declare module "bedrock-protocol" {
     // The view distance in chunks
     viewDistance?: number,
     // Specifies which game edition to sign in as. Optional, but some servers verify this.
-    authTitle?: title | string
+    authTitle?: title | string,
+    // whether to skip initial ping and immediately connect
+    skipPing?: boolean
   }
 
   export interface ServerOptions extends Options {
