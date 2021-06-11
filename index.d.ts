@@ -36,6 +36,7 @@ declare module "bedrock-protocol" {
       // The sub-header for the MOTD shown in the server list.
       levelName: string
     }
+    advertisementFn: () => ServerAdvertisement
   }
 
   enum ClientStatus {
