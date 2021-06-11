@@ -17,7 +17,8 @@ Returns a `Client` instance and connects to the server.
 | connectTimeout | *optional* | default to **9000ms**. How long to wait in milliseconds while trying to connect to server. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
-| autoInitPlayer | optional |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
+| autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
+| skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
 
 
 ## be.createServer(options) : Server
