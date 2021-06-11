@@ -36,7 +36,7 @@ authenticated unless offline is set to true.
 | maxPlayers | *optional* | default to **3**. Set this to change the maximum number of players connected.   |
 | kickTimeout | *[Future][1]* | How long to wait before kicking a unresponsive client. |
 | motd        | *optional* | The "message of the day" for the server, the message shown to players in the server list. See usage below. |
-| advertismentFn | *optional* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
+| advertisementFn | *optional* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
 
 ## be.ping({ host, port }) : ServerAdvertisement
 
