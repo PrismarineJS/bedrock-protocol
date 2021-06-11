@@ -23,6 +23,8 @@ declare module "bedrock-protocol" {
     viewDistance?: number,
     // Specifies which game edition to sign in as. Optional, but some servers verify this.
     authTitle?: title | string,
+    // How long to wait in milliseconds while trying to connect to the server.
+    connectTimeout?: number
     // whether to skip initial ping and immediately connect
     skipPing?: boolean
   }
