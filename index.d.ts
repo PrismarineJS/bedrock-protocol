@@ -145,10 +145,8 @@ declare module "bedrock-protocol" {
     name: string
     protocol: number
     version: string
-    players: {
-      online: number,
-      max: number
-    }
+    playersOnline: number
+    playersMax: number
     gamemode: string
     serverId: string
   }
