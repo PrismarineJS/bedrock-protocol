@@ -2,6 +2,7 @@ const { ClientStatus, Connection } = require('./connection')
 const fs = require('fs')
 const Options = require('./options')
 const debug = require('debug')('minecraft-protocol')
+// const { serialize } = require('./datatypes/util')
 
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
@@ -110,7 +111,7 @@ class Player extends Connection {
   close (reason) {
     if (this.status !== ClientStatus.Disconnected) {
       this.emit('close') // Emit close once
-      if (!reason) console.trace('Client closed connection', this.connection?.address)
+      if (!reason) this.inLog('Client closed connection', this.connection?.address)
     }
     this.q = []
     this.q2 = []
@@ -130,6 +131,7 @@ class Player extends Connection {
       return
     }
 
+    // this.inLog(des.data.name, serialize(des.data.params).slice(0, 200))
     switch (des.data.name) {
       case 'login':
         this.onLogin(des)
