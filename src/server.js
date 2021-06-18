@@ -19,8 +19,6 @@ class Server extends EventEmitter {
     /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
-    this.inLog = (...args) => debug('S ->', ...args)
-    this.outLog = (...args) => debug('S <-', ...args)
     this.conLog = debug
   }
 
@@ -52,7 +50,6 @@ class Server extends EventEmitter {
   }
 
   onEncapsulated = (buffer, address) => {
-    // this.inLog('encapsulated', address, buffer)
     const client = this.clients[address]
     if (!client) {
       throw new Error(`packet from unknown inet addr: ${address}`)

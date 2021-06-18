@@ -22,6 +22,7 @@ class Connection extends EventEmitter {
 
   set status (val) {
     debug('* new status', val)
+    this.emit('status', val)
     this.#status = val
   }
 
@@ -35,7 +36,7 @@ class Connection extends EventEmitter {
 
   startEncryption (iv) {
     this.encryptionEnabled = true
-    this.inLog('Started encryption', this.sharedSecret, iv)
+    this.inLog?.('Started encryption', this.sharedSecret, iv)
     this.decrypt = cipher.createDecryptor(this, iv)
     this.encrypt = cipher.createEncryptor(this, iv)
   }
@@ -57,7 +58,7 @@ class Connection extends EventEmitter {
   }
 
   write (name, params) {
-    this.outLog('sending', name, params)
+    this.outLog?.(name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
     const batch = new Framer()
     const packet = this.serializer.createPacketBuffer({ name, params })
@@ -71,7 +72,7 @@ class Connection extends EventEmitter {
   }
 
   queue (name, params) {
-    this.outLog('Q <- ', name, params)
+    this.outLog?.('Q <- ', name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
     const packet = this.serializer.createPacketBuffer({ name, params })
     if (name === 'level_chunk') {
@@ -88,7 +89,6 @@ class Connection extends EventEmitter {
     this.loop = setInterval(() => {
       if (this.sendQ.length) {
         const batch = new Framer()
-        this.outLog('<- Batch', this.sendIds)
         batch.addEncodedPackets(this.sendQ)
         this.sendQ = []
         this.sendIds = []
@@ -140,7 +140,6 @@ class Connection extends EventEmitter {
 
   // These are callbacks called from encryption.js
   onEncryptedPacket = (buf) => {
-    this.outLog('Enc buf', buf)
     const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
 
     this.sendMCPE(packet)
@@ -160,7 +159,6 @@ class Connection extends EventEmitter {
         this.decrypt(buffer.slice(1))
       } else {
         Framer.decode(buffer, packets => {
-          this.inLog('Reading ', packets.length, 'packets')
           for (const packet of packets) {
             this.readPacket(packet)
           }

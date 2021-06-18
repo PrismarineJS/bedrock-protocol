@@ -46,7 +46,7 @@ class RelayPlayer extends Player {
     const params = des.data.params
     this.upInLog('->', name, params)
 
-    if (name === 'play_status' && params.status === 'login_success') return // We already sent this, this needs to be sent ASAP or client will disconnect
+    if (name === 'play_status' && params.status === 'login_success') return // Already sent this, this needs to be sent ASAP or client will disconnect
 
     if (debugging) { // some packet encode/decode testing stuff
       this.server.deserializer.verify(des, this.server.serializer)
@@ -71,8 +71,8 @@ class RelayPlayer extends Player {
     this.upOutLog('Flushing upstream queue')
     for (const e of this.upQ) { // Send the queue
       const des = this.server.deserializer.parsePacketBuffer(e)
-      if (des.data.name === 'client_cache_status') { // Currently broken, force off the chunk cache
-        // this.upstream.write('client_cache_status', { enabled: false })
+      if (des.data.name === 'client_cache_status') {
+        // Currently not working, force off the chunk cache
       } else {
         this.upstream.write(des.data.name, des.data.params)
       }
@@ -141,6 +141,12 @@ class Relay extends Server {
     this.conLog = debug
   }
 
+  // Called after a new player joins our proxy. We first create a new Client to connect to
+  // the remote server. Then we listen to soem events and proxy them over. The queue and
+  // flushing logic is more of an accessory to make sure the server or client recieves
+  // a packet, no matter what state it's in. For example, if the client wants to send a
+  // packet to the server but it's not connected, it will add to the queue and send as soon
+  // as a connection with the server is established.
   openUpstreamConnection (ds, clientAddr) {
     const client = new Client({
       authTitle: this.options.authTitle,
@@ -157,7 +163,7 @@ class Relay extends Server {
     this.conLog('Connecting to', this.options.destination.host, this.options.destination.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
-    client.once('join', () => { // Intercept once handshaking done
+    client.once('join', () => {
       // Tell the server to disable chunk cache for this connection as a client.
       // Wait a bit for the server to ack and process, the continue with proxying
       // otherwise the player can get stuck in an empty world.
@@ -172,6 +178,7 @@ class Relay extends Server {
     this.upstreams.set(clientAddr.hash, client)
   }
 
+  // Close a connection to a remote backend server.
   closeUpstreamConnection (clientAddr) {
     const up = this.upstreams.get(clientAddr.hash)
     if (!up) throw Error(`unable to close non-open connection ${clientAddr.hash}`)
@@ -180,6 +187,8 @@ class Relay extends Server {
     this.conLog('closed upstream connection', clientAddr)
   }
 
+  // Called when a new player connects to our proxy server. Once the player has authenticted,
+  // we can open an upstream connection to the backend server.
   onOpenConnection = (conn) => {
     if (this.forceSingle && this.clientCount > 0) {
       this.conLog('dropping connection as single client relay', conn)
@@ -196,6 +205,7 @@ class Relay extends Server {
     }
   }
 
+  // When our server is closed, make sure to kick all of the connected clients and run emitters.
   close (...a) {
     for (const [, v] of this.upstreams) {
       v.close(...a)
