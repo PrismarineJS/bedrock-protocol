@@ -35,8 +35,10 @@ class Client extends Connection {
     this.startGameData = {}
     this.clientRuntimeId = null
 
-    this.inLog = (...args) => debug('C ->', ...args)
-    this.outLog = (...args) => debug('C <-', ...args)
+    if (process.env.DEBUG.includes('minecraft-protocol')) {
+      this.inLog = (...args) => debug('C ->', ...args)
+      this.outLog = (...args) => debug('C <-', ...args)
+    }
   }
 
   connect () {

@@ -13,7 +13,6 @@ function KeyExchange (client, server, options) {
   client.ecdhKeyPair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
   client.publicKeyDER = client.ecdhKeyPair.publicKey.export(der)
   client.privateKeyPEM = client.ecdhKeyPair.privateKey.export(pem)
-  console.log(client.publicKeyPEM)
   client.clientX509 = client.publicKeyDER.toString('base64')
 
   function startClientboundEncryption (publicKey) {
