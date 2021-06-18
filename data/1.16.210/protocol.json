@@ -1,13 +1,19 @@
 {
   "types": {
     "varint32": "varint",
-    "bool": "native",
+    "varint64": "native",
     "zigzag32": "native",
     "zigzag64": "native",
     "uuid": "native",
     "byterot": "native",
-    "MapInfo": "native",
+    "bitflags": "native",
+    "restBuffer": "native",
+    "encapsulated": "native",
     "nbt": "native",
+    "lnbt": "native",
+    "nbtLoop": "native",
+    "enum_size_based_on_values_len": "native",
+    "MapInfo": "native",
     "BehaviourPackInfos": [
       "array",
       {
