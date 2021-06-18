@@ -38,13 +38,15 @@ Want to contribute on something important for PrismarineJS ? go to https://githu
 
 ### Client example
 
+Example to connect to a server in offline mode, and relay chat messages back:
+
 ```js
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
   host: 'localhost',   // optional
   port: 19132,         // optional, default 19132
   username: 'Notch',   // the username you want to join as, optional if online mode
-  offline: true        // optional, default false. if true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
+  offline: true,       // optional, default false. if true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
   // Optional for some servers which verify the title ID:
   // authTitle: bedrock.title.MinecraftNintendoSwitch
 })

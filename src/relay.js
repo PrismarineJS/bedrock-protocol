@@ -37,13 +37,15 @@ class RelayPlayer extends Player {
   // Called when we get a packet from backend server (Backend -> PROXY -> Client)
   readUpstream (packet) {
     if (!this.startRelaying) {
+      this.upInLog('Client not ready, queueing packet until join')
       this.downQ.push(packet)
       return
     }
-    this.upInLog('->', packet)
     const des = this.server.deserializer.parsePacketBuffer(packet)
     const name = des.data.name
     const params = des.data.params
+    this.upInLog('->', name, params)
+
     if (name === 'play_status' && params.status === 'login_success') return // We already sent this, this needs to be sent ASAP or client will disconnect
 
     if (debugging) { // some packet encode/decode testing stuff
@@ -51,31 +53,12 @@ class RelayPlayer extends Player {
     }
 
     this.emit('clientbound', des.data)
-
-    // If we're sending a chunk, but player isn't yet initialized, wait until it is.
-    // This is wrong and should not be an issue to send chunks before the client
-    // is in the world; need to investigate further, but for now it's fine.
-    if (this.status !== 3) {
-      if (name === 'level_chunk') {
-        this.chunkSendCache.push([name, params])
-        return
-      }
-      if (name === 'respawn') this.respawnPacket.push([name, params])
-    } else if (this.status === 3 && this.chunkSendCache.length) {
-      for (const chunk of this.chunkSendCache) {
-        this.queue(...chunk)
-      }
-      for (const rp of this.respawnPacket) {
-        this.queue(...rp)
-      }
-      this.chunkSendCache = []
-      this.respawnPacket = []
-    }
     this.queue(name, params)
   }
 
   // Send queued packets to the connected client
   flushDownQueue () {
+    this.downOutLog('Flushing downstream queue')
     for (const packet of this.downQ) {
       const des = this.server.deserializer.parsePacketBuffer(packet)
       this.write(des.data.name, des.data.params)
@@ -85,10 +68,11 @@ class RelayPlayer extends Player {
 
   // Send queued packets to the backend upstream server from the client
   flushUpQueue () {
+    this.upOutLog('Flushing upstream queue')
     for (const e of this.upQ) { // Send the queue
       const des = this.server.deserializer.parsePacketBuffer(e)
       if (des.data.name === 'client_cache_status') { // Currently broken, force off the chunk cache
-        this.upstream.write('client_cache_status', { enabled: false })
+        // this.upstream.write('client_cache_status', { enabled: false })
       } else {
         this.upstream.write(des.data.name, des.data.params)
       }
@@ -127,7 +111,7 @@ class RelayPlayer extends Player {
           break
         case 'set_local_player_as_initialized':
           this.status = 3
-          break
+          // falls through
         default:
           // Emit the packet as-is back to the upstream server
           this.downInLog('Relaying', des.data)
@@ -136,6 +120,11 @@ class RelayPlayer extends Player {
     } else {
       super.readPacket(packet)
     }
+  }
+
+  close (reason) {
+    this.upstream.close(reason)
+    super.close(reason)
   }
 }
 
@@ -196,6 +185,7 @@ class Relay extends Server {
       this.conLog('dropping connection as single client relay', conn)
       conn.close()
     } else {
+      this.clientCount++
       const player = new this.RelayPlayer(this, conn)
       this.conLog('New connection from', conn.address)
       this.clients[conn.address] = player
