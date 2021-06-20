@@ -1,5 +1,5 @@
-const { ProtoDefCompiler, CompiledProtodef } = require('protodef-compiler-fix').Compiler
-const { FullPacketParser, Serializer } = require('protodef-compiler-fix')
+const { ProtoDefCompiler, CompiledProtodef } = require('protodef').Compiler
+const { FullPacketParser, Serializer } = require('protodef')
 const { join } = require('path')
 
 class Parser extends FullPacketParser {
@@ -43,7 +43,7 @@ function getProtocol (version) {
   compiler.addTypes(require(join(__dirname, '../datatypes/compiler-minecraft')))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
 
-  global.PartialReadError = require('protodef-compiler-fix/src/utils').PartialReadError
+  global.PartialReadError = require('protodef/src/utils').PartialReadError
   const compile = (compiler, file) => require(file)(compiler.native)
 
   return new CompiledProtodef(
