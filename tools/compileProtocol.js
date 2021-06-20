@@ -6,7 +6,7 @@
  *
  */
 const fs = require('fs')
-const { ProtoDefCompiler } = require('protodef-compiler-fix').Compiler
+const { ProtoDefCompiler } = require('protodef').Compiler
 const { Versions } = require('../src/options')
 const { join } = require('path')
 

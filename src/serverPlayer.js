@@ -1,6 +1,6 @@
 const { ClientStatus, Connection } = require('./connection')
 const Options = require('./options')
-const { serialize } = require('./datatypes/util')
+const { serialize, isDebug } = require('./datatypes/util')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
@@ -23,7 +23,7 @@ class Player extends Connection {
     this.startQueue()
     this.status = ClientStatus.Authenticating
 
-    if (process.env.DEBUG.includes('minecraft-protocol')) {
+    if (isDebug) {
       this.inLog = (...args) => debug('S ->', ...args)
       this.outLog = (...args) => debug('S <-', ...args)
     }

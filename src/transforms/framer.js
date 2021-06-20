@@ -1,4 +1,4 @@
-const [readVarInt, writeVarInt, sizeOfVarInt] = require('protodef-compiler-fix').types.varint
+const [readVarInt, writeVarInt, sizeOfVarInt] = require('protodef').types.varint
 const zlib = require('zlib')
 
 // Concatenates packets into one batch packet, and adds length prefixs.

@@ -1,7 +1,7 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { RakClient } = require('./rak')
-const { serialize } = require('./datatypes/util')
+const { serialize, isDebug } = require('./datatypes/util')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
@@ -35,7 +35,7 @@ class Client extends Connection {
     this.startGameData = {}
     this.clientRuntimeId = null
 
-    if (process.env.DEBUG.includes('minecraft-protocol')) {
+    if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
       this.outLog = (...args) => debug('C <-', ...args)
     }
@@ -156,7 +156,7 @@ class Client extends Connection {
   readPacket (packet) {
     const des = this.deserializer.parsePacketBuffer(packet)
     const pakData = { name: des.data.name, params: des.data.params }
-    this.inLog('-> C', pakData.name, this.options.loggging ? serialize(pakData.params) : '')
+    this.inLog?.('-> C', pakData.name, this.options.loggging ? serialize(pakData.params) : '')
     this.emit('packet', des)
 
     if (debugging) {
@@ -186,7 +186,7 @@ class Client extends Connection {
         break
       case 'play_status':
         if (this.status === ClientStatus.Authenticating) {
-          this.inLog('Server wants to skip encryption')
+          this.inLog?.('Server wants to skip encryption')
           this.emit('join')
           this.status = ClientStatus.Initializing
         }
@@ -194,7 +194,8 @@ class Client extends Connection {
         break
       default:
         if (this.status !== ClientStatus.Initializing && this.status !== ClientStatus.Initialized) {
-          this.inLog(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
+          // TODO: standardjs bug happens here with ?.(`something ${des.data.name}`)
+          if (this.inLog) this.inLog(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
           return
         }
     }

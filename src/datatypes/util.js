@@ -43,4 +43,6 @@ function nextUUID () {
   return uuidFrom(Date.now().toString())
 }
 
-module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom, nextUUID }
+const isDebug = process.env.DEBUG?.includes('minecraft-protocol')
+
+module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom, nextUUID, isDebug }
