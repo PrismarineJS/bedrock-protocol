@@ -1,9 +1,10 @@
 // Minimum supported version (< will be kicked)
 const MIN_VERSION = '1.16.201'
 // Currently supported verson
-const CURRENT_VERSION = '1.17.0'
+const CURRENT_VERSION = '1.17.10'
 
 const Versions = {
+  '1.17.10': 448,
   '1.17.0': 440,
   '1.16.220': 431,
   '1.16.210': 428,

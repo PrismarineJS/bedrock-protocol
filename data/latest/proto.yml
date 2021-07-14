@@ -1,7 +1,7 @@
 # Created from MiNET and gophertunnel docs
 # The version below is the latest version this protocol schema was updated for.
 # The output protocol.json will be in the folder for the version
-!version: 1.17.0
+!version: 1.17.10
 
 # Some ProtoDef aliases
 string: ["pstring",{"countType":"varint"}]            # String / array types
@@ -126,6 +126,8 @@ packet_resource_packs_info:
    # A list of resource packs that the client needs to download before joining the server. 
    # The order of these resource packs is not relevant in this packet. It is however important in the Resource Pack Stack packet.
    texture_packs: TexturePackInfos
+   # ForcingServerPacks is currently an unclear field.
+   force_server_packs: bool
 
 packet_resource_pack_stack:
    !id: 0x07
@@ -1488,7 +1490,7 @@ packet_available_commands:
    command_data: []varint
       name: string
       description: string
-      flags: u8
+      flags: lu16
       permission_level: u8
       alias: li32
       # The list of overload paramaters for this command
@@ -1825,6 +1827,11 @@ packet_set_title:
    # FadeOutDuration is the duration that the title takes to fade out of the screen of the player. It is
    # measured in 20ths of a second (AKA in ticks).
    fade_out_time: zigzag32
+   # XUID is the XBOX Live user ID of the player, which will remain consistent as long as the player is
+   # logged in with the XBOX Live account. It is empty if the user is not logged into its XBL account.
+   xuid: string
+   # PlatformOnlineID is either a uint64 or an empty string.
+   platform_online_id: string
 
 packet_add_behavior_tree:
    !id: 0x59
@@ -1984,7 +1991,16 @@ packet_npc_request:
    # what the player set in it.
    command: string
    # ActionType is the type of the action to execute.
-   action_type: u8
+   action_type: u8 =>
+      0: set_actions
+      1: execute_action
+      2: execute_closing_commands
+      3: set_name
+      4: set_skin
+      5: set_interact_text
+      6: execute_openining_commands
+   # SceneName is the name of the scene.
+   scene_name: string
 
 # PhotoTransfer is sent by the server to transfer a photo (image) file to the client. It is typically used
 # to transfer photos so that the client can display it in a portfolio in Education Edition.
@@ -2725,8 +2741,8 @@ InputFlag: [ "bitflags", {
       "want_down_slow",
       "want_up_slow",
       "sprinting",
-      "ascend_scaffolding",
-      "descend_scaffolding",
+      "ascend_block",
+      "descend_block",
       "sneak_toggle_down",
       "persist_sneak",
       "start_sprinting",
@@ -3045,3 +3061,30 @@ packet_remove_volume_entity:
    # The Runtime Entity ID
    entity_id: varint64
 
+# SimulationType is an in-progress packet. We currently do not know the use case.
+packet_simulation_type:
+   !id: 0xa8
+   # SimulationType is the simulation type selected
+   type: u8 =>
+      0: game
+      1: editor
+      2: test
+      3: invalid
+
+# NPCDialogue is a packet that allows the client to display dialog boxes for interacting with NPCs.
+packet_npc_dialogue:
+   !id: 0xa9
+   # ActorUniqueID is the ID of the NPC being requested.
+   entity_id: lu64
+   # ActionType is the type of action for the packet.
+   action_type: li32 =>
+      0: open
+      1: close
+   # Dialogue is the text that the client should see.
+   dialogue: string
+   # SceneName is the scene the data was pulled from for the client.
+   screen_name: string
+   # NPCName is the name of the NPC to be displayed to the client.
+   npc_name: string
+   # ActionJSON is the JSON string of the buttons/actions the server can perform.
+   action_json: string
