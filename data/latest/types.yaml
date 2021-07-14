@@ -1595,6 +1595,8 @@ SoundType: varint =>
    - squid_ink_squirt
    - glow_squid_ink_squirt
    - convert_to_stray
+   - extinguish_candle
+   - ambient_candle
    - Undefined
 
 # TODO: remove?

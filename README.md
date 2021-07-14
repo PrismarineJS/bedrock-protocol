@@ -11,7 +11,7 @@ This is a work in progress. You can track the progress in https://github.com/Pri
 
 ## Features
 
- - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0
+ - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0, 1.17.10
  - Parse and serialize packets as JavaScript objects
  - Automatically respond to keep-alive packets
  - [Proxy and mitm connections](docs/API.md)
@@ -69,7 +69,7 @@ const bedrock = require('bedrock-protocol')
 const server = new bedrock.createServer({
   host: '0.0.0.0',       // optional. host to bind as.
   port: 19132,           // optional
-  version: '1.16.220',   // optional. The server version, latest if not specified. 
+  version: '1.17.10',   // optional. The server version, latest if not specified. 
 })
 
 server.on('connect', client => {
