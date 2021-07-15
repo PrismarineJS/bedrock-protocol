@@ -21,7 +21,11 @@ const defaultOptions = {
   // If true, do not authenticate with Xbox Live
   offline: false,
   // Milliseconds to wait before aborting connection attempt
-  connectTimeout: 9000
+  connectTimeout: 9000,
+  // Whether or not to use C++ version of RakNet
+  useNativeRaknet: false,
+  // If using JS implementation of RakNet, should we use workers? (This only affects the client)
+  useRaknetWorkers: true
 }
 
 module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions }

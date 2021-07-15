@@ -2,11 +2,17 @@ const { EventEmitter } = require('events')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
 // TODO: better way to switch, via an option
-try {
-  var { Client, Server, PacketPriority, PacketReliability } = require('raknet-native') // eslint-disable-line
-} catch (e) {
+
+if (process.env.NATIVE_RAKNET) {
+  try {
+    var { Client, Server, PacketPriority, PacketReliability } = require('raknet-native') // eslint-disable-line
+  } catch (e) {
+    var { Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet') // eslint-disable-line
+    console.debug('[raknet] native not found, using js', e)
+    console.debug('You can suppress the error above by disabling `useNativeRaknet` in your options')
+  }
+} else {
   var { Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet') // eslint-disable-line
-  console.debug('[raknet] native not found, using js', e)
 }
 
 class RakNativeClient extends EventEmitter {
@@ -118,9 +124,10 @@ class RakJsClient extends EventEmitter {
       this.sendReliable = this.workerSendReliable
     } else {
       this.connect = this.plainConnect
-      this.close = this.plainClose
+      this.close = reason => this.raknet.close(reason)
       this.sendReliable = this.plainSendReliable
     }
+    this.pongCb = null
   }
 
   workerConnect (host = this.options.host, port = this.options.port) {
@@ -137,6 +144,8 @@ class RakJsClient extends EventEmitter {
           this.onEncapsulated(ecapsulated, address.hash)
           break
         }
+        case 'pong':
+          this.pongCb?.(evt.args)
       }
     })
   }
@@ -165,12 +174,21 @@ class RakJsClient extends EventEmitter {
     if (immediate) this.connection.sendQueue()
   }
 
-  plainClose (reason) {
-    this.raknet.close(reason)
-  }
-
-  ping () {
-    // TODO
+  async ping (timeout = 1000) {
+    if (this.worker) {
+      this.worker.postMessage({ type: 'ping' })
+      return waitFor(res => {
+        this.pongCb = data => res(data)
+      }, timeout, () => { throw new Error('Ping timed out') })
+    } else {
+      if (!this.raknet) this.raknet = new Client(this.options.host, this.options.port)
+      return waitFor(res => {
+        this.raknet.ping(data => {
+          this.raknet.close()
+          res(data)
+        })
+      }, timeout, () => { throw new Error('Ping timed out') })
+    }
   }
 }
 
@@ -206,6 +224,13 @@ class RakJsServer extends EventEmitter {
     })
     this.raknet.on('closeConnection', this.onCloseConnection)
     this.raknet.on('encapsulated', this.onEncapsulated)
+  }
+
+  close () {
+    // Allow some time for the final packets to come in/out
+    setTimeout(() => {
+      this.raknet.close()
+    }, 40)
   }
 }
 

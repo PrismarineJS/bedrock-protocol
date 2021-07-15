@@ -1,6 +1,5 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
-const { RakClient } = require('./rak')
 const { serialize, isDebug } = require('./datatypes/util')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
@@ -21,6 +20,11 @@ class Client extends Connection {
     super()
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
+
+    if (this.options.useNativeRaknet) process.env.NATIVE_RAKNET = true
+
+    const { RakClient } = require('./rak')
+
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
 
@@ -30,7 +34,7 @@ class Client extends Connection {
 
     const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: true, host, port })
+    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
 
     this.startGameData = {}
     this.clientRuntimeId = null

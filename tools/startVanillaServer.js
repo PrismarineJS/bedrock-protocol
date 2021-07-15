@@ -82,6 +82,10 @@ async function startServer (version, onStart, options = {}) {
   await download(os, version, options.path)
   configure(options)
   const handle = run(!onStart)
+  handle.on('error', (...a) => {
+    console.warn('*** THE MINECRAFT PROCESS CRASHED ***', a)
+    handle.kill('SIGKILL')
+  })
   if (onStart) {
     let stdout = ''
     handle.stdout.on('data', data => {

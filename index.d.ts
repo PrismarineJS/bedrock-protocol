@@ -15,7 +15,12 @@ declare module "bedrock-protocol" {
     port?: number
     // For the client, if we should login with Microsoft/Xbox Live.
     // For the server, if we should verify client's authentication with Xbox Live.
-    offline?: boolean
+    offline?: boolean,
+
+    // Whether or not to use C++ version of RakNet (default: false)
+    useNativeRaknet?: boolean,
+    // If using JS implementation of RakNet, should we use workers? (This only affects the client)
+    useRaknetWorker?: boolean
   }
 
   export interface ClientOptions extends Options {
