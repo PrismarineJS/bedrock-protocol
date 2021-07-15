@@ -1,7 +1,6 @@
 const { EventEmitter } = require('events')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { Player } = require('./serverPlayer')
-const { RakServer } = require('./rak')
 const { sleep } = require('./datatypes/util')
 const { ServerAdvertisement } = require('./server/advertisement')
 const Options = require('./options')
@@ -12,6 +11,10 @@ class Server extends EventEmitter {
     super()
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
+
+    if (this.options.useNativeRaknet) process.env.NATIVE_RAKNET = true
+    this.RakServer = require('./rak').RakServer
+
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
     this.advertisement = new ServerAdvertisement(this.options.motd)
@@ -66,7 +69,7 @@ class Server extends EventEmitter {
   }
 
   async listen (host = this.options.host, port = this.options.port) {
-    this.raknet = new RakServer({ host, port }, this)
+    this.raknet = new this.RakServer({ host, port }, this)
     try {
       await this.raknet.listen()
     } catch (e) {
