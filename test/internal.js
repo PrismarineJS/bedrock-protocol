@@ -196,7 +196,7 @@ async function requestChunks (x, z, radius) {
   return chunks
 }
 
-async function timedTest (version, timeout = 1000 * 120) {
+async function timedTest (version, timeout = 1000 * 220) {
   await waitFor((res) => {
     startTest(version, res)
   }, timeout, () => {

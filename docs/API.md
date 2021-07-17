@@ -19,7 +19,7 @@ Returns a `Client` instance and connects to the server.
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
-
+| useNativeRaknet | *optional* | Whether to use the C++ version of RakNet. Set to false to use JS. |
 
 ## be.createServer(options) : Server
 

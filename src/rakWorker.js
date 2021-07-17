@@ -53,6 +53,11 @@ function main () {
       }
     } else if (evt.type === 'close') {
       raknet.close()
+      process.exit(0)
+    } else if (evt.type === 'ping') {
+      raknet.ping((args) => {
+        parentPort.postMessage({ type: 'pong', args })
+      })
     }
   })
 }

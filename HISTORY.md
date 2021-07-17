@@ -1,3 +1,7 @@
+## 3.5.0
+* Add 1.17.10 support [#109](https://github.com/PrismarineJS/bedrock-protocol/pull/109)
+* You can switch to the JS implementation of raknet by setting `useNativeRaknet: false` in options.
+
 ## 3.4.0
 * Initial 1.17 support [#99](https://github.com/PrismarineJS/bedrock-protocol/pull/99)
 * update connect version based on ping response & fix typings (u9g) [#101](https://github.com/PrismarineJS/bedrock-protocol/pull/101)
