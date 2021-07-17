@@ -1,5 +1,5 @@
 const { Client } = require('./client')
-const { RakClient } = require('./rak')
+const { RakClient } = require('./rak')(true)
 const assert = require('assert')
 const advertisement = require('./server/advertisement')
 const { sleep } = require('./datatypes/util')

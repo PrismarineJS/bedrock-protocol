@@ -21,9 +21,7 @@ class Client extends Connection {
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
 
-    if (this.options.useNativeRaknet) process.env.NATIVE_RAKNET = true
-
-    const { RakClient } = require('./rak')
+    const { RakClient } = require('./rak')(this.options.useNativeRaknet)
 
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)

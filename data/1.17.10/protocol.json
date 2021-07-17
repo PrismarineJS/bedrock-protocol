@@ -3781,16 +3781,16 @@
           "type": "bool"
         },
         {
+          "name": "force_server_packs",
+          "type": "bool"
+        },
+        {
           "name": "behaviour_packs",
           "type": "BehaviourPackInfos"
         },
         {
           "name": "texture_packs",
           "type": "TexturePackInfos"
-        },
-        {
-          "name": "force_server_packs",
-          "type": "bool"
         }
       ]
     ],

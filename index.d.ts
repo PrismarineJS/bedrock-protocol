@@ -1,7 +1,7 @@
 import EventEmitter from "events"
 
 declare module "bedrock-protocol" {
-  type Version = '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
+  type Version = '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
 
   enum title { MinecraftNintendoSwitch, MinecraftJava }
 
@@ -17,7 +17,7 @@ declare module "bedrock-protocol" {
     // For the server, if we should verify client's authentication with Xbox Live.
     offline?: boolean,
 
-    // Whether or not to use C++ version of RakNet (default: false)
+    // Whether or not to use C++ version of RakNet
     useNativeRaknet?: boolean,
     // If using JS implementation of RakNet, should we use workers? (This only affects the client)
     useRaknetWorker?: boolean

@@ -23,7 +23,7 @@ const defaultOptions = {
   // Milliseconds to wait before aborting connection attempt
   connectTimeout: 9000,
   // Whether or not to use C++ version of RakNet
-  useNativeRaknet: false,
+  useNativeRaknet: true,
   // If using JS implementation of RakNet, should we use workers? (This only affects the client)
   useRaknetWorkers: true
 }

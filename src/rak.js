@@ -1,18 +1,23 @@
 const { EventEmitter } = require('events')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
-// TODO: better way to switch, via an option
 
-if (process.env.NATIVE_RAKNET) {
-  try {
-    var { Client, Server, PacketPriority, PacketReliability } = require('raknet-native') // eslint-disable-line
-  } catch (e) {
-    var { Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet') // eslint-disable-line
-    console.debug('[raknet] native not found, using js', e)
-    console.debug('You can suppress the error above by disabling `useNativeRaknet` in your options')
+let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
+
+module.exports = nativeRaknet => {
+  if (nativeRaknet) {
+    try {
+      ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
+      return { RakServer: RakNativeServer, RakClient: RakNativeClient }
+    } catch (e) {
+      ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
+      console.debug('[raknet] native not found, using js', e)
+      console.debug('You can suppress the error above by disabling `useNativeRaknet` in your options')
+    }
+  } else {
+    ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
   }
-} else {
-  var { Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet') // eslint-disable-line
+  return { RakServer: RakJsServer, RakClient: RakJsClient }
 }
 
 class RakNativeClient extends EventEmitter {
@@ -232,9 +237,4 @@ class RakJsServer extends EventEmitter {
       this.raknet.close()
     }, 40)
   }
-}
-
-module.exports = {
-  RakClient: PacketPriority ? RakNativeClient : RakJsClient,
-  RakServer: PacketPriority ? RakNativeServer : RakJsServer
 }
