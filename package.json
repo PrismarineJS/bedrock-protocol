@@ -41,7 +41,7 @@
     "@babel/eslint-parser": "^7.13.10",
     "bedrock-provider": "^1.0.0",
     "babel-eslint": "^10.1.0",
-    "mocha": "^8.3.2",
+    "mocha": "^9.0.3",
     "protodef-yaml": "^1.1.0",
     "standard": "^16.0.3",
     "leveldb-zlib": "^1.0.1",
