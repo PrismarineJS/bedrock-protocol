@@ -22,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "@azure/msal-node": "^1.1.0",
-    "@xboxreplay/xboxlive-auth": "^3.3.3",
+    "@xboxreplay/xboxlive-auth": "^4.0.0",
     "debug": "^4.3.1",
     "jose-node-cjs-runtime": "^3.12.1",
     "jsonwebtoken": "^8.5.1",
