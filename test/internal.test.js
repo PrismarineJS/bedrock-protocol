@@ -17,11 +17,12 @@ describe('internal client/server test', function () {
     })
   }
 
-  // for (const version in Versions) {
-  //   it('proxies ' + version, async () => {
-  //     console.debug(version)
-  //     await proxyTest(version)
-  //     await sleep(100)
-  //   })
-  // }
+  for (const version in Versions) {
+    it('proxies ' + version, async () => {
+      console.debug(version)
+      await proxyTest(version)
+      await sleep(5000)
+      console.debug('Done', version)
+    })
+  }
 })
