@@ -1,7 +1,7 @@
 /* eslint-env jest */
 
 const { timedTest } = require('./internal')
-const { proxyTest } = require('./proxy')
+// const { proxyTest } = require('./proxy')
 const { Versions } = require('../src/options')
 const { sleep } = require('../src/datatypes/util')
 
