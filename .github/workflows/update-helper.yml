@@ -1,10 +1,12 @@
 name: Update Helper
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "* */2 * * *"
 
 jobs:
   helper:
-    name: helper
+    name: update-checker
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository

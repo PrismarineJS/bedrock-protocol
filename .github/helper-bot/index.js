@@ -104,7 +104,7 @@ async function fetchLatest () {
 
   if (supportedVersions.includes(version)) {
     if (issueStatus.open) {
-      helper.close(issueStatus.id, `Closing as ${version} is already supported`)
+      helper.close(issueStatus.id, `Closing as ${version} is now supported`)
     }
     console.log('Latest version is supported.')
     return
