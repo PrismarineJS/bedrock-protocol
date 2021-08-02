@@ -1,3 +1,6 @@
+## 3.5.1
+* Fix 1.17.10 npc packet serialization (#119)
+
 ## 3.5.0
 * Add 1.17.10 support [#109](https://github.com/PrismarineJS/bedrock-protocol/pull/109)
 * You can switch to the JS implementation of raknet by setting `useNativeRaknet: false` in options.
