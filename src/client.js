@@ -156,7 +156,12 @@ class Client extends Connection {
   }
 
   readPacket (packet) {
-    const des = this.deserializer.parsePacketBuffer(packet)
+    try {
+      var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
+    } catch (e) {
+      this.emit('error', e)
+      return
+    }
     const pakData = { name: des.data.name, params: des.data.params }
     this.inLog?.('-> C', pakData.name, this.options.loggging ? serialize(pakData.params) : '')
     this.emit('packet', des)
