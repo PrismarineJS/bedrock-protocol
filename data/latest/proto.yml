@@ -3158,7 +3158,7 @@ packet_npc_dialogue:
    # ActorUniqueID is the ID of the NPC being requested.
    entity_id: lu64
    # ActionType is the type of action for the packet.
-   action_type: li32 =>
+   action_type: varint =>
       0: open
       1: close
    # Dialogue is the text that the client should see.
