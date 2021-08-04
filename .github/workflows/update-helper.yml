@@ -2,7 +2,7 @@ name: Update Helper
 on:
   workflow_dispatch:
   schedule:
-    - cron: "* */2 * * *"
+    - cron: "0 */2 * * *"
 
 jobs:
   helper:
