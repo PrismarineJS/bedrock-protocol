@@ -3,6 +3,7 @@
 const { timedTest } = require('./internal')
 const { proxyTest } = require('./proxy')
 const { Versions } = require('../src/options')
+const { sleep } = require('../src/datatypes/util')
 
 describe('internal client/server test', function () {
   const vcount = Object.keys(Versions).length
@@ -12,6 +13,7 @@ describe('internal client/server test', function () {
     it('connects ' + version, async () => {
       console.debug(version)
       await timedTest(version)
+      await sleep(100)
     })
   }
 
@@ -19,6 +21,8 @@ describe('internal client/server test', function () {
     it('proxies ' + version, async () => {
       console.debug(version)
       await proxyTest(version)
+      await sleep(5000)
+      console.debug('Done', version)
     })
   }
 })
