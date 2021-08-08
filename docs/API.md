@@ -70,7 +70,7 @@ const server = bedrock.createServer({
 Then you can listen for clients and their events:
 ```js
 // The 'connect' event is emitted after a new client has started a connection with the server and is handshaking.
-// Its one paramater is the client class instance which handles this session from here on out.
+// Its one parameter is the client class instance which handles this session from here on out.
 server.on('connect', (client) => {
   // 'join' is emitted after the client has authenticated & connection is now encrypted.
   client.on('join', () => {
@@ -81,7 +81,7 @@ server.on('connect', (client) => {
 ```
 
 Order of server client event emissions:
-* 'connect' - emitted by `Server` after a client first joins the server. Second paramater is a `ServerPlayer` instance.
+* 'connect' - emitted by `Server` after a client first joins the server. Second parameter is a `ServerPlayer` instance.
 * 'login' - emitted by client after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned

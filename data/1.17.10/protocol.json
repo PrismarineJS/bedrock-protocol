@@ -6233,7 +6233,7 @@
                               "container",
                               [
                                 {
-                                  "name": "paramater_name",
+                                  "name": "parameter_name",
                                   "type": "string"
                                 },
                                 {
