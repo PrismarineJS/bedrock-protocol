@@ -3893,7 +3893,7 @@
                       "type": "string"
                     },
                     {
-                      "name": "paramaters",
+                      "name": "parameters",
                       "type": [
                         "array",
                         {
@@ -3912,7 +3912,7 @@
                       "type": "string"
                     },
                     {
-                      "name": "paramaters",
+                      "name": "parameters",
                       "type": [
                         "array",
                         {
@@ -3931,7 +3931,7 @@
                       "type": "string"
                     },
                     {
-                      "name": "paramaters",
+                      "name": "parameters",
                       "type": [
                         "array",
                         {
@@ -6352,7 +6352,7 @@
                     "type": "string"
                   },
                   {
-                    "name": "paramaters",
+                    "name": "parameters",
                     "type": [
                       "array",
                       {
