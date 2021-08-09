@@ -17,7 +17,7 @@ describe('internal client/server test', function () {
     })
   }
 
-  if (process.env.CI && process.arch === 'linux') {
+  if (process.env.CI && process.platform === 'linux') {
     // Don't run the test, see :
     // https://github.com/PrismarineJS/bedrock-protocol/issues/124
   } else {
