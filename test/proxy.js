@@ -3,9 +3,11 @@ const { sleep, waitFor } = require('../src/datatypes/util')
 
 function proxyTest (version, timeout = 1000 * 40) {
   return waitFor(res => {
+    const SERVER_PORT = 19000 + ((Math.random() * 100) | 0)
+    const CLIENT_PORT = 19000 + ((Math.random() * 100) | 0)
     const server = createServer({
       host: '0.0.0.0', // optional
-      port: 19131, // optional
+      port: SERVER_PORT, // optional
       offline: true,
       version // The server version
     })
@@ -27,11 +29,11 @@ function proxyTest (version, timeout = 1000 * 40) {
       offline: true,
       /* host and port for clients to listen to */
       host: '0.0.0.0',
-      port: 19132,
+      port: CLIENT_PORT,
       /* Where to send upstream packets to */
       destination: {
         host: '127.0.0.1',
-        port: 19131
+        port: SERVER_PORT
       }
     })
     relay.conLog = console.debug
@@ -39,7 +41,7 @@ function proxyTest (version, timeout = 1000 * 40) {
 
     console.debug('Proxy started', server.options.version)
 
-    const client = createClient({ host: '127.0.0.1', version, username: 'Boat', offline: true })
+    const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true })
 
     console.debug('Client started')
 
