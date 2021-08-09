@@ -2,7 +2,7 @@
 const fs = require('fs')
 const cp = require('child_process')
 const helper = require('./github-helper')
-const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe'
+const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
 const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
 
 // Relevant infomation for us is:
