@@ -16,12 +16,13 @@ function buildFirstIssue (title, result, externalPatches) {
   const date = new Date(result.currentVersionReleaseDate).toUTCString()
 
   for (const name in externalPatches) {
-    commitData += '### ' + name + '\n'
     const [patches, diff] = externalPatches[name]
+    commitData += '### ' + name + '\n'
     for (const [name, url] of patches) {
       commitData += `<a href="${url}">${name}</a>\n`
     }
-    commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
+    if (diff) commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
+    else commitData += '\n(No changes so far)\n'
   }
   try { protocolVersion = getProtocolVersion() } catch (e) { console.log(e) }
 
@@ -70,9 +71,11 @@ function getCommitsInRepo (repo, containing, since) {
   if (since) {
     cp.execSync(`curl -L ${endpoint}?since=${since} -o commits.json`, { stdio: 'inherit', shell: true })
     const commits = JSON.parse(fs.readFileSync('./commits.json', 'utf-8'))
-    const head = commits[0].sha
-    const tail = commits[commits.length - 1].sha
-    return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`]
+    if (commits.length) {
+      const head = commits[0].sha
+      const tail = commits[commits.length - 1].sha
+      return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`] 
+    }
   }
   return [relevant]
 }
