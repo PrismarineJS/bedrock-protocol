@@ -51,7 +51,7 @@ ${commitData}
 
 -----
 
-🤖 I am a bot, I check for updates every 2 hours without a trigger. You can close this PR to prevent any further updates.
+🤖 I am a bot, I check for updates every 2 hours without a trigger. You can close this issue to prevent any further updates.
     `
   }
 }
