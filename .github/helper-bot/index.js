@@ -85,7 +85,7 @@ function getProtocolVersion () {
 }
 
 async function fetchLatest () {
-  if (!fs.existsSync('./results.json')) cp.execSync(`curl -L ${latestVesionEndpoint} -o results.json`, { stdio: 'inherit', shell: true })
+  if (!fs.existsSync('./results.json')) cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
   const json = require('./results.json')
   const result = json.results[0]
   // console.log(json)
