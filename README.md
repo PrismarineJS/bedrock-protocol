@@ -66,7 +66,7 @@ client.on('text', (packet) => { // Listen for chat messages and echo them back.
 *Can't connect locally on Windows? See the [faq](docs/FAQ.md)*
 ```js
 const bedrock = require('bedrock-protocol')
-const server = new bedrock.createServer({
+const server = bedrock.createServer({
   host: '0.0.0.0',       // optional. host to bind as.
   port: 19132,           // optional
   version: '1.17.10',   // optional. The server version, latest if not specified. 
