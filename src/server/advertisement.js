@@ -12,7 +12,7 @@ class ServerAdvertisement {
   serverId = '0'
 
   constructor (obj, version) {
-    if (obj?.name) obj.motd = obj.name 
+    if (obj?.name) obj.motd = obj.name
     Object.assign(this, obj)
   }
 
