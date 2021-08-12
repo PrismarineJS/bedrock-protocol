@@ -1,15 +1,11 @@
+const mcData = require('minecraft-data')
+
 // Minimum supported version (< will be kicked)
 const MIN_VERSION = '1.16.201'
-// Currently supported verson
+// Currently supported verson. Note, clients with newer versions can still connect as long as data is in minecraft-data
 const CURRENT_VERSION = '1.17.10'
 
-const Versions = {
-  '1.17.10': 448,
-  '1.17.0': 440,
-  '1.16.220': 431,
-  '1.16.210': 428,
-  '1.16.201': 422
-}
+const Versions = Object.fromEntries(mcData.versions.bedrock.filter(e => e.releaseType === 'release').map(e => [e.minecraftVersion, e.version]))
 
 const defaultOptions = {
   // https://minecraft.gamepedia.com/Protocol_version#Bedrock_Edition_2

@@ -9,12 +9,11 @@
  * First, dump packets for version 1.16.210 by running `npm run dumpPackets`.
  */
 process.env.DEBUG = 'minecraft-protocol' // packet logging
-// const fs = require('fs')
 const { Server } = require('../src/server')
 const { hasDumps } = require('../tools/genPacketDumps')
-const DataProvider = require('../data/provider')
 const { waitFor } = require('../src/datatypes/util')
 const { loadWorld } = require('./serverChunks')
+const { join } = require('path')
 
 async function startServer (version = '1.16.220', ok) {
   if (!hasDumps(version)) {
@@ -26,7 +25,7 @@ async function startServer (version = '1.16.220', ok) {
   const server = new Server({ host: '0.0.0.0', port, version })
   let loop
 
-  const getPath = (packetPath) => DataProvider(server.options.protocolVersion).getPath(packetPath)
+  const getPath = (packetPath) => join(__dirname, `../data/${server.options.version}/${packetPath}`)
   const get = (packetName) => require(getPath(`sample/packets/${packetName}.json`))
 
   server.listen()

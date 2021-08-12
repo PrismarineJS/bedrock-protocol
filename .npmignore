@@ -3,7 +3,7 @@ npm-debug.log
 __*
 src/**/*.json
 # Runtime generated data
-data/**/sample
+data/
 tools/bds*
 # Extra data
 examples

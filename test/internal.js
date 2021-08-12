@@ -1,8 +1,8 @@
 const { Server, Client } = require('../')
 const { dumpPackets } = require('../tools/genPacketDumps')
-const DataProvider = require('../data/provider')
 const { ping } = require('../src/createClient')
 const { CURRENT_VERSION } = require('../src/options')
+const { join } = require('path')
 
 // First we need to dump some packets that a vanilla server would send a vanilla
 // client. Then we can replay those back in our custom server.
@@ -17,7 +17,7 @@ async function startTest (version = CURRENT_VERSION, ok) {
   const server = new Server({ host: '0.0.0.0', port, version, offline: true })
 
   function getPath (packetPath) {
-    return DataProvider(server.options.protocolVersion).getPath(packetPath)
+    return join(__dirname, `../data/${server.options.version}/${packetPath}`)
   }
 
   function get (packetPath) {
