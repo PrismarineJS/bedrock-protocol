@@ -1,3 +1,4 @@
+const path = require('path')
 const { Authflow: PrismarineAuth } = require('prismarine-auth')
 const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
@@ -13,7 +14,7 @@ const { uuidFrom } = require('../datatypes/util')
  */
 async function authenticate (client, options) {
   if (!options.profilesFolder) {
-    options.profilesFolder = minecraftFolderPath
+    options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
   }
   try {
     const Authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
