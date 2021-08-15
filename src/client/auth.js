@@ -61,7 +61,7 @@ function createOfflineSession (client, options) {
 function postAuthenticate (client, profile, chains) {
   client.profile = profile
   client.username = profile.name
-  client.accessToken = chains // No extra JWTs, only send 1 client signed chain with all the data
+  client.accessToken = chains
   client.emit('session', profile)
 }
 
