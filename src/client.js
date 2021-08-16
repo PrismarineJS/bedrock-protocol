@@ -50,7 +50,7 @@ class Client extends Connection {
       debug('offline mode, not authenticating', this.options)
       auth.createOfflineSession(this, this.options)
     } else {
-      auth.authenticateDeviceCode(this, this.options)
+      auth.authenticate(this, this.options)
     }
 
     this.startQueue()
