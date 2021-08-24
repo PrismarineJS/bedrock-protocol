@@ -7,7 +7,7 @@
 
 Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [contribute](CONTRIBUTING.md).
 
-This is a work in progress. You can track the progress in https://github.com/PrismarineJS/bedrock-protocol/pull/34.
+[Protocol doc](https://minecraft-data.prismarine.js.org/?v=bedrock_1.17.10&d=protocol)
 
 ## Features
 
