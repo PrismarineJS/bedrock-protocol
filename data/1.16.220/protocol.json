@@ -3893,7 +3893,7 @@
                       "type": "string"
                     },
                     {
-                      "name": "paramaters",
+                      "name": "parameters",
                       "type": [
                         "array",
                         {
@@ -3912,7 +3912,7 @@
                       "type": "string"
                     },
                     {
-                      "name": "paramaters",
+                      "name": "parameters",
                       "type": [
                         "array",
                         {
@@ -3931,7 +3931,7 @@
                       "type": "string"
                     },
                     {
-                      "name": "paramaters",
+                      "name": "parameters",
                       "type": [
                         "array",
                         {
@@ -6065,7 +6065,7 @@
                               "container",
                               [
                                 {
-                                  "name": "paramater_name",
+                                  "name": "parameter_name",
                                   "type": "string"
                                 },
                                 {
@@ -6352,7 +6352,7 @@
                     "type": "string"
                   },
                   {
-                    "name": "paramaters",
+                    "name": "parameters",
                     "type": [
                       "array",
                       {
