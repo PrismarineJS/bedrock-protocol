@@ -69,21 +69,3 @@ module.exports = {
   createOfflineSession,
   authenticate
 }
-
-// async function msaTest () {
-//   // MsAuthFlow.resetTokenCaches()
-
-//   await authenticateDeviceCode({
-//     connect(...args) {
-//       console.log('Connecting', args)
-//     },
-//     emit(...e) {
-//       console.log('Event', e)
-//     }
-//   }, {})
-// }
-
-// // debug with node microsoftAuth.js
-// if (!module.parent) {
-//   msaTest()
-// }

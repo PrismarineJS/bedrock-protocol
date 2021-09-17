@@ -4,7 +4,7 @@ const { LevelDB } = require('leveldb-zlib')
 const { join } = require('path')
 
 async function loadWorld (version) {
-  const path = join(__dirname, `../tools/bds-${version}/worlds/Bedrock level/db`)
+  const path = join(__dirname, `../../tools/bds-${version}/worlds/Bedrock level/db`)
   console.log('Loading world at path', path) // Load world from testing server
   const db = new LevelDB(path, { createIfMissing: false })
   await db.open()
@@ -19,11 +19,9 @@ async function loadWorld (version) {
 
     for (let cx = cxStart; cx < cxEnd; cx++) {
       for (let cz = czStart; cz < czEnd; cz++) {
-        // console.log('reading chunk at ', cx, cz)
 
         const cc = await wp.load(cx, cz, true)
         if (!cc) {
-          // console.log('no chunk')
           continue
         }
         const cbuf = await cc.networkEncodeNoCache()
@@ -35,7 +33,6 @@ async function loadWorld (version) {
           blobs: [],
           payload: cbuf
         })
-        // console.log('Ht',cc.sectionsLen,cc.sections)
       }
     }
 

@@ -24,7 +24,6 @@ module.exports = (client, server, options) => {
 
     for (const token of chain) {
       const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
-      // console.log('Decoded', decoded)
 
       // Check if signed by Mojang key
       const x5u = getX5U(token)
@@ -37,7 +36,6 @@ module.exports = (client, server, options) => {
       finalKey = decoded.identityPublicKey || finalKey // non pem
       data = { ...data, ...decoded }
     }
-    // console.log('Result', data)
 
     if (!didVerify && !options.offline) {
       client.disconnect('disconnectionScreen.notAuthenticated')
