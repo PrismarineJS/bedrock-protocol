@@ -19,7 +19,6 @@ async function loadWorld (version) {
 
     for (let cx = cxStart; cx < cxEnd; cx++) {
       for (let cz = czStart; cz < czEnd; cz++) {
-
         const cc = await wp.load(cx, cz, true)
         if (!cc) {
           continue

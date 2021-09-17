@@ -1,6 +1,6 @@
 /**
  * This example spawns a client. For a basic server that disconnects users, see "basicServer.js".
- * 
+ *
  * bedrock-protocol server example; to run this example you need to clone this repo from git.
  * first need to dump some packets from the vanilla server as there is alot of boilerplate
  * to send to clients. The `serverChunks.js` contains the chunk loading code.
