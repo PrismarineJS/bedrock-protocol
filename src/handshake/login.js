@@ -1,12 +1,10 @@
 const JWT = require('jsonwebtoken')
 const { nextUUID } = require('../datatypes/util')
 const { PUBLIC_KEY } = require('./constants')
-const mcData = require('minecraft-data/data').bedrock
 const algorithm = 'ES384'
 
 module.exports = (client, server, options) => {
-  // TODO: backport
-  const skinData = mcData[options.version].steve ?? mcData['1.16.220'].steve
+  const skinData = require('minecraft-data')('bedrock_' + options.version).defaultSkin
 
   client.createClientChain = (mojangKey, offline) => {
     const privateKey = client.ecdhKeyPair.privateKey

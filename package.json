@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "build": "cd tools && node compileProtocol.js",
-    "prepare": "npm run build",
     "test": "mocha --bail",
     "pretest": "npm run lint",
     "lint": "standard",
