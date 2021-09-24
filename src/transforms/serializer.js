@@ -27,7 +27,7 @@ class Parser extends FullPacketParser {
 
 // Compiles the ProtoDef schema at runtime
 function createProtocol (version) {
-  const protocol = require(join(__dirname, `../../data/${version}/protocol.json`)).types
+  const protocol = require('minecraft-data')('bedrock_' + version).protocol
   const compiler = new ProtoDefCompiler()
   compiler.addTypesToCompile(protocol)
   compiler.addTypes(require(join(__dirname, '../datatypes/compiler-minecraft')))

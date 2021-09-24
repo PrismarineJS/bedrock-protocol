@@ -1,15 +1,12 @@
-const fs = require('fs')
 const JWT = require('jsonwebtoken')
 const { nextUUID } = require('../datatypes/util')
 const { PUBLIC_KEY } = require('./constants')
+const mcData = require('minecraft-data/data').bedrock
 const algorithm = 'ES384'
 
 module.exports = (client, server, options) => {
-  const paths = require('minecraft-data/minecraft-data/data/dataPaths.json')
-  const getPath = file => require.resolve(`minecraft-data/minecraft-data/data/${paths.bedrock[options.version][file.split('.')[0]]}/${file}`)
-  const skinTex = fs.readFileSync(getPath('steveSkin.bin')).toString('base64')
-  const skinGeom = fs.readFileSync(getPath('steveGeometry.json')).toString('base64')
-  const skinData = JSON.parse(fs.readFileSync(getPath('steve.json'), 'utf-8'))
+  // TODO: backport
+  const skinData = mcData[options.version].steve ?? mcData['1.16.220'].steve
 
   client.createClientChain = (mojangKey, offline) => {
     const privateKey = client.ecdhKeyPair.privateKey
@@ -60,8 +57,6 @@ module.exports = (client, server, options) => {
 
       SelfSignedId: nextUUID(),
       ServerAddress: `${options.host}:${options.port}`,
-      SkinData: skinTex,
-      SkinGeometryData: skinGeom,
 
       ThirdPartyName: client.profile.name,
       ThirdPartyNameOnly: false,
