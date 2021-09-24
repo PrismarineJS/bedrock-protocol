@@ -16,12 +16,13 @@ function buildFirstIssue (title, result, externalPatches) {
   const date = new Date(result.currentVersionReleaseDate).toUTCString()
 
   for (const name in externalPatches) {
-    commitData += '### ' + name + '\n'
     const [patches, diff] = externalPatches[name]
+    commitData += '### ' + name + '\n'
     for (const [name, url] of patches) {
       commitData += `<a href="${url}">${name}</a>\n`
     }
-    commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
+    if (diff) commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
+    else commitData += '\n(No changes so far)\n'
   }
   try { protocolVersion = getProtocolVersion() } catch (e) { console.log(e) }
 
@@ -50,7 +51,7 @@ ${commitData}
 
 -----
 
-🤖 I am a bot, I check for updates every 2 hours without a trigger. You can close this PR to prevent any further updates.
+🤖 I am a bot, I check for updates every 2 hours without a trigger. You can close this issue to prevent any further updates.
     `
   }
 }
@@ -70,9 +71,11 @@ function getCommitsInRepo (repo, containing, since) {
   if (since) {
     cp.execSync(`curl -L ${endpoint}?since=${since} -o commits.json`, { stdio: 'inherit', shell: true })
     const commits = JSON.parse(fs.readFileSync('./commits.json', 'utf-8'))
-    const head = commits[0].sha
-    const tail = commits[commits.length - 1].sha
-    return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`]
+    if (commits.length) {
+      const head = commits[0].sha
+      const tail = commits[commits.length - 1].sha
+      return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`] 
+    }
   }
   return [relevant]
 }
@@ -85,7 +88,7 @@ function getProtocolVersion () {
 }
 
 async function fetchLatest () {
-  if (!fs.existsSync('./results.json')) cp.execSync(`curl -L ${latestVesionEndpoint} -o results.json`, { stdio: 'inherit', shell: true })
+  if (!fs.existsSync('./results.json')) cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
   const json = require('./results.json')
   const result = json.results[0]
   // console.log(json)

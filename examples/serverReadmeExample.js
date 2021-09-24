@@ -1,6 +1,6 @@
 /* eslint-disable */
 const bedrock = require('bedrock-protocol')
-const server = new bedrock.createServer({
+const server = bedrock.createServer({
   host: '0.0.0.0',        // optional
   port: 19132,            // optional
   version: '1.17.10',    // The server version
