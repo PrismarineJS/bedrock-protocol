@@ -16,7 +16,6 @@ process.env.DEBUG = 'minecraft-protocol' // packet logging
 const { Server } = require('bedrock-protocol')
 
 const { hasDumps } = require('../../tools/genPacketDumps')
-const DataProvider = require('../../data/provider')
 const { waitFor } = require('../../src/datatypes/util')
 const { loadWorld } = require('./serverChunks')
 const { join } = require('path')
