@@ -1,26 +1,32 @@
 /**
+ * This example spawns a client. For a basic server that disconnects users, see "basicServer.js".
+ *
  * bedrock-protocol server example; to run this example you need to clone this repo from git.
  * first need to dump some packets from the vanilla server as there is alot of boilerplate
- * to send to clients.
+ * to send to clients. The `serverChunks.js` contains the chunk loading code.
  *
  * In your server implementation, you need to implement each of the following packets to
  * get a client to spawn like vanilla. You can look at the dumped packets in `data/1.16.10/sample`
  *
  * First, dump packets for version 1.16.210 by running `npm run dumpPackets`.
+ * Then you can run `node server.js <version>` to start this script.
  */
 process.env.DEBUG = 'minecraft-protocol' // packet logging
-const { Server } = require('../src/server')
-const { hasDumps } = require('../tools/genPacketDumps')
-const { waitFor } = require('../src/datatypes/util')
+// const fs = require('fs')
+const { Server } = require('bedrock-protocol')
+
+const { hasDumps } = require('../../tools/genPacketDumps')
+const DataProvider = require('../../data/provider')
+const { waitFor } = require('../../src/datatypes/util')
 const { loadWorld } = require('./serverChunks')
 const { join } = require('path')
 
-async function startServer (version = '1.16.220', ok) {
+async function startServer (version = '1.17.10', ok) {
   if (!hasDumps(version)) {
     throw Error('You need to dump some packets first. Run tools/genPacketDumps.js')
   }
 
-  const Item = require('../types/Item')(version)
+  const Item = require('../../types/Item')(version)
   const port = 19132
   const server = new Server({ host: '0.0.0.0', port, version })
   let loop

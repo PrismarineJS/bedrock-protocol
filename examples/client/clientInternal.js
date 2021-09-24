@@ -1,3 +1,6 @@
+/**
+ * Do not use this example unless you need to change the login procedure, instead see `client.js`.
+ */
 process.env.DEBUG = 'minecraft-protocol raknet'
 const { Client } = require('bedrock-protocol')
 const { ChunkColumn, Version } = require('bedrock-provider')
