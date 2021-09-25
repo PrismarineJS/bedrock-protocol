@@ -27,10 +27,13 @@ class Parser extends FullPacketParser {
 
 // Compiles the ProtoDef schema at runtime
 function createProtocol (version) {
-  const protocol = require(join(__dirname, `../../data/${version}/protocol.json`)).types
+  // Try and load from .js if available
+  try { require(`../../data/${version}/size.js`); return getProtocol(version) } catch {}
+
+  const protocol = require('minecraft-data')('bedrock_' + version).protocol
   const compiler = new ProtoDefCompiler()
-  compiler.addTypesToCompile(protocol)
-  compiler.addTypes(require(join(__dirname, '../datatypes/compiler-minecraft')))
+  compiler.addTypesToCompile(protocol.types)
+  compiler.addTypes(require('../datatypes/compiler-minecraft'))
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
 
   const compiledProto = compiler.compileProtoDefSync()
@@ -54,17 +57,18 @@ function getProtocol (version) {
 }
 
 function createSerializer (version) {
-  const proto = getProtocol(version)
+  const proto = createProtocol(version)
   return new Serializer(proto, 'mcpe_packet')
 }
 
 function createDeserializer (version) {
-  const proto = getProtocol(version)
+  const proto = createProtocol(version)
   return new Parser(proto, 'mcpe_packet')
 }
 
 module.exports = {
-  createDeserializer: createDeserializer,
-  createSerializer: createSerializer,
-  createProtocol: createProtocol
+  createDeserializer,
+  createSerializer,
+  createProtocol,
+  getProtocol
 }

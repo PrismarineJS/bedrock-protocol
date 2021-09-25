@@ -16,9 +16,9 @@ process.env.DEBUG = 'minecraft-protocol' // packet logging
 const { Server } = require('bedrock-protocol')
 
 const { hasDumps } = require('../../tools/genPacketDumps')
-const DataProvider = require('../../data/provider')
 const { waitFor } = require('../../src/datatypes/util')
 const { loadWorld } = require('./serverChunks')
+const { join } = require('path')
 
 async function startServer (version = '1.17.10', ok) {
   if (!hasDumps(version)) {
@@ -30,7 +30,7 @@ async function startServer (version = '1.17.10', ok) {
   const server = new Server({ host: '0.0.0.0', port, version })
   let loop
 
-  const getPath = (packetPath) => DataProvider(server.options.protocolVersion).getPath(packetPath)
+  const getPath = (packetPath) => join(__dirname, `../data/${server.options.version}/${packetPath}`)
   const get = (packetName) => require(getPath(`sample/packets/${packetName}.json`))
 
   server.listen()
