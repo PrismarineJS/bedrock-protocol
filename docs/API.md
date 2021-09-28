@@ -104,7 +104,7 @@ const client = bedrock.createClient({
 client.on('join', client => console.log('Player has joined!'))
 
 // The 'spawn' event is emitted. The chunks have been sent and all is well.
-client.on('join', client => console.log('Player has spawned!'))
+client.on('spawn', client => console.log('Player has spawned!'))
 
 // We can listen for text packets. See proto.yml for documentation.
 client.on('text', (packet) => {
