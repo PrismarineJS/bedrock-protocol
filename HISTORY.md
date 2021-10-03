@@ -1,3 +1,7 @@
+## 3.6.0
+* 1.17.30 support
+* minecraft-data used for protocol data
+
 ## 3.5.1
 * Fix 1.17.10 npc packet serialization (#119)
 
