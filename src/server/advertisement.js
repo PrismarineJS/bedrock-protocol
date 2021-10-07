@@ -3,16 +3,15 @@ const { Versions, CURRENT_VERSION } = require('../options')
 class ServerAdvertisement {
   motd = 'Bedrock Protocol Server'
   levelName = 'bedrock-protocol'
-  protocol = Versions[CURRENT_VERSION]
-  version = CURRENT_VERSION
   playersOnline = 0
   playersMax = 5
-
   gamemode = 'Creative'
   serverId = '0'
 
-  constructor (obj, version) {
+  constructor (obj, version = CURRENT_VERSION) {
     if (obj?.name) obj.motd = obj.name
+    this.protocol = Versions[version]
+    this.version = version
     Object.assign(this, obj)
   }
 

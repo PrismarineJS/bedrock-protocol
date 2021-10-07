@@ -1,8 +1,9 @@
 const { Client } = require('./client')
 const { RakClient } = require('./rak')(true)
+const { Versions, CURRENT_VERSION } = require('./options')
+const { sleep } = require('./datatypes/util')
 const assert = require('assert')
 const advertisement = require('./server/advertisement')
-const { sleep } = require('./datatypes/util')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
@@ -13,9 +14,9 @@ function createClient (options) {
     connect(client)
   } else { // Try to ping
     client.ping().then(data => {
-      const advert = advertisement.fromServerName(data)
-      console.log(`Connecting to server ${advert.motd} (${advert.name}), version ${advert.version}`)
-      client.options.version = options.version ?? advert.version
+      const ad = advertisement.fromServerName(data)
+      client.options.version = options.version ?? (Versions[ad.version] ? ad.version : CURRENT_VERSION)
+      console.log(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : undefined)
       connect(client)
     }, client)
   }

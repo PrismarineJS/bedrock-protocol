@@ -67,5 +67,5 @@ async function test (version) {
   clearInterval(loop)
 }
 
-if (!module.parent) test(CURRENT_VERSION)
+// if (!module.parent) test(CURRENT_VERSION)
 module.exports = { clientTest: test }
