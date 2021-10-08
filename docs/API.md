@@ -61,7 +61,7 @@ const server = bedrock.createServer({
   port: 19132,       // optional, port to bind to, default 19132
   offline: false,    // default false. verify connections with XBL
   motd: {
-    name: 'Funtime Server', // Top level message shown in server list
+    motd: 'Funtime Server', // Top level message shown in server list
     levelName: 'Wonderland' // Sub-level header
   }
 })

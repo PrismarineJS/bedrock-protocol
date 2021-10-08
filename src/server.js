@@ -16,7 +16,7 @@ class Server extends EventEmitter {
 
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
-    this.advertisement = new ServerAdvertisement(this.options.motd)
+    this.advertisement = new ServerAdvertisement(this.options.motd, this.options.version)
     this.advertisement.playersMax = options.maxPlayers ?? 3
     /** @type {Object<string, Player>} */
     this.clients = {}

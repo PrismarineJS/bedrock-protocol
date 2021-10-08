@@ -205,5 +205,5 @@ async function timedTest (version, timeout = 1000 * 220) {
   console.info('✔ ok')
 }
 
-if (!module.parent) timedTest()
+// if (!module.parent) timedTest()
 module.exports = { startTest, timedTest, requestChunks }
