@@ -1,3 +1,6 @@
+## 3.7.0
+* 1.7.40 support
+
 ## 3.6.0
 * 1.17.30 support
 * minecraft-data used for protocol data
