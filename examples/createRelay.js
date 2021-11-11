@@ -1,4 +1,4 @@
-const { Relay, title } = require('bedrock-protocol')
+const { Relay } = require('bedrock-protocol')
 
 function createRelay () {
   console.log('Creating relay')
@@ -8,7 +8,6 @@ function createRelay () {
     host: '0.0.0.0',
     port: 19130,
     offline: false,
-    authTitle: title.MinecraftNintendoSwitch,
     /* Where to send upstream packets to */
     destination: {
       host: '127.0.0.1',

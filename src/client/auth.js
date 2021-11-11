@@ -16,12 +16,16 @@ async function authenticate (client, options) {
   if (!options.profilesFolder) {
     options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
   }
-  if (!options.authTitle) {
+  if (options.authTitle === undefined) {
     options.authTitle = Titles.MinecraftNintendoSwitch
+    options.deviceType = 'Nintendo'
   }
   try {
     const Authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const chains = await Authflow.getMinecraftBedrockToken(client.clientX509)
+    const chains = await Authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
+      if (options.password) console.warn('Sign in failed, try removing the password field')
+      throw e
+    })
 
     debug('chains', chains)
 

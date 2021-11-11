@@ -20,6 +20,8 @@ Returns a `Client` instance and connects to the server.
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
 | useNativeRaknet | *optional* | Whether to use the C++ version of RakNet. Set to false to use JS. |
+| authTitle | *optional* | The client ID to sign in as, defaults to Minecraft for Nintendo Switch. Set false to sign in through Azure. See prismarine-auth |
+| deviceType | *optional* | The device type to sign in as, defaults to "Nintendo". See prismarine-auth |
 
 ## be.createServer(options) : Server
 
