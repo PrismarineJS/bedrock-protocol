@@ -52,7 +52,7 @@ function KeyExchange (client, server, options) {
     debug('[encrypt] Starting serverbound encryption', token)
     const jwt = token?.token
     if (!jwt) {
-      throw Error('Server did not return a valid JWT, cannot start encryption!')
+      throw Error('Server did not return a valid JWT, cannot start encryption')
     }
 
     // No verification here, not needed

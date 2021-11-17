@@ -92,6 +92,11 @@ declare module "bedrock-protocol" {
      * Close the connection, leave the server. 
      */
     close()
+
+    /**
+     * Send a disconnect packet and close the connection
+     */
+    disconnect()
   }
 
   /**

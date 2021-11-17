@@ -66,8 +66,10 @@ function createDecryptor (client, iv) {
     const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
     client.receiveCounter++
 
-    if (Buffer.compare(checksum, computedCheckSum) !== 0) {
-      throw Error(`Checksum mismatch ${checksum.toString('hex')} != ${computedCheckSum.toString('hex')}`)
+    if (!checksum.equals(computedCheckSum)) {
+      client.emit('error', Error(`Checksum mismatch ${checksum.toString('hex')} != ${computedCheckSum.toString('hex')}`))
+      client.disconnect('disconnectionScreen.badPacket')
+      return
     }
 
     Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buffer) => {
