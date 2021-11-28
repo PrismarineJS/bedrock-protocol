@@ -40,7 +40,7 @@ function main () {
       })
 
       raknet.on('raw', (buffer, inetAddr) => {
-        console.log('Raw packet', buffer, inetAddr)
+        debug('Raw packet', buffer, inetAddr)
       })
     } else if (evt.type === 'queueEncapsulated') {
       const sendPacket = new EncapsulatedPacket()

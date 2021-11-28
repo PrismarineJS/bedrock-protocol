@@ -23,6 +23,14 @@ Returns a `Client` instance and connects to the server.
 | authTitle | *optional* | The client ID to sign in as, defaults to Minecraft for Nintendo Switch. Set false to sign in through Azure. See prismarine-auth |
 | deviceType | *optional* | The device type to sign in as, defaults to "Nintendo". See prismarine-auth |
 
+The following events are emitted by the client:
+* 'status' - When the client's login sequence status has changed
+* 'join' - When the client has joined the server after authenticating
+* 'spawn' - When the client has spawned into the game world, as it is getting chunks
+* 'kick' - The server has kicked the client
+* 'close' - The server has closed the connection
+* 'error' - An recoverable exception has happened. Not catching will throw an exception
+
 ## be.createServer(options) : Server
 
 Returns a `Server` instance and starts listening for clients. All clients will be
@@ -87,6 +95,9 @@ Order of server client event emissions:
 * 'login' - emitted by client after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned
+
+
+'error' event is emitted when a catchable exception happens with a client (for example receiving a bad encrypted packet).
 
 ## Client docs
 

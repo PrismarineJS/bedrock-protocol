@@ -141,6 +141,15 @@ class Client extends Connection {
     }
   }
 
+  disconnect (reason = 'Client leaving', hide = false) {
+    if (this.status === ClientStatus.Disconnected) return
+    this.write('disconnect', {
+      hide_disconnect_screen: hide,
+      message: reason
+    })
+    this.close(reason)
+  }
+
   close () {
     if (this.status !== ClientStatus.Disconnected) {
       this.emit('close') // Emit close once
