@@ -12,7 +12,7 @@ const get = (url, out) => cp.execSync(`curl -o ${out} ${url}`)
 function fetchLatestStable () {
   get('https://raw.githubusercontent.com/minecraft-linux/mcpelauncher-versiondb/master/versions.json', 'versions.json')
   const versions = JSON.parse(fs.readFileSync('./versions.json'))
-  const latest = versions[versions.length - 1]
+  const latest = versions[0]
   return latest.version_name
 }
 
