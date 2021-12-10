@@ -18,7 +18,8 @@ function hasDumps (version) {
 let loop
 
 async function dump (version, force = true) {
-  const [v4, v6] = [19132 + ((Math.random() * 1000) | 0), 19133 + ((Math.random() * 1000) | 0)]
+  const random = (Math.random() * 1000) | 0
+  const [v4, v6] = [19132 + random, 19133 + random]
 
   console.log('Starting dump server', version)
   const handle = await vanillaServer.startServerAndWait(version || CURRENT_VERSION, 1000 * 120, { 'server-port': v4, 'server-portv6': v6 })
