@@ -1,16 +1,31 @@
 CONTRIBUTING.md
 
-Contributions are always welcome :)
+Contributions are always welcome :). If you have any questions, please discuss on the Discord or in a Discussion.
 
 ## Updating
 
 Good sources for the Minecraft bedrock protocol are [gophertunnel](https://github.com/Sandertv/gophertunnel/tree/master/minecraft/protocol/packet), [ClouburstMC's protocol library](https://github.com/CloudburstMC/Protocol) and [PocketMine](https://github.com/pmmp/PocketMine-MP/tree/stable/src/pocketmine/network/mcpe/protocol).
 
+Protocol updates need to happen in two places: in minecraft-data to update the protocol schema (the actual data structures for the packets) and here in the protocol library side. If no changes to the underlying protocol are made aside from packet structure changes (add, remove, modify packets) then the only change needed in bedrock-protocol is to update the README documentation and some constants in `src/options.js` (update the CURRENT_VERSION).
+
 Steps to update:
-* Add the version to src/options.js
-* Open [data/latest/proto.yml](https://github.com/PrismarineJS/bedrock-protocol/tree/new/data/latest) and add, remove or modify the updated packets (see the [Packet serialization](#Packet_serialization) notes at the bottom for info on syntax)
-* Save and make sure to update the !version field at the top of the file
-* Run `npm run build` and `npm test` to test
+* Update the protocol data in minecraft-data : see the instructions [here](https://github.com/PrismarineJS/minecraft-data/blob/master/doc/bedrock.md).
+  * Find the relevant changes to the protocol for the current version
+  * Update the [.YML files](https://github.com/PrismarineJS/minecraft-data/tree/master/data/bedrock/latest) in minecraft-data accordingly (see the [Packet serialization](#Packet_serialization) notes at the bottom here for info on syntax)
+  * Then follow the steps to build the protocol .YML files into JSON
+  * Do a release of the minecraft-data package
+* Add the version to `src/options.js` here
+* Run `npm run build` and `npm test` to test that everything is OK
+
+### Development
+
+For development purposes, you can easily alter the protocol locally without a remote minecraft-data release :
+* Run `npm install` on the root of this repo after git cloning
+* Open `node_modules/minecraft-data/minecraft-data/data/bedrock/latest/` and update the .YML files as you need, following the schema at the bottom (make sure to update '!version' if you are changing version)
+* Go back to the root of this repo and run `npm run build`. 
+* Then `npm test` ; the protocol changes should be automatically applied
+
+For example, [here](https://github.com/PrismarineJS/minecraft-data/pull/467/files) is a PR for the update to 1.17.30 in minecraft-data - [here](https://github.com/PrismarineJS/bedrock-protocol/pull/150/files) is an accompanying change for bedrock-protocol.
 
 ## Code structure
 
