@@ -133,7 +133,7 @@ Order of client event emissions:
 
 ### Protocol docs
 
-For documentation on the protocol, and packets/fields see the [proto.yml](data/latest/proto.yml) and [types.yml](data/latest/proto.yml) files. More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
+For documentation on the protocol, and packets/fields see the [the protocol doc](https://minecraft-data.prismarine.js.org/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
 
 ### Proxy docs
