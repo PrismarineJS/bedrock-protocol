@@ -24,6 +24,8 @@ declare module "bedrock-protocol" {
   }
 
   export interface ClientOptions extends Options {
+    // The username to connect to the server as
+    username: string,
     // The view distance in chunks
     viewDistance?: number,
     // Specifies which game edition to sign in as. Optional, but some servers verify this.
