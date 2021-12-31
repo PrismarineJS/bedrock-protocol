@@ -31,6 +31,7 @@ class RelayPlayer extends Player {
     this.outLog = this.downOutLog
     this.inLog = this.downInLog
     this.chunkSendCache = []
+    this.sentStartGame = false
     this.respawnPacket = []
   }
 
@@ -52,8 +53,25 @@ class RelayPlayer extends Player {
       this.server.deserializer.verify(des, this.server.serializer)
     }
 
-    this.emit('clientbound', des.data)
-    this.queue(name, params)
+    this.emit('clientbound', des.data, des)
+
+    if (!des.canceled) {
+      if (name === 'start_game') {
+        this.sentStartGame = true
+      } else if (name === 'level_chunk' && !this.sentStartGame) {
+        this.chunkSendCache.push(params)
+        return
+      }
+
+      this.queue(name, params)
+    }
+
+    if (this.chunkSendCache.length > 0 && this.sentStartGame) {
+      for (const entry of this.chunkSendCache) {
+        this.queue('level_chunk', entry)
+      }
+      this.chunkSendCache = []
+    }
   }
 
   // Send queued packets to the connected client
@@ -102,16 +120,17 @@ class RelayPlayer extends Player {
         this.server.deserializer.verify(des, this.server.serializer)
       }
 
-      this.emit('serverbound', des.data)
+      this.emit('serverbound', des.data, des)
+      if (des.canceled) return
 
       switch (des.data.name) {
         case 'client_cache_status':
           // Force the chunk cache off.
-          this.upstream.queue('client_cache_status', { enabled: false })
+          this.upstream.queue('client_cache_status', { enabled: this.enableChunkCaching })
           break
         case 'set_local_player_as_initialized':
           this.status = 3
-          // falls through
+        // falls through
         default:
           // Emit the packet as-is back to the upstream server
           this.downInLog('Relaying', des.data)
@@ -139,6 +158,7 @@ class Relay extends Server {
     this.forceSingle = true
     this.upstreams = new Map()
     this.conLog = debug
+    this.enableChunkCaching = options.enableChunkCaching
   }
 
   // Called after a new player joins our proxy. We first create a new Client to connect to
@@ -167,7 +187,7 @@ class Relay extends Server {
       // Tell the server to disable chunk cache for this connection as a client.
       // Wait a bit for the server to ack and process, the continue with proxying
       // otherwise the player can get stuck in an empty world.
-      client.write('client_cache_status', { enabled: false })
+      client.write('client_cache_status', { enabled: this.enableChunkCaching })
       ds.upstream = client
       ds.flushUpQueue()
       this.conLog('Connected to upstream server')
