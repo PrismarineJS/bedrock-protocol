@@ -35,6 +35,7 @@ module.exports = (client, server, options) => {
   client.createClientUserChain = (privateKey) => {
     let payload = {
       ...skinData,
+      SkinGeometryDataEngineVersion: '', // 1.17.30
 
       ClientRandomId: Date.now(),
       CurrentInputMode: 1,
