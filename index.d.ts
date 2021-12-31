@@ -1,7 +1,7 @@
 import EventEmitter from "events"
 
 declare module "bedrock-protocol" {
-  type Version = '1.18.1' | '1.18.0' | '1.17.41' | '1.17.40' | '1.17.34' | '1.17.30' | '1.17.11' | '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
+  type Version = '1.18.2' | '1.18.1' | '1.18.0' | '1.17.41' | '1.17.40' | '1.17.34' | '1.17.30' | '1.17.11' | '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
 
   enum title { MinecraftNintendoSwitch, MinecraftJava }
 
@@ -34,6 +34,8 @@ declare module "bedrock-protocol" {
     connectTimeout?: number
     // whether to skip initial ping and immediately connect
     skipPing?: boolean
+    // where to log connection information to (default to console.log)
+    conLog?
   }
 
   export interface ServerOptions extends Options {
@@ -149,6 +151,8 @@ declare module "bedrock-protocol" {
       // Skip authentication connecting to the remote server?
       offline: false,
     }
+    // Whether to enable chunk caching (default: false)
+    enableChunkCaching?: boolean
   }
 
   export class Relay extends Server {
