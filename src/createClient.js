@@ -16,7 +16,7 @@ function createClient (options) {
     client.ping().then(data => {
       const ad = advertisement.fromServerName(data)
       client.options.version = options.version ?? (Versions[ad.version] ? ad.version : CURRENT_VERSION)
-      console.log(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : undefined)
+      if (client.conLog) client.conLog(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : '')
       connect(client)
     }, client)
   }
