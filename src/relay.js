@@ -142,7 +142,7 @@ class RelayPlayer extends Player {
   }
 
   close (reason) {
-    this.upstream.close(reason)
+    this.upstream?.close(reason)
     super.close(reason)
   }
 }
