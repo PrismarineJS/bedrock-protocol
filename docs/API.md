@@ -13,12 +13,12 @@ Returns a `Client` instance and connects to the server.
 | version     | *optional* |  Version to connect as. If not specified, automatically match server version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Conditional | Required if `offline` set to true : Username to connect to server as.     |
-| authTitle   | *optional* | The title ID to connect as, see the README for usage.     |
 | connectTimeout | *optional* | default to **9000ms**. How long to wait in milliseconds while trying to connect to server. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
+| conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |
 | useNativeRaknet | *optional* | Whether to use the C++ version of RakNet. Set to false to use JS. |
 | authTitle | *optional* | The client ID to sign in as, defaults to Minecraft for Nintendo Switch. Set false to sign in through Azure. See prismarine-auth |
 | deviceType | *optional* | The device type to sign in as, defaults to "Nintendo". See prismarine-auth |
@@ -48,6 +48,7 @@ authenticated unless offline is set to true.
 | kickTimeout | *[Future][1]* | How long to wait before kicking a unresponsive client. |
 | motd        | *optional* | The "message of the day" for the server, the message shown to players in the server list. See usage below. |
 | advertisementFn | *optional* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
+| conLog | *optional* | Where to log connection information (server join, kick messages to). Default to log only in DEBUG mode. |
 
 ## be.ping({ host, port }) : ServerAdvertisement
 

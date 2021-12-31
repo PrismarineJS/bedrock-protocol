@@ -41,6 +41,7 @@ class Client extends Connection {
       this.inLog = (...args) => debug('C ->', ...args)
       this.outLog = (...args) => debug('C <-', ...args)
     }
+    this.conLog = this.options.conLog === undefined ? console.log : this.options.conLog
   }
 
   connect () {
@@ -82,7 +83,9 @@ class Client extends Connection {
     try {
       return await this.connection.ping(this.options.connectTimeout)
     } catch (e) {
-      console.warn(`Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`)
+      // TODO: workaround bug in standardjs, waiting for https://github.com/standard/eslint-config-standard/pull/193
+      const t = `Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`
+      this.conLog?.(t)
       throw e
     }
   }
@@ -126,7 +129,9 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    console.warn(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
+    // TODO: workaround bug in standardjs, waiting for https://github.com/standard/eslint-config-standard/pull/193
+    const t = `Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`
+    this.conLog?.(t)
     this.emit('kick', packet)
     this.close()
   }
@@ -172,7 +177,7 @@ class Client extends Connection {
       return
     }
     const pakData = { name: des.data.name, params: des.data.params }
-    this.inLog?.('-> C', pakData.name, this.options.loggging ? serialize(pakData.params) : '')
+    this.inLog?.('-> C', pakData.name, this.options.logging ? serialize(pakData.params) : '')
     this.emit('packet', des)
 
     if (debugging) {
