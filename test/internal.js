@@ -3,6 +3,7 @@ const { dumpPackets } = require('../tools/genPacketDumps')
 const { ping } = require('../src/createClient')
 const { CURRENT_VERSION } = require('../src/options')
 const { join } = require('path')
+const { waitFor } = require('../src/datatypes/util')
 
 // First we need to dump some packets that a vanilla server would send a vanilla
 // client. Then we can replay those back in our custom server.
@@ -31,7 +32,7 @@ async function startTest (version = CURRENT_VERSION, ok) {
   console.assert(pongData, 'did not get valid pong data from server')
 
   const respawnPacket = get('packets/respawn.json')
-  const chunks = await requestChunks(respawnPacket.x, respawnPacket.z, 1)
+  const chunks = await requestChunks(version, respawnPacket.x, respawnPacket.z, 1)
 
   let loop
 
@@ -150,31 +151,31 @@ async function startTest (version = CURRENT_VERSION, ok) {
   client.connect()
 }
 
-const { ChunkColumn, Version } = require('bedrock-provider')
-const { waitFor } = require('../src/datatypes/util')
-const mcData = require('minecraft-data')('1.16')
+async function requestChunks (version, x, z, radius) {
+  const ChunkColumn = require('bedrock-provider').chunk('bedrock_1.17.10')
+  // const mcData = require('minecraft-data')('1.16')
 
-async function requestChunks (x, z, radius) {
   const cxStart = (x >> 4) - radius
   const cxEnd = (x >> 4) + radius
   const czStart = (z >> 4) - radius
   const czEnd = (z >> 4) + radius
 
-  const stone = mcData.blocksByName.stone
+  // const stone = mcData.blocksByName.stone
   const chunks = []
 
   for (let cx = cxStart; cx < cxEnd; cx++) {
     for (let cz = czStart; cz < czEnd; cz++) {
       console.log('reading chunk at ', cx, cz)
-      const cc = new ChunkColumn(Version.v1_2_0_bis, x, z)
+      const cc = new ChunkColumn(x, z)
 
-      for (let x = 0; x < 16; x++) {
-        for (let y = 0; y < 60; y++) {
-          for (let z = 0; z < 16; z++) {
-            cc.setBlock(x, y, z, stone)
-          }
-        }
-      }
+      // Temporarily disable until 1.18 PR in bedrock-provider goes through
+      // for (let x = 0; x < 16; x++) {
+      //   for (let y = 0; y < 60; y++) {
+      //     for (let z = 0; z < 16; z++) {
+      //       cc.setBlock({ x, y, z }, stone)
+      //     }
+      //   }
+      // }
 
       if (!cc) {
         console.log('no chunk')

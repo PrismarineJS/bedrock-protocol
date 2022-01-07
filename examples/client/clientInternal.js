@@ -3,7 +3,7 @@
  */
 process.env.DEBUG = 'minecraft-protocol raknet'
 const { Client } = require('bedrock-protocol')
-const { ChunkColumn, Version } = require('bedrock-provider')
+const ChunkColumn = require('bedrock-provider').chunk('bedrock_1.17.10')
 
 async function test () {
   const client = new Client({
@@ -33,7 +33,7 @@ async function test () {
   })
 
   client.on('level_chunk', async packet => {
-    const cc = new ChunkColumn(Version.v1_4_0, packet.x, packet.z)
+    const cc = new ChunkColumn(packet.x, packet.z)
     await cc.networkDecodeNoCache(packet.payload, packet.sub_chunk_count)
     const blocks = []
     for (let x = 0; x < 16; x++) {
