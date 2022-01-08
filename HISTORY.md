@@ -1,3 +1,6 @@
+## 3.9.0
+* Proxy fixes, logging and doc updates [#169](https://github.com/PrismarineJS/bedrock-protocol/pull/169)
+
 ## 3.8.0
 * 1.18.0 support
 
