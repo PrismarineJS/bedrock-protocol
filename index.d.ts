@@ -21,6 +21,10 @@ declare module "bedrock-protocol" {
     useNativeRaknet?: boolean,
     // If using JS implementation of RakNet, should we use workers? (This only affects the client)
     useRaknetWorker?: boolean
+    // Compression level for zlib, default to 7
+    compressionLevel?: number
+    // How frequently the packet queue should be flushed in milliseconds, defaults to 20ms
+    batchingInterval?: number
   }
 
   export interface ClientOptions extends Options {

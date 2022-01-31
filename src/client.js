@@ -68,6 +68,7 @@ class Client extends Connection {
     if (this.options.protocolVersion < Options.MIN_VERSION) {
       throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
     }
+    this.compressionLevel = this.options.compressionLevel || 7
   }
 
   get entityId () {
@@ -140,7 +141,12 @@ class Client extends Connection {
     if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
       if (statusPacket.status === 'player_spawn') {
         this.status = ClientStatus.Initialized
-        this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
+        if (!this.entityId) {
+          // We need to wait for start_game in the rare event we get a player_spawn before start_game race condition
+          this.on('start_game', () => this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId }))
+        } else {
+          this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
+        }
         this.emit('spawn')
       }
     }

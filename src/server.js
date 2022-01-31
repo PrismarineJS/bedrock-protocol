@@ -33,6 +33,7 @@ class Server extends EventEmitter {
     if (this.options.protocolVersion < Options.MIN_VERSION) {
       throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
     }
+    this.compressionLevel = this.options.compressionLevel || 7
   }
 
   onOpenConnection = (conn) => {

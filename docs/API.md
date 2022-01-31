@@ -20,8 +20,8 @@ Returns a `Client` instance and connects to the server.
 | skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |
 | useNativeRaknet | *optional* | Whether to use the C++ version of RakNet. Set to false to use JS. |
-| authTitle | *optional* | The client ID to sign in as, defaults to Minecraft for Nintendo Switch. Set false to sign in through Azure. See prismarine-auth |
-| deviceType | *optional* | The device type to sign in as, defaults to "Nintendo". See prismarine-auth |
+| compressionLevel | *optional* | What zlib compression level to use, default to **7** |
+| batchingInterval | *optional* | How frequently, in milliseconds to flush and write the packet queue (default: 20ms) |
 
 The following events are emitted by the client:
 * 'status' - When the client's login sequence status has changed
@@ -30,6 +30,8 @@ The following events are emitted by the client:
 * 'kick' - The server has kicked the client
 * 'close' - The server has closed the connection
 * 'error' - An recoverable exception has happened. Not catching will throw an exception
+* 'connect_allowed' - Emitted after the client has pinged the server and gets version information.
+* 'heartbeat' - Emitted after two successful tick_sync (keepalive) packets have been sent bidirectionally
 
 ## be.createServer(options) : Server
 

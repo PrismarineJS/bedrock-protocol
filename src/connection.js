@@ -60,7 +60,7 @@ class Connection extends EventEmitter {
   write (name, params) {
     this.outLog?.(name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
-    const batch = new Framer()
+    const batch = new Framer(this.compressionLevel)
     const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
 
@@ -84,21 +84,25 @@ class Connection extends EventEmitter {
     this.sendIds.push(name)
   }
 
+  _tick () {
+    if (this.sendQ.length) {
+      const batch = new Framer(this.compressionLevel)
+      batch.addEncodedPackets(this.sendQ)
+      this.sendQ = []
+      this.sendIds = []
+      if (this.encryptionEnabled) {
+        this.sendEncryptedBatch(batch)
+      } else {
+        this.sendDecryptedBatch(batch)
+      }
+    }
+  }
+
+  onTick = this._tick.bind(this)
+
   startQueue () {
     this.sendQ = []
-    this.loop = setInterval(() => {
-      if (this.sendQ.length) {
-        const batch = new Framer()
-        batch.addEncodedPackets(this.sendQ)
-        this.sendQ = []
-        this.sendIds = []
-        if (this.encryptionEnabled) {
-          this.sendEncryptedBatch(batch)
-        } else {
-          this.sendDecryptedBatch(batch)
-        }
-      }
-    }, 20)
+    this.loop = setInterval(this.onTick, this.options.batchingInterval || 20)
   }
 
   /**
@@ -106,7 +110,7 @@ class Connection extends EventEmitter {
    */
   sendBuffer (buffer, immediate = false) {
     if (immediate) {
-      const batch = new Framer()
+      const batch = new Framer(this.compressionLevel)
       batch.addEncodedPacket(buffer)
       if (this.encryptionEnabled) {
         this.sendEncryptedBatch(batch)
@@ -121,7 +125,7 @@ class Connection extends EventEmitter {
 
   sendDecryptedBatch (batch) {
     // send to raknet
-    batch.encode(buf => this.sendMCPE(buf, true))
+    this.sendMCPE(batch.encode(), true)
   }
 
   sendEncryptedBatch (batch) {
@@ -158,11 +162,10 @@ class Connection extends EventEmitter {
       if (this.encryptionEnabled) {
         this.decrypt(buffer.slice(1))
       } else {
-        Framer.decode(buffer, packets => {
-          for (const packet of packets) {
-            this.readPacket(packet)
-          }
-        })
+        const packets = Framer.decode(buffer)
+        for (const packet of packets) {
+          this.readPacket(packet)
+        }
       }
     }
   }
