@@ -15,6 +15,7 @@ class Player extends Connection {
     this.deserializer = server.deserializer
     this.connection = connection
     this.options = server.options
+    this.compressionLevel = server.compressionLevel
 
     KeyExchange(this, server, server.options)
     Login(this, server, server.options)
