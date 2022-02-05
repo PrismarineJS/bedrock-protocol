@@ -3,34 +3,30 @@ const zlib = require('zlib')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
-  constructor () {
+  constructor (compressionLevel) {
     // Encoding
     this.packets = []
-    this.compressionLevel = 7
+    this.compressionLevel = compressionLevel
   }
 
-  static decode (buf, cb) {
+  static decode (buf) {
     // Read header
     if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
     const buffer = buf.slice(1)
 
-    // Decode the payload
-    zlib.inflateRaw(buffer, { chunkSize: 1024 * 1024 * 2 }, (err, inflated) => {
-      if (err) { // Try to decode without compression
-        Framer.getPackets(buffer)
-        return
-      }
-      cb(Framer.getPackets(inflated))
-    })
+    // Decode the payload with 512kb buffer
+    try {
+      const inflated = zlib.inflateRawSync(buffer, { chunkSize: 512000 })
+      return Framer.getPackets(inflated)
+    } catch (e) { // Try to decode without compression
+      return Framer.getPackets(buffer)
+    }
   }
 
-  encode (cb) {
+  encode () {
     const buf = Buffer.concat(this.packets)
-    zlib.deflateRaw(buf, { level: this.compressionLevel }, (err, def) => {
-      if (err) throw err
-      const ret = Buffer.concat([Buffer.from([0xfe]), def])
-      cb(ret)
-    })
+    const def = zlib.deflateRawSync(buf, { level: this.compressionLevel })
+    return Buffer.concat([Buffer.from([0xfe]), def])
   }
 
   addEncodedPacket (chunk) {

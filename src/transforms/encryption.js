@@ -36,12 +36,10 @@ function createEncryptor (client, iv) {
   // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
 
   function process (chunk) {
-    Zlib.deflateRaw(chunk, { level: 7 }, (err, buffer) => {
-      if (err) throw err
-      const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
-      client.sendCounter++
-      client.cipher.write(packet)
-    })
+    const buffer = Zlib.deflateRawSync(chunk, { level: client.compressionLevel })
+    const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
+    client.sendCounter++
+    client.cipher.write(packet)
   }
 
   client.cipher.on('data', client.onEncryptedPacket)
@@ -72,10 +70,8 @@ function createDecryptor (client, iv) {
       return
     }
 
-    Zlib.inflateRaw(chunk, { chunkSize: 1024 * 1024 * 2 }, (err, buffer) => {
-      if (err) throw err
-      client.onDecryptedPacket(buffer)
-    })
+    const buffer = Zlib.inflateRawSync(chunk, { chunkSize: 512000 })
+    client.onDecryptedPacket(buffer)
   }
 
   client.decipher.on('data', verify)
