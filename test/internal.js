@@ -207,5 +207,5 @@ async function timedTest (version, timeout = 1000 * 220) {
   console.info('✔ ok')
 }
 
-// if (!module.parent) timedTest('1.17.40')
+// if (!module.parent) timedTest('1.18.11')
 module.exports = { startTest, timedTest, requestChunks }
