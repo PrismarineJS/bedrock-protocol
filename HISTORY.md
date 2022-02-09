@@ -1,3 +1,7 @@
+## 3.10.0
+* Support 1.18.11 (#179) @extremeheat
+* Switch to sync zlib with 512k chunks, adjustable compression level (#174) @extremeheat
+
 ## 3.9.0
 * Proxy fixes, logging and doc updates [#169](https://github.com/PrismarineJS/bedrock-protocol/pull/169)
 
