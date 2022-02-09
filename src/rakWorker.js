@@ -34,9 +34,12 @@ function main () {
       })
 
       raknet.on('encapsulated', (...args) => {
-        setTimeout(() => {
-          parentPort.postMessage({ type: 'encapsulated', args })
-        }, 100)
+        parentPort.postMessage({ type: 'encapsulated', args })
+      })
+
+      raknet.on('disconnect', (reason) => {
+        debug('[worker] disconnected!')
+        parentPort.postMessage({ type: 'disconnect', reason })
       })
 
       raknet.on('raw', (buffer, inetAddr) => {

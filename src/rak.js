@@ -86,6 +86,7 @@ class RakNativeServer extends EventEmitter {
       protocolVersion: 10,
       message: server.getAdvertisement().toBuffer()
     })
+    this.onClose = () => {}
 
     this.updateAdvertisement = () => {
       this.raknet.setOfflineMessage(server.getAdvertisement().toBuffer())
@@ -106,6 +107,8 @@ class RakNativeServer extends EventEmitter {
     this.raknet.on('encapsulated', ({ buffer, address }) => {
       this.onEncapsulated(buffer, address)
     })
+
+    this.raknet.on('close', (reason) => this.onClose(reason))
   }
 
   listen () {
@@ -122,6 +125,7 @@ class RakJsClient extends EventEmitter {
     super()
     this.options = options
     this.onConnected = () => { }
+    this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
     if (options.useWorkers) {
       this.connect = this.workerConnect
@@ -151,6 +155,10 @@ class RakJsClient extends EventEmitter {
         }
         case 'pong':
           this.pongCb?.(evt.args)
+          break
+        case 'disconnect':
+          this.onCloseConnection()
+          break
       }
     })
   }
@@ -164,7 +172,8 @@ class RakJsClient extends EventEmitter {
     })
 
     this.raknet.on('connected', this.onConnected)
-    this.raknet.on('encapsulated', (encapsulated, addr) => this.onEncapsulated(encapsulated.buffer, addr.hash))
+    this.raknet.on('encapsulated', (encapsulated, addr) => this.onEncapsulated(encapsulated, addr.hash))
+    this.raknet.on('disconnect', (reason) => this.onCloseConnection(reason))
   }
 
   workerSendReliable (buffer, immediate) {
@@ -175,8 +184,8 @@ class RakJsClient extends EventEmitter {
     const sendPacket = new EncapsulatedPacket()
     sendPacket.reliability = Reliability.ReliableOrdered
     sendPacket.buffer = buffer
-    this.connection.addEncapsulatedToQueue(sendPacket)
-    if (immediate) this.connection.sendQueue()
+    this.raknet.connection.addEncapsulatedToQueue(sendPacket)
+    if (immediate) this.raknet.connection.sendQueue()
   }
 
   async ping (timeout = 1000) {
@@ -205,8 +214,9 @@ class RakJsServer extends EventEmitter {
     this.onOpenConnection = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = (packet, address) => server.onEncapsulated(packet.buffer, address)
+    this.onClose = () => {}
     this.updateAdvertisement = () => {
-      // TODO
+      this.raknet.setPongAdvertisement(server.getAdvertisement())
     }
     if (options.useWorkers) {
       throw Error('nyi')
@@ -229,6 +239,7 @@ class RakJsServer extends EventEmitter {
     })
     this.raknet.on('closeConnection', this.onCloseConnection)
     this.raknet.on('encapsulated', this.onEncapsulated)
+    this.raknet.on('close', this.onClose)
   }
 
   close () {
