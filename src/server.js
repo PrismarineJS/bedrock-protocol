@@ -81,6 +81,7 @@ class Server extends EventEmitter {
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
     this.raknet.onEncapsulated = this.onEncapsulated
+    this.raknet.onClose = (reason) => this.close(reason || 'Raknet closed')
 
     this.serverTimer = setInterval(() => {
       this.raknet.updateAdvertisement()

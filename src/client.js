@@ -94,7 +94,7 @@ class Client extends Connection {
   _connect = async (sessionData) => {
     debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
     this.connection.onConnected = () => this.sendLogin()
-    this.connection.onCloseConnection = () => this.close()
+    this.connection.onCloseConnection = (reason) => this.close()
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
 
