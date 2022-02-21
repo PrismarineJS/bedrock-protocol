@@ -55,7 +55,8 @@ class Server extends EventEmitter {
   onEncapsulated = (buffer, address) => {
     const client = this.clients[address]
     if (!client) {
-      this.emit('error', new Error(`packet from unknown inet addr: ${address}`))
+      // Ignore packets from clients that are not connected.
+      debug(`ignoring packet from unknown inet addr: ${address}`)
       return
     }
     client.handle(buffer)

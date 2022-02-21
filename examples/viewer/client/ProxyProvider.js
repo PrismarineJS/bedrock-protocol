@@ -44,7 +44,7 @@ class ProxyProvider extends BotProvider {
           this.movements.pushCameraControl(params, 1)
 
           // Log Movement deltas
-          {
+          { // eslint-disable-line
             this.lastMovePacket = params
             if (this.firstPlayerMovePacket) {
               const id = diff(this.firstPlayerMovePacket.input_data, params.input_data)

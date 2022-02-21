@@ -1,7 +1,7 @@
 const path = require('path')
 const { app, BrowserWindow, globalShortcut } = require('electron')
 
-function createMainWindow() {
+function createMainWindow () {
   const window = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true,

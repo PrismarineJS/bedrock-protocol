@@ -2,9 +2,7 @@ node_modules/
 npm-debug.log
 package-lock.json
 __*
-src/**/*.json
 # Runtime generated data
 data/
 tools/bds*
-tools/*/*
 *.txt

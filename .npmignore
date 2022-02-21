@@ -1,7 +1,6 @@
 node_modules/
 npm-debug.log
 __*
-src/**/*.json
 # Runtime generated data
 data/
 tools/bds*
