@@ -187,11 +187,11 @@ class MovementManager {
     }, PHYSICS_INTERVAL_MS)
   }
 
-  get sprinting() {
+  get sprinting () {
     return this.player.sprinting
   }
 
-  set sprinting(val) {
+  set sprinting (val) {
     this.player.events.startSprint = val
     this.player.events.stopSprint = !val
     if (val && !this.player.sprinting) {
@@ -219,7 +219,7 @@ class MovementManager {
     const isAxis = AXES.includes(control)
     let hasOtherAxisKeyDown = false
     for (const c of AXES) {
-      if (this.controls[c] && c != control) {
+      if (this.controls[c] && c !== control) {
         hasOtherAxisKeyDown = true
       }
     }
@@ -277,7 +277,6 @@ class MovementManager {
     // debug
     globalThis.debugYaw = [yaw, yawRad]
   }
-
 
   // Called when a proxy player sends a PlayerInputPacket. We need to apply these inputs tick-by-tick
   // as these packets are sent by the client every tick.

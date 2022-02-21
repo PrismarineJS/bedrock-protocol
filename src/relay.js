@@ -57,7 +57,9 @@ class RelayPlayer extends Player {
 
     if (!des.canceled) {
       if (name === 'start_game') {
-        this.sentStartGame = true
+        setTimeout(() => {
+          this.sentStartGame = true
+        }, 500)
       } else if (name === 'level_chunk' && !this.sentStartGame) {
         this.chunkSendCache.push(params)
         return
@@ -104,7 +106,8 @@ class RelayPlayer extends Player {
     if (this.startRelaying) {
       // Upstream is still connecting/handshaking
       if (!this.upstream) {
-        this.downInLog('Got downstream connected packet but upstream is not connected yet, added to q', this.upQ.length)
+        const des = this.server.deserializer.parsePacketBuffer(packet)
+        this.downInLog('Got downstream connected packet but upstream is not connected yet, added to q', des)
         this.upQ.push(packet) // Put into a queue
         return
       }
@@ -178,8 +181,10 @@ class Relay extends Server {
       autoInitPlayer: false
     })
     // Set the login payload unless `noLoginForward` option
-    if (!client.noLoginForward) client.skinData = ds.skinData
-    client.connect()
+    if (!client.noLoginForward) client.options.skinData = ds.skinData
+    client.ping().then(pongData => {
+      client.connect()
+    })
     this.conLog('Connecting to', this.options.destination.host, this.options.destination.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog

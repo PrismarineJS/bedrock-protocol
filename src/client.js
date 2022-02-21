@@ -84,9 +84,7 @@ class Client extends Connection {
     try {
       return await this.connection.ping(this.options.connectTimeout)
     } catch (e) {
-      // TODO: workaround bug in standardjs, waiting for https://github.com/standard/eslint-config-standard/pull/193
-      const t = `Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`
-      this.conLog?.(t)
+      this.conLog?.(`Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`)
       throw e
     }
   }
@@ -130,9 +128,7 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    // TODO: workaround bug in standardjs, waiting for https://github.com/standard/eslint-config-standard/pull/193
-    const t = `Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`
-    this.conLog?.(t)
+    this.conLog?.(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
     this.emit('kick', packet)
     this.close()
   }
@@ -221,8 +217,7 @@ class Client extends Connection {
         break
       default:
         if (this.status !== ClientStatus.Initializing && this.status !== ClientStatus.Initialized) {
-          // TODO: standardjs bug happens here with ?.(`something ${des.data.name}`)
-          if (this.inLog) this.inLog(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
+          this.inLog?.(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
           return
         }
     }

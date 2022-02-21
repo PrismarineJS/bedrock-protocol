@@ -17,10 +17,11 @@ class Parser extends FullPacketParser {
     const oldBuffer = deserialized.fullBuffer
     const newBuffer = serializer.createPacketBuffer({ name, params })
     if (!newBuffer.equals(oldBuffer)) {
-      console.warn('New', newBuffer.toString('hex'))
-      console.warn('Old', oldBuffer.toString('hex'))
-      console.log('Failed to re-encode', name, params)
-      process.exit(1)
+      const fs = require('fs')
+      fs.writeFileSync('new.bin', newBuffer)
+      fs.writeFileSync('old.bin', oldBuffer)
+      fs.writeFileSync('failed.json', JSON.stringify(params, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2))
+      console.warn('Failed to re-encode', name)
     }
   }
 }
