@@ -32,7 +32,15 @@ class Client extends Connection {
     }
     this.conLog = this.options.conLog === undefined ? console.log : this.options.conLog
 
-    const onServerInfo = () => {
+    const ping = async () => {
+      const data = await this.ping()
+      const ad = advertisement.fromServerName(data)
+      const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
+      this.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
+      this.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, this.options.version !== ad.version ? ` (as ${this.options.version})` : '')
+    }
+
+    const init = () => {
       this.serializer = createSerializer(this.options.version)
       this.deserializer = createDeserializer(this.options.version)
 
@@ -40,20 +48,18 @@ class Client extends Connection {
       Login(this, null, this.options)
       LoginVerify(this, null, this.options)
 
+      this.emit('connect_allowed')
+    }
+
+    const onServerInfo = () => {
       const host = this.options.host
       const port = this.options.port
       this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
 
-      if (!this.options.pingBeforeConnect) {
-        this.emit('connect_allowed')
-      } else { // Try to ping
-        this.ping().then(data => {
-          const ad = advertisement.fromServerName(data)
-          const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
-          this.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
-          this.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, this.options.version !== ad.version ? ` (as ${this.options.version})` : '')
-          this.emit('connect_allowed')
-        })
+      if (options.pingBeforeConnect) { // Try to ping, for auto versioning
+        ping().then(init)
+      } else {
+        init()
       }
     }
 
@@ -65,7 +71,7 @@ class Client extends Connection {
   }
 
   connect () {
-    if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`
+    if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
     this.on('session', this._connect)
 
     if (this.options.offline) {
