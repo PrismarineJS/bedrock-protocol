@@ -4,6 +4,30 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 
+function validateOptions (options) {
+  if (!options.profilesFolder) {
+    options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
+  }
+  if (options.authTitle === undefined) {
+    options.authTitle = Titles.MinecraftNintendoSwitch
+    options.deviceType = 'Nintendo'
+  }
+}
+
+async function realmAuthenticate (options) {
+  validateOptions(options)
+  throw new Error('Not implemented')
+  // const authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+  // const mcRealms = RealmAPI.from(authflow)
+  // // Set the options
+  // const realms = await mcRealms.getRealms()
+  // const realm = options.realms.pickRealm(realms)
+  // const [host, port] = await realm.getAddress()
+  // options.host = host
+  // options.port = port
+  // options.authflow = authflow
+}
+
 /**
  * Authenticates to Minecraft via device code based Microsoft auth,
  * then connects to the specified server in Client Options
@@ -13,16 +37,10 @@ const { uuidFrom } = require('../datatypes/util')
  * @param {object} options - Client Options
  */
 async function authenticate (client, options) {
-  if (!options.profilesFolder) {
-    options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
-  }
-  if (options.authTitle === undefined) {
-    options.authTitle = Titles.MinecraftNintendoSwitch
-    options.deviceType = 'Nintendo'
-  }
+  validateOptions(options)
   try {
-    const Authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const chains = await Authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
+    const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+    const chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
       if (options.password) console.warn('Sign in failed, try removing the password field')
       throw e
     })
@@ -71,5 +89,6 @@ function postAuthenticate (client, profile, chains) {
 
 module.exports = {
   createOfflineSession,
-  authenticate
+  authenticate,
+  realmAuthenticate
 }

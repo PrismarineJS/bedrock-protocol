@@ -1,6 +1,5 @@
 const { Client } = require('./client')
 const { RakClient } = require('./rak')(true)
-const { Versions, CURRENT_VERSION } = require('./options')
 const { sleep } = require('./datatypes/util')
 const assert = require('assert')
 const advertisement = require('./server/advertisement')
@@ -9,19 +8,7 @@ const advertisement = require('./server/advertisement')
 function createClient (options) {
   assert(options)
   const client = new Client({ port: 19132, ...options })
-
-  if (options.skipPing) {
-    connect(client)
-  } else { // Try to ping
-    client.ping().then(data => {
-      const ad = advertisement.fromServerName(data)
-      client.options.version = options.version ?? (Versions[ad.version] ? ad.version : CURRENT_VERSION)
-      if (client.conLog) client.conLog(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : '')
-      client.emit('connect_allowed')
-      connect(client)
-    }, client)
-  }
-
+  client.on('connect_allowed', connect)
   return client
 }
 

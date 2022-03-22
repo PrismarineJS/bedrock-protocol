@@ -4,7 +4,7 @@ const { serialize, isDebug } = require('./datatypes/util')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
-
+const advertisement = require('./server/advertisement')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
@@ -23,17 +23,6 @@ class Client extends Connection {
 
     const { RakClient } = require('./rak')(this.options.useNativeRaknet)
 
-    this.serializer = createSerializer(this.options.version)
-    this.deserializer = createDeserializer(this.options.version)
-
-    KeyExchange(this, null, this.options)
-    Login(this, null, this.options)
-    LoginVerify(this, null, this.options)
-
-    const host = this.options.host
-    const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
-
     this.startGameData = {}
     this.clientRuntimeId = null
 
@@ -42,9 +31,41 @@ class Client extends Connection {
       this.outLog = (...args) => debug('C <-', ...args)
     }
     this.conLog = this.options.conLog === undefined ? console.log : this.options.conLog
+
+    const onServerInfo = () => {
+      this.serializer = createSerializer(this.options.version)
+      this.deserializer = createDeserializer(this.options.version)
+
+      KeyExchange(this, null, this.options)
+      Login(this, null, this.options)
+      LoginVerify(this, null, this.options)
+
+      const host = this.options.host
+      const port = this.options.port
+      this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
+
+      if (this.options.skipPing) {
+        this.emit('connect_allowed')
+      } else { // Try to ping
+        this.ping().then(data => {
+          const ad = advertisement.fromServerName(data)
+          const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
+          this.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
+          this.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, this.options.version !== ad.version ? ` (as ${this.options.version})` : '')
+          this.emit('connect_allowed')
+        })
+      }
+    }
+
+    if (options.realms) {
+      auth.realmAuthenticate(options).then(onServerInfo).catch(e => this.emit('error', e))
+    } else {
+      onServerInfo()
+    }
   }
 
   connect () {
+    if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`
     this.on('session', this._connect)
 
     if (this.options.offline) {
