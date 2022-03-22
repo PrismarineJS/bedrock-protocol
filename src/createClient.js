@@ -9,7 +9,7 @@ function createClient (options) {
   assert(options)
   if (!options.skipPing) options.pingBeforeConnect = true
   const client = new Client({ port: 19132, ...options })
-  client.on('connect_allowed', connect)
+  client.on('connect_allowed', () => connect(client))
   return client
 }
 
