@@ -44,7 +44,7 @@ class Client extends Connection {
       const port = this.options.port
       this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
 
-      if (this.options.skipPing) {
+      if (!this.options.pingBeforeConnect) {
         this.emit('connect_allowed')
       } else { // Try to ping
         this.ping().then(data => {
