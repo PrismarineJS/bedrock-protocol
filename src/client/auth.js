@@ -17,15 +17,6 @@ function validateOptions (options) {
 async function realmAuthenticate (options) {
   validateOptions(options)
   throw new Error('Not implemented')
-  // const authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-  // const mcRealms = RealmAPI.from(authflow)
-  // // Set the options
-  // const realms = await mcRealms.getRealms()
-  // const realm = options.realms.pickRealm(realms)
-  // const [host, port] = await realm.getAddress()
-  // options.host = host
-  // options.port = port
-  // options.authflow = authflow
 }
 
 /**
