@@ -2,13 +2,34 @@ const { Client } = require('./client')
 const { RakClient } = require('./rak')(true)
 const { sleep } = require('./datatypes/util')
 const assert = require('assert')
+const Options = require('./options')
 const advertisement = require('./server/advertisement')
+const auth = require('./client/auth')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
   assert(options)
-  if (!options.skipPing) options.pingBeforeConnect = true
-  const client = new Client({ port: 19132, ...options })
+  const client = new Client({ port: 19132, ...options, delayedInit: true })
+
+  function onServerInfo () {
+    if (options.skipPing) {
+      client.init()
+    } else {
+      ping({ host: options.host, port: options.port }).then(ad => {
+        const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
+        client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
+        this.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, this.options.version !== ad.version ? ` (as ${this.options.version})` : '')
+        client.init()
+      })
+    }
+  }
+
+  if (options.realms) {
+    auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.emit('error', e))
+  } else {
+    onServerInfo()
+  }
+
   client.on('connect_allowed', () => connect(client))
   return client
 }

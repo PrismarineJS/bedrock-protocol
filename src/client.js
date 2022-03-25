@@ -4,7 +4,7 @@ const { serialize, isDebug } = require('./datatypes/util')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
-const advertisement = require('./server/advertisement')
+const initRaknet = require('./rak')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
@@ -19,9 +19,6 @@ class Client extends Connection {
   constructor (options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
-    this.validateOptions()
-
-    const { RakClient } = require('./rak')(this.options.useNativeRaknet)
 
     this.startGameData = {}
     this.clientRuntimeId = null
@@ -32,42 +29,26 @@ class Client extends Connection {
     }
     this.conLog = this.options.conLog === undefined ? console.log : this.options.conLog
 
-    const ping = async () => {
-      const data = await this.ping()
-      const ad = advertisement.fromServerName(data)
-      const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
-      this.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
-      this.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, this.options.version !== ad.version ? ` (as ${this.options.version})` : '')
+    if (!options.delayedInit) {
+      this.init()
     }
+  }
 
-    const init = () => {
-      this.serializer = createSerializer(this.options.version)
-      this.deserializer = createDeserializer(this.options.version)
+  init () {
+    this.validateOptions()
+    this.serializer = createSerializer(this.options.version)
+    this.deserializer = createDeserializer(this.options.version)
 
-      KeyExchange(this, null, this.options)
-      Login(this, null, this.options)
-      LoginVerify(this, null, this.options)
+    KeyExchange(this, null, this.options)
+    Login(this, null, this.options)
+    LoginVerify(this, null, this.options)
 
-      this.emit('connect_allowed')
-    }
+    const { RakClient } = initRaknet(this.options.useNativeRaknet)
+    const host = this.options.host
+    const port = this.options.port
+    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
 
-    const onServerInfo = () => {
-      const host = this.options.host
-      const port = this.options.port
-      this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
-
-      if (options.pingBeforeConnect) { // Try to ping, for auto versioning
-        ping().then(init)
-      } else {
-        init()
-      }
-    }
-
-    if (options.realms) {
-      auth.realmAuthenticate(options).then(onServerInfo).catch(e => this.emit('error', e))
-    } else {
-      onServerInfo()
-    }
+    this.emit('connect_allowed')
   }
 
   connect () {
