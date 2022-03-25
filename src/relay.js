@@ -178,6 +178,7 @@ class Relay extends Server {
       version: this.options.version,
       host: this.options.destination.host,
       port: this.options.destination.port,
+      onMsaCode: this.options.onMsaCode,
       autoInitPlayer: false
     })
     // Set the login payload unless `noLoginForward` option
