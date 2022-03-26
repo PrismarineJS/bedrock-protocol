@@ -185,6 +185,8 @@ class Relay extends Server {
     if (!client.noLoginForward) client.options.skinData = ds.skinData
     client.ping().then(pongData => {
       client.connect()
+    }).catch(err => {
+      this.emit('error', err)
     })
     this.conLog('Connecting to', this.options.destination.host, this.options.destination.port)
     client.outLog = ds.upOutLog
