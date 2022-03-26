@@ -165,7 +165,7 @@ class Relay extends Server {
   }
 
   // Called after a new player joins our proxy. We first create a new Client to connect to
-  // the remote server. Then we listen to soem events and proxy them over. The queue and
+  // the remote server. Then we listen to some events and proxy them over. The queue and
   // flushing logic is more of an accessory to make sure the server or client recieves
   // a packet, no matter what state it's in. For example, if the client wants to send a
   // packet to the server but it's not connected, it will add to the queue and send as soon
@@ -179,6 +179,7 @@ class Relay extends Server {
       host: this.options.destination.host,
       port: this.options.destination.port,
       onMsaCode: this.options.onMsaCode,
+      profilesFolder: this.options.profilesFolder,
       autoInitPlayer: false
     })
     // Set the login payload unless `noLoginForward` option
