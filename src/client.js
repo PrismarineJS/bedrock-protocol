@@ -4,7 +4,7 @@ const { serialize, isDebug } = require('./datatypes/util')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
-
+const initRaknet = require('./rak')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
@@ -19,20 +19,6 @@ class Client extends Connection {
   constructor (options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
-    this.validateOptions()
-
-    const { RakClient } = require('./rak')(this.options.useNativeRaknet)
-
-    this.serializer = createSerializer(this.options.version)
-    this.deserializer = createDeserializer(this.options.version)
-
-    KeyExchange(this, null, this.options)
-    Login(this, null, this.options)
-    LoginVerify(this, null, this.options)
-
-    const host = this.options.host
-    const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
 
     this.startGameData = {}
     this.clientRuntimeId = null
@@ -42,9 +28,31 @@ class Client extends Connection {
       this.outLog = (...args) => debug('C <-', ...args)
     }
     this.conLog = this.options.conLog === undefined ? console.log : this.options.conLog
+
+    if (!options.delayedInit) {
+      this.init()
+    }
+  }
+
+  init () {
+    this.validateOptions()
+    this.serializer = createSerializer(this.options.version)
+    this.deserializer = createDeserializer(this.options.version)
+
+    KeyExchange(this, null, this.options)
+    Login(this, null, this.options)
+    LoginVerify(this, null, this.options)
+
+    const { RakClient } = initRaknet(this.options.useNativeRaknet)
+    const host = this.options.host
+    const port = this.options.port
+    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
+
+    this.emit('connect_allowed')
   }
 
   connect () {
+    if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
     this.on('session', this._connect)
 
     if (this.options.offline) {

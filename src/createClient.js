@@ -1,27 +1,36 @@
 const { Client } = require('./client')
 const { RakClient } = require('./rak')(true)
-const { Versions, CURRENT_VERSION } = require('./options')
 const { sleep } = require('./datatypes/util')
 const assert = require('assert')
+const Options = require('./options')
 const advertisement = require('./server/advertisement')
+const auth = require('./client/auth')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
   assert(options)
-  const client = new Client({ port: 19132, ...options })
+  const client = new Client({ port: 19132, ...options, delayedInit: true })
 
-  if (options.skipPing) {
-    connect(client)
-  } else { // Try to ping
-    client.ping().then(data => {
-      const ad = advertisement.fromServerName(data)
-      client.options.version = options.version ?? (Versions[ad.version] ? ad.version : CURRENT_VERSION)
-      if (client.conLog) client.conLog(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : '')
-      client.emit('connect_allowed')
-      connect(client)
-    }, client)
+  function onServerInfo () {
+    if (options.skipPing) {
+      client.init()
+    } else {
+      ping(options).then(ad => {
+        const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
+        client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
+        client.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : '')
+        client.init()
+      })
+    }
   }
 
+  if (options.realms) {
+    auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.emit('error', e))
+  } else {
+    onServerInfo()
+  }
+
+  client.on('connect_allowed', () => connect(client))
   return client
 }
 
