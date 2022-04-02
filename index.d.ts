@@ -178,9 +178,9 @@ declare module "bedrock-protocol" {
   }
 
   export interface RealmsOptions {
-    realmId: string
-    realmInvite: string 
-    pickRealm: (realms: Realm[]) => Realm
+    realmId?: string
+    realmInvite?: string 
+    pickRealm?: (realms: Realm[]) => Realm
   }
 
   export function createClient(options: ClientOptions): Client
