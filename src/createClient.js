@@ -15,7 +15,7 @@ function createClient (options) {
     if (options.skipPing) {
       client.init()
     } else {
-      ping(options).then(ad => {
+      ping(client.options).then(ad => {
         const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
         client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
         client.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : '')
