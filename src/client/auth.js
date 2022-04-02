@@ -43,7 +43,7 @@ async function realmAuthenticate (options) {
 
   debug('realms', realms)
 
-  if (!realms || !realms.length) throw Error('Couldn\'t find any Realms for the authenticating account')
+  if (!realms || !realms.length) throw Error('Couldn\'t find any Realms for the authenticated account')
 
   let realm
 
@@ -56,7 +56,7 @@ async function realmAuthenticate (options) {
     realm = await options.realms.pickRealm(realms)
   }
 
-  if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticating account must be owner or have joined the Realm.')
+  if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
 
   const { address } = await retry(async () => realm.getAddress(), 5)
   const [host, port] = address.split(':')
