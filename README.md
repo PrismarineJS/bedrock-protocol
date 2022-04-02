@@ -59,6 +59,25 @@ client.on('text', (packet) => { // Listen for chat messages and echo them back.
 })
 ```
 
+### Client example joining a Realm
+
+Example to connect to a Realm that the authenticating account is owner of or has been invited to:
+
+```js
+const bedrock = require('bedrock-protocol')
+const client = bedrock.createClient({
+  realms: { // Only one option needs to be present
+    realmId: '1234567', // ID of the Realm to join
+    realmInvite: 'https://realms.gg/AB1CD2EFA3B' // Invite code or link for the Realm to join
+    pickRealm: (realms) => realms.find(realm => realm.name === 'Realm Name') // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+  }
+})
+
+client.on('text', (packet) => { // Listen for chat messages
+  console.log('Recieved Text:' packet)
+})
+```
+
 ### Server example
 
 *Can't connect locally on Windows? See the [faq](docs/FAQ.md)*
