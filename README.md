@@ -67,7 +67,7 @@ Example to connect to a Realm that the authenticating account is owner of or has
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
   realms: {
-    pickRealm: (realms) => realms.find(realm => realm[0]) // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+    pickRealm: (realms) => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
   }
 })
 ```
