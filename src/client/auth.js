@@ -15,24 +15,6 @@ function validateOptions (options) {
   }
 }
 
-function retry (fn, maxRetries, interval = 1000) {
-  return new Promise((resolve, reject) => {
-    let retries = 0
-    const retryFn = () => {
-      retries++
-      fn().then(resolve).catch(err => {
-        debug('retry', retries, err)
-        if (retries >= maxRetries) {
-          reject(err)
-        } else {
-          setTimeout(retryFn, interval)
-        }
-      })
-    }
-    retryFn()
-  })
-}
-
 async function realmAuthenticate (options) {
   validateOptions(options)
 
@@ -58,13 +40,12 @@ async function realmAuthenticate (options) {
 
   if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
 
-  const { address } = await retry(async () => realm.getAddress(), 5)
-  const [host, port] = address.split(':')
+  const { host, port } = await realm.getAddress()
 
   debug('realms connection', address)
 
   options.host = host
-  options.port = parseInt(port)
+  options.port = port
 }
 
 /**
