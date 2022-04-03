@@ -42,7 +42,7 @@ async function realmAuthenticate (options) {
 
   const { host, port } = await realm.getAddress()
 
-  debug('realms connection', address)
+  debug('realms connection', { host, port })
 
   options.host = host
   options.port = port
