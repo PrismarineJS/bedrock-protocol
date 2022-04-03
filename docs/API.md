@@ -8,7 +8,7 @@ Returns a `Client` instance and connects to the server.
 
 | Parameter   | Optionality | Description |
 | ----------- | ----------- |-|
-| host        | **Required** |  host to connect to, for example `127.0.0.1`. |
+| host        | Conditional | Not required if `realms` is set. host to connect to, for example `127.0.0.1`. |
 | port        | *optional* |  port to connect to, default to **19132**     |
 | version     | *optional* |  Version to connect as. If not specified, automatically match server version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
@@ -22,6 +22,10 @@ Returns a `Client` instance and connects to the server.
 | useNativeRaknet | *optional* | Whether to use the C++ version of RakNet. Set to false to use JS. |
 | compressionLevel | *optional* | What zlib compression level to use, default to **7** |
 | batchingInterval | *optional* | How frequently, in milliseconds to flush and write the packet queue (default: 20ms) |
+| realms | *optional* | An object which should contain one of the following properties: `realmId`, `realmInvite`, `pickRealm`. When defined will attempt to join a Realm without needing to specify host/port. **The authenticated account must either own the Realm or have been invited to it** |
+| realms.realmId | *optional* | The id of the Realm to join. |
+| realms.realmInvite | *optional* | The invite link/code of the Realm to join. |
+| realms.pickRealm | *optional* | A function which will have an array of the user Realms (joined/owned) passed to it. The function should return a Realm. |
 
 The following events are emitted by the client:
 * 'status' - When the client's login sequence status has changed
@@ -133,6 +137,22 @@ Order of client event emissions:
 * 'login' - emitted after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake
 * 'spawn' - emitted after the client has permission from the server to spawn
+
+### Realm docs
+
+To make joining a Realm easier we've added an optional `realm` property to the client. It accepts the following options `realmId`, `realmInvite`, and `pickRealm`, supplying one of these will fetch host/port information for the specified Realm and then attempt to connect the bot.
+ - `realmId` - The id of the Realm to join.
+ - `realmInvite` - The invite code/link of the Realm to join.
+ - `pickRealm` - A function that will be called with a list of Realms to pick from. The function should return the Realm to join.
+
+```js
+const bedrock = require('bedrock-protocol')
+const client = bedrock.createClient({
+  realms: {
+    pickRealm: (realms) => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+  }
+})
+```
 
 ### Protocol docs
 
