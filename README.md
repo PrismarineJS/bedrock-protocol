@@ -59,6 +59,19 @@ client.on('text', (packet) => { // Listen for chat messages and echo them back.
 })
 ```
 
+### Client example joining a Realm
+
+Example to connect to a Realm that the authenticating account is owner of or has been invited to:
+
+```js
+const bedrock = require('bedrock-protocol')
+const client = bedrock.createClient({
+  realms: {
+    pickRealm: (realms) => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+  }
+})
+```
+
 ### Server example
 
 *Can't connect locally on Windows? See the [faq](docs/FAQ.md)*

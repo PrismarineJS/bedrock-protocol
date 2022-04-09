@@ -3,6 +3,7 @@ const { Authflow: PrismarineAuth, Titles } = require('prismarine-auth')
 const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
+const { RealmAPI } = require('prismarine-realms')
 
 function validateOptions (options) {
   if (!options.profilesFolder) {
@@ -16,7 +17,35 @@ function validateOptions (options) {
 
 async function realmAuthenticate (options) {
   validateOptions(options)
-  throw new Error('Not implemented')
+
+  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  const api = RealmAPI.from(options.authflow, 'bedrock')
+  const realms = await api.getRealms()
+
+  debug('realms', realms)
+
+  if (!realms || !realms.length) throw Error('Couldn\'t find any Realms for the authenticated account')
+
+  let realm
+
+  if (options.realms.realmId) {
+    realm = realms.find(e => e.id === Number(options.realms.realmId))
+  } else if (options.realms.realmInvite) {
+    realm = await api.getRealmFromInvite(options.realms.realmInvite)
+  } else if (options.realms.pickRealm) {
+    if (typeof options.realms.pickRealm !== 'function') throw Error('realms.pickRealm must be a function')
+    realm = await options.realms.pickRealm(realms)
+  }
+
+  if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
+
+  const { host, port } = await realm.getAddress()
+
+  debug('realms connection', { host, port })
+
+  options.host = host
+  options.port = port
 }
 
 /**

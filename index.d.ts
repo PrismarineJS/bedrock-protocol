@@ -1,4 +1,5 @@
 import EventEmitter from "events"
+import { Realm } from "prismarine-realms"
 
 declare module "bedrock-protocol" {
   type Version = '1.18.12' | '1.18.11' | '1.18.10' | '1.18.2' | '1.18.1' | '1.18.0' | '1.17.41' | '1.17.40' | '1.17.34' | '1.17.30' | '1.17.11' | '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
@@ -40,6 +41,8 @@ declare module "bedrock-protocol" {
     skipPing?: boolean
     // where to log connection information to (default to console.log)
     conLog?
+    // used to join a Realm instead of supplying a host/port
+    realms?: RealmsOptions
   }
 
   export interface ServerOptions extends Options {
@@ -172,6 +175,12 @@ declare module "bedrock-protocol" {
     playersMax: number
     gamemode: string
     serverId: string
+  }
+
+  export interface RealmsOptions {
+    realmId?: string
+    realmInvite?: string 
+    pickRealm?: (realms: Realm[]) => Realm
   }
 
   export function createClient(options: ClientOptions): Client
