@@ -1,3 +1,12 @@
+## 3.11.0
+* Implement Realm joining (#193) @LucienHH
+* Refactor client connection sequence (#189) @extremeheat
+* Add profilesFolder to Relay (#192) @CreeperG16
+* Emit error from relay when server can't be pinged (#191)
+* Pass relay onMsaCode to client (#190) @Heath123
+* Mark raknet-native as required dependency (#188) 
+* Ignore unconnected packets, remove babel (#185)
+
 ## 3.10.0
 * Support 1.18.11 (#179) @extremeheat
 * Switch to sync zlib with 512k chunks, adjustable compression level (#174) @extremeheat
