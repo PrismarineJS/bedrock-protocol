@@ -1,3 +1,6 @@
+## 3.11.1
+* Bump minecraft-data version
+
 ## 3.11.0
 * Implement Realm joining (#193) @LucienHH
 * Refactor client connection sequence (#189) @extremeheat
