@@ -35,6 +35,8 @@ function main (ver = 'latest') {
   createProtocol(ver)
 }
 
+require('minecraft-data/bin/generate_data')
+
 // If no argument, build everything
 if (!process.argv[2]) {
   convert('latest')
