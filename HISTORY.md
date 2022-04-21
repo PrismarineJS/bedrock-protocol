@@ -1,3 +1,6 @@
+## 3.12.0
+* 1.18.30 support
+
 ## 3.11.1
 * Bump minecraft-data version
 
