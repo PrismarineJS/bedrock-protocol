@@ -15,7 +15,8 @@ module.exports = (client, server, options) => {
         extraData: {
           displayName: client.username,
           identity: client.profile.uuid,
-          titleId: '89692877'
+          titleId: '89692877',
+          XUID: '0'
         },
         certificateAuthority: true,
         identityPublicKey: client.clientX509
