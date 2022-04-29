@@ -152,7 +152,7 @@ class Player extends Connection {
         }
     }
     this.emit(des.data.name, des.data.params)
-   this.emit('packet', des) 
+    this.emit('packet', des) 
   }
 }
 
