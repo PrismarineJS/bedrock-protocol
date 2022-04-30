@@ -69,7 +69,7 @@ class Player extends Connection {
     this.profile = {
       name: userData.extraData?.displayName,
       uuid: userData.extraData?.identity,
-      xuid: userData.extraData?.xuid
+      xuid: userData.extraData?.xuid || userData.extraData?.XUID
     }
     this.version = clientVer
     this.emit('login', { user: userData.extraData }) // emit events for user
