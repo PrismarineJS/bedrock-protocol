@@ -191,7 +191,6 @@ async function requestChunks (version, x, z, radius) {
         blobs: [],
         payload: cbuf
       })
-      // console.log('Ht',cc.sectionsLen,cc.sections)
     }
   }
 

@@ -110,9 +110,18 @@ async function startServerAndWait (version, withTimeout, options) {
   return handle
 }
 
+async function startServerAndWait2 (version, withTimeout, options) {
+  try {
+    return await startServerAndWait(version, withTimeout, options)
+  } catch (e) {
+    console.log(e, 'tring once more to start server...')
+    return await startServerAndWait(version, withTimeout, options)
+  }
+}
+
 if (!module.parent) {
   // if (process.argv.length < 3) throw Error('Missing version argument')
   startServer(process.argv[2] || '1.17.10', null, process.argv[3] ? { 'server-port': process.argv[3], 'online-mode': !!process.argv[4] } : undefined)
 }
 
-module.exports = { fetchLatestStable, startServer, startServerAndWait }
+module.exports = { fetchLatestStable, startServer, startServerAndWait, startServerAndWait2 }

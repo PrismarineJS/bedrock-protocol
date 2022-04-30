@@ -7,7 +7,7 @@ async function test (version) {
   const ChunkColumn = require('bedrock-provider').chunk('bedrock_' + version)
 
   // Start the server, wait for it to accept clients, throws on timeout
-  const handle = await vanillaServer.startServerAndWait(version, 1000 * 220)
+  const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220)
   console.log('Started server')
 
   const client = new Client({
