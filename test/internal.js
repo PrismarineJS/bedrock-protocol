@@ -14,7 +14,7 @@ function prepare (version) {
 async function startTest (version = CURRENT_VERSION, ok) {
   await prepare(version)
   const Item = require('../types/Item')(version)
-  const port = 19130
+  const port = 19130 + Math.floor(Math.random() * 100)
   const server = new Server({ host: '0.0.0.0', port, version, offline: true })
 
   function getPath (packetPath) {
@@ -25,6 +25,7 @@ async function startTest (version = CURRENT_VERSION, ok) {
     return require(getPath('sample/' + packetPath))
   }
 
+  console.log('Starting internal server')
   server.listen()
   console.log('Started server')
 
@@ -207,5 +208,5 @@ async function timedTest (version, timeout = 1000 * 220) {
   console.info('✔ ok')
 }
 
-// if (!module.parent) timedTest('1.18.11')
+if (!module.parent) timedTest('1.16.210')
 module.exports = { startTest, timedTest, requestChunks }
