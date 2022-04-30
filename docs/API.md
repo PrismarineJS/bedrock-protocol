@@ -27,7 +27,7 @@ Returns a `Client` instance and connects to the server.
 | realms.realmInvite | *optional* | The invite link/code of the Realm to join. |
 | realms.pickRealm | *optional* | A function which will have an array of the user Realms (joined/owned) passed to it. The function should return a Realm. |
 
-The following events are emitted by the client:
+The following special events are emitted by the client on top of protocol packets:
 * 'status' - When the client's login sequence status has changed
 * 'join' - When the client has joined the server after authenticating
 * 'spawn' - When the client has spawned into the game world, as it is getting chunks
@@ -36,6 +36,7 @@ The following events are emitted by the client:
 * 'error' - An recoverable exception has happened. Not catching will throw an exception
 * 'connect_allowed' - Emitted after the client has pinged the server and gets version information.
 * 'heartbeat' - Emitted after two successful tick_sync (keepalive) packets have been sent bidirectionally
+* 'packet' - Emitted for all packets received by client
 
 ## be.createServer(options) : Server
 
@@ -97,14 +98,16 @@ server.on('connect', (client) => {
 
 ```
 
-Order of server client event emissions:
+Server event emissions:
 * 'connect' - emitted by `Server` after a client first joins the server. Second paramater is a `ServerPlayer` instance.
-* 'login' - emitted by client after the client has been authenticated by the server
-* 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
-* 'spawn' - emitted after the client lets the server know that it has successfully spawned
-
 
 'error' event is emitted when a catchable exception happens with a client (for example receiving a bad encrypted packet).
+
+A ServerPlayer instance also emits the following special events:
+* 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
+* 'login' - emitted by client after the client has been authenticated by the server
+* 'spawn' - emitted after the client lets the server know that it has successfully spawned
+* 'packet' - Emitted for all packets received by client
 
 ## Client docs
 
