@@ -1,3 +1,8 @@
+## 3.13.0
+* Update API documentation
+* Emit generic 'packet' event for server clients (#205) @ATXLtheAxolotl
+* Add XUID field for client offline mode client chain (#203) 
+
 ## 3.12.0
 * 1.18.30 support
 
