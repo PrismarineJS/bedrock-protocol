@@ -1,13 +1,17 @@
 const { EventEmitter } = require('events')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
+const { defaultOptions } = require('./options')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
 
 module.exports = nativeRaknet => {
   if (nativeRaknet) {
     try {
-      ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
+	  if (defaultOptions.useRustRaknet)
+		({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
+	  else
+		({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
       return { RakServer: RakNativeServer, RakClient: RakNativeClient }
     } catch (e) {
       ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
