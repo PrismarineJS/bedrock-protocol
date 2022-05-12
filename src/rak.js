@@ -5,10 +5,10 @@ const { defaultOptions } = require('./options')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
 
-module.exports = nativeRaknet => {
+module.exports = (nativeRaknet , useRustNative) => {
   if (nativeRaknet) {
     try {
-	  if (defaultOptions.useRustRaknet) { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node')) } else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
+      if (useRustNative) { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node')) } else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
       return { RakServer: RakNativeServer, RakClient: RakNativeClient }
     } catch (e) {
       ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))

@@ -20,8 +20,6 @@ const defaultOptions = {
   connectTimeout: 9000,
   // Whether or not to use C++ version of RakNet
   useNativeRaknet: true,
-  // Whether or not to use Rust version of RakNet
-  useRustRaknet: false,
   // If using JS implementation of RakNet, should we use workers? (This only affects the client)
   useRaknetWorkers: true
 }
