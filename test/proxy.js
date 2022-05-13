@@ -1,7 +1,7 @@
 const { createClient, createServer, Relay } = require('bedrock-protocol')
 const { sleep, waitFor } = require('../src/datatypes/util')
 
-function proxyTest (version, timeout = 1000 * 40) {
+function proxyTest (version, useRustNative , timeout = 1000 * 40) {
   return waitFor(res => {
     const SERVER_PORT = 19000 + ((Math.random() * 100) | 0)
     const CLIENT_PORT = 19000 + ((Math.random() * 100) | 0)
@@ -9,7 +9,8 @@ function proxyTest (version, timeout = 1000 * 40) {
       host: '0.0.0.0', // optional
       port: SERVER_PORT, // optional
       offline: true,
-      version // The server version
+	  useRustNative : useRustNative,
+      version : version // The server version
     })
 
     server.on('connect', client => {
@@ -34,14 +35,15 @@ function proxyTest (version, timeout = 1000 * 40) {
       destination: {
         host: '127.0.0.1',
         port: SERVER_PORT
-      }
+      },
+	  useRustNative : useRustNative,
     })
     relay.conLog = console.debug
     relay.listen()
 
     console.debug('Proxy started', server.options.version)
 
-    const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true })
+    const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true , useRustNative : useRustNative })
 
     console.debug('Client started')
 
@@ -59,7 +61,8 @@ function proxyTest (version, timeout = 1000 * 40) {
 }
 
 if (!module.parent) {
-  proxyTest('1.16.220')
+  proxyTest('1.16.220' , false)
+  proxyTest('1.16.220' , true)
 }
 
 module.exports = { proxyTest }

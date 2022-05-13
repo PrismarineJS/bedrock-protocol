@@ -180,7 +180,8 @@ class Relay extends Server {
       port: this.options.destination.port,
       onMsaCode: this.options.onMsaCode,
       profilesFolder: this.options.profilesFolder,
-      autoInitPlayer: false
+      autoInitPlayer: false,
+      useRustNative: this.options.useRustNative,
     })
     // Set the login payload unless `noLoginForward` option
     if (!client.noLoginForward) client.options.skinData = ds.skinData

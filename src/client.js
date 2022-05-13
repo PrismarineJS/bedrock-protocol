@@ -43,7 +43,7 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    const { RakClient } = initRaknet(this.options.useNativeRaknet, this.options.useRustRaknet)
+    const { RakClient } = initRaknet(this.options.useNativeRaknet, this.options.useRustNative)
     const host = this.options.host
     const port = this.options.port
     this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })

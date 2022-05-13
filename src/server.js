@@ -12,7 +12,7 @@ class Server extends EventEmitter {
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
 
-    this.RakServer = require('./rak')(this.options.useNativeRaknet, this.options.useRustRaknet).RakServer
+    this.RakServer = require('./rak')(this.options.useNativeRaknet, this.options.useRustNative).RakServer
 
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
