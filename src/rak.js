@@ -4,19 +4,17 @@ const { waitFor } = require('./datatypes/util')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
 
-module.exports = (nativeRaknet, backend) => {
-  if (nativeRaknet) {
-    try {
-      if (!backend) backend = 'raknet-native'
-      if (backend === 'raknet-node') { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node')) } else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
-      return { RakServer: RakNativeServer, RakClient: RakNativeClient }
-    } catch (e) {
-      ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
-      console.debug('[raknet] native not found, using js', e)
-      console.debug('You can suppress the error above by disabling `useNativeRaknet` in your options')
-    }
-  } else {
+module.exports = (backend) => {
+  if (!backend) backend = 'raknet-native'
+  try {
+    if (backend === 'raknet-node') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
+    else if (backend === 'raknet-native') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
+    else if (backend === 'jsp-raknet') ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
+    else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
+    return { RakServer: RakNativeServer, RakClient: RakNativeClient }
+  } catch (e) {
     ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
+    console.debug('[raknet] library not found, using js', e)
   }
   return { RakServer: RakJsServer, RakClient: RakJsClient }
 }
