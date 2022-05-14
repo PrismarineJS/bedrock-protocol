@@ -4,10 +4,11 @@ const { waitFor } = require('./datatypes/util')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
 
-module.exports = (nativeRaknet, useRustNative) => {
+module.exports = (nativeRaknet, backend) => {
   if (nativeRaknet) {
     try {
-      if (useRustNative) { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node')) } else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
+      if (!backend) backend = 'raknet-native'
+      if (backend === 'raknet-node') { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node')) } else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
       return { RakServer: RakNativeServer, RakClient: RakNativeClient }
     } catch (e) {
       ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))

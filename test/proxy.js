@@ -1,7 +1,7 @@
 const { createClient, createServer, Relay } = require('bedrock-protocol')
 const { sleep, waitFor } = require('../src/datatypes/util')
 
-function proxyTest (version, useRustNative, timeout = 1000 * 40) {
+function proxyTest (version, backend, timeout = 1000 * 40) {
   return waitFor(res => {
     const SERVER_PORT = 19000 + ((Math.random() * 100) | 0)
     const CLIENT_PORT = 19000 + ((Math.random() * 100) | 0)
@@ -9,7 +9,7 @@ function proxyTest (version, useRustNative, timeout = 1000 * 40) {
       host: '0.0.0.0', // optional
       port: SERVER_PORT, // optional
       offline: true,
-      useRustNative,
+      backend,
       version // The server version
     })
 
@@ -36,14 +36,14 @@ function proxyTest (version, useRustNative, timeout = 1000 * 40) {
         host: '127.0.0.1',
         port: SERVER_PORT
       },
-      useRustNative
+      backend
     })
     relay.conLog = console.debug
     relay.listen()
 
     console.debug('Proxy started', server.options.version)
 
-    const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true, useRustNative })
+    const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true, backend })
 
     console.debug('Client started')
 
@@ -61,8 +61,8 @@ function proxyTest (version, useRustNative, timeout = 1000 * 40) {
 }
 
 if (!module.parent) {
-  proxyTest('1.16.220', false)
-  proxyTest('1.16.220', true)
+  proxyTest('1.16.220', 'raknet-native')
+  proxyTest('1.16.220', 'raknet-node')
 }
 
 module.exports = { proxyTest }
