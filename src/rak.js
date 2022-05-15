@@ -11,6 +11,9 @@ module.exports = (backend) => {
     else if (backend === 'raknet-native') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
     else if (backend === 'jsp-raknet') ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
     else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
+
+    if (backend === 'jsp-raknet') return { RakServer: RakJsServer, RakClient: RakJsClient }
+
     return { RakServer: RakNativeServer, RakClient: RakNativeClient }
   } catch (e) {
     ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
