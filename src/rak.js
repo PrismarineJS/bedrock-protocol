@@ -4,7 +4,12 @@ const { waitFor } = require('./datatypes/util')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
 
-module.exports = (backend) => {
+module.exports = (useNativeRaknet, backend) => {
+  if (!useNativeRaknet) {
+    ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
+    return { RakServer: RakJsServer, RakClient: RakJsClient }
+  }
+
   if (!backend) backend = 'raknet-native'
   try {
     if (backend === 'raknet-node') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
