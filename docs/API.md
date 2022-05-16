@@ -19,7 +19,8 @@ Returns a `Client` instance and connects to the server.
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |
-| useNativeRaknet | *optional* | Whether to use the C++ version of RakNet. Set to false to use JS. |
+| useNativeRaknet | *optional* | default to true. Whether to use the C++/Rust version of RakNet. Set to false to use JS. |
+| backend | *optional* | default to **raknet-native**. Whether set useNativeRaknet to true, you can set **raknet-native**(c++) or **raknet-node**(rust) as backend raknet library. |
 | compressionLevel | *optional* | What zlib compression level to use, default to **7** |
 | batchingInterval | *optional* | How frequently, in milliseconds to flush and write the packet queue (default: 20ms) |
 | realms | *optional* | An object which should contain one of the following properties: `realmId`, `realmInvite`, `pickRealm`. When defined will attempt to join a Realm without needing to specify host/port. **The authenticated account must either own the Realm or have been invited to it** |
@@ -56,6 +57,8 @@ authenticated unless offline is set to true.
 | motd        | *optional* | The "message of the day" for the server, the message shown to players in the server list. See usage below. |
 | advertisementFn | *optional* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Default to log only in DEBUG mode. |
+| useNativeRaknet | *optional* | default to true. Whether to use the C++/Rust version of RakNet. Set to false to use JS. |
+| backend | *optional* | default to **raknet-native**. Whether set useNativeRaknet to true, you can set **raknet-native**(c++) or **raknet-node**(rust) as backend raknet library. |
 
 ## be.ping({ host, port }) : ServerAdvertisement
 
