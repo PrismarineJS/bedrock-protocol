@@ -67,7 +67,7 @@ class Client extends Connection {
 
   validateOptions () {
     if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
-    super.validateOptions()
+    Options.validateOptions(this.options)
   }
 
   get entityId () {

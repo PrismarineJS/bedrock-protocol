@@ -1,5 +1,5 @@
 const { Client } = require('./client')
-const { RakClient } = require('./rak')(true, 'raknet-native')
+const { RakClient } = require('./rak')('raknet-native')
 const { sleep } = require('./datatypes/util')
 const assert = require('assert')
 const Options = require('./options')

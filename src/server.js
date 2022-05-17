@@ -25,7 +25,7 @@ class Server extends EventEmitter {
   }
 
   validateOptions () {
-    super.validateOptions()
+    Options.validateOptions(this.options)
   }
 
   onOpenConnection = (conn) => {

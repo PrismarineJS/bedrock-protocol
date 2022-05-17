@@ -24,4 +24,19 @@ const defaultOptions = {
   useRaknetWorkers: true
 }
 
-module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions }
+function validateOptions (options) {
+  if (!Versions[options.version]) {
+    console.warn('Supported versions', Versions)
+    throw Error(`Unsupported version ${options.version}`)
+  }
+
+  options.protocolVersion = Versions[options.version]
+  if (options.protocolVersion < MIN_VERSION) {
+    throw new Error(`Protocol version < ${MIN_VERSION} : ${options.protocolVersion}, too old`)
+  }
+  this.compressionLevel = options.compressionLevel || 7
+  if (options.useNativeRaknet === true) options.raknetBackend = 'raknet-native'
+  if (options.useNativeRaknet === false) options.raknetBackend = 'jsp-raknet'
+}
+
+module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions, validateOptions }
