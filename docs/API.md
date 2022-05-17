@@ -58,8 +58,9 @@ authenticated unless offline is set to true.
 | motd        | *optional* | The "message of the day" for the server, the message shown to players in the server list. See usage below. |
 | advertisementFn | *optional* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Default to log only in DEBUG mode. |
-| useNativeRaknet | *optional* | default to true. Whether to use the C++/Rust version of RakNet. Set to false to use JS. |
-| backend | *optional* | default to **raknet-native**. Whether set useNativeRaknet to true, you can set **raknet-native**(c++) or **raknet-node**(rust) as backend raknet library. |
+| raknetBackend | *optional* | Specifies the raknet implementation to use. Possible options are 'raknet-native' (default, original C++ implementation), 'jsp-raknet' (JS port), and 'raknet-node' (Rust port). Please note when using the non-JS implementation you may the need approporate build tools on your system (for example a C++ or Rust compiler). |
+
+*`useNativeRaknet` is deprecated. Setting to true will use 'raknet-native' for `raknetBackend` and setting it to false will use a JavaScript implemenation (jsp-raknet)*
 
 ## be.ping({ host, port }) : ServerAdvertisement
 

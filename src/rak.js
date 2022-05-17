@@ -17,7 +17,7 @@ module.exports = (backend) => {
     return { RakServer: RakNativeServer, RakClient: RakNativeClient }
   } catch (e) {
     ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
-    console.debug('[raknet] ' + backend + ' library not found, using jsp-raknet', e)
+    console.debug('[raknet] ' + backend + ' library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.', e)
   }
   return { RakServer: RakJsServer, RakClient: RakJsClient }
 }

@@ -30,8 +30,10 @@
     "prismarine-realms": "^1.1.0",
     "protodef": "^1.14.0",
     "raknet-native": "^1.0.3",
-    "raknet-node": "^0.4.2",
     "uuid-1345": "^1.0.2"
+  },
+  "optionalDependencies": {
+    "raknet-node": "^0.4.2"
   },
   "devDependencies": {
     "bedrock-protocol": "file:.",
