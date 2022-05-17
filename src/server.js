@@ -12,7 +12,7 @@ class Server extends EventEmitter {
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
 
-    this.RakServer = require('./rak')(this.options.useNativeRaknet, this.options.backend).RakServer
+    this.RakServer = require('./rak')(this.options.raknetBackend).RakServer
 
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
@@ -25,15 +25,7 @@ class Server extends EventEmitter {
   }
 
   validateOptions () {
-    if (!Options.Versions[this.options.version]) {
-      console.warn('Supported versions', Options.Versions)
-      throw Error(`Unsupported version ${this.options.version}`)
-    }
-    this.options.protocolVersion = Options.Versions[this.options.version]
-    if (this.options.protocolVersion < Options.MIN_VERSION) {
-      throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
-    }
-    this.compressionLevel = this.options.compressionLevel || 7
+    super.validateOptions()
   }
 
   onOpenConnection = (conn) => {

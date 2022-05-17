@@ -1,7 +1,7 @@
 const Framer = require('./transforms/framer')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
-const { Versions } = require('./options')
+const { Versions, MIN_VERSION } = require('./options')
 const debug = require('debug')('minecraft-protocol')
 
 const ClientStatus = {
@@ -24,6 +24,21 @@ class Connection extends EventEmitter {
     debug('* new status', val)
     this.emit('status', val)
     this.#status = val
+  }
+
+  validateOptions () {
+    if (!Versions[this.options.version]) {
+      console.warn('Supported versions', Versions)
+      throw Error(`Unsupported version ${this.options.version}`)
+    }
+
+    this.options.protocolVersion = Versions[this.options.version]
+    if (this.options.protocolVersion < MIN_VERSION) {
+      throw new Error(`Protocol version < ${MIN_VERSION} : ${this.options.protocolVersion}, too old`)
+    }
+    this.compressionLevel = this.options.compressionLevel || 7
+    if (this.options.useNativeRaknet === true) this.options.raknetBackend = 'raknet-native'
+    if (this.options.useNativeRaknet === false) this.options.raknetBackend = 'jsp-raknet'
   }
 
   versionLessThan (version) {

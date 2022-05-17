@@ -4,18 +4,16 @@ const { waitFor } = require('./datatypes/util')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
 
-module.exports = (useNativeRaknet, backend) => {
-  if (!useNativeRaknet) {
-    ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
-    return { RakServer: RakJsServer, RakClient: RakJsClient }
-  }
-
-  if (!backend) backend = 'raknet-native'
+module.exports = (backend) => {
   try {
+    if (backend === 'jsp-raknet') {
+      ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
+      return { RakServer: RakJsServer, RakClient: RakJsClient }
+    }
+    // We need to explicitly name the require()s for bundlers
     if (backend === 'raknet-node') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
-    else if (backend === 'raknet-native') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
-    else { ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native')) }
-
+    if (backend === 'raknet-native') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
+    else ({ Client, Server, PacketPriority, PacketReliability } = require(backend))
     return { RakServer: RakNativeServer, RakClient: RakNativeClient }
   } catch (e) {
     ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))

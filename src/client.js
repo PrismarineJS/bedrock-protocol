@@ -43,7 +43,7 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    const { RakClient } = initRaknet(this.options.useNativeRaknet, this.options.backend)
+    const { RakClient } = initRaknet(this.options.raknetBackend)
     const host = this.options.host
     const port = this.options.port
     this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
@@ -67,16 +67,7 @@ class Client extends Connection {
 
   validateOptions () {
     if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
-
-    if (!Options.Versions[this.options.version]) {
-      console.warn('Supported versions: ', Options.Versions)
-      throw Error(`Unsupported version ${this.options.version}`)
-    }
-    this.options.protocolVersion = Options.Versions[this.options.version]
-    if (this.options.protocolVersion < Options.MIN_VERSION) {
-      throw new Error(`Protocol version < ${Options.MIN_VERSION} : ${this.options.protocolVersion}, too old`)
-    }
-    this.compressionLevel = this.options.compressionLevel || 7
+    super.validateOptions()
   }
 
   get entityId () {
