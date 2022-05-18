@@ -3,6 +3,7 @@ const { sleep, waitFor } = require('../src/datatypes/util')
 
 function proxyTest (version, raknetBackend, timeout = 1000 * 40) {
   console.log('raknet backend', raknetBackend)
+  if(!raknetBackend) raknetBackend = 'raknet-native'
   return waitFor(res => {
     const SERVER_PORT = 19000 + ((Math.random() * 100) | 0)
     const CLIENT_PORT = 19000 + ((Math.random() * 100) | 0)
