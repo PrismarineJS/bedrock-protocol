@@ -2,10 +2,23 @@ const http = require('https')
 const fs = require('fs')
 const cp = require('child_process')
 const debug = require('debug')('minecraft-protocol')
+const htps = require('https')
 const { getFiles, waitFor } = require('../src/datatypes/util')
 
 const head = (url) => new Promise((resolve, reject) => http.request(url, { method: 'HEAD' }, resolve).on('error', reject).end())
-const get = (url, out) => cp.execSync(`curl -o ${out} ${url}`)
+function get (url, outPath) {
+  const file = fs.createWriteStream(outPath)
+  return new Promise((resolve, reject) => {
+    https.get(url, { timeout: 1000 * 20 }, response => {
+      if (response.statusCode !== 200) return reject()
+      response.pipe(file)
+      response.on('finish', () => {
+        file.close()
+        resolve()
+      }
+    })
+  })
+}
 
 // Get the latest versions
 // TODO: once we support multi-versions
