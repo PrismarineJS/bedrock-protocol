@@ -15,7 +15,7 @@ function get (url, outPath) {
       response.on('finish', () => {
         file.close()
         resolve()
-      }
+      })
     })
   })
 }
