@@ -27,7 +27,7 @@ function createClient (options) {
         } else {
           throw e
         }
-      });
+      })
     }
   }
 
