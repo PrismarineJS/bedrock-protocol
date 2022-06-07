@@ -38,7 +38,7 @@ class Player extends Connection {
     const body = packet.data
     this.emit('loggingIn', body)
 
-    const clientVer = body.protocol_version
+    const clientVer = body.params.protocol_version
     if (this.server.options.protocolVersion) {
       if (this.server.options.protocolVersion < clientVer) {
         this.sendDisconnectStatus('failed_spawn')
