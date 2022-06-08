@@ -21,13 +21,7 @@ function createClient (options) {
         client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
         client.conLog?.(`Connecting to server ${ad.motd} (${ad.name}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : '')
         client.init()
-      }).catch(e => {
-        if (e instanceof RakTimeout) {
-          client.emit('ping_timeout')
-        } else {
-          throw e
-        }
-      })
+      }).catch(e => client.emit('error', e))
     }
   }
 

@@ -38,7 +38,6 @@ The following special events are emitted by the client on top of protocol packet
 * 'heartbeat' - Emitted after two successful tick_sync (keepalive) packets have been sent bidirectionally
 * 'packet' - Emitted for all packets received by client
 * 'session' - When the client has finished authenticating and connecting
-* 'ping_timeout' - When the underlying network protocol is unable to connect to the server
 
 ## be.createServer(options) : Server
 
