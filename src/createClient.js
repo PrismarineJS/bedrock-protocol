@@ -1,5 +1,5 @@
 const { Client } = require('./client')
-const { RakClient, RakTimeout } = require('./rak')(true)
+const { RakClient } = require('./rak')(true)
 const { sleep } = require('./datatypes/util')
 const assert = require('assert')
 const Options = require('./options')
