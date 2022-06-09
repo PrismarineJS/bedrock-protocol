@@ -128,6 +128,8 @@ async function startServerAndWait2 (version, withTimeout, options) {
     return await startServerAndWait(version, withTimeout, options)
   } catch (e) {
     console.log(e, 'tring once more to start server...')
+    process.chdir(__dirname)
+    fs.rmSync('bds-' + version, { recursive: true })
     return await startServerAndWait(version, withTimeout, options)
   }
 }
