@@ -1,3 +1,7 @@
+## 3.14.0
+* 1.19 support
+* Better handle ping timeout, update documentation (#218) @stevarino
+
 ## 3.13.0
 * Update API documentation
 * Emit generic 'packet' event for server clients (#205) @ATXLtheAxolotl
