@@ -36,13 +36,11 @@ async function download (os, version, path = 'bds-') {
   const dir = path + version
 
   if (fs.existsSync(dir) && getFiles(dir).length) {
-    console.log('Entering', path + version)
     process.chdir(path + version) // Enter server folder
     return verStr
   }
   try { fs.mkdirSync(dir) } catch { }
 
-  console.log('entering', path + version)
   process.chdir(path + version) // Enter server folder
   const url = (os, version) => `https://minecraft.azureedge.net/bin-${os}/bedrock-server-${version}.zip`
 
