@@ -2,7 +2,7 @@ const http = require('https')
 const fs = require('fs')
 const cp = require('child_process')
 const debug = require('debug')('minecraft-protocol')
-const htps = require('https')
+const https = require('https')
 const { getFiles, waitFor } = require('../src/datatypes/util')
 
 const head = (url) => new Promise((resolve, reject) => http.request(url, { method: 'HEAD' }, resolve).on('error', reject).end())
@@ -10,9 +10,9 @@ function get (url, outPath) {
   const file = fs.createWriteStream(outPath)
   return new Promise((resolve, reject) => {
     https.get(url, { timeout: 1000 * 20 }, response => {
-      if (response.statusCode !== 200) return reject()
+      if (response.statusCode !== 200) return reject(new Error('Server returned code ' + response.statusCode))
       response.pipe(file)
-      response.on('finish', () => {
+      file.on('finish', () => {
         file.close()
         resolve()
       })
@@ -36,11 +36,13 @@ async function download (os, version, path = 'bds-') {
   const dir = path + version
 
   if (fs.existsSync(dir) && getFiles(dir).length) {
+    console.log('Entering', path + version)
     process.chdir(path + version) // Enter server folder
     return verStr
   }
   try { fs.mkdirSync(dir) } catch { }
 
+  console.log('entering', path + version)
   process.chdir(path + version) // Enter server folder
   const url = (os, version) => `https://minecraft.azureedge.net/bin-${os}/bedrock-server-${version}.zip`
 
@@ -58,7 +60,7 @@ async function download (os, version, path = 'bds-') {
   }
   if (!found) throw Error('did not find server bin for ' + os + ' ' + version)
   console.info('🔻 Downloading', found)
-  get(found, 'bds.zip')
+  await get(found, 'bds.zip')
   console.info('⚡ Unzipping')
   // Unzip server
   if (process.platform === 'linux') cp.execSync('unzip bds.zip && chmod +777 ./bedrock_server')
