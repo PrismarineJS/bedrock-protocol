@@ -170,8 +170,8 @@ class Relay extends Server {
   // a packet, no matter what state it's in. For example, if the client wants to send a
   // packet to the server but it's not connected, it will add to the queue and send as soon
   // as a connection with the server is established.
-  async openUpstreamConnection (ds, clientAddr) {
-    const client = await createClient({
+  openUpstreamConnection (ds, clientAddr) {
+    const client = createClient({
       authTitle: this.options.authTitle,
       offline: this.options.destination.offline ?? this.options.offline,
       username: this.options.offline ? ds.profile.name : null,
@@ -183,6 +183,7 @@ class Relay extends Server {
       profilesFolder: this.options.profilesFolder,
       autoInitPlayer: false
     })
+    client.on('server_info', () => {
     // Set the login payload unless `noLoginForward` option
     if (!client.noLoginForward) client.options.skinData = ds.skinData
 /*      client.ping().then(pongData => {
@@ -206,6 +207,7 @@ class Relay extends Server {
       this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
     })
     this.upstreams.set(clientAddr.hash, client)
+    })
   }
 
   // Close a connection to a remote backend server.
