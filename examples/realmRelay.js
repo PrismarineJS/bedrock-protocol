@@ -21,7 +21,7 @@ function createRelay () {
   relay.on('connect', player => {
     // Server is sending a message to the client.
     player.on('clientbound', ({ name, params }) => {
-      if(name == 'text') console.log(params)
+      if (name === 'text') console.log(params)
     })
   })
 }
