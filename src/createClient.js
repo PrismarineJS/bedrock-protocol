@@ -7,7 +7,7 @@ const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
-function createClient (options) {
+async function createClient (options) {
   assert(options)
   const client = new Client({ port: 19132, ...options, delayedInit: true })
 
@@ -26,7 +26,7 @@ function createClient (options) {
   }
 
   if (options.realms) {
-    auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.emit('error', e))
+    await auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.emit('error', e))
   } else {
     onServerInfo()
   }

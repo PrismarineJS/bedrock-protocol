@@ -1,4 +1,4 @@
-const { Client } = require('./client')
+const { createClient } = require('./createClient')
 const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
@@ -170,12 +170,13 @@ class Relay extends Server {
   // a packet, no matter what state it's in. For example, if the client wants to send a
   // packet to the server but it's not connected, it will add to the queue and send as soon
   // as a connection with the server is established.
-  openUpstreamConnection (ds, clientAddr) {
-    const client = new Client({
+  async openUpstreamConnection (ds, clientAddr) {
+    const client = await createClient({
       authTitle: this.options.authTitle,
       offline: this.options.destination.offline ?? this.options.offline,
       username: this.options.offline ? ds.profile.name : null,
       version: this.options.version,
+      realms: this.options.destination.realms,
       host: this.options.destination.host,
       port: this.options.destination.port,
       onMsaCode: this.options.onMsaCode,
@@ -184,11 +185,11 @@ class Relay extends Server {
     })
     // Set the login payload unless `noLoginForward` option
     if (!client.noLoginForward) client.options.skinData = ds.skinData
-    client.ping().then(pongData => {
+/*      client.ping().then(pongData => {
       client.connect()
     }).catch(err => {
       this.emit('error', err)
-    })
+    }) */
     this.conLog('Connecting to', this.options.destination.host, this.options.destination.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
