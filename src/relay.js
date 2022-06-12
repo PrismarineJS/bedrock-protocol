@@ -1,6 +1,7 @@
-const { createClient } = require('./createClient')
+const { Client } = require('./client')
 const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
+const { realmAuthenticate } = require('./client/auth')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
 const debugging = false // Do re-encoding tests
@@ -170,8 +171,8 @@ class Relay extends Server {
   // a packet, no matter what state it's in. For example, if the client wants to send a
   // packet to the server but it's not connected, it will add to the queue and send as soon
   // as a connection with the server is established.
-  openUpstreamConnection (ds, clientAddr) {
-    const client = createClient({
+  async openUpstreamConnection (ds, clientAddr) {
+    const options = {
       authTitle: this.options.authTitle,
       offline: this.options.destination.offline ?? this.options.offline,
       username: this.options.offline ? ds.profile.name : null,
@@ -182,32 +183,36 @@ class Relay extends Server {
       onMsaCode: this.options.onMsaCode,
       profilesFolder: this.options.profilesFolder,
       autoInitPlayer: false
-    })
-    client.on('server_info', () => {
+    }
+
+    if (this.options.destination.realms) {
+      await realmAuthenticate(options)
+    }
+
+    const client = new Client(options)
     // Set the login payload unless `noLoginForward` option
-      if (!client.noLoginForward) client.options.skinData = ds.skinData
-      /*      client.ping().then(pongData => {
+    if (!client.noLoginForward) client.options.skinData = ds.skinData
+    client.ping().then(pongData => {
       client.connect()
     }).catch(err => {
       this.emit('error', err)
-    }) */
-      this.conLog('Connecting to', this.options.destination.host, this.options.destination.port)
-      client.outLog = ds.upOutLog
-      client.inLog = ds.upInLog
-      client.once('join', () => {
+    })
+    this.conLog('Connecting to', options.host, options.port)
+    client.outLog = ds.upOutLog
+    client.inLog = ds.upInLog
+    client.once('join', () => {
       // Tell the server to disable chunk cache for this connection as a client.
       // Wait a bit for the server to ack and process, the continue with proxying
       // otherwise the player can get stuck in an empty world.
-        client.write('client_cache_status', { enabled: this.enableChunkCaching })
-        ds.upstream = client
-        ds.flushUpQueue()
-        this.conLog('Connected to upstream server')
-        client.readPacket = (packet) => ds.readUpstream(packet)
+      client.write('client_cache_status', { enabled: this.enableChunkCaching })
+      ds.upstream = client
+      ds.flushUpQueue()
+      this.conLog('Connected to upstream server')
+      client.readPacket = (packet) => ds.readUpstream(packet)
 
-        this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
-      })
-      this.upstreams.set(clientAddr.hash, client)
+      this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
     })
+    this.upstreams.set(clientAddr.hash, client)
   }
 
   // Close a connection to a remote backend server.

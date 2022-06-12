@@ -12,7 +12,6 @@ function createClient (options) {
   const client = new Client({ port: 19132, ...options, delayedInit: true })
 
   function onServerInfo () {
-    client.emit('server_info')
     client.on('connect_allowed', () => connect(client))
     if (options.skipPing) {
       client.init()
