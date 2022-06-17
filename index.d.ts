@@ -153,6 +153,7 @@ declare module "bedrock-protocol" {
     authTitle: title | string
     // Where to proxy requests to.
     destination: {
+      realms?: RealmsOptions
       host: string,
       port: number,
       // Skip authentication connecting to the remote server?
