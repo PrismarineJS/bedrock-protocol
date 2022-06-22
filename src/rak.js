@@ -3,12 +3,13 @@ const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
+class RakTimeout extends Error {};
 
 module.exports = (backend) => {
   try {
     if (backend === 'jsp-raknet') {
       ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
-      return { RakServer: RakJsServer, RakClient: RakJsClient }
+      return { RakServer: RakJsServer, RakClient: RakJsClient, RakTimeout }
     }
     // We need to explicitly name the require()s for bundlers
     if (backend === 'raknet-node') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
@@ -19,7 +20,7 @@ module.exports = (backend) => {
     ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
     console.debug('[raknet] ' + backend + ' library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.', e)
   }
-  return { RakServer: RakJsServer, RakClient: RakJsClient }
+  return { RakServer: RakJsServer, RakClient: RakJsClient, RakTimeout }
 }
 
 class RakNativeClient extends EventEmitter {
@@ -56,7 +57,7 @@ class RakNativeClient extends EventEmitter {
           done(ret.extra.toString())
         }
       })
-    }, timeout, () => { throw new Error('Ping timed out') })
+    }, timeout, () => { throw new RakTimeout('Ping timed out') })
   }
 
   connect () {
@@ -195,7 +196,7 @@ class RakJsClient extends EventEmitter {
       this.worker.postMessage({ type: 'ping' })
       return waitFor(res => {
         this.pongCb = data => res(data)
-      }, timeout, () => { throw new Error('Ping timed out') })
+      }, timeout, () => { throw new RakTimeout('Ping timed out') })
     } else {
       if (!this.raknet) this.raknet = new Client(this.options.host, this.options.port)
       return waitFor(res => {
@@ -203,7 +204,7 @@ class RakJsClient extends EventEmitter {
           this.raknet.close()
           res(data)
         })
-      }, timeout, () => { throw new Error('Ping timed out') })
+      }, timeout, () => { throw new RakTimeout('Ping timed out') })
     }
   }
 }

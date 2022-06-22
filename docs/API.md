@@ -39,6 +39,7 @@ The following special events are emitted by the client on top of protocol packet
 * 'connect_allowed' - Emitted after the client has pinged the server and gets version information.
 * 'heartbeat' - Emitted after two successful tick_sync (keepalive) packets have been sent bidirectionally
 * 'packet' - Emitted for all packets received by client
+* 'session' - When the client has finished authenticating and connecting
 
 ## be.createServer(options) : Server
 

@@ -1,6 +1,7 @@
 const { Client } = require('./client')
 const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
+const { realmAuthenticate } = require('./client/auth')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
 const debugging = false // Do re-encoding tests
@@ -170,19 +171,26 @@ class Relay extends Server {
   // a packet, no matter what state it's in. For example, if the client wants to send a
   // packet to the server but it's not connected, it will add to the queue and send as soon
   // as a connection with the server is established.
-  openUpstreamConnection (ds, clientAddr) {
-    const client = new Client({
+  async openUpstreamConnection (ds, clientAddr) {
+    const options = {
       authTitle: this.options.authTitle,
       offline: this.options.destination.offline ?? this.options.offline,
       username: this.options.offline ? ds.profile.name : null,
       version: this.options.version,
+      realms: this.options.destination.realms,
       host: this.options.destination.host,
       port: this.options.destination.port,
       onMsaCode: this.options.onMsaCode,
       profilesFolder: this.options.profilesFolder,
-      autoInitPlayer: false,
-      backend: this.options.backend
-    })
+      backend: this.options.backend,
+      autoInitPlayer: false
+    }
+
+    if (this.options.destination.realms) {
+      await realmAuthenticate(options)
+    }
+
+    const client = new Client(options)
     // Set the login payload unless `noLoginForward` option
     if (!client.noLoginForward) client.options.skinData = ds.skinData
     client.ping().then(pongData => {
@@ -190,7 +198,7 @@ class Relay extends Server {
     }).catch(err => {
       this.emit('error', err)
     })
-    this.conLog('Connecting to', this.options.destination.host, this.options.destination.port)
+    this.conLog('Connecting to', options.host, options.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
     client.once('join', () => {

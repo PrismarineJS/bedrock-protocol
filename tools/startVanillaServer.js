@@ -2,10 +2,23 @@ const http = require('https')
 const fs = require('fs')
 const cp = require('child_process')
 const debug = require('debug')('minecraft-protocol')
+const https = require('https')
 const { getFiles, waitFor } = require('../src/datatypes/util')
 
 const head = (url) => new Promise((resolve, reject) => http.request(url, { method: 'HEAD' }, resolve).on('error', reject).end())
-const get = (url, out) => cp.execSync(`curl -o ${out} ${url}`)
+function get (url, outPath) {
+  const file = fs.createWriteStream(outPath)
+  return new Promise((resolve, reject) => {
+    https.get(url, { timeout: 1000 * 20 }, response => {
+      if (response.statusCode !== 200) return reject(new Error('Server returned code ' + response.statusCode))
+      response.pipe(file)
+      file.on('finish', () => {
+        file.close()
+        resolve()
+      })
+    })
+  })
+}
 
 // Get the latest versions
 // TODO: once we support multi-versions
@@ -45,7 +58,7 @@ async function download (os, version, path = 'bds-') {
   }
   if (!found) throw Error('did not find server bin for ' + os + ' ' + version)
   console.info('🔻 Downloading', found)
-  get(found, 'bds.zip')
+  await get(found, 'bds.zip')
   console.info('⚡ Unzipping')
   // Unzip server
   if (process.platform === 'linux') cp.execSync('unzip bds.zip && chmod +777 ./bedrock_server')
@@ -115,6 +128,8 @@ async function startServerAndWait2 (version, withTimeout, options) {
     return await startServerAndWait(version, withTimeout, options)
   } catch (e) {
     console.log(e, 'tring once more to start server...')
+    process.chdir(__dirname)
+    fs.rmSync('bds-' + version, { recursive: true })
     return await startServerAndWait(version, withTimeout, options)
   }
 }
