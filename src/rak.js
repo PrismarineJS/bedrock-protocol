@@ -15,7 +15,7 @@ module.exports = (backend) => {
     if (backend === 'raknet-node') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
     if (backend === 'raknet-native') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
     else ({ Client, Server, PacketPriority, PacketReliability } = require(backend))
-    return { RakServer: RakNativeServer, RakClient: RakNativeClient }
+    return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
   } catch (e) {
     ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
     console.debug('[raknet] ' + backend + ' library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.', e)
