@@ -21,20 +21,24 @@ async function realmAuthenticate (options) {
   options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
   const api = RealmAPI.from(options.authflow, 'bedrock')
-  const realms = await api.getRealms()
 
-  debug('realms', realms)
-
-  if (!realms || !realms.length) throw Error('Couldn\'t find any Realms for the authenticated account')
+  const getRealms = async () => {
+    const realms = await api.getRealms()
+    debug('realms', realms)
+    if (!realms.length) throw Error('Couldn\'t find any Realms for the authenticated account')
+    return realms
+  }
 
   let realm
 
   if (options.realms.realmId) {
+    const realms = await getRealms()
     realm = realms.find(e => e.id === Number(options.realms.realmId))
   } else if (options.realms.realmInvite) {
     realm = await api.getRealmFromInvite(options.realms.realmInvite)
   } else if (options.realms.pickRealm) {
     if (typeof options.realms.pickRealm !== 'function') throw Error('realms.pickRealm must be a function')
+    const realms = await getRealms()
     realm = await options.realms.pickRealm(realms)
   }
 
