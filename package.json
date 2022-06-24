@@ -33,7 +33,7 @@
     "uuid-1345": "^1.0.2"
   },
   "optionalDependencies": {
-    "raknet-node": "^0.4.2"
+    "raknet-node": "^0.4.3"
   },
   "devDependencies": {
     "bedrock-protocol": "file:.",
