@@ -197,7 +197,7 @@ async function requestChunks (version, x, z, radius) {
   return chunks
 }
 
-async function timedTest (version, timeout = 1000 * 640) {
+async function timedTest (version, timeout = 1000 * 1000) {
   await waitFor((res) => {
     // mocha eats up stack traces...
     startTest(version, res).catch(console.error)
