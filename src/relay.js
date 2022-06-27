@@ -188,7 +188,7 @@ class Relay extends Server {
       options.username = ds.profile.xuid
 
       let oldMsaResponse = () => {}
-      if (options.onMsaCode) oldMsaResponse = options.onMsaCode.valueOf()
+      if (options.onMsaCode) oldMsaResponse = options.onMsaCode
 
       options.onMsaCode = (code) => {
         oldMsaResponse()
