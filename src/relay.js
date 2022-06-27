@@ -184,12 +184,12 @@ class Relay extends Server {
       autoInitPlayer: false
     }
 
-    if(this.options.allowMultiplePlayers) {
+    if (this.options.allowMultiplePlayers) {
       options.username = ds.profile.xuid
 
-      var oldMsaResponse = () => {}
-      if(options.onMsaCode) oldMsaResponse = options.onMsaCode.valueOf();
-      
+      let oldMsaResponse = () => {}
+      if (options.onMsaCode) oldMsaResponse = options.onMsaCode.valueOf()
+
       options.onMsaCode = (code) => {
         oldMsaResponse()
         ds.disconnect(code.message)
