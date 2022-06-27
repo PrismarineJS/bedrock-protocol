@@ -159,7 +159,6 @@ class Relay extends Server {
   constructor (options) {
     super(options)
     this.RelayPlayer = options.relayPlayer || RelayPlayer
-    this.forceSingle = true
     this.upstreams = new Map()
     this.conLog = debug
     this.enableChunkCaching = options.enableChunkCaching
@@ -183,6 +182,18 @@ class Relay extends Server {
       onMsaCode: this.options.onMsaCode,
       profilesFolder: this.options.profilesFolder,
       autoInitPlayer: false
+    }
+
+    if(this.options.allowMultiplePlayers) {
+      options.username = ds.profile.xuid
+
+      var oldMsaResponse = () => {}
+      if(options.onMsaCode) oldMsaResponse = options.onMsaCode.valueOf();
+      
+      options.onMsaCode = (code) => {
+        oldMsaResponse()
+        ds.disconnect(code.message)
+      }
     }
 
     if (this.options.destination.realms) {
@@ -227,7 +238,7 @@ class Relay extends Server {
   // Called when a new player connects to our proxy server. Once the player has authenticted,
   // we can open an upstream connection to the backend server.
   onOpenConnection = (conn) => {
-    if (this.forceSingle && this.clientCount > 0) {
+    if (!this.options.allowMultiplePlayers && this.clientCount > 0) {
       this.conLog('dropping connection as single client relay', conn)
       conn.close()
     } else {
