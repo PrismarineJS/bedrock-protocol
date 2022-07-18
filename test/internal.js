@@ -65,7 +65,10 @@ async function startTest (version = CURRENT_VERSION, ok) {
         client.queue('set_time', { time: 5433771 })
         client.queue('set_difficulty', { difficulty: 1 })
         client.queue('set_commands_enabled', { enabled: true })
-        client.queue('adventure_settings', get('packets/adventure_settings.json'))
+
+        if (client.versionLessThan('1.19.10')) {
+          client.queue('adventure_settings', get('packets/adventure_settings.json'))
+        }
 
         client.queue('biome_definition_list', get('packets/biome_definition_list.json'))
         client.queue('available_entity_identifiers', get('packets/available_entity_identifiers.json'))
@@ -207,5 +210,5 @@ async function timedTest (version, timeout = 1000 * 220) {
   console.info('✔ ok')
 }
 
-// if (!module.parent) timedTest('1.16.210')
+// if (!module.parent) timedTest('1.19.10')
 module.exports = { startTest, timedTest, requestChunks }
