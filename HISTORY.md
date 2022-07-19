@@ -1,3 +1,8 @@
+## 3.15.0
+* 1.19.10 support
+* Remove Realm fetch when joining via invite (#228) @LucienHH 
+* Add Realm support to Relay (#226) @ATXLtheAxolotl
+
 ## 3.14.0
 * 1.19 support
 * Better handle ping timeout, update documentation (#218) @stevarino
