@@ -11,7 +11,7 @@ Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication
 
 ## Features
 
- - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0, 1.17.10, 1.17.30, 1.17.40, 1.18.0, 1.18.11, 1.18.30, 1.19.1
+ - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0, 1.17.10, 1.17.30, 1.17.40, 1.18.0, 1.18.11, 1.18.30, 1.19.1, 1.19.10
  - Parse and serialize packets as JavaScript objects
  - Automatically respond to keep-alive packets
  - [Proxy and mitm connections](docs/API.md#proxy-docs)
@@ -50,7 +50,7 @@ const client = bedrock.createClient({
 })
 
 client.on('text', (packet) => { // Listen for chat messages and echo them back.
-  if (packet.source_name != client.options.username) {
+  if (packet.source_name != client.username) {
     client.queue('text', {
       type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '',
       message: `${packet.source_name} said: ${packet.message} on ${new Date().toLocaleString()}`
