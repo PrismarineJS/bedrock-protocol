@@ -1,7 +1,7 @@
 const http = require('https')
 const fs = require('fs')
 const cp = require('child_process')
-const debug = require('debug')('minecraft-protocol')
+const debug = process.env.CI ? console.debug : require('debug')('minecraft-protocol')
 const https = require('https')
 const { getFiles, waitFor } = require('../src/datatypes/util')
 
@@ -31,6 +31,7 @@ function fetchLatestStable () {
 
 // Download + extract vanilla server and enter the directory
 async function download (os, version, path = 'bds-') {
+  debug('Downloading server', os, version, 'into', path)
   process.chdir(__dirname)
   const verStr = version.split('.').slice(0, 3).join('.')
   const dir = path + version
