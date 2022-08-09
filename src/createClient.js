@@ -1,5 +1,4 @@
 const { Client } = require('./client')
-const { RakClient } = require('./rak')('raknet-native')
 const { sleep } = require('./datatypes/util')
 const assert = require('assert')
 const Options = require('./options')
@@ -78,7 +77,14 @@ function connect (client) {
   })
 }
 
-async function ping ({ host, port }) {
+async function ping ({ host, port, raknetBackend }) {
+  var RakClient
+  if (raknetBackend === 'raknet-node') {
+    RakClient = require('./rak')('raknet-node').RakClient
+    console.log('use raknet-node ping')
+  } else {
+    RakClient = require('./rak')('raknet-native').RakClient
+  }
   const con = new RakClient({ host, port })
   try {
     return advertisement.fromServerName(await con.ping())
