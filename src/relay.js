@@ -182,6 +182,7 @@ class Relay extends Server {
       port: this.options.destination.port,
       onMsaCode: this.options.onMsaCode,
       profilesFolder: this.options.profilesFolder,
+      backend: this.options.backend,
       autoInitPlayer: false
     }
 

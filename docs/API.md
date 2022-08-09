@@ -19,13 +19,15 @@ Returns a `Client` instance and connects to the server.
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |
-| useNativeRaknet | *optional* | Whether to use the C++ version of RakNet. Set to false to use JS. |
+| raknetBackend | *optional* | Specifies the raknet implementation to use. Possible options are 'raknet-native' (default, original C++ implementation), 'jsp-raknet' (JS port), and 'raknet-node' (Rust port). Please note when using the non-JS implementation you may the need approporate build tools on your system (for example a C++ or Rust compiler). |
 | compressionLevel | *optional* | What zlib compression level to use, default to **7** |
 | batchingInterval | *optional* | How frequently, in milliseconds to flush and write the packet queue (default: 20ms) |
 | realms | *optional* | An object which should contain one of the following properties: `realmId`, `realmInvite`, `pickRealm`. When defined will attempt to join a Realm without needing to specify host/port. **The authenticated account must either own the Realm or have been invited to it** |
 | realms.realmId | *optional* | The id of the Realm to join. |
 | realms.realmInvite | *optional* | The invite link/code of the Realm to join. |
 | realms.pickRealm | *optional* | A function which will have an array of the user Realms (joined/owned) passed to it. The function should return a Realm. |
+
+*`useNativeRaknet` is deprecated. Setting to true will use 'raknet-native' for `raknetBackend` and setting it to false will use a JavaScript implemenation (jsp-raknet)*
 
 The following special events are emitted by the client on top of protocol packets:
 * 'status' - When the client's login sequence status has changed
@@ -57,6 +59,9 @@ authenticated unless offline is set to true.
 | motd        | *optional* | The "message of the day" for the server, the message shown to players in the server list. See usage below. |
 | advertisementFn | *optional* | optional. Custom function to call that should return a ServerAdvertisement, used for setting the RakNet server PONG data. Overrides `motd`. |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Default to log only in DEBUG mode. |
+| raknetBackend | *optional* | Specifies the raknet implementation to use. Possible options are 'raknet-native' (default, original C++ implementation), 'jsp-raknet' (JS port), and 'raknet-node' (Rust port). Please note when using the non-JS implementation you may the need approporate build tools on your system (for example a C++ or Rust compiler). |
+
+*`useNativeRaknet` is deprecated. Setting to true will use 'raknet-native' for `raknetBackend` and setting it to false will use a JavaScript implemenation (jsp-raknet)*
 
 ## be.ping({ host, port }) : ServerAdvertisement
 

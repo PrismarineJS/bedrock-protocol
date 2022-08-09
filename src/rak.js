@@ -3,21 +3,22 @@ const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
 
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
-
 class RakTimeout extends Error {};
 
-module.exports = nativeRaknet => {
-  if (nativeRaknet) {
-    try {
-      ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
-      return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
-    } catch (e) {
+module.exports = (backend) => {
+  try {
+    if (backend === 'jsp-raknet') {
       ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
-      console.debug('[raknet] native not found, using js', e)
-      console.debug('You can suppress the error above by disabling `useNativeRaknet` in your options')
+      return { RakServer: RakJsServer, RakClient: RakJsClient, RakTimeout }
     }
-  } else {
+    // We need to explicitly name the require()s for bundlers
+    if (backend === 'raknet-node') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
+    if (backend === 'raknet-native') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
+    else ({ Client, Server, PacketPriority, PacketReliability } = require(backend))
+    return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
+  } catch (e) {
     ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
+    console.debug('[raknet] ' + backend + ' library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.', e)
   }
   return { RakServer: RakJsServer, RakClient: RakJsClient, RakTimeout }
 }

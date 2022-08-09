@@ -18,10 +18,25 @@ const defaultOptions = {
   offline: false,
   // Milliseconds to wait before aborting connection attempt
   connectTimeout: 9000,
-  // Whether or not to use C++ version of RakNet
-  useNativeRaknet: true,
+  // Specifies the raknet implementation to use
+  raknetBackend: 'raknet-native',
   // If using JS implementation of RakNet, should we use workers? (This only affects the client)
   useRaknetWorkers: true
 }
 
-module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions }
+function validateOptions (options) {
+  if (!Versions[options.version]) {
+    console.warn('Supported versions', Versions)
+    throw Error(`Unsupported version ${options.version}`)
+  }
+
+  options.protocolVersion = Versions[options.version]
+  if (options.protocolVersion < MIN_VERSION) {
+    throw new Error(`Protocol version < ${MIN_VERSION} : ${options.protocolVersion}, too old`)
+  }
+  this.compressionLevel = options.compressionLevel || 7
+  if (options.useNativeRaknet === true) options.raknetBackend = 'raknet-native'
+  if (options.useNativeRaknet === false) options.raknetBackend = 'jsp-raknet'
+}
+
+module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions, validateOptions }
