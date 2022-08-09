@@ -81,7 +81,6 @@ async function ping ({ host, port, raknetBackend }) {
   var RakClient
   if (raknetBackend === 'raknet-node') {
     RakClient = require('./rak')('raknet-node').RakClient
-    console.log('use raknet-node ping')
   } else {
     RakClient = require('./rak')('raknet-native').RakClient
   }
