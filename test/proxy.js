@@ -44,10 +44,11 @@ function proxyTest (version, raknetBackend = 'raknet-node', timeout = 1000 * 40)
 
     console.debug('Proxy started', server.options.version)
 
-    /* retry 4 */
-    const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true, raknetBackend, skipPing: true })
+    const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true, raknetBackend })
 
     console.debug('Client started')
+
+    client.on('error', console.log)
 
     client.on('packet', console.log)
 
