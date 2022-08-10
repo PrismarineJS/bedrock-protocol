@@ -78,13 +78,14 @@ function connect (client) {
 }
 
 async function ping ({ host, port, raknetBackend }) {
-  var RakClient
+  var RaknetClient
+  console.log('backend : ' + raknetBackend + ' ping : ' + host + ':' + port)
   if (raknetBackend === 'raknet-node') {
-    RakClient = require('./rak')('raknet-node').RakClient
+    RaknetClient = require('./rak')('raknet-node').RakClient
   } else {
-    RakClient = require('./rak')('raknet-native').RakClient
+    RaknetClient = require('./rak')('raknet-native').RakClient
   }
-  const con = new RakClient({ host, port })
+  const con = new RaknetClient({ host, port })
   try {
     return advertisement.fromServerName(await con.ping())
   } finally {
