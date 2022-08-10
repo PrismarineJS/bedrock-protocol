@@ -42,6 +42,7 @@ function proxyTest (version, raknetBackend = 'raknet-node', timeout = 1000 * 40)
     })
     relay.conLog = console.debug
     await relay.listen()
+    await sleep(500)
 
     console.debug('Proxy started', server.options.version)
 
