@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "cd tools && node compileProtocol.js",
-    "test": "mocha --bail",
+    "test": "mocha --bail --exit",
     "pretest": "npm run lint",
     "lint": "standard",
     "vanillaServer": "node tools/startVanillaServer.js",
