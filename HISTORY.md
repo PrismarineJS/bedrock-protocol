@@ -1,3 +1,7 @@
+## 3.16.0
+* 1.19.20 support (#251)
+* Add new raknet library option (raknet-node) (#211) @b23r0
+
 ## 3.15.0
 * 1.19.10 support
 * Remove Realm fetch when joining via invite (#228) @LucienHH 
