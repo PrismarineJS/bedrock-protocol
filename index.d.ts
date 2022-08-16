@@ -131,6 +131,10 @@ declare module "bedrock-protocol" {
      * Close the connection. Already called by disconnect. Call this to manually close RakNet connection. 
      */
     close()
+
+    on(event: 'login', cb: () => void)
+    on(event: 'join', cb: () => void)
+    on(event: 'close', cb: (reason: string) => void)
   }
 
   export class Server extends EventEmitter {
@@ -161,6 +165,14 @@ declare module "bedrock-protocol" {
     }
     // Whether to enable chunk caching (default: false)
     enableChunkCaching?: boolean
+
+    // Only allow one client to connect at a time (default: false)
+    forceSinge: boolean
+
+    // Dispatched when a new client has logged in, and we need authentication
+    // tokens to join the backend server. Cached after the first login.
+    // If this is not specified, the client will be disconnected with a login prompt.
+    onMsaCode(data, client)
   }
 
   export class Relay extends Server {
