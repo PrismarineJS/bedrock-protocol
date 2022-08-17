@@ -61,7 +61,7 @@ module.exports = (client, server, options) => {
       ThirdPartyName: client.profile.name,
       ThirdPartyNameOnly: false,
       UIProfile: 0,
-      
+
       IsEditorMode: false,
       TrustedSkin: false
     }
