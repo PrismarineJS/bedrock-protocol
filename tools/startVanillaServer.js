@@ -62,8 +62,8 @@ async function download (os, version, path = 'bds-') {
   await get(found, 'bds.zip')
   console.info('⚡ Unzipping')
   // Unzip server
-  if (process.platform === 'linux') cp.execSync('unzip bds.zip && chmod +777 ./bedrock_server')
-  else cp.execSync('tar -xf bds.zip')
+  if (process.platform === 'linux') cp.execSync('unzip -u bds.zip && chmod +777 ./bedrock_server')
+  else cp.execSync('tar -xuf bds.zip')
   return verStr
 }
 
