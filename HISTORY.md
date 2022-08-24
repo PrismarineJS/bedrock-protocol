@@ -1,3 +1,9 @@
+## 3.17.0
+* relay: Add multi-user login support (#258) 
+* Add fields from 1.19.20 to login chain data (#259) @CleSucre
+* Fix nbt encoding size on single null tag NBT (#264)
+* test: Add -u flag unzipping vanilla server (#262) 
+
 ## 3.16.0
 * 1.19.20 support (#251)
 * Add new raknet library option (raknet-node) (#211) @b23r0
