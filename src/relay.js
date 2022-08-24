@@ -159,7 +159,7 @@ class Relay extends Server {
   constructor (options) {
     super(options)
     this.RelayPlayer = options.relayPlayer || RelayPlayer
-    this.forceSingle = true
+    this.forceSingle = options.forceSingle
     this.upstreams = new Map()
     this.conLog = debug
     this.enableChunkCaching = options.enableChunkCaching
@@ -175,12 +175,18 @@ class Relay extends Server {
     const options = {
       authTitle: this.options.authTitle,
       offline: this.options.destination.offline ?? this.options.offline,
-      username: this.options.offline ? ds.profile.name : null,
+      username: this.options.offline ? ds.profile.name : ds.profile.xuid,
       version: this.options.version,
       realms: this.options.destination.realms,
       host: this.options.destination.host,
       port: this.options.destination.port,
-      onMsaCode: this.options.onMsaCode,
+      onMsaCode: (code) => {
+        if (this.options.onMsaCode) {
+          this.options.onMsaCode(code, ds)
+        } else {
+          ds.disconnect("It's your first time joining. Please sign in and reconnect to join this server:\n\n" + code.message)
+        }
+      },
       profilesFolder: this.options.profilesFolder,
       backend: this.options.backend,
       autoInitPlayer: false
@@ -213,6 +219,16 @@ class Relay extends Server {
 
       this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
     })
+    client.on('error', (err) => {
+      ds.disconnect('Server error: ' + err.message)
+      debug(clientAddr, 'was disconnected because of error', err)
+      this.upstreams.delete(clientAddr.hash)
+    })
+    client.on('close', (reason) => {
+      ds.disconnect('Backend server closed connection')
+      this.upstreams.delete(clientAddr.hash)
+    })
+
     this.upstreams.set(clientAddr.hash, client)
   }
 
@@ -225,7 +241,7 @@ class Relay extends Server {
     this.conLog('closed upstream connection', clientAddr)
   }
 
-  // Called when a new player connects to our proxy server. Once the player has authenticted,
+  // Called when a new player connects to our proxy server. Once the player has authenticated,
   // we can open an upstream connection to the backend server.
   onOpenConnection = (conn) => {
     if (this.forceSingle && this.clientCount > 0) {
@@ -239,6 +255,11 @@ class Relay extends Server {
       this.emit('connect', player)
       player.on('login', () => {
         this.openUpstreamConnection(player, conn.address)
+      })
+      player.on('close', (reason) => {
+        this.conLog('player disconnected', conn.address, reason)
+        this.clientCount--
+        delete this.clients[conn.address]
       })
     }
   }
