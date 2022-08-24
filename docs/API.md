@@ -170,7 +170,7 @@ For documentation on the protocol, and packets/fields see the [the protocol doc]
 
 ### Proxy docs
 
-You can create a proxy ("Relay") to create a machine-in-the-middle (MITM) connection to a server. You can observe and intercept packets as they go through. The Relay is a server+client combo with some special packet handling and forwarding that takes care of the authentication and encryption on the server side. You'll be asked to login if `offline` is not specified once you connect.
+You can create a proxy ("Relay") to create a machine-in-the-middle (MITM) connection to a server. You can observe and intercept packets as they go through. The Relay is a server+client combo with some special packet handling and forwarding that takes care of the authentication and encryption on the server side. Clients will be asked to login if `offline` is not specified on connection.
 
 ```js
 const { Relay } = require('bedrock-protocol')

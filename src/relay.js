@@ -175,7 +175,7 @@ class Relay extends Server {
     const options = {
       authTitle: this.options.authTitle,
       offline: this.options.destination.offline ?? this.options.offline,
-      username: this.options.offline ? ds.profile.name : null,
+      username: this.options.offline ? ds.profile.name : ds.profile.xuid,
       version: this.options.version,
       realms: this.options.destination.realms,
       host: this.options.destination.host,
@@ -224,6 +224,11 @@ class Relay extends Server {
       debug(clientAddr, 'was disconnected because of error', err)
       this.upstreams.delete(clientAddr.hash)
     })
+    client.on('close', (reason) => {
+      ds.disconnect('Backend server closed connection')
+      this.upstreams.delete(clientAddr.hash)
+    })
+
     this.upstreams.set(clientAddr.hash, client)
   }
 
