@@ -1,3 +1,6 @@
+## 3.18.0
+* 1.19.21 support (#266)
+
 ## 3.17.0
 * relay: Add multi-user login support (#258) 
 * Add fields from 1.19.20 to login chain data (#259) @CleSucre
