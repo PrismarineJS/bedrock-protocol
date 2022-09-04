@@ -112,7 +112,7 @@ A ServerPlayer instance also emits the following special events:
 
 ## Client docs
 
-You can create a server as such:
+You can create a client like below:
 ```js
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
