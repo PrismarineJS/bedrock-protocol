@@ -31,7 +31,11 @@ class RakNativeClient extends EventEmitter {
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
 
-    this.raknet = new Client(options.host, options.port, { protocolVersion: 10 })
+    this.raknet = new Client(options.host, options.port, { protocolVersion: options.raknetVersion || 10 });
+    // TODO: delete this
+    for (const msg of ['pong', 'connect', 'disconnect', 'openConnection', 'closeConnection', 'error']) {
+      this.raknet.on('raknet', msg, (...args) => console.log(msg, args));
+    }
     this.raknet.on('encapsulated', ({ buffer, address }) => {
       if (this.connected) { // Discard packets that are queued to be sent to us after close
         this.onEncapsulated(buffer, address)
@@ -86,7 +90,7 @@ class RakNativeServer extends EventEmitter {
     this.onEncapsulated = () => { }
     this.raknet = new Server(options.host, options.port, {
       maxConnections: options.maxPlayers || 3,
-      protocolVersion: 10,
+      protocolVersion: options.raknetVersion || 10,
       message: server.getAdvertisement().toBuffer()
     })
     this.onClose = () => {}

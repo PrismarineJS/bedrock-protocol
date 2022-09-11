@@ -31,9 +31,7 @@ function validateOptions (options) {
   }
 
   options.protocolVersion = Versions[options.version]
-  if (options.protocolVersion < MIN_VERSION) {
-    throw new Error(`Protocol version < ${MIN_VERSION} : ${options.protocolVersion}, too old`)
-  }
+  options.raknetVersion = options.raknetVersion || (options.protocolVersion <= 544 ? 10 : 11)
   this.compressionLevel = options.compressionLevel || 7
   if (options.useNativeRaknet === true) options.raknetBackend = 'raknet-native'
   if (options.useNativeRaknet === false) options.raknetBackend = 'jsp-raknet'

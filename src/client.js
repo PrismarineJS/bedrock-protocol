@@ -44,9 +44,12 @@ class Client extends Connection {
     LoginVerify(this, null, this.options)
 
     const { RakClient } = initRaknet(this.options.raknetBackend)
-    const host = this.options.host
-    const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
+    this.connection = new RakClient({ 
+      host: this.options.host,
+      port: this.options.port,
+      useWorkers: this.options.useRaknetWorkers,
+      raknetVersion: this.options.raknetVersion,
+    })
 
     this.emit('connect_allowed')
   }
