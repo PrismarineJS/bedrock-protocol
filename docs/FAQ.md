@@ -8,7 +8,7 @@ CheckNetIsolation LoopbackExempt -a -n="Microsoft.MinecraftUWP_8wekyb3d8bbwe"
 
 If you are using a preview release or a tool like [MCMrARM Version Manager](https://github.com/MCMrARM/mc-w10-version-launcher) and are not the standard UWP app you can first locate the binary name with the following command:
 
-```
+```ps
 Get-AppxPackage -AllUsers | Where Name -Match ".*Minecraft.*" | Select Name,InstallLocation,PackageFullName
 ```
 
