@@ -180,6 +180,7 @@ class Client extends Connection {
       this.emit('error', e)
       return
     }
+    console.log('readPacket:', des.data.name)
     const pakData = { name: des.data.name, params: des.data.params }
     this.inLog?.('-> C', pakData.name, this.options.logging ? serialize(pakData.params) : '')
     this.emit('packet', des)
