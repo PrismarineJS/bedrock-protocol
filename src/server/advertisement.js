@@ -7,6 +7,9 @@ class ServerAdvertisement {
   playersMax = 5
   gamemode = 'Creative'
   serverId = '0'
+  gamemodeId = 1
+  port = undefined
+  portV6 = undefined
 
   constructor (obj, version = CURRENT_VERSION) {
     if (obj?.name) obj.motd = obj.name
@@ -16,8 +19,13 @@ class ServerAdvertisement {
   }
 
   fromString (str) {
-    const [header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode] = str.split(';')
-    Object.assign(this, { header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode })
+    const [header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode, gamemodeId, port, portV6] = str.split(';')
+    Object.assign(this, { header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode, gamemodeId, port, portV6 })
+    for (const numeric of ['playersOnline', 'playersMax', 'gamemodeId', 'port', 'portV6']) {
+      if (this[numeric] !== undefined) {
+        this[numeric] = parseInt(this[numeric])
+      }
+    }
     return this
   }
 
