@@ -94,7 +94,6 @@ async function ping ({ host, port }) {
 
 // Parse an address given a variable number of cli arguments
 function parseAddress (...args) {
-  console.log(args)
   if (args.length == 0) return {}
   // 1 argument: host with optional port
   if (args.length == 1) {

@@ -22,6 +22,7 @@ const options = {
 
 // if an address is specified from the command line, use that.
 if (process.argv[2]) {
+  ['host', 'port'].forEach(k => delete options[k])
   Object.assign(options, bedrock.parseAddress(...process.argv.slice(2)))
 }
 
