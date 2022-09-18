@@ -94,9 +94,9 @@ async function ping ({ host, port }) {
 
 // Parse an address given a variable number of cli arguments
 function parseAddress (...args) {
-  if (args.length == 0) return {}
+  if (args.length === 0) return {}
   // 1 argument: host with optional port
-  if (args.length == 1) {
+  if (args.length === 1) {
     const parts = args[0].split(':')
     if (parts[1]) {
       parts[1] = parseInt(parts[1])
@@ -110,9 +110,13 @@ function parseAddress (...args) {
     case '--realm_invite':
       return { realms: { realmInvite: args[1] } }
     case '--realm_name':
-      return { realms: { pickRealm: (realms) => {
-        realms.find(e => e.name === args[1])
-      }} }
+      return {
+        realms: {
+          pickRealm: (realms) => {
+            realms.find(e => e.name === args[1])
+          }
+        }
+      }
     default: throw new Error(`Unrecognized Argument: ${args[0]}`)
   }
 }

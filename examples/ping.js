@@ -1,6 +1,6 @@
 /**
  * Ping a server to retrieve metadata
- * 
+ *
  * Examples:
  *   node examples/ping.js
  *   node examples/ping.js 127.0.0.1:19132

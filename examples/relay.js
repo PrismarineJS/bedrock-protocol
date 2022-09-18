@@ -1,6 +1,6 @@
 /**
  * A simple relay to demonstrate connectivity.
- * 
+ *
  * Command line options accepted are:
  *  - serverAddress (optional, required if destinationAddress used):
  *      - default: "0.0.0.0:19130"
@@ -13,7 +13,7 @@
  *      - "--realm_id" "{id}"
  *      - "--realm_invite" "{invite_link}"
  *      - "--realm_name" "{name}"
- * 
+ *
  * Examples:
  *   node examples/relay.js
  *   node examples/relay.js 127.0.0.1:19132
@@ -27,7 +27,7 @@ const bedrock = require('bedrock-protocol')
 
 // Start your server first on port 19132.
 
-options = {
+const options = {
   version: '1.16.220', // The version
   /* host and port to listen for clients on */
   host: '0.0.0.0',
