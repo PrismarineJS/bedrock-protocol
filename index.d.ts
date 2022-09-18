@@ -11,7 +11,7 @@ declare module "bedrock-protocol" {
     version?: string
     // For the client, the host of the server to connect to (default: 127.0.0.1)
     // For the server, the host to bind to (default: 0.0.0.0)
-    host: string
+    host?: string
     // The port to connect or bind to, default: 19132
     port?: number
     // For the client, if we should login with Microsoft/Xbox Live.
@@ -198,6 +198,8 @@ declare module "bedrock-protocol" {
 
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
+
+  export function parseAddress(address: string): Options
 
   export function ping({ host, port }: { host: string, port: number }): Promise<ServerAdvertisement>
 }

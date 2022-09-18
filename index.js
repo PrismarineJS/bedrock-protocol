@@ -7,7 +7,7 @@ if (typeof process !== 'undefined' && parseInt(process.versions.node.split('.')[
 const { Client } = require('./src/client')
 const { Server } = require('./src/server')
 const { Relay } = require('./src/relay')
-const { createClient, ping } = require('./src/createClient')
+const { createClient, ping, parseAddress } = require('./src/createClient')
 const { createServer } = require('./src/createServer')
 const { Titles } = require('prismarine-auth')
 
@@ -17,6 +17,7 @@ module.exports = {
   Relay,
   createClient,
   ping,
+  parseAddress,
   createServer,
   title: Titles
 }
