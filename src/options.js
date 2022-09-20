@@ -4,8 +4,6 @@ const mcData = require('minecraft-data')
 const MIN_VERSION = '1.16.201'
 // Currently supported verson. Note, clients with newer versions can still connect as long as data is in minecraft-data
 const CURRENT_VERSION = '1.19.21'
-// The default port to be used
-const DEFAULT_PORT = 19132
 
 const Versions = Object.fromEntries(mcData.versions.bedrock.filter(e => e.releaseType === 'release').map(e => [e.minecraftVersion, e.version]))
 
@@ -41,4 +39,4 @@ function validateOptions (options) {
   if (options.useNativeRaknet === false) options.raknetBackend = 'jsp-raknet'
 }
 
-module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, DEFAULT_PORT, Versions, validateOptions }
+module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions, validateOptions }

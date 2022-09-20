@@ -39,6 +39,8 @@ declare module "bedrock-protocol" {
     connectTimeout?: number
     // whether to skip initial ping and immediately connect
     skipPing?: boolean
+    // Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified)
+    followPort?: boolean
     // where to log connection information to (default to console.log)
     conLog?
     // used to join a Realm instead of supplying a host/port
