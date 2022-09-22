@@ -9,7 +9,7 @@ const auth = require('./client/auth')
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
   assert(options)
-  const client = new Client({ port: 19132, ...options, delayedInit: true })
+  const client = new Client({ port: 19132, followPort: !options.realms, ...options, delayedInit: true })
 
   function onServerInfo () {
     client.on('connect_allowed', () => connect(client))
@@ -20,11 +20,11 @@ function createClient (options) {
         const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
         client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
 
-        if (ad.port) {
+        if (ad.port && options.followPort) {
           client.options.port = ad.port
         }
 
-        client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${ad.version}`, client.options.version !== ad.version ? ` (as ${client.options.version})` : '')
+        client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${ad.version} ${client.options.version !== ad.version ? ` (as ${client.options.version})` : ''}`)
         client.init()
       }).catch(e => client.emit('error', e))
     }
