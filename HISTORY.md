@@ -2,6 +2,7 @@
 * Add option for port redirection, fix Realm handling (#282) 
 * Add Port Redirect Functionality (#278) @stevarino
 * Add Get-AppxPackage command to FAQ.md (#276) @stevarino
+* Remove viewer example
 
 ## 3.18.0
 * 1.19.21 support (#266)
