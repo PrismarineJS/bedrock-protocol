@@ -1,7 +1,6 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { serialize, isDebug } = require('./datatypes/util')
-const { Framer, DeflateFramer, SnappyFramer } = require('./transforms/framer')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
@@ -25,7 +24,7 @@ class Client extends Connection {
     this.startGameData = {}
     this.clientRuntimeId = null
     // Start off without compression
-    this.Framer = Framer
+    this.compressionAlgorithm = 'none'
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -115,14 +114,7 @@ class Client extends Connection {
   }
 
   updateCompressorSettings (packet) {
-    switch (packet.compression_algorithm) {
-      case 'deflate':
-        this.Framer = DeflateFramer
-        break
-      case 'snappy':
-        this.Framer = SnappyFramer
-        break
-    }
+    this.compressionAlgorithm = packet.compression_algorithm
     this.compressionThreshold = packet.compression_threshold
   }
 

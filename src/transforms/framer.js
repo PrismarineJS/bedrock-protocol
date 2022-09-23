@@ -3,22 +3,41 @@ const zlib = require('zlib')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
-  constructor (compressionLevel, compressionThreshold) {
+  constructor (compressor, compressionLevel, compressionThreshold) {
     // Encoding
     this.packets = []
+    this.compressor = compressor || 'none'
     this.compressionLevel = compressionLevel
     this.compressionThreshold = compressionThreshold
   }
 
   // No compression in base class
-  compress (buffer) { return buffer }
-  static decompress (buffer) { return buffer }
+  compress (buffer) {
+    switch (this.compressor) {
+      case 'deflate': return zlib.deflateRawSync(buffer, { level: this.compressionLevel })
+      case 'snappy': throw Error('Snappy compression not implemented')
+      case 'none': return buffer
+    }
+  }
 
-  static decode (buf) {
+  static decompress (algorithm, buffer) {
+    try {
+      switch (algorithm) {
+        case 'deflate': return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
+        case 'snappy': throw Error('Snappy compression not implemented')
+        case 'none': return buffer
+        default: throw Error('Unknown compression type ' + this.compressor)
+      }
+    } catch {
+      return buffer
+    }
+  }
+
+  static decode (compressor, buf) {
     // Read header
     if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
     const buffer = buf.slice(1)
-    const decompressed = this.decompress(buffer)
+    const decompressed = this.decompress(compressor, buffer)
     return Framer.getPackets(decompressed)
   }
 
@@ -70,29 +89,4 @@ class Framer {
   }
 }
 
-class DeflateFramer extends Framer {
-  compress (buffer) {
-    return zlib.deflateRawSync(buffer, { level: this.compressionLevel })
-  }
-
-  static decompress (buffer) {
-    // Decode the payload with 512kb buffer
-    try {
-      return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
-    } catch (e) { // Try to decode without compression
-      return buffer
-    }
-  }
-}
-
-class SnappyFramer extends Framer {
-  compress (buffer) {
-    throw Error('Snappy compression not implemented')
-  }
-
-  static decompress (buffer) {
-    throw Error('Snappy compression not implemented')
-  }
-}
-
-module.exports = { Framer, DeflateFramer, SnappyFramer }
+module.exports = { Framer }

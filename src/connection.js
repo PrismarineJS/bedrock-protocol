@@ -2,6 +2,7 @@ const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
 const { Versions } = require('./options')
 const debug = require('debug')('minecraft-protocol')
+const { Framer } = require('./transforms/framer')
 
 const ClientStatus = {
   Disconnected: 0,
@@ -64,7 +65,7 @@ class Connection extends EventEmitter {
   write (name, params) {
     this.outLog?.(name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
-    const batch = new this.Framer(this.compressionLevel, this.compressionThreshold)
+    const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
     const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
 
@@ -90,7 +91,7 @@ class Connection extends EventEmitter {
 
   _tick () {
     if (this.sendQ.length) {
-      const batch = new this.Framer(this.compressionLevel, this.compressionThreshold)
+      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
       batch.addEncodedPackets(this.sendQ)
       this.sendQ = []
       this.sendIds = []
@@ -114,7 +115,7 @@ class Connection extends EventEmitter {
    */
   sendBuffer (buffer, immediate = false) {
     if (immediate) {
-      const batch = new this.Framer(this.compressionLevel, this.compressionThreshold)
+      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
       batch.addEncodedPacket(buffer)
       if (this.encryptionEnabled) {
         this.sendEncryptedBatch(batch)
@@ -154,7 +155,7 @@ class Connection extends EventEmitter {
   }
 
   onDecryptedPacket = (buf) => {
-    const packets = this.Framer.getPackets(buf)
+    const packets = Framer.getPackets(buf)
 
     for (const packet of packets) {
       this.readPacket(packet)
@@ -166,7 +167,7 @@ class Connection extends EventEmitter {
       if (this.encryptionEnabled) {
         this.decrypt(buffer.slice(1))
       } else {
-        const packets = this.Framer.decode(buffer)
+        const packets = Framer.decode(this.compressionAlgorithm, buffer)
         for (const packet of packets) {
           this.readPacket(packet)
         }

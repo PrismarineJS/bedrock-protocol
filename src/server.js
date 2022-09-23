@@ -3,7 +3,6 @@ const { createDeserializer, createSerializer } = require('./transforms/serialize
 const { Player } = require('./serverPlayer')
 const { sleep } = require('./datatypes/util')
 const { ServerAdvertisement } = require('./server/advertisement')
-const { Framer, DeflateFramer, SnappyFramer } = require('./transforms/framer')
 const Options = require('./options')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
@@ -29,16 +28,13 @@ class Server extends EventEmitter {
 
   setCompressor (algorithm, level = 1, threshold = 256) {
     if (algorithm === 'none') {
-      this.framer = Framer
       this.compressionAlgorithm = 'none'
       this.compressionLevel = 0
     } else if (algorithm === 'deflate') {
-      this.framer = DeflateFramer
       this.compressionAlgorithm = 'deflate'
       this.compressionLevel = level
       this.compressionThreshold = threshold
     } else if (algorithm === 'snappy') {
-      this.framer = SnappyFramer
       this.compressionAlgorithm = 'snappy'
       this.compressionLevel = level
       this.compressionThreshold = threshold
@@ -86,7 +82,7 @@ class Server extends EventEmitter {
       debug(`ignoring packet from unknown inet addr: ${address}`)
       return
     }
-    client.handle(buffer)
+    process.nextTick(() => client.handle(buffer))
   }
 
   getAdvertisement () {

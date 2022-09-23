@@ -28,7 +28,7 @@ class Player extends Connection {
     }
 
     // Compression is server-wide
-    this.Framer = this.server.framer
+    this.compressionAlgorithm = this.server.compressionAlgorithm
     this.compressionLevel = this.server.compressionLevel
     this.compressionThreshold = this.server.compressionThreshold
 
