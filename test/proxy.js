@@ -60,8 +60,8 @@ function proxyTest (version, raknetBackend = 'raknet-node', timeout = 1000 * 40)
   }, timeout, () => { throw Error('timed out') })
 }
 
-if (!module.parent) {
-  proxyTest('1.16.220', 'raknet-native')
-}
+// if (!module.parent) {
+//   proxyTest('1.16.220', 'raknet-native')
+// }
 
 module.exports = { proxyTest }

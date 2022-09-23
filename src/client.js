@@ -23,8 +23,10 @@ class Client extends Connection {
 
     this.startGameData = {}
     this.clientRuntimeId = null
-    // Start off without compression
-    this.compressionAlgorithm = 'none'
+    // Start off without compression on 1.19.30, zlib on below
+    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
+    this.compressionThreshold = 512
+    this.compressionLevel = this.options.compressionLevel
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -114,7 +116,7 @@ class Client extends Connection {
   }
 
   updateCompressorSettings (packet) {
-    this.compressionAlgorithm = packet.compression_algorithm
+    this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
     this.compressionThreshold = packet.compression_threshold
   }
 
