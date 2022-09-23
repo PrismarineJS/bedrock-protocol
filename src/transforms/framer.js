@@ -3,30 +3,29 @@ const zlib = require('zlib')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
-  constructor (compressionLevel) {
+  constructor (compressionLevel, compressionThreshold) {
     // Encoding
     this.packets = []
     this.compressionLevel = compressionLevel
+    this.compressionThreshold = compressionThreshold
   }
+
+  // No compression in base class
+  compress (buffer) { return buffer }
+  static decompress (buffer) { return buffer }
 
   static decode (buf) {
     // Read header
     if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
     const buffer = buf.slice(1)
-
-    // Decode the payload with 512kb buffer
-    try {
-      const inflated = zlib.inflateRawSync(buffer, { chunkSize: 512000 })
-      return Framer.getPackets(inflated)
-    } catch (e) { // Try to decode without compression
-      return Framer.getPackets(buffer)
-    }
+    const decompressed = this.decompress(buffer)
+    return Framer.getPackets(decompressed)
   }
 
   encode () {
     const buf = Buffer.concat(this.packets)
-    const def = zlib.deflateRawSync(buf, { level: this.compressionLevel })
-    return Buffer.concat([Buffer.from([0xfe]), def])
+    const compressed = (buf.length > this.compressionThreshold) ? this.compress(buf) : buf
+    return Buffer.concat([Buffer.from([0xfe]), compressed])
   }
 
   addEncodedPacket (chunk) {
@@ -71,4 +70,29 @@ class Framer {
   }
 }
 
-module.exports = Framer
+class DeflateFramer extends Framer {
+  compress (buffer) {
+    return zlib.deflateRawSync(buffer, { level: this.compressionLevel })
+  }
+
+  static decompress (buffer) {
+    // Decode the payload with 512kb buffer
+    try {
+      return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
+    } catch (e) { // Try to decode without compression
+      return buffer
+    }
+  }
+}
+
+class SnappyFramer extends Framer {
+  compress (buffer) {
+    throw Error('Snappy compression not implemented')
+  }
+
+  static decompress (buffer) {
+    throw Error('Snappy compression not implemented')
+  }
+}
+
+module.exports = { Framer, DeflateFramer, SnappyFramer }

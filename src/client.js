@@ -1,6 +1,7 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { serialize, isDebug } = require('./datatypes/util')
+const { Framer, DeflateFramer, SnappyFramer } = require('./transforms/framer')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
@@ -8,6 +9,7 @@ const initRaknet = require('./rak')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
+const fs = require('fs')
 
 const debugging = false
 
@@ -22,6 +24,8 @@ class Client extends Connection {
 
     this.startGameData = {}
     this.clientRuntimeId = null
+    // Start off without compression
+    this.Framer = Framer
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -46,7 +50,7 @@ class Client extends Connection {
     const { RakClient } = initRaknet(this.options.raknetBackend)
     const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
+    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
 
     this.emit('connect_allowed')
   }
@@ -76,7 +80,7 @@ class Client extends Connection {
 
   onEncapsulated = (encapsulated, inetAddr) => {
     const buffer = Buffer.from(encapsulated.buffer)
-    this.handle(buffer)
+    process.nextTick(() => this.handle(buffer))
   }
 
   async ping () {
@@ -90,7 +94,14 @@ class Client extends Connection {
 
   _connect = async (sessionData) => {
     debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
-    this.connection.onConnected = () => this.sendLogin()
+    this.connection.onConnected = () => {
+      this.status = ClientStatus.Connecting
+      if (this.versionGreaterThanOrEqualTo('1.19.30')) {
+        this.queue('request_network_settings', { client_protocol: this.options.protocolVersion })
+      } else {
+        this.sendLogin()
+      }
+    }
     this.connection.onCloseConnection = (reason) => this.close()
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
@@ -101,6 +112,18 @@ class Client extends Connection {
         this.emit('error', 'connect timed out')
       }
     }, this.options.connectTimeout || 9000)
+  }
+
+  updateCompressorSettings (packet) {
+    switch (packet.compression_algorithm) {
+      case 'deflate':
+        this.Framer = DeflateFramer
+        break
+      case 'snappy':
+        this.Framer = SnappyFramer
+        break
+    }
+    this.compressionThreshold = packet.compression_threshold
   }
 
   sendLogin () {
@@ -174,6 +197,15 @@ class Client extends Connection {
     try {
       var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
+      // Dump information about the packet only if user is not handling error event.
+      if (this.listenerCount('error') === 0) {
+        if (packet.length > 1000) {
+          fs.writeFileSync('packetReadError.txt', packet.toString('hex'))
+          console.log(`Deserialization failure for packet 0x${packet.slice(0, 1).toString('hex')}. Packet buffer saved in ./packetReadError.txt as buffer was too large (${packet.length} bytes).`)
+        } else {
+          console.log('Read failure for 0x' + packet.slice(0, 1).toString('hex'), packet.slice(0, 1000))
+        }
+      }
       this.emit('error', e)
       return
     }
@@ -192,6 +224,12 @@ class Client extends Connection {
     switch (des.data.name) {
       case 'server_to_client_handshake':
         this.emit('client.server_handshake', des.data.params)
+        break
+      case 'network_settings':
+        this.updateCompressorSettings(des.data.params)
+        if (this.status === ClientStatus.Connecting) {
+          this.sendLogin()
+        }
         break
       case 'disconnect': // Client kicked
         this.emit(des.data.name, des.data.params) // Emit before we kill all listeners.

@@ -3,6 +3,7 @@ const { createDeserializer, createSerializer } = require('./transforms/serialize
 const { Player } = require('./serverPlayer')
 const { sleep } = require('./datatypes/util')
 const { ServerAdvertisement } = require('./server/advertisement')
+const { Framer, DeflateFramer, SnappyFramer } = require('./transforms/framer')
 const Options = require('./options')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
@@ -16,16 +17,50 @@ class Server extends EventEmitter {
 
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
-    this.advertisement = new ServerAdvertisement(this.options.motd, this.options.version)
+    this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)
     this.advertisement.playersMax = options.maxPlayers ?? 3
     /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
     this.conLog = debug
+
+    this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
+  }
+
+  setCompressor (algorithm, level = 1, threshold = 256) {
+    if (algorithm === 'none') {
+      this.framer = Framer
+      this.compressionAlgorithm = 'none'
+      this.compressionLevel = 0
+    } else if (algorithm === 'deflate') {
+      this.framer = DeflateFramer
+      this.compressionAlgorithm = 'deflate'
+      this.compressionLevel = level
+      this.compressionThreshold = threshold
+    } else if (algorithm === 'snappy') {
+      this.framer = SnappyFramer
+      this.compressionAlgorithm = 'snappy'
+      this.compressionLevel = level
+      this.compressionThreshold = threshold
+    } else {
+      throw new Error(`Unknown compression algorithm ${algorithm}`)
+    }
   }
 
   validateOptions () {
     Options.validateOptions(this.options)
+  }
+
+  versionLessThan (version) {
+    return this.options.protocolVersion < (typeof version === 'string' ? Options.Versions[version] : version)
+  }
+
+  versionGreaterThan (version) {
+    return this.options.protocolVersion > (typeof version === 'string' ? Options.Versions[version] : version)
+  }
+
+  versionGreaterThanOrEqualTo (version) {
+    return this.options.protocolVersion >= (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
   onOpenConnection = (conn) => {

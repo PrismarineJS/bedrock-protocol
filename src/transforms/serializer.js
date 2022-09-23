@@ -4,12 +4,7 @@ const { join } = require('path')
 
 class Parser extends FullPacketParser {
   parsePacketBuffer (buffer) {
-    try {
-      return super.parsePacketBuffer(buffer)
-    } catch (e) {
-      console.error('While decoding', buffer.toString('hex'))
-      throw e
-    }
+    return super.parsePacketBuffer(buffer)
   }
 
   verify (deserialized, serializer) {
