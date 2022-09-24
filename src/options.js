@@ -21,7 +21,14 @@ const defaultOptions = {
   // Specifies the raknet implementation to use
   raknetBackend: 'raknet-native',
   // If using JS implementation of RakNet, should we use workers? (This only affects the client)
-  useRaknetWorkers: true
+  useRaknetWorkers: true,
+
+  // server: What compression algorithm to use by default, either `none`, `deflate` or `snappy`
+  compressionAlgorithm: 'deflate',
+  // server and client: On Deflate, what compression level to use, between 1 and 9
+  compressionLevel: 7,
+  // server: If true, only compress if a payload is larger than compressionThreshold
+  compressionThreshold: 512
 }
 
 function validateOptions (options) {
@@ -34,7 +41,6 @@ function validateOptions (options) {
   if (options.protocolVersion < MIN_VERSION) {
     throw new Error(`Protocol version < ${MIN_VERSION} : ${options.protocolVersion}, too old`)
   }
-  this.compressionLevel = options.compressionLevel || 7
   if (options.useNativeRaknet === true) options.raknetBackend = 'raknet-native'
   if (options.useNativeRaknet === false) options.raknetBackend = 'jsp-raknet'
 }

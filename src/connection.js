@@ -1,14 +1,15 @@
-const Framer = require('./transforms/framer')
 const cipher = require('./transforms/encryption')
 const { EventEmitter } = require('events')
 const { Versions } = require('./options')
 const debug = require('debug')('minecraft-protocol')
+const { Framer } = require('./transforms/framer')
 
 const ClientStatus = {
   Disconnected: 0,
-  Authenticating: 1, // Handshaking
-  Initializing: 2, // Authed, need to spawn
-  Initialized: 3 // play_status spawn sent by server, client responded with SetPlayerInit packet
+  Connecting: 1,
+  Authenticating: 2, // Handshaking
+  Initializing: 3, // Authed, need to spawn
+  Initialized: 4 // play_status spawn sent by server, client responded with SetPlayerInit packet
 }
 
 class Connection extends EventEmitter {
@@ -32,6 +33,10 @@ class Connection extends EventEmitter {
 
   versionGreaterThan (version) {
     return this.options.protocolVersion > (typeof version === 'string' ? Versions[version] : version)
+  }
+
+  versionGreaterThanOrEqualTo (version) {
+    return this.options.protocolVersion >= (typeof version === 'string' ? Versions[version] : version)
   }
 
   startEncryption (iv) {
@@ -60,7 +65,7 @@ class Connection extends EventEmitter {
   write (name, params) {
     this.outLog?.(name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
-    const batch = new Framer(this.compressionLevel)
+    const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
     const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
 
@@ -86,7 +91,7 @@ class Connection extends EventEmitter {
 
   _tick () {
     if (this.sendQ.length) {
-      const batch = new Framer(this.compressionLevel)
+      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
       batch.addEncodedPackets(this.sendQ)
       this.sendQ = []
       this.sendIds = []
@@ -110,7 +115,7 @@ class Connection extends EventEmitter {
    */
   sendBuffer (buffer, immediate = false) {
     if (immediate) {
-      const batch = new Framer(this.compressionLevel)
+      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
       batch.addEncodedPacket(buffer)
       if (this.encryptionEnabled) {
         this.sendEncryptedBatch(batch)
@@ -162,7 +167,7 @@ class Connection extends EventEmitter {
       if (this.encryptionEnabled) {
         this.decrypt(buffer.slice(1))
       } else {
-        const packets = Framer.decode(buffer)
+        const packets = Framer.decode(this.compressionAlgorithm, buffer)
         for (const packet of packets) {
           this.readPacket(packet)
         }

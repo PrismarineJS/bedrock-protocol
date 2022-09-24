@@ -87,6 +87,8 @@ function run (inheritStdout = true) {
   return cp.spawn(exe, inheritStdout ? { stdio: 'inherit' } : {})
 }
 
+let lastHandle
+
 // Run the server
 async function startServer (version, onStart, options = {}) {
   const os = process.platform === 'win32' ? 'win' : process.platform
@@ -95,7 +97,7 @@ async function startServer (version, onStart, options = {}) {
   }
   await download(os, version, options.path)
   configure(options)
-  const handle = run(!onStart)
+  const handle = lastHandle = run(!onStart)
   handle.on('error', (...a) => {
     console.warn('*** THE MINECRAFT PROCESS CRASHED ***', a)
     handle.kill('SIGKILL')
@@ -126,9 +128,12 @@ async function startServerAndWait (version, withTimeout, options) {
 
 async function startServerAndWait2 (version, withTimeout, options) {
   try {
-    return await startServerAndWait(version, withTimeout, options)
+    return await startServerAndWait(version, 1000 * 60, options)
   } catch (e) {
-    console.log(e, 'tring once more to start server...')
+    console.log(e)
+    console.log('^ Tring once more to start server in 10 seconds...')
+    lastHandle?.kill()
+    await new Promise(resolve => setTimeout(resolve, 10000))
     process.chdir(__dirname)
     fs.rmSync('bds-' + version, { recursive: true })
     return await startServerAndWait(version, withTimeout, options)

@@ -4,7 +4,6 @@ const { serialize, isDebug } = require('./datatypes/util')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
-const fs = require('fs')
 const debug = require('debug')('minecraft-protocol')
 
 class Player extends Connection {
@@ -15,7 +14,6 @@ class Player extends Connection {
     this.deserializer = server.deserializer
     this.connection = connection
     this.options = server.options
-    this.compressionLevel = server.compressionLevel
 
     KeyExchange(this, server, server.options)
     Login(this, server, server.options)
@@ -28,10 +26,41 @@ class Player extends Connection {
       this.inLog = (...args) => debug('S ->', ...args)
       this.outLog = (...args) => debug('S <-', ...args)
     }
+
+    // Compression is server-wide
+    this.compressionAlgorithm = this.server.compressionAlgorithm
+    this.compressionLevel = this.server.compressionLevel
+    this.compressionThreshold = this.server.compressionThreshold
+
+    this._sentNetworkSettings = false // 1.19.30+
   }
 
   getUserData () {
     return this.userData
+  }
+
+  sendNetworkSettings () {
+    this.write('network_settings', {
+      compression_threshold: this.server.compressionThreshold,
+      compression_algorithm: this.server.compressionAlgorithm,
+      client_throttle: false,
+      client_throttle_threshold: 0,
+      client_throttle_scalar: 0
+    })
+    this._sentNetworkSettings = true
+  }
+
+  handleClientProtocolVersion (clientVersion) {
+    if (this.server.options.protocolVersion) {
+      if (this.server.options.protocolVersion < clientVersion) {
+        this.sendDisconnectStatus('failed_spawn') // client too new
+        return false
+      }
+    } else if (clientVersion < Options.MIN_VERSION) {
+      this.sendDisconnectStatus('failed_client') // client too old
+      return false
+    }
+    return true
   }
 
   onLogin (packet) {
@@ -39,13 +68,7 @@ class Player extends Connection {
     this.emit('loggingIn', body)
 
     const clientVer = body.params.protocol_version
-    if (this.server.options.protocolVersion) {
-      if (this.server.options.protocolVersion < clientVer) {
-        this.sendDisconnectStatus('failed_spawn')
-        return
-      }
-    } else if (clientVer < Options.MIN_VERSION) {
-      this.sendDisconnectStatus('failed_client')
+    if (!this.handleClientProtocolVersion(clientVer)) {
       return
     }
 
@@ -125,15 +148,24 @@ class Player extends Connection {
       var des = this.server.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
       this.disconnect('Server error')
-      fs.writeFile(`packetdump_${this.connection.address}_${Date.now()}.bin`, packet)
+      debug('Dropping packet from', this.connection.address, e)
       return
     }
 
     this.inLog?.(des.data.name, serialize(des.data.params).slice(0, 200))
 
     switch (des.data.name) {
+      // This is the first packet on 1.19.30 & above
+      case 'request_network_settings':
+        if (this.handleClientProtocolVersion(des.data.params.client_protocol)) {
+          this.sendNetworkSettings()
+          this.compressionLevel = this.server.compressionLevel
+        }
+        return
+      // Below 1.19.30, this is the first packet.
       case 'login':
         this.onLogin(des)
+        if (!this._sentNetworkSettings) this.sendNetworkSettings()
         return
       case 'client_to_server_handshake':
         // Emit the 'join' event
