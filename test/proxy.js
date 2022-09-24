@@ -1,7 +1,7 @@
 const { createClient, Server, Relay } = require('bedrock-protocol')
 const { sleep, waitFor } = require('../src/datatypes/util')
 
-function proxyTest (version, raknetBackend = 'raknet-node', timeout = 1000 * 40) {
+function proxyTest (version, raknetBackend = 'raknet-native', timeout = 1000 * 40) {
   console.log('with raknet backend', raknetBackend)
   return waitFor(async res => {
     const SERVER_PORT = 19000 + ((Math.random() * 100) | 0)

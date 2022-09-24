@@ -103,7 +103,10 @@ class Client extends Connection {
         this.sendLogin()
       }
     }
-    this.connection.onCloseConnection = (reason) => this.close()
+    this.connection.onCloseConnection = (reason) => {
+      if (this.status === ClientStatus.Disconnected) this.conLog?.(`Server closed connection: ${reason}`)
+      this.close()
+    }
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
 
