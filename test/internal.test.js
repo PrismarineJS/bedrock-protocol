@@ -1,7 +1,6 @@
 /* eslint-env jest */
 
 const { timedTest } = require('./internal')
-const { proxyTest } = require('./proxy')
 const { Versions } = require('../src/options')
 const { sleep } = require('../src/datatypes/util')
 
@@ -14,15 +13,6 @@ describe('internal client/server test', function () {
       console.debug(version)
       await timedTest(version)
       await sleep(100)
-    })
-  }
-
-  for (const version in Versions) {
-    it('proxies ' + version, async () => {
-      console.debug(version)
-      await proxyTest(version)
-      await sleep(5000)
-      console.debug('Done', version)
     })
   }
 })
