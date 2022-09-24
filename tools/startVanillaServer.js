@@ -5,7 +5,7 @@ const debug = process.env.CI ? console.debug : require('debug')('minecraft-proto
 const https = require('https')
 const { getFiles, waitFor } = require('../src/datatypes/util')
 
-const head = (url) => new Promise((resolve, reject) => http.request(url, { method: 'HEAD' }, resolve).on('error', reject).end())
+const head = (url) => new Promise((resolve, reject) => http.request(url, { method: 'HEAD', timeout: 500 }, resolve).on('error', reject).end())
 function get (url, outPath) {
   const file = fs.createWriteStream(outPath)
   return new Promise((resolve, reject) => {
