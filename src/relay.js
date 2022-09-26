@@ -43,7 +43,14 @@ class RelayPlayer extends Player {
       this.downQ.push(packet)
       return
     }
-    const des = this.server.deserializer.parsePacketBuffer(packet)
+    try {
+      var des = this.server.deserializer.parsePacketBuffer(packet)
+    } catch (e) {
+      this.server.deserializer.dumpFailedBuffer(packet, this.connection.address)
+      console.error(this.connection.address, e)
+      this.disconnect('Server packet parse error')
+      return
+    }
     const name = des.data.name
     const params = des.data.params
     this.upInLog('->', name, params)

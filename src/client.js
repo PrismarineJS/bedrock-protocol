@@ -8,7 +8,6 @@ const initRaknet = require('./rak')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
-const fs = require('fs')
 
 const debugging = false
 
@@ -195,14 +194,7 @@ class Client extends Connection {
       var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
       // Dump information about the packet only if user is not handling error event.
-      if (this.listenerCount('error') === 0) {
-        if (packet.length > 1000) {
-          fs.writeFileSync('packetReadError.txt', packet.toString('hex'))
-          console.log(`Deserialization failure for packet 0x${packet.slice(0, 1).toString('hex')}. Packet buffer saved in ./packetReadError.txt as buffer was too large (${packet.length} bytes).`)
-        } else {
-          console.log('Read failure for 0x' + packet.slice(0, 1).toString('hex'), packet.slice(0, 1000))
-        }
-      }
+      if (this.listenerCount('error') === 0) this.deserializer.dumpFailedBuffer(packet)
       this.emit('error', e)
       return
     }
