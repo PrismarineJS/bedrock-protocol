@@ -51,8 +51,9 @@ class ServerAdvertisement {
 
   toBuffer (version) {
     const str = this.toString(version)
-    const buf = Buffer.alloc(2 + str.length)
-    buf.writeUInt16BE(str.length, 0)
+    const length = Buffer.byteLength(str)
+    const buf = Buffer.alloc(2 + length)
+    buf.writeUInt16BE(length, 0)
     buf.write(str, 2)
     return buf
   }
