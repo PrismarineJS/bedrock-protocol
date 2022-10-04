@@ -6,6 +6,7 @@ const { Client } = require('../src/client')
 const { serialize, waitFor, getFiles } = require('../src/datatypes/util')
 const { CURRENT_VERSION } = require('../src/options')
 const { join } = require('path')
+const { getPort } = require('../test/util')
 
 function hasDumps (version) {
   const root = join(__dirname, `../data/${version}/sample/packets/`)
@@ -19,7 +20,7 @@ let loop
 
 async function dump (version, force = true) {
   const random = (Math.random() * 1000) | 0
-  const [port, v6] = [19132 + random, 19133 + random]
+  const [port, v6] = [await getPort(), await getPort()]
 
   console.log('Starting dump server', version)
   const handle = await vanillaServer.startServerAndWait2(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port, 'server-portv6': v6 })

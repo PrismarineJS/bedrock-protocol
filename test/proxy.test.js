@@ -11,7 +11,7 @@ describe('proxies client/server', function () {
     it('proxies ' + version, async () => {
       console.debug(version)
       await proxyTest(version)
-      await sleep(5000)
+      await sleep(1000)
       console.debug('Done', version)
     })
   }
