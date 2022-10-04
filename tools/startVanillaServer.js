@@ -49,7 +49,7 @@ async function download (os, version, path = 'bds-') {
 
   for (let i = 0; i < 8; i++) { // Check for the latest server build for version (major.minor.patch.BUILD)
     const u = url(os, `${verStr}.${String(i).padStart(2, '0')}`)
-    debug('Opening', u)
+    debug('Opening', u, Date.now())
     const ret = await head(u)
     if (ret.statusCode === 200) {
       found = u
@@ -121,7 +121,7 @@ async function startServerAndWait (version, withTimeout, options) {
     handle = await startServer(version, res, options)
   }, withTimeout, () => {
     handle?.kill()
-    throw new Error('Server did not start on time ' + withTimeout)
+    throw new Error(`Server did not start on time (${withTimeout}ms, now ${Date.now()})`)
   })
   return handle
 }

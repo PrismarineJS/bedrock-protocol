@@ -1,17 +1,17 @@
 /* eslint-env jest */
 const { proxyTest } = require('./proxy')
-const { Versions } = require('../src/options')
+const { testedVersions } = require('../src/options')
 const { sleep } = require('../src/datatypes/util')
 
 describe('proxies client/server', function () {
-  const vcount = Object.keys(Versions).length
+  const vcount = testedVersions.length
   this.timeout(vcount * 30 * 1000)
 
-  for (const version in Versions) {
+  for (const version of testedVersions) {
     it('proxies ' + version, async () => {
       console.debug(version)
       await proxyTest(version)
-      await sleep(5000)
+      await sleep(1000)
       console.debug('Done', version)
     })
   }
