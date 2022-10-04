@@ -7,6 +7,10 @@ const CURRENT_VERSION = '1.19.30'
 
 const Versions = Object.fromEntries(mcData.versions.bedrock.filter(e => e.releaseType === 'release').map(e => [e.minecraftVersion, e.version]))
 
+// Skip some low priority versions (middle major) on Github Actions to allow faster CI
+const skippedVersionsOnGithubCI = ['1.16.210', '1.17.10', '1.17.30', '1.18.11', '1.19.10', '1.19.20']
+const testedVersions = process.env.CI ? Object.keys(Versions).filter(v => !skippedVersionsOnGithubCI.includes(v)) : Object.keys(Versions)
+
 const defaultOptions = {
   // https://minecraft.gamepedia.com/Protocol_version#Bedrock_Edition_2
   version: CURRENT_VERSION,
@@ -45,4 +49,4 @@ function validateOptions (options) {
   if (options.useNativeRaknet === false) options.raknetBackend = 'jsp-raknet'
 }
 
-module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions, validateOptions }
+module.exports = { defaultOptions, MIN_VERSION, CURRENT_VERSION, Versions, validateOptions, testedVersions }
