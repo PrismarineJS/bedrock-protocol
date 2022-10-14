@@ -1,3 +1,7 @@
+## 3.20.1
+* Fix buffer length calculation in ServerAdvertisement (#292) (thanks @KurtThiemann)
+* Handle Relay serialization errors by kicking (#290)
+
 ## 3.20.0
 * Preliminary 1.19.30 support, improve error handling and server pong data (#284)
 
