@@ -39,7 +39,7 @@
     "bedrock-protocol": "file:.",
     "bedrock-provider": "^2.0.0",
     "leveldb-zlib": "^1.0.1",
-    "mocha": "^9.1.2",
+    "mocha": "^10.0.0",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"
   },
