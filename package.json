@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "bedrock-protocol": "file:.",
-    "bedrock-provider": "^2.0.0",
+    "bedrock-provider": "^3.0.0",
     "leveldb-zlib": "^1.0.1",
     "mocha": "^10.0.0",
     "protodef-yaml": "^1.1.0",
