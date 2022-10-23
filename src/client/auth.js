@@ -12,6 +12,7 @@ function validateOptions (options) {
   if (options.authTitle === undefined) {
     options.authTitle = Titles.MinecraftNintendoSwitch
     options.deviceType = 'Nintendo'
+    options.flow = 'live'
   }
 }
 
