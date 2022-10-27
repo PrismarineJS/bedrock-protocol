@@ -190,6 +190,7 @@ declare module "bedrock-protocol" {
     playersMax: number
     gamemode: string
     serverId: string
+    levelName:string
   }
 
   export interface RealmsOptions {
