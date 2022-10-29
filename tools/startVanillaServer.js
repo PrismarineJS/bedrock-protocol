@@ -9,7 +9,7 @@ function head (url) {
   return new Promise((resolve, reject) => {
     const req = http.request(url, { method: 'HEAD', timeout: 500 }, resolve)
     req.on('error', reject)
-    req.on('timeout', () => req.destroy())
+    req.on('timeout', () => { req.destroy(); debug('HEAD request timeout'); reject() })
     req.end()
   })
 }
