@@ -1,3 +1,7 @@
+## 3.21.0
+* 1.19.40 support (#314)
+* types: Fix missing field in ServerAdvertisement (#313) (@minerj101)
+
 ## 3.20.1
 * Fix buffer length calculation in ServerAdvertisement (#292) (thanks @KurtThiemann)
 * Handle Relay serialization errors by kicking (#290)
