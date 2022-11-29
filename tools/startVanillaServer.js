@@ -57,7 +57,8 @@ async function download (os, version, path = 'bds-') {
   for (let i = 0; i < 8; i++) { // Check for the latest server build for version (major.minor.patch.BUILD)
     const u = url(os, `${verStr}.${String(i).padStart(2, '0')}`)
     debug('Opening', u, Date.now())
-    const ret = await head(u)
+    let ret
+    try { ret = await head(u) } catch (e) { continue }
     if (ret.statusCode === 200) {
       found = u
       debug('Found server', ret.statusCode)
