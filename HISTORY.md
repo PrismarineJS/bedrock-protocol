@@ -1,3 +1,6 @@
+## 3.22.0
+* 1.19.50 support (@WillQizza)
+
 ## 3.21.0
 * 1.19.40 support (#314)
 * types: Fix missing field in ServerAdvertisement (#313) (@minerj101)
