@@ -45,6 +45,8 @@ declare module "bedrock-protocol" {
     conLog?
     // used to join a Realm instead of supplying a host/port
     realms?: RealmsOptions
+    // the path to store authentication caches, defaults to .minecraft
+    profilesFolder?: string | false
   }
 
   export interface ServerOptions extends Options {
