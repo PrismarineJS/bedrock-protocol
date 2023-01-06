@@ -47,6 +47,8 @@ declare module "bedrock-protocol" {
     realms?: RealmsOptions
     // the path to store authentication caches, defaults to .minecraft
     profilesFolder?: string | false
+    // Called when microsoft authorization is needed when not provided it will the information log to the console instead
+    onMsaCode?: (data: MicrosoftDeviceAuthorizationResponse) => void;
   }
 
   export interface ServerOptions extends Options {
@@ -80,7 +82,7 @@ declare module "bedrock-protocol" {
     sendBuffer(buffer: Buffer, immediate?: boolean)
   }
 
-  type PlayStatus = 
+  type PlayStatus =
     | 'login_success'
     // # Displays "Could not connect: Outdated client!"
     | 'failed_client'
@@ -104,7 +106,7 @@ declare module "bedrock-protocol" {
     readonly entityId: BigInt
 
     /**
-     * Close the connection, leave the server. 
+     * Close the connection, leave the server.
      */
     close()
 
@@ -115,7 +117,7 @@ declare module "bedrock-protocol" {
   }
 
   /**
-   * `Player` represents a player connected to the server. 
+   * `Player` represents a player connected to the server.
    */
   export class Player extends Connection {
     /**
@@ -132,7 +134,7 @@ declare module "bedrock-protocol" {
     disconnect(reason: string, hide?: boolean)
 
     /**
-     * Close the connection. Already called by disconnect. Call this to manually close RakNet connection. 
+     * Close the connection. Already called by disconnect. Call this to manually close RakNet connection.
      */
     close()
 
@@ -195,9 +197,18 @@ declare module "bedrock-protocol" {
     levelName:string
   }
 
+  export interface MicrosoftDeviceAuthorizationResponse {
+    device_code: string
+    user_code: string
+    verification_uri: string
+    expires_in: number
+    interval: number
+    message: string
+  }
+
   export interface RealmsOptions {
     realmId?: string
-    realmInvite?: string 
+    realmInvite?: string
     pickRealm?: (realms: Realm[]) => Realm
   }
 
