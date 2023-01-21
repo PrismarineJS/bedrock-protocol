@@ -1,5 +1,6 @@
 import EventEmitter from "events"
 import { Realm } from "prismarine-realms"
+import { ServerDeviceCodeResponse } from "prismarine-auth"
 
 declare module "bedrock-protocol" {
   type Version = '1.19.50' | '1.19.41 | 1.19.40' | '1.19.31' | '1.19.30' | '1.19.22' | '1.19.21' | '1.19.20' | '1.19.11' | '1.19.10' | '1.19.2' | '1.19.1' | '1.18.31' | '1.18.30' | '1.18.12' | '1.18.11' | '1.18.10' | '1.18.2' | '1.18.1' | '1.18.0' | '1.17.41' | '1.17.40' | '1.17.34' | '1.17.30' | '1.17.11' | '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
@@ -47,6 +48,8 @@ declare module "bedrock-protocol" {
     realms?: RealmsOptions
     // the path to store authentication caches, defaults to .minecraft
     profilesFolder?: string | false
+    // Called when microsoft authorization is needed when not provided it will the information log to the console instead
+    onMsaCode?: (data: ServerDeviceCodeResponse) => void;
   }
 
   export interface ServerOptions extends Options {
@@ -80,7 +83,7 @@ declare module "bedrock-protocol" {
     sendBuffer(buffer: Buffer, immediate?: boolean)
   }
 
-  type PlayStatus = 
+  type PlayStatus =
     | 'login_success'
     // # Displays "Could not connect: Outdated client!"
     | 'failed_client'
@@ -104,7 +107,7 @@ declare module "bedrock-protocol" {
     readonly entityId: BigInt
 
     /**
-     * Close the connection, leave the server. 
+     * Close the connection, leave the server.
      */
     close()
 
@@ -115,7 +118,7 @@ declare module "bedrock-protocol" {
   }
 
   /**
-   * `Player` represents a player connected to the server. 
+   * `Player` represents a player connected to the server.
    */
   export class Player extends Connection {
     /**
@@ -132,7 +135,7 @@ declare module "bedrock-protocol" {
     disconnect(reason: string, hide?: boolean)
 
     /**
-     * Close the connection. Already called by disconnect. Call this to manually close RakNet connection. 
+     * Close the connection. Already called by disconnect. Call this to manually close RakNet connection.
      */
     close()
 
@@ -197,7 +200,7 @@ declare module "bedrock-protocol" {
 
   export interface RealmsOptions {
     realmId?: string
-    realmInvite?: string 
+    realmInvite?: string
     pickRealm?: (realms: Realm[]) => Realm
   }
 
