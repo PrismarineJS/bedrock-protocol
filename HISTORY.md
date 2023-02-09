@@ -1,3 +1,7 @@
+# 3.23.0
+* 1.19.60 support (@CreeperG16)
+* added onMsaCode, profilesFolder to ClientOptions (@jarco-dev)
+
 ## 3.22.0
 * 1.19.50 support (@WillQizza)
 
