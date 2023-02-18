@@ -68,14 +68,6 @@ authenticated unless offline is set to true.
 
 Ping a server and get the response. See type definitions for the structure.
 
-## Methods
-
-[See the type defintions for this library for more information on methods.](../index.d.ts)
-
-Both Client and Server classes have `write(name, params)` and `queue(name, params)` methods. The former sends a packet immediately, and the latter queues them to be sent in the next packet batch. Prefer the latter for better performance and less blocking.
-
-You can use `.close()` to terminate a connection, and `.disconnect(reason)` to gracefully kick a connected client.
-
 ## Server usage
 
 You can create a server as such:
@@ -95,11 +87,14 @@ const server = bedrock.createServer({
 Then you can listen for clients and their events:
 ```js
 // The 'connect' event is emitted after a new client has started a connection with the server and is handshaking.
-// Its one paramater is the client class instance which handles this session from here on out.
+// Its one paramater is the ServerPlayer class instance which handles this players' session from here on out.
 server.on('connect', (client) => {
   // 'join' is emitted after the client has authenticated & connection is now encrypted.
   client.on('join', () => {
     // Then we can continue with the server spawning sequence. See examples/serverTest.js for an example  spawn sequence.
+    // ...
+    // Here's an example of sending a "text" packet, https://minecraft-data.prismarine.js.org/?v=bedrock_1.19.60&d=protocol#packet_text
+    client.queue('text', { type: 'system', message: client.profile.name + ' just joined the server!' })
   })
 })
 
@@ -116,7 +111,7 @@ A ServerPlayer instance also emits the following special events:
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned
 * 'packet' - Emitted for all packets received by client
 
-## Client docs
+## Client usage
 
 You can create a client like below:
 ```js
@@ -140,6 +135,16 @@ client.on('spawn', client => console.log('Player has spawned!'))
 client.on('text', (packet) => {
   console.log('Client got text packet', packet)
 })
+
+// For example, we can listen to https://minecraft-data.prismarine.js.org/?v=bedrock_1.19.60&d=protocol#packet_add_player
+// and send them a chat message when a player joins saying hello. Note the lack of the `packet` prefix, and that the packet
+// names and as explained in the "Protocol doc" section below, fields are all case sensitive!
+client.on('add_player', (packet) => {
+  client.queue('text', {
+    type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '',
+    message: `Hey, ${packet.username} just joined!`
+  })
+})
 ```
 
 Order of client event emissions:
@@ -147,6 +152,18 @@ Order of client event emissions:
 * 'login' - emitted after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake
 * 'spawn' - emitted after the client has permission from the server to spawn
+
+## Methods
+
+[See the type defintions for this library for more information on methods.](../index.d.ts)
+
+Both Client and ServerPlayer classes have `write(name, params)` and `queue(name, params)` methods. The former sends a packet immediately, and the latter queues them to be sent in the next packet batch. Prefer the latter for better performance and less blocking.
+
+You can use `.close()` to terminate a connection, and `.disconnect(reason)` to gracefully kick a connected client.
+
+### Protocol docs
+
+For documentation on the protocol, and packets/fields see the [the protocol doc](https://minecraft-data.prismarine.js.org/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
 ### Realm docs
 
@@ -163,10 +180,6 @@ const client = bedrock.createClient({
   }
 })
 ```
-
-### Protocol docs
-
-For documentation on the protocol, and packets/fields see the [the protocol doc](https://minecraft-data.prismarine.js.org/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
 
 ### Proxy docs
