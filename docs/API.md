@@ -107,6 +107,7 @@ Server event emissions:
 
 A ServerPlayer instance also emits the following special events:
 * 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
+* 'close' - emitted when client quit the server
 * 'login' - emitted by client after the client has been authenticated by the server
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned
 * 'packet' - Emitted for all packets received by client
