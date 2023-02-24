@@ -1,5 +1,5 @@
 # 3.25.0
-* 1.19.62 support (@stevarino)
+* 1.19.63 support (@stevarino)
 * Add close packet in server player API doc (#347) @hvlxh
 
 # 3.24.0
