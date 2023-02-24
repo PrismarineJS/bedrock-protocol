@@ -1,6 +1,6 @@
 {
   "name": "bedrock-protocol",
-  "version": "3.24.0",
+  "version": "3.25.0",
   "description": "Minecraft Bedrock Edition protocol library",
   "main": "index.js",
   "scripts": {
