@@ -43,7 +43,7 @@ declare module "bedrock-protocol" {
     // Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified)
     followPort?: boolean
     // where to log connection information to (default to console.log)
-    conLog?
+    conLog?: any
     // used to join a Realm instead of supplying a host/port
     realms?: RealmsOptions
     // the path to store authentication caches, defaults to .minecraft
@@ -69,18 +69,18 @@ declare module "bedrock-protocol" {
   }
 
   export class Connection extends EventEmitter {
-    readonly status: ClientStatus
+    readonly status: ClientStatus;
 
     // Check if the passed version is less than or greater than the current connected client version.
-    versionLessThan(version: string | number)
-    versionGreaterThan(version: string | number)
+    versionLessThan(version: string | number): boolean
+    versionGreaterThan(version: string | number): boolean
 
     // Writes a Minecraft bedrock packet and sends it without queue batching
-    write(name: string, params: object)
+    write(name: string, params: object): void
     // Adds a Minecraft bedrock packet to be sent in the next outgoing batch
-    queue(name: string, params: object)
+    queue(name: string, params: object): void
     // Writes a MCPE buffer to the connection and skips Protodef serialization. `immediate` if skip queue.
-    sendBuffer(buffer: Buffer, immediate?: boolean)
+    sendBuffer(buffer: Buffer, immediate?: boolean): void
   }
 
   type PlayStatus =
@@ -109,12 +109,12 @@ declare module "bedrock-protocol" {
     /**
      * Close the connection, leave the server.
      */
-    close()
+    close(): void
 
     /**
      * Send a disconnect packet and close the connection
      */
-    disconnect()
+    disconnect(): void
   }
 
   /**
@@ -125,23 +125,23 @@ declare module "bedrock-protocol" {
      * Disconnects a client before it has logged in via a PlayStatus packet.
      * @param {string} playStatus
      */
-    sendDisconnectStatus(playStatus: PlayStatus)
+    sendDisconnectStatus(playStatus: PlayStatus): void
 
     /**
      * Disconnects a client
      * @param reason The message to be shown to the user on disconnect
      * @param hide Don't show the client the reason for the disconnect
      */
-    disconnect(reason: string, hide?: boolean)
+    disconnect(reason: string, hide?: boolean): void
 
     /**
      * Close the connection. Already called by disconnect. Call this to manually close RakNet connection.
      */
-    close()
+    close(): void
 
-    on(event: 'login', cb: () => void)
-    on(event: 'join', cb: () => void)
-    on(event: 'close', cb: (reason: string) => void)
+    on(event: 'login', cb: () => void): any
+    on(event: 'join', cb: () => void): any
+    on(event: 'close', cb: (reason: string) => void): any
   }
 
   export class Server extends EventEmitter {
@@ -150,7 +150,7 @@ declare module "bedrock-protocol" {
     conLog: Function
     constructor(options: Options)
     // Disconnects all currently connected clients
-    close(disconnectReason: string)
+    close(disconnectReason: string): void
   }
 
   type RelayOptions = Options & {
@@ -179,7 +179,7 @@ declare module "bedrock-protocol" {
     // Dispatched when a new client has logged in, and we need authentication
     // tokens to join the backend server. Cached after the first login.
     // If this is not specified, the client will be disconnected with a login prompt.
-    onMsaCode(data, client)
+    onMsaCode(data: ServerDeviceCodeResponse, client: Client): any
   }
 
   export class Relay extends Server {
