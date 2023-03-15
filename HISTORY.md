@@ -1,3 +1,7 @@
+# 3.26.0
+* 1.19.70 support (@CreeperG16)
+* types: add some type hints (#354) @hvlxh
+
 # 3.25.0
 * 1.19.63 support (@stevarino)
 * Add close packet in server player API doc (#347) @hvlxh
