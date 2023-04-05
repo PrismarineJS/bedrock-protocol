@@ -93,7 +93,7 @@ server.on('connect', (client) => {
   client.on('join', () => {
     // Then we can continue with the server spawning sequence. See examples/serverTest.js for an example  spawn sequence.
     // ...
-    // Here's an example of sending a "text" packet, https://minecraft-data.prismarine.js.org/?v=bedrock_1.19.60&d=protocol#packet_text
+    // Here's an example of sending a "text" packet, https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.19.60&d=protocol#packet_text
     client.queue('text', { type: 'system', message: client.profile.name + ' just joined the server!' })
   })
 })
@@ -137,7 +137,7 @@ client.on('text', (packet) => {
   console.log('Client got text packet', packet)
 })
 
-// For example, we can listen to https://minecraft-data.prismarine.js.org/?v=bedrock_1.19.60&d=protocol#packet_add_player
+// For example, we can listen to https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.19.60&d=protocol#packet_add_player
 // and send them a chat message when a player joins saying hello. Note the lack of the `packet` prefix, and that the packet
 // names and as explained in the "Protocol doc" section below, fields are all case sensitive!
 client.on('add_player', (packet) => {
@@ -164,7 +164,7 @@ You can use `.close()` to terminate a connection, and `.disconnect(reason)` to g
 
 ### Protocol docs
 
-For documentation on the protocol, and packets/fields see the [the protocol doc](https://minecraft-data.prismarine.js.org/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
+For documentation on the protocol, and packets/fields see the [the protocol doc](https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
 ### Realm docs
 

@@ -7,7 +7,7 @@
 
 Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [contribute](CONTRIBUTING.md).
 
-[Protocol doc](https://minecraft-data.prismarine.js.org/?v=bedrock_1.19.10&d=protocol)
+[Protocol doc](https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.19.10&d=protocol)
 
 ## Features
 
@@ -102,7 +102,7 @@ ping({ host: 'play.cubecraft.net', port: 19132 }).then(res => {
 
 ## Documentation
 
-For documentation on the protocol, and packets/fields see the [protocol documentation](https://minecraft-data.prismarine.js.org/protocol/).
+For documentation on the protocol, and packets/fields see the [protocol documentation](https://prismarinejs.github.io/minecraft-data/protocol).
 
 * See [API documentation](docs/API.md)
 
