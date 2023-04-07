@@ -10,6 +10,7 @@ const { Relay } = require('./src/relay')
 const { createClient, ping } = require('./src/createClient')
 const { createServer } = require('./src/createServer')
 const { Titles } = require('prismarine-auth')
+const { ServerAdvertisement } = require('./src/server/advertisement')
 
 module.exports = {
   Client,
@@ -18,5 +19,6 @@ module.exports = {
   createClient,
   ping,
   createServer,
-  title: Titles
+  title: Titles,
+  ServerAdvertisement
 }
