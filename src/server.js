@@ -7,7 +7,7 @@ const Options = require('./options')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
 class Server extends EventEmitter {
-  constructor(options) {
+  constructor (options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
@@ -26,7 +26,7 @@ class Server extends EventEmitter {
     this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
   }
 
-  setCompressor(algorithm, level = 1, threshold = 256) {
+  setCompressor (algorithm, level = 1, threshold = 256) {
     switch (algorithm) {
       case 'none':
         this.compressionAlgorithm = 'none'
@@ -47,19 +47,19 @@ class Server extends EventEmitter {
     }
   }
 
-  validateOptions() {
+  validateOptions () {
     Options.validateOptions(this.options)
   }
 
-  versionLessThan(version) {
+  versionLessThan (version) {
     return this.options.protocolVersion < (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
-  versionGreaterThan(version) {
+  versionGreaterThan (version) {
     return this.options.protocolVersion > (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
-  versionGreaterThanOrEqualTo(version) {
+  versionGreaterThanOrEqualTo (version) {
     return this.options.protocolVersion >= (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
@@ -92,7 +92,7 @@ class Server extends EventEmitter {
     process.nextTick(() => client.handle(buffer))
   }
 
-  getAdvertisement() {
+  getAdvertisement () {
     if (this.options.advertisementFn) {
       return this.options.advertisementFn()
     }
@@ -101,7 +101,7 @@ class Server extends EventEmitter {
     return this.advertisement
   }
 
-  async listen(host = this.options.host, port = this.options.port) {
+  async listen (host = this.options.host, port = this.options.port) {
     this.raknet = new this.RakServer({ host, port }, this)
 
     try {
@@ -124,7 +124,7 @@ class Server extends EventEmitter {
     return { host, port }
   }
 
-  async close(disconnectReason = 'Server closed') {
+  async close (disconnectReason = 'Server closed') {
     for (const caddr in this.clients) {
       const client = this.clients[caddr]
       client.disconnect(disconnectReason)
