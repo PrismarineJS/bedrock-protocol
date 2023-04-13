@@ -7,7 +7,7 @@ const Options = require('./options')
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
 class Server extends EventEmitter {
-  constructor (options) {
+  constructor(options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
@@ -26,41 +26,46 @@ class Server extends EventEmitter {
     this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
   }
 
-  setCompressor (algorithm, level = 1, threshold = 256) {
-    if (algorithm === 'none') {
-      this.compressionAlgorithm = 'none'
-      this.compressionLevel = 0
-    } else if (algorithm === 'deflate') {
-      this.compressionAlgorithm = 'deflate'
-      this.compressionLevel = level
-      this.compressionThreshold = threshold
-    } else if (algorithm === 'snappy') {
-      this.compressionAlgorithm = 'snappy'
-      this.compressionLevel = level
-      this.compressionThreshold = threshold
-    } else {
-      throw new Error(`Unknown compression algorithm ${algorithm}`)
+  setCompressor(algorithm, level = 1, threshold = 256) {
+    switch (algorithm) {
+      case 'none':
+        this.compressionAlgorithm = 'none'
+        this.compressionLevel = 0
+        break
+      case 'deflate':
+        this.compressionAlgorithm = 'deflate'
+        this.compressionLevel = level
+        this.compressionThreshold = threshold
+        break
+      case 'snappy':
+        this.compressionAlgorithm = 'snappy'
+        this.compressionLevel = level
+        this.compressionThreshold = threshold
+        break
+      default:
+        throw new Error(`Unknown compression algorithm ${algorithm}`)
     }
   }
 
-  validateOptions () {
+  validateOptions() {
     Options.validateOptions(this.options)
   }
 
-  versionLessThan (version) {
+  versionLessThan(version) {
     return this.options.protocolVersion < (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
-  versionGreaterThan (version) {
+  versionGreaterThan(version) {
     return this.options.protocolVersion > (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
-  versionGreaterThanOrEqualTo (version) {
+  versionGreaterThanOrEqualTo(version) {
     return this.options.protocolVersion >= (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
   onOpenConnection = (conn) => {
-    this.conLog('new connection', conn?.address)
+    this.conLog('New connection: ', conn?.address)
+
     const player = new Player(this, conn)
     this.clients[conn.address] = player
     this.clientCount++
@@ -68,7 +73,8 @@ class Server extends EventEmitter {
   }
 
   onCloseConnection = (inetAddr, reason) => {
-    this.conLog('close connection', inetAddr?.address, reason)
+    this.conLog('Connection closed: ', inetAddr?.address, reason)
+    
     delete this.clients[inetAddr]?.connection // Prevent close loop
     this.clients[inetAddr?.address ?? inetAddr]?.close()
     delete this.clients[inetAddr]
@@ -79,28 +85,32 @@ class Server extends EventEmitter {
     const client = this.clients[address]
     if (!client) {
       // Ignore packets from clients that are not connected.
-      debug(`ignoring packet from unknown inet addr: ${address}`)
+      debug(`Ignoring packet from unknown inet address: ${address}`)
       return
     }
+
     process.nextTick(() => client.handle(buffer))
   }
 
-  getAdvertisement () {
+  getAdvertisement() {
     if (this.options.advertisementFn) {
       return this.options.advertisementFn()
     }
+
     this.advertisement.playersOnline = this.clientCount
     return this.advertisement
   }
 
-  async listen (host = this.options.host, port = this.options.port) {
+  async listen(host = this.options.host, port = this.options.port) {
     this.raknet = new this.RakServer({ host, port }, this)
+
     try {
       await this.raknet.listen()
     } catch (e) {
       console.warn(`Failed to bind server on [${this.options.host}]/${this.options.port}, is the port free?`)
       throw e
     }
+
     this.conLog('Listening on', host, port, this.options.version)
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
@@ -114,7 +124,7 @@ class Server extends EventEmitter {
     return { host, port }
   }
 
-  async close (disconnectReason) {
+  async close(disconnectReason = 'Server closed') {
     for (const caddr in this.clients) {
       const client = this.clients[caddr]
       client.disconnect(disconnectReason)
