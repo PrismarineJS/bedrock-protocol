@@ -43,7 +43,7 @@ class Server extends EventEmitter {
         this.compressionThreshold = threshold
         break
       default:
-        throw new Error(`Unknown compression algorithm ${algorithm}`)
+        throw new Error(`Unknown compression algorithm: ${algorithm}`)
     }
   }
 
