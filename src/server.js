@@ -16,16 +16,47 @@ class Server extends EventEmitter {
 
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
-    this.advertisement = new ServerAdvertisement(this.options.motd, this.options.version)
+    this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)
     this.advertisement.playersMax = options.maxPlayers ?? 3
     /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
     this.conLog = debug
+
+    this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
+  }
+
+  setCompressor (algorithm, level = 1, threshold = 256) {
+    if (algorithm === 'none') {
+      this.compressionAlgorithm = 'none'
+      this.compressionLevel = 0
+    } else if (algorithm === 'deflate') {
+      this.compressionAlgorithm = 'deflate'
+      this.compressionLevel = level
+      this.compressionThreshold = threshold
+    } else if (algorithm === 'snappy') {
+      this.compressionAlgorithm = 'snappy'
+      this.compressionLevel = level
+      this.compressionThreshold = threshold
+    } else {
+      throw new Error(`Unknown compression algorithm ${algorithm}`)
+    }
   }
 
   validateOptions () {
     Options.validateOptions(this.options)
+  }
+
+  versionLessThan (version) {
+    return this.options.protocolVersion < (typeof version === 'string' ? Options.Versions[version] : version)
+  }
+
+  versionGreaterThan (version) {
+    return this.options.protocolVersion > (typeof version === 'string' ? Options.Versions[version] : version)
+  }
+
+  versionGreaterThanOrEqualTo (version) {
+    return this.options.protocolVersion >= (typeof version === 'string' ? Options.Versions[version] : version)
   }
 
   onOpenConnection = (conn) => {
@@ -51,7 +82,7 @@ class Server extends EventEmitter {
       debug(`ignoring packet from unknown inet addr: ${address}`)
       return
     }
-    client.handle(buffer)
+    process.nextTick(() => client.handle(buffer))
   }
 
   getAdvertisement () {

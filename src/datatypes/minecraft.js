@@ -39,17 +39,21 @@ function sizeOfNbt (value) {
 
 function readNbtLE (buffer, offset) {
   const r = protoLE.read(buffer, offset, 'nbt')
-  if (r.value.type === 'end') return { value: r.value, size: 0 }
+  // End size is 3 for some reason
+  if (r.value.type === 'end') return { value: r.value, size: 1 }
   return r
 }
 
 function writeNbtLE (value, buffer, offset) {
-  if (value.type === 'end') return offset
+  if (value.type === 'end') {
+    buffer.writeInt8(0, offset)
+    return offset + 1
+  }
   return protoLE.write(value, buffer, offset, 'nbt')
 }
 
 function sizeOfNbtLE (value) {
-  if (value.type === 'end') return 0
+  if (value.type === 'end') return 1
   return protoLE.sizeOf(value, 'nbt')
 }
 

@@ -22,6 +22,10 @@ class Client extends Connection {
 
     this.startGameData = {}
     this.clientRuntimeId = null
+    // Start off without compression on 1.19.30, zlib on below
+    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
+    this.compressionThreshold = 512
+    this.compressionLevel = this.options.compressionLevel
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -46,7 +50,7 @@ class Client extends Connection {
     const { RakClient } = initRaknet(this.options.raknetBackend)
     const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port })
+    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
 
     this.emit('connect_allowed')
   }
@@ -76,7 +80,7 @@ class Client extends Connection {
 
   onEncapsulated = (encapsulated, inetAddr) => {
     const buffer = Buffer.from(encapsulated.buffer)
-    this.handle(buffer)
+    process.nextTick(() => this.handle(buffer))
   }
 
   async ping () {
@@ -90,8 +94,18 @@ class Client extends Connection {
 
   _connect = async (sessionData) => {
     debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
-    this.connection.onConnected = () => this.sendLogin()
-    this.connection.onCloseConnection = (reason) => this.close()
+    this.connection.onConnected = () => {
+      this.status = ClientStatus.Connecting
+      if (this.versionGreaterThanOrEqualTo('1.19.30')) {
+        this.queue('request_network_settings', { client_protocol: this.options.protocolVersion })
+      } else {
+        this.sendLogin()
+      }
+    }
+    this.connection.onCloseConnection = (reason) => {
+      if (this.status === ClientStatus.Disconnected) this.conLog?.(`Server closed connection: ${reason}`)
+      this.close()
+    }
     this.connection.onEncapsulated = this.onEncapsulated
     this.connection.connect()
 
@@ -101,6 +115,11 @@ class Client extends Connection {
         this.emit('error', 'connect timed out')
       }
     }, this.options.connectTimeout || 9000)
+  }
+
+  updateCompressorSettings (packet) {
+    this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
+    this.compressionThreshold = packet.compression_threshold
   }
 
   sendLogin () {
@@ -174,6 +193,8 @@ class Client extends Connection {
     try {
       var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
+      // Dump information about the packet only if user is not handling error event.
+      if (this.listenerCount('error') === 0) this.deserializer.dumpFailedBuffer(packet)
       this.emit('error', e)
       return
     }
@@ -192,6 +213,12 @@ class Client extends Connection {
     switch (des.data.name) {
       case 'server_to_client_handshake':
         this.emit('client.server_handshake', des.data.params)
+        break
+      case 'network_settings':
+        this.updateCompressorSettings(des.data.params)
+        if (this.status === ClientStatus.Connecting) {
+          this.sendLogin()
+        }
         break
       case 'disconnect': // Client kicked
         this.emit(des.data.name, des.data.params) // Emit before we kill all listeners.

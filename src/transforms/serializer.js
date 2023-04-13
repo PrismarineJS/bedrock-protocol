@@ -1,14 +1,16 @@
 const { ProtoDefCompiler, CompiledProtodef } = require('protodef').Compiler
 const { FullPacketParser, Serializer } = require('protodef')
 const { join } = require('path')
+const fs = require('fs')
 
 class Parser extends FullPacketParser {
-  parsePacketBuffer (buffer) {
-    try {
-      return super.parsePacketBuffer(buffer)
-    } catch (e) {
-      console.error('While decoding', buffer.toString('hex'))
-      throw e
+  dumpFailedBuffer (packet, prefix = '') {
+    if (packet.length > 1000) {
+      const now = Date.now()
+      fs.writeFileSync(now + '_packetReadError.txt', packet.toString('hex'))
+      console.log(prefix, `Deserialization failure for packet 0x${packet.slice(0, 1).toString('hex')}. Packet buffer saved in ./${now}_packetReadError.txt as buffer was too large (${packet.length} bytes).`)
+    } else {
+      console.log(prefix, 'Read failure for 0x' + packet.slice(0, 1).toString('hex'), packet.slice(0, 1000))
     }
   }
 

@@ -1,3 +1,47 @@
+# 3.26.0
+* 1.19.70 support (@CreeperG16)
+* types: add some type hints (#354) @hvlxh
+
+# 3.25.0
+* 1.19.63 support (@stevarino)
+* Add close packet in server player API doc (#347) @hvlxh
+
+# 3.24.0
+* 1.19.62 support (@CreeperG16)
+
+# 3.23.0
+* 1.19.60 support (@CreeperG16)
+* added onMsaCode, profilesFolder to ClientOptions (@jarco-dev)
+
+## 3.22.0
+* 1.19.50 support (@WillQizza)
+
+## 3.21.0
+* 1.19.40 support (#314)
+* types: Fix missing field in ServerAdvertisement (#313) (@minerj101)
+
+## 3.20.1
+* Fix buffer length calculation in ServerAdvertisement (#292) (thanks @KurtThiemann)
+* Handle Relay serialization errors by kicking (#290)
+
+## 3.20.0
+* Preliminary 1.19.30 support, improve error handling and server pong data (#284)
+
+## 3.19.0
+* Add option for port redirection, fix Realm handling (#282) 
+* Add Port Redirect Functionality (#278) @stevarino
+* Add Get-AppxPackage command to FAQ.md (#276) @stevarino
+* Remove viewer example
+
+## 3.18.0
+* 1.19.21 support (#266)
+
+## 3.17.0
+* relay: Add multi-user login support (#258) 
+* Add fields from 1.19.20 to login chain data (#259) @CleSucre
+* Fix nbt encoding size on single null tag NBT (#264)
+* test: Add -u flag unzipping vanilla server (#262) 
+
 ## 3.16.0
 * 1.19.20 support (#251)
 * Add new raknet library option (raknet-node) (#211) @b23r0

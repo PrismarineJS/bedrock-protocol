@@ -3,30 +3,48 @@ const zlib = require('zlib')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
-  constructor (compressionLevel) {
+  constructor (compressor, compressionLevel, compressionThreshold) {
     // Encoding
     this.packets = []
+    this.compressor = compressor || 'none'
     this.compressionLevel = compressionLevel
+    this.compressionThreshold = compressionThreshold
   }
 
-  static decode (buf) {
+  // No compression in base class
+  compress (buffer) {
+    switch (this.compressor) {
+      case 'deflate': return zlib.deflateRawSync(buffer, { level: this.compressionLevel })
+      case 'snappy': throw Error('Snappy compression not implemented')
+      case 'none': return buffer
+    }
+  }
+
+  static decompress (algorithm, buffer) {
+    try {
+      switch (algorithm) {
+        case 'deflate': return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
+        case 'snappy': throw Error('Snappy compression not implemented')
+        case 'none': return buffer
+        default: throw Error('Unknown compression type ' + this.compressor)
+      }
+    } catch {
+      return buffer
+    }
+  }
+
+  static decode (compressor, buf) {
     // Read header
     if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
     const buffer = buf.slice(1)
-
-    // Decode the payload with 512kb buffer
-    try {
-      const inflated = zlib.inflateRawSync(buffer, { chunkSize: 512000 })
-      return Framer.getPackets(inflated)
-    } catch (e) { // Try to decode without compression
-      return Framer.getPackets(buffer)
-    }
+    const decompressed = this.decompress(compressor, buffer)
+    return Framer.getPackets(decompressed)
   }
 
   encode () {
     const buf = Buffer.concat(this.packets)
-    const def = zlib.deflateRawSync(buf, { level: this.compressionLevel })
-    return Buffer.concat([Buffer.from([0xfe]), def])
+    const compressed = (buf.length > this.compressionThreshold) ? this.compress(buf) : buf
+    return Buffer.concat([Buffer.from([0xfe]), compressed])
   }
 
   addEncodedPacket (chunk) {
@@ -71,4 +89,4 @@ class Framer {
   }
 }
 
-module.exports = Framer
+module.exports = { Framer }

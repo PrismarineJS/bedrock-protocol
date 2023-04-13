@@ -2,20 +2,22 @@
 const vanillaServer = require('../tools/startVanillaServer')
 const { Client } = require('../src/client')
 const { waitFor } = require('../src/datatypes/util')
+const { getPort } = require('./util')
 
 async function test (version) {
   const ChunkColumn = require('bedrock-provider').chunk('bedrock_' + (version.includes('1.19') ? '1.18.30' : version)) // TODO: Fix prismarine-chunk
 
   // Start the server, wait for it to accept clients, throws on timeout
-  const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220)
+  const port = await getPort()
+  const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220, { 'server-port': port })
   console.log('Started server')
 
   const client = new Client({
     host: '127.0.0.1',
-    port: 19130,
+    port,
     username: 'Notch',
     version,
-    raknetBackend: 'raknet-node',
+    raknetBackend: 'raknet-native',
     offline: true
   })
 

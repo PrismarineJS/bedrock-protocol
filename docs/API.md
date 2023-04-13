@@ -12,12 +12,13 @@ Returns a `Client` instance and connects to the server.
 | port        | *optional* |  port to connect to, default to **19132**     |
 | version     | *optional* |  Version to connect as. If not specified, automatically match server version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
-| username    | Conditional | Required if `offline` set to true : Username to connect to server as.     |
+| username    | Required | The profile name to connect to the server as. If `offline` set to true, the username that will appear on join, that would normally be the Xbox Gamer Tag. |
 | connectTimeout | *optional* | default to **9000ms**. How long to wait in milliseconds while trying to connect to server. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
-| autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
+| followPort | *optional* | Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified) |
+| autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |
 | raknetBackend | *optional* | Specifies the raknet implementation to use. Possible options are 'raknet-native' (default, original C++ implementation), 'jsp-raknet' (JS port), and 'raknet-node' (Rust port). Please note when using the non-JS implementation you may the need approporate build tools on your system (for example a C++ or Rust compiler). |
 | compressionLevel | *optional* | What zlib compression level to use, default to **7** |
@@ -67,14 +68,6 @@ authenticated unless offline is set to true.
 
 Ping a server and get the response. See type definitions for the structure.
 
-## Methods
-
-[See the type defintions for this library for more information on methods.](../index.d.ts)
-
-Both Client and Server classes have `write(name, params)` and `queue(name, params)` methods. The former sends a packet immediately, and the latter queues them to be sent in the next packet batch. Prefer the latter for better performance and less blocking.
-
-You can use `.close()` to terminate a connection, and `.disconnect(reason)` to gracefully kick a connected client.
-
 ## Server usage
 
 You can create a server as such:
@@ -94,11 +87,14 @@ const server = bedrock.createServer({
 Then you can listen for clients and their events:
 ```js
 // The 'connect' event is emitted after a new client has started a connection with the server and is handshaking.
-// Its one paramater is the client class instance which handles this session from here on out.
+// Its one paramater is the ServerPlayer class instance which handles this players' session from here on out.
 server.on('connect', (client) => {
   // 'join' is emitted after the client has authenticated & connection is now encrypted.
   client.on('join', () => {
     // Then we can continue with the server spawning sequence. See examples/serverTest.js for an example  spawn sequence.
+    // ...
+    // Here's an example of sending a "text" packet, https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.19.60&d=protocol#packet_text
+    client.queue('text', { type: 'system', message: client.profile.name + ' just joined the server!' })
   })
 })
 
@@ -111,13 +107,14 @@ Server event emissions:
 
 A ServerPlayer instance also emits the following special events:
 * 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
+* 'close' - emitted when client quit the server
 * 'login' - emitted by client after the client has been authenticated by the server
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned
 * 'packet' - Emitted for all packets received by client
 
-## Client docs
+## Client usage
 
-You can create a server as such:
+You can create a client like below:
 ```js
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
@@ -139,6 +136,16 @@ client.on('spawn', client => console.log('Player has spawned!'))
 client.on('text', (packet) => {
   console.log('Client got text packet', packet)
 })
+
+// For example, we can listen to https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.19.60&d=protocol#packet_add_player
+// and send them a chat message when a player joins saying hello. Note the lack of the `packet` prefix, and that the packet
+// names and as explained in the "Protocol doc" section below, fields are all case sensitive!
+client.on('add_player', (packet) => {
+  client.queue('text', {
+    type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '',
+    message: `Hey, ${packet.username} just joined!`
+  })
+})
 ```
 
 Order of client event emissions:
@@ -146,6 +153,18 @@ Order of client event emissions:
 * 'login' - emitted after the client has been authenticated by the server
 * 'join' - the client is ready to recieve game packets after successful server-client handshake
 * 'spawn' - emitted after the client has permission from the server to spawn
+
+## Methods
+
+[See the type defintions for this library for more information on methods.](../index.d.ts)
+
+Both Client and ServerPlayer classes have `write(name, params)` and `queue(name, params)` methods. The former sends a packet immediately, and the latter queues them to be sent in the next packet batch. Prefer the latter for better performance and less blocking.
+
+You can use `.close()` to terminate a connection, and `.disconnect(reason)` to gracefully kick a connected client.
+
+### Protocol docs
+
+For documentation on the protocol, and packets/fields see the [the protocol doc](https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
 
 ### Realm docs
 
@@ -163,14 +182,10 @@ const client = bedrock.createClient({
 })
 ```
 
-### Protocol docs
-
-For documentation on the protocol, and packets/fields see the [the protocol doc](https://minecraft-data.prismarine.js.org/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
-
 
 ### Proxy docs
 
-You can create a proxy ("Relay") to create a machine-in-the-middle (MITM) connection to a server. You can observe and intercept packets as they go through. The Relay is a server+client combo with some special packet handling and forwarding that takes care of the authentication and encryption on the server side. You'll be asked to login if `offline` is not specified once you connect.
+You can create a proxy ("Relay") to create a machine-in-the-middle (MITM) connection to a server. You can observe and intercept packets as they go through. The Relay is a server+client combo with some special packet handling and forwarding that takes care of the authentication and encryption on the server side. Clients will be asked to login if `offline` is not specified on connection.
 
 ```js
 const { Relay } = require('bedrock-protocol')
