@@ -108,7 +108,7 @@ class Server extends EventEmitter {
     try {
       await this.raknet.listen()
     } catch (e) {
-      console.warn(`Failed to bind server on [${this.options.host}]/${this.options.port}], is the port free?`)
+      console.warn(`Failed to bind server on [${this.options.host}]/${this.options.port}, is the port free?`)
       throw e
     }
 
