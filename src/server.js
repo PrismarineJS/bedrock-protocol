@@ -9,6 +9,7 @@ const debug = globalThis.isElectron ? console.debug : require('debug')('minecraf
 class Server extends EventEmitter {
   constructor (options) {
     super()
+
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
 
@@ -74,7 +75,7 @@ class Server extends EventEmitter {
 
   onCloseConnection = (inetAddr, reason) => {
     this.conLog('Connection closed: ', inetAddr?.address, reason)
-    
+
     delete this.clients[inetAddr]?.connection // Prevent close loop
     this.clients[inetAddr?.address ?? inetAddr]?.close()
     delete this.clients[inetAddr]
