@@ -78,7 +78,7 @@ class Player extends Connection {
     const skinChain = tokens.client
 
     try {
-      var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
+      const { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
     } catch (e) {
       debug(this.address, e)
       this.disconnect('Server authentication error')
@@ -111,10 +111,10 @@ class Player extends Connection {
   /**
    * Disconnects a client
    */
-  disconnect (reason = 'Server closed', hide = false) {
+  disconnect (reason = 'Server closed', hideDisconnectionScreen = false) {
     if (this.status === ClientStatus.Disconnected) return
     this.write('disconnect', {
-      hide_disconnect_screen: hide,
+      hide_disconnect_screen: hideDisconnectionScreen,
       message: reason
     })
     this.server.conLog('Kicked ', this.connection?.address, reason)
@@ -145,7 +145,7 @@ class Player extends Connection {
 
   readPacket (packet) {
     try {
-      var des = this.server.deserializer.parsePacketBuffer(packet) // eslint-disable-line
+      const des = this.server.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
       this.disconnect('Server error')
       debug('Dropping packet from', this.connection.address, e)
