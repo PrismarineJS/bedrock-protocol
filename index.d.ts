@@ -162,7 +162,7 @@ declare module "bedrock-protocol" {
     // Specifies which game edition to sign in as to the destination server. Optional, but some servers verify this.
     authTitle?: title | string
     // Where to proxy requests to.
-    destination?: {
+    destination: {
       realms?: RealmsOptions
       host: string,
       port: number,
