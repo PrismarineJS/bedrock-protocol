@@ -149,37 +149,36 @@ declare module "bedrock-protocol" {
     // Connection logging function
     conLog: Function
     constructor(options: Options)
+    listen(host?: string, port?: number): void
     // Disconnects all currently connected clients
     close(disconnectReason: string): void
   }
 
   type RelayOptions = Options & {
-    host: string,
-    port: number,
     // Toggle packet logging.
-    logging: boolean,
+    logging?: boolean,
     // Skip authentication for connecting clients?
-    offline: false,
+    offline?: false,
     // Specifies which game edition to sign in as to the destination server. Optional, but some servers verify this.
-    authTitle: title | string
+    authTitle?: title | string
     // Where to proxy requests to.
     destination: {
       realms?: RealmsOptions
       host: string,
       port: number,
       // Skip authentication connecting to the remote server?
-      offline: false,
+      offline?: boolean,
     }
     // Whether to enable chunk caching (default: false)
     enableChunkCaching?: boolean
 
     // Only allow one client to connect at a time (default: false)
-    forceSinge: boolean
+    forceSinge?: boolean
 
     // Dispatched when a new client has logged in, and we need authentication
     // tokens to join the backend server. Cached after the first login.
     // If this is not specified, the client will be disconnected with a login prompt.
-    onMsaCode(data: ServerDeviceCodeResponse, client: Client): any
+    onMsaCode?(data: ServerDeviceCodeResponse, client: Client): any
   }
 
   export class Relay extends Server {
