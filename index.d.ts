@@ -185,7 +185,7 @@ declare module "bedrock-protocol" {
     constructor(options: RelayOptions)
   }
 
-  class ServerAdvertisement {
+  export class ServerAdvertisement {
     motd: string
     name: string
     protocol: number
