@@ -1,3 +1,8 @@
+# 3.27.0
+* Corrections to types
+* Expose ServerAdvertisement class (#368) @hvlxh
+* Update mc-data links
+
 # 3.26.0
 * 1.19.70 support (@CreeperG16)
 * types: add some type hints (#354) @hvlxh
