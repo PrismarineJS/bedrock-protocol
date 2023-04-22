@@ -19,8 +19,8 @@ declare module "bedrock-protocol" {
     // For the server, if we should verify client's authentication with Xbox Live.
     offline?: boolean,
 
-    // Whether or not to use C++ version of RakNet
-    useNativeRaknet?: boolean,
+    // Which raknet backend to use
+    raknetBackend?: 'jsp-raknet' | 'raknet-native' | 'raknet-node'
     // If using JS implementation of RakNet, should we use workers? (This only affects the client)
     useRaknetWorker?: boolean
     // Compression level for zlib, default to 7
