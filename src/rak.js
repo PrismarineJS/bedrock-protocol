@@ -5,22 +5,32 @@ const { waitFor } = require('./datatypes/util')
 let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
 class RakTimeout extends Error {};
 
-module.exports = (backend) => {
-  try {
-    if (backend === 'jsp-raknet') {
+function setBackend (backend) {
+  // We have to explicitly require the backend for bundlers
+  switch (backend) {
+    case 'raknet-node':
+      ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
+      return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
+    case 'raknet-native':
+      ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
+      return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
+    case 'jsp-raknet':
       ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
       return { RakServer: RakJsServer, RakClient: RakJsClient, RakTimeout }
-    }
-    // We need to explicitly name the require()s for bundlers
-    if (backend === 'raknet-node') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
-    if (backend === 'raknet-native') ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
-    else ({ Client, Server, PacketPriority, PacketReliability } = require(backend))
-    return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
-  } catch (e) {
-    ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
-    console.debug('[raknet] ' + backend + ' library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.', e)
   }
-  return { RakServer: RakJsServer, RakClient: RakJsClient, RakTimeout }
+}
+
+module.exports = (backend) => {
+  if (backend) {
+    return setBackend(backend)
+  } else {
+    try {
+      return setBackend('raknet-native')
+    } catch (e) {
+      console.debug(`[raknet] ${backend} library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.`, e)
+      return setBackend('jsp-raknet')
+    }
+  }
 }
 
 class RakNativeClient extends EventEmitter {

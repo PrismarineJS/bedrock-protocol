@@ -112,7 +112,7 @@ class Client extends Connection {
     this.connectTimeout = setTimeout(() => {
       if (this.status === ClientStatus.Disconnected) {
         this.connection.close()
-        this.emit('error', 'connect timed out')
+        this.emit('error', Error('Connect timed out'))
       }
     }, this.options.connectTimeout || 9000)
   }
