@@ -17,7 +17,7 @@ async function test (version) {
     port,
     username: 'Notch',
     version,
-    raknetBackend: 'raknet-native',
+    raknetBackend: 'raknet-node',
     offline: true
   })
 
