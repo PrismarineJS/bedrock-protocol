@@ -1,20 +1,23 @@
-# 3.27.0
+## 3.27.1
+* Fix `raknetBackend` option not being applied correctly
+
+## 3.27.0
 * Corrections to types
 * Expose ServerAdvertisement class (#368) @hvlxh
 * Update mc-data links
 
-# 3.26.0
+## 3.26.0
 * 1.19.70 support (@CreeperG16)
 * types: add some type hints (#354) @hvlxh
 
-# 3.25.0
+## 3.25.0
 * 1.19.63 support (@stevarino)
 * Add close packet in server player API doc (#347) @hvlxh
 
-# 3.24.0
+## 3.24.0
 * 1.19.62 support (@CreeperG16)
 
-# 3.23.0
+## 3.23.0
 * 1.19.60 support (@CreeperG16)
 * added onMsaCode, profilesFolder to ClientOptions (@jarco-dev)
 
