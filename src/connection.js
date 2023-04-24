@@ -80,7 +80,9 @@ class Connection extends EventEmitter {
         (letter) => `_${letter.toLowerCase()}`
       )
       snakeObj[snakeKey] =
-        typeof value === 'object' && value !== null ? parseObj(value) : value
+        typeof value === 'object' && value !== null
+          ? this.parseObj(value)
+          : value
     }
 
     return snakeObj
