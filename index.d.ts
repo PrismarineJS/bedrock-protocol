@@ -126,7 +126,11 @@ declare module "bedrock-protocol" {
   }
 
   export class Player extends Connection {
-    profile: object;
+    profile: {
+      name: string;
+      uuid: string;
+      xuid: string;
+    };
     userData: object;
     skinData: object;
 
