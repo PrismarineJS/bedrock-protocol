@@ -88,8 +88,7 @@ class Connection extends EventEmitter {
     return snakeObj
   }
 
-  write (name, param) {
-    const params = this.parseObj(param)
+  write (name, params) {
     this.outLog?.(name, params)
 
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
