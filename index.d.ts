@@ -1,210 +1,190 @@
-import EventEmitter from "events"
-import { Realm } from "prismarine-realms"
-import { ServerDeviceCodeResponse } from "prismarine-auth"
+import { ServerDeviceCodeResponse } from "prismarine-auth";
+import { RealmPlayer } from "prismarine-realms";
+import { EventEmitter } from "node:events";
 
 declare module "bedrock-protocol" {
-  type Version = '1.19.70' | '1.19.63' | '1.19.62' | '1.19.60' | '1.19.51' | '1.19.50' | '1.19.41 | 1.19.40' | '1.19.31' | '1.19.30' | '1.19.22' | '1.19.21' | '1.19.20' | '1.19.11' | '1.19.10' | '1.19.2' | '1.19.1' | '1.18.31' | '1.18.30' | '1.18.12' | '1.18.11' | '1.18.10' | '1.18.2' | '1.18.1' | '1.18.0' | '1.17.41' | '1.17.40' | '1.17.34' | '1.17.30' | '1.17.11' | '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
+  type Version =
+    | "1.19.70"
+    | "1.19.63"
+    | "1.19.62"
+    | "1.19.60"
+    | "1.19.51"
+    | "1.19.50"
+    | "1.19.41"
+    | "1.19.40"
+    | "1.19.31"
+    | "1.19.30"
+    | "1.19.22"
+    | "1.19.21"
+    | "1.19.20"
+    | "1.19.11"
+    | "1.19.10"
+    | "1.19.2"
+    | "1.19.1"
+    | "1.18.31"
+    | "1.18.30"
+    | "1.18.12"
+    | "1.18.11"
+    | "1.18.10"
+    | "1.18.2"
+    | "1.18.1"
+    | "1.18.0"
+    | "1.17.41"
+    | "1.17.40"
+    | "1.17.34"
+    | "1.17.30"
+    | "1.17.11"
+    | "1.17.10"
+    | "1.17.0"
+    | "1.16.220"
+    | "1.16.210"
+    | "1.16.201";
 
-  enum title { MinecraftNintendoSwitch, MinecraftJava }
+  enum title {
+    MinecraftNintendoSwitch,
+    MinecraftJava,
+  }
 
-  export interface Options {
-    // The string version to start the client or server as
-    version?: string
-    // For the client, the host of the server to connect to (default: 127.0.0.1)
-    // For the server, the host to bind to (default: 0.0.0.0)
-    host: string
-    // The port to connect or bind to, default: 19132
-    port?: number
-    // For the client, if we should login with Microsoft/Xbox Live.
-    // For the server, if we should verify client's authentication with Xbox Live.
-    offline?: boolean,
+  export enum ClientStatus {
+    Disconnected, // typo here
+    Authenticating,
+    Initializing,
+    Initialized,
+  }
 
-    // Which raknet backend to use
-    raknetBackend?: 'jsp-raknet' | 'raknet-native' | 'raknet-node'
-    // If using JS implementation of RakNet, should we use workers? (This only affects the client)
-    useRaknetWorker?: boolean
-    // Compression level for zlib, default to 7
-    compressionLevel?: number
-    // How frequently the packet queue should be flushed in milliseconds, defaults to 20ms
-    batchingInterval?: number
+  type PlayStatus =
+    | "login_success"
+    | "failed_client"
+    | "failed_spawn"
+    | "player_spawn"
+    | "failed_invalid_tenant"
+    | "failed_vanilla_edu"
+    | "failed_edu_vanilla"
+    | "failed_server_full";
+  interface Options {
+    host: string;
+    port?: number;
+    version?: Version; // using type Version
+    offline?: boolean;
+    raknetBackend?: "jsp-raknet" | "raknet-native" | "raknet-node";
+    useRaknetWorker?: boolean;
+    compressionLevel?: number;
+    batchingInterval?: number;
   }
 
   export interface ClientOptions extends Options {
-    // The username to connect to the server as
-    username: string,
-    // The view distance in chunks
-    viewDistance?: number,
-    // Specifies which game edition to sign in as. Optional, but some servers verify this.
-    authTitle?: title | string,
-    // How long to wait in milliseconds while trying to connect to the server.
-    connectTimeout?: number
-    // whether to skip initial ping and immediately connect
-    skipPing?: boolean
-    // Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified)
-    followPort?: boolean
-    // where to log connection information to (default to console.log)
-    conLog?: any
-    // used to join a Realm instead of supplying a host/port
-    realms?: RealmsOptions
-    // the path to store authentication caches, defaults to .minecraft
-    profilesFolder?: string | false
-    // Called when microsoft authorization is needed when not provided it will the information log to the console instead
+    username: string;
+    viewDistance?: number;
+    authTitle?: title | string;
+    connectTimeout?: number;
+    skipPing?: boolean;
+    followPort?: boolean;
+    conLog?: any;
+    realms?: RealmPlayer;
+    profilesFolder?: string | false;
     onMsaCode?: (data: ServerDeviceCodeResponse) => void;
   }
 
   export interface ServerOptions extends Options {
-    // The maximum number of players allowed on the server at any time.
-    maxPlayers: number
+    maxPlayers?: number; // optional here
     motd: {
-      // The header for the MOTD shown in the server list.
-      motd: string,
-      // The sub-header for the MOTD shown in the server list.
-      levelName: string
-    }
-    advertisementFn: () => ServerAdvertisement
-  }
-
-  enum ClientStatus {
-    Disconected, Authenticating, Initializing, Initialized
+      motd: string;
+      levelName: string;
+    };
+    advertisementFn?: () => ServerAdvertisement; // optional here
   }
 
   export class Connection extends EventEmitter {
-    readonly status: ClientStatus;
+    #status: ClientStatus.Disconnected;
+    sendQ: [];
+    sendIds: any[];
 
-    // Check if the passed version is less than or greater than the current connected client version.
-    versionLessThan(version: string | number): boolean
-    versionGreaterThan(version: string | number): boolean
+    get status(): ClientStatus;
+    set status(val: ClientStatus);
 
-    // Writes a Minecraft bedrock packet and sends it without queue batching
-    write(name: string, params: object): void
-    // Adds a Minecraft bedrock packet to be sent in the next outgoing batch
-    queue(name: string, params: object): void
-    // Writes a MCPE buffer to the connection and skips Protodef serialization. `immediate` if skip queue.
-    sendBuffer(buffer: Buffer, immediate?: boolean): void
+    public versionLessThan(protocolVersion: number): boolean;
+    public versionGreaterThan(protocolVersion: number): boolean;
+    public versionGreaterThanOrEqualTo(protocolVersion: number): boolean;
+
+    private startEncryption(iv: Uint8Array): void;
+    private startServerboundEncryption(token: object): void;
+    private toBase64(string: string): string;
+
+    public write(name: string, params: object): void;
+    public queue(name: string, params: object): void;
+    public sendBuffer(buffer: Buffer): void;
   }
-
-  type PlayStatus =
-    | 'login_success'
-    // # Displays "Could not connect: Outdated client!"
-    | 'failed_client'
-    // # Displays "Could not connect: Outdated server!"
-    | 'failed_spawn'
-    // # Sent after world data to spawn the player
-    | 'player_spawn'
-    // # Displays "Unable to connect to world. Your school does not have access to this server."
-    | 'failed_invalid_tenant'
-    // # Displays "The server is not running Minecraft: Education Edition. Failed to connect."
-    | 'failed_vanilla_edu'
-    // # Displays "The server is running an incompatible edition of Minecraft. Failed to connect."
-    | 'failed_edu_vanilla'
-    // # Displays "Wow this server is popular! Check back later to see if space opens up. Server Full"
-    | 'failed_server_full'
-
 
   export class Client extends Connection {
-    constructor(options: Options)
-    // The client's EntityID returned by the server
-    readonly entityId: BigInt
+    public options: ClientOptions;
+    readonly entityId: BigInt;
 
-    /**
-     * Close the connection, leave the server.
-     */
-    close(): void
+    constructor(options: ClientOptions);
 
-    /**
-     * Send a disconnect packet and close the connection
-     */
-    disconnect(): void
+    disconnect(reason: string): void;
+    close(): void;
   }
 
-  /**
-   * `Player` represents a player connected to the server.
-   */
   export class Player extends Connection {
-    /**
-     * Disconnects a client before it has logged in via a PlayStatus packet.
-     * @param {string} playStatus
-     */
-    sendDisconnectStatus(playStatus: PlayStatus): void
+    profile: object;
+    userData: object;
+    skinData: object;
 
-    /**
-     * Disconnects a client
-     * @param reason The message to be shown to the user on disconnect
-     * @param hide Don't show the client the reason for the disconnect
-     */
-    disconnect(reason: string, hide?: boolean): void
+    sendDisconnectStatus(playStatus: PlayStatus): void;
+    disconnect(reason: string, hide?: boolean): void;
+    close(): void;
 
-    /**
-     * Close the connection. Already called by disconnect. Call this to manually close RakNet connection.
-     */
-    close(): void
+    getUserData(): object;
 
-    on(event: 'login', cb: () => void): any
-    on(event: 'join', cb: () => void): any
-    on(event: 'close', cb: (reason: string) => void): any
+    on(event: "login", cb: () => void): any;
+    on(event: "join", cb: () => void): any;
+    on(event: "close", cb: (reason: string) => void): any;
+    on(event: "spawn", cb: (reason: string) => void): any;
+    on(event: "packet", cb: (reason: string) => void): any;
   }
+
+  type Clients<T extends Player> = Record<string, T>;
 
   export class Server extends EventEmitter {
-    clients: Map<string, Player>
-    // Connection logging function
-    conLog: Function
-    constructor(options: Options)
-    listen(host?: string, port?: number): void
-    // Disconnects all currently connected clients
-    close(disconnectReason: string): void
-  }
+    clients: Clients<Player>;
+    conLog: () => void; // here
 
-  type RelayOptions = Options & {
-    // Toggle packet logging.
-    logging?: boolean,
-    // Skip authentication for connecting clients?
-    offline?: false,
-    // Specifies which game edition to sign in as to the destination server. Optional, but some servers verify this.
-    authTitle?: title | string
-    // Where to proxy requests to.
-    destination: {
-      realms?: RealmsOptions
-      host: string,
-      port: number,
-      // Skip authentication connecting to the remote server?
-      offline?: boolean,
-    }
-    // Whether to enable chunk caching (default: false)
-    enableChunkCaching?: boolean
+    constructor(options: ServerOptions);
 
-    // Only allow one client to connect at a time (default: false)
-    forceSinge?: boolean
+    listen(host?: string, port?: number): void;
+    close(disconnectReason: string): void;
 
-    // Dispatched when a new client has logged in, and we need authentication
-    // tokens to join the backend server. Cached after the first login.
-    // If this is not specified, the client will be disconnected with a login prompt.
-    onMsaCode?(data: ServerDeviceCodeResponse, client: Client): any
-  }
-
-  export class Relay extends Server {
-    constructor(options: RelayOptions)
+    on(event: "connect", cb: (client: Player) => void): any;
   }
 
   export class ServerAdvertisement {
-    motd: string
-    name: string
-    protocol: number
-    version: string
-    playersOnline: number
-    playersMax: number
-    gamemode: string
-    serverId: string
-    levelName:string
+    motd: string;
+    levelName: string;
+    playersOnline: number;
+    playersMax: number;
+    gamemode: string;
+    serverId: string;
+    gamemodeId: number;
+    portV4: number;
+    portV6: number;
+    version: string;
+    protocol: string;
+
+    constructor(obj: object, port: number, version: string);
+
+    toBuffer(version: string): Buffer;
+    toString(): string;
+    fromString(str: string): ServerAdvertisement;
   }
 
-  export interface RealmsOptions {
-    realmId?: string
-    realmInvite?: string
-    pickRealm?: (realms: Realm[]) => Realm
-  }
+  export function createClient(options: ClientOptions): Client;
+  export function createServer(options: ServerOptions): Server;
 
-  export function createClient(options: ClientOptions): Client
-  export function createServer(options: ServerOptions): Server
-
-  export function ping({ host, port }: { host: string, port: number }): Promise<ServerAdvertisement>
+  export function ping({
+    host,
+    port,
+  }: {
+    host: string;
+    port: number;
+  }): Promise<ServerAdvertisement>;
 }
