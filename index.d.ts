@@ -1,5 +1,6 @@
 import EventEmitter from "events"
 import { ServerDeviceCodeResponse } from "prismarine-auth"
+import { Realm } from "prismarine-realms"
 
 declare module "bedrock-protocol" {
   type Version =
@@ -45,7 +46,7 @@ declare module "bedrock-protocol" {
   }
 
   export enum ClientStatus {
-    Disconnected, // typo here
+    Disconnected,
     Authenticating,
     Initializing,
     Initialized,
@@ -64,7 +65,7 @@ declare module "bedrock-protocol" {
   interface Options {
     host: string
     port?: number
-    version?: Version // using type Version
+    version?: Version
     offline?: boolean
     raknetBackend?: "jsp-raknet" | "raknet-native" | "raknet-node"
     useRaknetWorker?: boolean
@@ -86,19 +87,12 @@ declare module "bedrock-protocol" {
   }
 
   export interface ServerOptions extends Options {
-    maxPlayers?: number // optional here
+    maxPlayers?: number
     motd: {
       motd: string
       levelName: string
     }
     advertisementFn?: () => ServerAdvertisement
-  }
-
-  enum ClientStatus {
-    Disconected,
-    Authenticating,
-    Initializing,
-    Initialized,
   }
 
   export class Connection extends EventEmitter {
@@ -204,6 +198,12 @@ declare module "bedrock-protocol" {
     toBuffer(version: string): Buffer
     toString(): string
     fromString(str: string): ServerAdvertisement
+  }
+
+  export interface RealmsOptions {
+    realmId?: string
+    realmInvite?: string
+    pickRealm?: (realms: Realm[]) => Realm
   }
 
   export function createClient(options: ClientOptions): Client

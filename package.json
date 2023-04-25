@@ -45,7 +45,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "leveldb-zlib": "^1.0.1",
     "mocha": "^10.0.0",
-    "prettier": "2.8.8",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"
   },
