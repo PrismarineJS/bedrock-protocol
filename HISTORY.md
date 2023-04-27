@@ -1,8 +1,11 @@
+## 3.28.0
+* 1.19.80 support
+
 ## 3.27.1
 * Fix `raknetBackend` option not being applied correctly
 
 ## 3.27.0
-* Corrections to types
+* Corrections to types (@stevarino)
 * Expose ServerAdvertisement class (#368) @hvlxh
 * Update mc-data links
 
