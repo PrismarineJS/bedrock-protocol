@@ -8,10 +8,11 @@
     "build": "cd tools && node compileProtocol.js",
     "test": "mocha --bail --exit",
     "pretest": "npm run lint",
-    "lint": "standard",
+    "lint": "eslint",
     "vanillaServer": "node tools/startVanillaServer.js",
     "dumpPackets": "node tools/genPacketDumps.js",
-    "fix": "standard --fix"
+    "fix": "eslint --fix",
+    "format": "prettier-standard"
   },
   "keywords": [
     "minecraft",
@@ -39,8 +40,14 @@
   "devDependencies": {
     "bedrock-protocol": "file:.",
     "bedrock-provider": "^2.0.0",
+    "eslint": "^8.39.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
     "leveldb-zlib": "^1.0.1",
     "mocha": "^10.0.0",
+    "prettier-standard": "^16.4.1",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"
   },
