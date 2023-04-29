@@ -23,8 +23,9 @@ function get (url, outPath) {
   const file = fs.createWriteStream(outPath)
   return new Promise((resolve, reject) => {
     https.get(url, { timeout: 1000 * 20 }, response => {
-      if (response.statusCode !== 200)
+      if (response.statusCode !== 200) {
         return reject(new Error('Server returned code ' + response.statusCode))
+      }
       response.pipe(file)
       file.on('finish', () => {
         file.close()
@@ -91,9 +92,9 @@ async function download (os, version, path = 'bds-') {
   await get(found, 'bds.zip')
   console.info('⚡ Unzipping')
   // Unzip server
-  if (process.platform === 'linux')
+  if (process.platform === 'linux') {
     cp.execSync('unzip -u bds.zip && chmod +777 ./bedrock_server')
-  else cp.execSync('tar -xf bds.zip')
+  } else cp.execSync('tar -xf bds.zip')
   return verStr
 }
 

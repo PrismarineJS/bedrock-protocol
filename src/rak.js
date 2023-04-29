@@ -275,8 +275,9 @@ class RakJsClient extends EventEmitter {
         }
       )
     } else {
-      if (!this.raknet)
+      if (!this.raknet) {
         this.raknet = new Client(this.options.host, this.options.port)
+      }
       return waitFor(
         res => {
           this.raknet.ping(data => {

@@ -31,8 +31,9 @@ async function realmAuthenticate (options) {
   const getRealms = async () => {
     const realms = await api.getRealms()
     debug('realms', realms)
-    if (!realms.length)
+    if (!realms.length) {
       throw Error("Couldn't find any Realms for the authenticated account")
+    }
     return realms
   }
 
@@ -44,16 +45,18 @@ async function realmAuthenticate (options) {
   } else if (options.realms.realmInvite) {
     realm = await api.getRealmFromInvite(options.realms.realmInvite)
   } else if (options.realms.pickRealm) {
-    if (typeof options.realms.pickRealm !== 'function')
+    if (typeof options.realms.pickRealm !== 'function') {
       throw Error('realms.pickRealm must be a function')
+    }
     const realms = await getRealms()
     realm = await options.realms.pickRealm(realms)
   }
 
-  if (!realm)
+  if (!realm) {
     throw Error(
       "Couldn't find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm."
     )
+  }
 
   const { host, port } = await realm.getAddress()
 
@@ -85,8 +88,9 @@ async function authenticate (client, options) {
     const chains = await authflow
       .getMinecraftBedrockToken(client.clientX509)
       .catch(e => {
-        if (options.password)
+        if (options.password) {
           console.warn('Sign in failed, try removing the password field')
+        }
         throw e
       })
 
@@ -94,9 +98,7 @@ async function authenticate (client, options) {
 
     // First chain is Mojang stuff, second is Xbox profile data used by mc
     const jwt = chains[1]
-    const [header, payload, signature] = jwt
-      .split('.')
-      .map(k => Buffer.from(k, 'base64')) // eslint-disable-line
+    const [payload] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
     const xboxProfile = JSON.parse(String(payload))
 
     debug('got xbox profile', xboxProfile)

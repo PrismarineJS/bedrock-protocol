@@ -79,8 +79,9 @@ class Client extends Connection {
   }
 
   validateOptions () {
-    if (!this.options.host || this.options.port == null)
+    if (!this.options.host || this.options.port == null) {
       throw Error('Invalid host/port')
+    }
     Options.validateOptions(this.options)
   }
 
@@ -123,8 +124,9 @@ class Client extends Connection {
       }
     }
     this.connection.onCloseConnection = reason => {
-      if (this.status === ClientStatus.Disconnected)
+      if (this.status === ClientStatus.Disconnected) {
         this.conLog?.(`Server closed connection: ${reason}`)
+      }
       this.close()
     }
     this.connection.onEncapsulated = this.onEncapsulated
@@ -228,8 +230,9 @@ class Client extends Connection {
       var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
       // Dump information about the packet only if user is not handling error event.
-      if (this.listenerCount('error') === 0)
+      if (this.listenerCount('error') === 0) {
         this.deserializer.dumpFailedBuffer(packet)
+      }
       this.emit('error', e)
       return
     }

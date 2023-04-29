@@ -187,8 +187,9 @@ async function main () {
   }
   const vers = Object.keys(require('../src/options').Versions)
   assert(vers.includes(version), 'Version not supported')
-  if (fs.existsSync(output))
+  if (fs.existsSync(output)) {
     fs.promises.rm(output, { force: true, recursive: true })
+  }
   const kindCounter = await dump(version)
   await fs.promises.rm(path.join(output, '..', `bds-${version}`), {
     recursive: true

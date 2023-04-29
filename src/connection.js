@@ -71,7 +71,23 @@ class Connection extends EventEmitter {
     }
   }
 
-  write (name, params) {
+  toSnakeCase (str) {
+    return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
+  }
+
+  keysToSnakeCase (obj) {
+    const snakeObj = {}
+    for (const [key, value] of Object.entries(obj)) {
+      const snakeKey = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
+      snakeObj[snakeKey] = value
+    }
+    return snakeObj
+  }
+
+  write (_name, _params) {
+    const name = this.toSnakeCase(_name)
+    const params = this.keysToSnakeCase(_params)
+
     this.outLog?.(name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
     const batch = new Framer(
@@ -89,7 +105,10 @@ class Connection extends EventEmitter {
     }
   }
 
-  queue (name, params) {
+  queue (_name, _params) {
+    const name = this.toSnakeCase(_name)
+    const params = this.keysToSnakeCase(_params)
+
     this.outLog?.('Q <- ', name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
     const packet = this.serializer.createPacketBuffer({ name, params })
@@ -163,8 +182,9 @@ class Connection extends EventEmitter {
     if (
       this.connection.connected === false ||
       this.status === ClientStatus.Disconnected
-    )
+    ) {
       return
+    }
     try {
       this.connection.sendReliable(buffer, immediate)
     } catch (e) {

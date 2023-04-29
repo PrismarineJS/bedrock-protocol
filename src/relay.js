@@ -264,8 +264,9 @@ class Relay extends Server {
   // Close a connection to a remote backend server.
   closeUpstreamConnection (clientAddr) {
     const up = this.upstreams.get(clientAddr.hash)
-    if (!up)
+    if (!up) {
       throw Error(`unable to close non-open connection ${clientAddr.hash}`)
+    }
     up.close()
     this.upstreams.delete(clientAddr.hash)
     this.conLog('closed upstream connection', clientAddr)
