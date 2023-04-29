@@ -1,23 +1,60 @@
-import EventEmitter from "events"
-import { Realm } from "prismarine-realms"
-import { ServerDeviceCodeResponse } from "prismarine-auth"
+import EventEmitter from 'events'
+import { Realm } from 'prismarine-realms'
+import { ServerDeviceCodeResponse } from 'prismarine-auth'
 
-declare module "bedrock-protocol" {
-  type Version = '1.19.70' | '1.19.63' | '1.19.62' | '1.19.60' | '1.19.51' | '1.19.50' | '1.19.41 | 1.19.40' | '1.19.31' | '1.19.30' | '1.19.22' | '1.19.21' | '1.19.20' | '1.19.11' | '1.19.10' | '1.19.2' | '1.19.1' | '1.18.31' | '1.18.30' | '1.18.12' | '1.18.11' | '1.18.10' | '1.18.2' | '1.18.1' | '1.18.0' | '1.17.41' | '1.17.40' | '1.17.34' | '1.17.30' | '1.17.11' | '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
+declare module 'bedrock-protocol' {
+  type Version =
+    | '1.19.70'
+    | '1.19.63'
+    | '1.19.62'
+    | '1.19.60'
+    | '1.19.51'
+    | '1.19.50'
+    | '1.19.41 | 1.19.40'
+    | '1.19.31'
+    | '1.19.30'
+    | '1.19.22'
+    | '1.19.21'
+    | '1.19.20'
+    | '1.19.11'
+    | '1.19.10'
+    | '1.19.2'
+    | '1.19.1'
+    | '1.18.31'
+    | '1.18.30'
+    | '1.18.12'
+    | '1.18.11'
+    | '1.18.10'
+    | '1.18.2'
+    | '1.18.1'
+    | '1.18.0'
+    | '1.17.41'
+    | '1.17.40'
+    | '1.17.34'
+    | '1.17.30'
+    | '1.17.11'
+    | '1.17.10'
+    | '1.17.0'
+    | '1.16.220'
+    | '1.16.210'
+    | '1.16.201'
 
-  enum title { MinecraftNintendoSwitch, MinecraftJava }
+  enum title {
+    MinecraftNintendoSwitch,
+    MinecraftJava
+  }
 
   export interface Options {
     // The string version to start the client or server as
-    version?: string
+    version?: Version
     // For the client, the host of the server to connect to (default: 127.0.0.1)
     // For the server, the host to bind to (default: 0.0.0.0)
     host: string
     // The port to connect or bind to, default: 19132
-    port?: number
+    port: number
     // For the client, if we should login with Microsoft/Xbox Live.
     // For the server, if we should verify client's authentication with Xbox Live.
-    offline?: boolean,
+    offline?: boolean
 
     // Which raknet backend to use
     raknetBackend?: 'jsp-raknet' | 'raknet-native' | 'raknet-node'
@@ -31,11 +68,11 @@ declare module "bedrock-protocol" {
 
   export interface ClientOptions extends Options {
     // The username to connect to the server as
-    username: string,
+    username: string
     // The view distance in chunks
-    viewDistance?: number,
+    viewDistance?: number
     // Specifies which game edition to sign in as. Optional, but some servers verify this.
-    authTitle?: title | string,
+    authTitle?: title | string
     // How long to wait in milliseconds while trying to connect to the server.
     connectTimeout?: number
     // whether to skip initial ping and immediately connect
@@ -49,31 +86,35 @@ declare module "bedrock-protocol" {
     // the path to store authentication caches, defaults to .minecraft
     profilesFolder?: string | false
     // Called when microsoft authorization is needed when not provided it will the information log to the console instead
-    onMsaCode?: (data: ServerDeviceCodeResponse) => void;
+    onMsaCode?: (data: ServerDeviceCodeResponse) => void
   }
 
   export interface ServerOptions extends Options {
     // The maximum number of players allowed on the server at any time.
-    maxPlayers: number
-    motd: {
+    maxPlayers?: number
+    motd?: {
       // The header for the MOTD shown in the server list.
-      motd: string,
+      motd: string
       // The sub-header for the MOTD shown in the server list.
-      levelName: string
+      levelName?: string
     }
-    advertisementFn: () => ServerAdvertisement
+    advertisementFn?: () => ServerAdvertisement
   }
 
   enum ClientStatus {
-    Disconected, Authenticating, Initializing, Initialized
+    Disconected,
+    Authenticating,
+    Initializing,
+    Initialized
   }
 
   export class Connection extends EventEmitter {
-    readonly status: ClientStatus;
+    readonly status: ClientStatus
 
     // Check if the passed version is less than or greater than the current connected client version.
     versionLessThan(version: string | number): boolean
     versionGreaterThan(version: string | number): boolean
+    versionGreaterThanOrEqualTo(version: string | number): boolean
 
     // Writes a Minecraft bedrock packet and sends it without queue batching
     write(name: string, params: object): void
@@ -100,7 +141,6 @@ declare module "bedrock-protocol" {
     // # Displays "Wow this server is popular! Check back later to see if space opens up. Server Full"
     | 'failed_server_full'
 
-
   export class Client extends Connection {
     constructor(options: Options)
     // The client's EntityID returned by the server
@@ -109,7 +149,7 @@ declare module "bedrock-protocol" {
     /**
      * Close the connection, leave the server.
      */
-    close(): void
+    close(reason?: string): void
 
     /**
      * Send a disconnect packet and close the connection
@@ -121,6 +161,17 @@ declare module "bedrock-protocol" {
    * `Player` represents a player connected to the server.
    */
   export class Player extends Connection {
+    profile?: {
+      xuid: string
+      uuid: string
+      name: string
+    }
+    userData?: object
+    skinData?: object
+    version: string
+
+    getUserData(): object
+
     /**
      * Disconnects a client before it has logged in via a PlayStatus packet.
      * @param {string} playStatus
@@ -142,32 +193,36 @@ declare module "bedrock-protocol" {
     on(event: 'login', cb: () => void): any
     on(event: 'join', cb: () => void): any
     on(event: 'close', cb: (reason: string) => void): any
+    on(event: 'packet', cb: (packet: object) => void): any
+    on(event: 'spawn', cb: (reason: string) => void): any
   }
 
   export class Server extends EventEmitter {
     clients: Map<string, Player>
-    // Connection logging function
     conLog: Function
+
     constructor(options: Options)
+
     listen(host?: string, port?: number): void
-    // Disconnects all currently connected clients
-    close(disconnectReason: string): void
+    close(disconnectReason?: string): void
+
+    on(event: 'connect', cb: (client: Player) => void): any
   }
 
   type RelayOptions = Options & {
     // Toggle packet logging.
-    logging?: boolean,
+    logging?: boolean
     // Skip authentication for connecting clients?
-    offline?: false,
+    offline?: false
     // Specifies which game edition to sign in as to the destination server. Optional, but some servers verify this.
     authTitle?: title | string
     // Where to proxy requests to.
     destination: {
       realms?: RealmsOptions
-      host: string,
-      port: number,
+      host: string
+      port: number
       // Skip authentication connecting to the remote server?
-      offline?: boolean,
+      offline?: boolean
     }
     // Whether to enable chunk caching (default: false)
     enableChunkCaching?: boolean
@@ -192,9 +247,13 @@ declare module "bedrock-protocol" {
     version: string
     playersOnline: number
     playersMax: number
-    gamemode: string
     serverId: string
-    levelName:string
+    levelName: string
+    gamemodeId: number
+    portV4: number
+    portV6: number
+
+    constructor(obj: object, port: number, version: string)
   }
 
   export interface RealmsOptions {
@@ -206,5 +265,11 @@ declare module "bedrock-protocol" {
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
-  export function ping({ host, port }: { host: string, port: number }): Promise<ServerAdvertisement>
+  export function ping({
+    host,
+    port
+  }: {
+    host: string
+    port: number
+  }): Promise<ServerAdvertisement>
 }
