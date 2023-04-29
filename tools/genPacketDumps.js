@@ -30,7 +30,7 @@ async function dump (version, force = true) {
     host: '127.0.0.1',
     port,
     version,
-    username: 'Boat' + random,
+    username: 'Packet' + random,
     offline: true
   })
   client.connect()
@@ -56,7 +56,6 @@ async function dump (version, force = true) {
 
       client.queue('client_cache_status', { enabled: false })
       client.queue('request_chunk_radius', { chunk_radius: 1 })
-      // client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
 
       clearInterval(loop)
       loop = setInterval(() => {
@@ -91,7 +90,7 @@ async function dump (version, force = true) {
   }, 1000 * 60, () => {
     clearInterval(loop)
     handle.kill()
-    throw Error('timed out')
+    throw Error('Dumping timed out')
   })
 }
 
