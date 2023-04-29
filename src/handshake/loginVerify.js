@@ -7,7 +7,12 @@ module.exports = (client, server, options) => {
   // Refer to the docs:
   // https://web.archive.org/web/20180917171505if_/https://confluence.yawk.at/display/PEPROTOCOL/Game+Packets#GamePackets-Login
 
-  const getDER = b64 => crypto.createPublicKey({ key: Buffer.from(b64, 'base64'), format: 'der', type: 'spki' })
+  const getDER = b64 =>
+    crypto.createPublicKey({
+      key: Buffer.from(b64, 'base64'),
+      format: 'der',
+      type: 'spki'
+    })
 
   function verifyAuth (chain) {
     let data = {}
@@ -32,7 +37,9 @@ module.exports = (client, server, options) => {
         debug('Verified client with mojang key', x5u)
       }
 
-      pubKey = decoded.identityPublicKey ? getDER(decoded.identityPublicKey) : x5u
+      pubKey = decoded.identityPublicKey
+        ? getDER(decoded.identityPublicKey)
+        : x5u
       finalKey = decoded.identityPublicKey || finalKey // non pem
       data = { ...data, ...decoded }
     }

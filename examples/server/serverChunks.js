@@ -4,7 +4,10 @@ const { LevelDB } = require('leveldb-zlib')
 const { join } = require('path')
 
 async function loadWorld (version) {
-  const path = join(__dirname, `../../tools/bds-${version}/worlds/Bedrock level/db`)
+  const path = join(
+    __dirname,
+    `../../tools/bds-${version}/worlds/Bedrock level/db`
+  )
   console.log('Loading world at path', path) // Load world from testing server
   const db = new LevelDB(path, { createIfMissing: false })
   await db.open()

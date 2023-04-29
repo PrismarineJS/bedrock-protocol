@@ -22,4 +22,4 @@ Use the PackageFullName field in place of the `Microsoft.MinecraftUWP_8wekyb3d8b
 
 ## Kicked during login
 
-Some servers can kick you if you don't set `authTitle` as explained in the README. 
+Some servers can kick you if you don't set `authTitle` as explained in the README.

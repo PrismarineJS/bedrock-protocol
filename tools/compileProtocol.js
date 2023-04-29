@@ -4,11 +4,15 @@
  */
 const fs = require('fs')
 const { ProtoDefCompiler } = require('protodef').Compiler
-const { convert } = require('minecraft-data/minecraft-data/tools/js/compileProtocol')
+const {
+  convert
+} = require('minecraft-data/minecraft-data/tools/js/compileProtocol')
 const mcData = require('minecraft-data')
 const { join } = require('path')
 // Filter versions we support
-const versions = mcData.versions.bedrock.filter(e => e.releaseType === 'release').map(e => e.minecraftVersion)
+const versions = mcData.versions.bedrock
+  .filter(e => e.releaseType === 'release')
+  .map(e => e.minecraftVersion)
 
 // Compile the ProtoDef JSON into JS
 function createProtocol (version) {
@@ -18,9 +22,21 @@ function createProtocol (version) {
   compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
   compiler.addTypesToCompile(protocol)
 
-  fs.writeFileSync('./read.js', 'module.exports = ' + compiler.readCompiler.generate().replace('() =>', 'native =>'))
-  fs.writeFileSync('./write.js', 'module.exports = ' + compiler.writeCompiler.generate().replace('() =>', 'native =>'))
-  fs.writeFileSync('./size.js', 'module.exports = ' + compiler.sizeOfCompiler.generate().replace('() =>', 'native =>'))
+  fs.writeFileSync(
+    './read.js',
+    'module.exports = ' +
+      compiler.readCompiler.generate().replace('() =>', 'native =>')
+  )
+  fs.writeFileSync(
+    './write.js',
+    'module.exports = ' +
+      compiler.writeCompiler.generate().replace('() =>', 'native =>')
+  )
+  fs.writeFileSync(
+    './size.js',
+    'module.exports = ' +
+      compiler.sizeOfCompiler.generate().replace('() =>', 'native =>')
+  )
 
   const compiledProto = compiler.compileProtoDefSync()
   return compiledProto
@@ -43,6 +59,7 @@ if (!process.argv[2]) {
   for (const version of versions) {
     main(version)
   }
-} else { // build the specified version
+} else {
+  // build the specified version
   main(process.argv[2])
 }

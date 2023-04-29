@@ -1,6 +1,6 @@
 const { Versions } = require('../src/options')
 
-module.exports = (version) =>
+module.exports = version =>
   class Item {
     nbt
     constructor (obj) {

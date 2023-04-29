@@ -2,8 +2,11 @@
 const fs = require('fs')
 const cp = require('child_process')
 const helper = require('./github-helper')
-const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
-const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
+const latestVesionEndpoint =
+  'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' +
+  Date.now()
+const changelogURL =
+  'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
 
 // Relevant infomation for us is:
 // "version": "1.17.10",
@@ -21,10 +24,15 @@ function buildFirstIssue (title, result, externalPatches) {
     for (const [name, url] of patches) {
       commitData += `<a href="${url}">${name}</a>\n`
     }
-    if (diff) commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
+    if (diff)
+      commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
     else commitData += '\n(No changes so far)\n'
   }
-  try { protocolVersion = getProtocolVersion() } catch (e) { console.log(e) }
+  try {
+    protocolVersion = getProtocolVersion()
+  } catch (e) {
+    console.log(e)
+  }
 
   return {
     title,
@@ -59,7 +67,10 @@ ${commitData}
 function getCommitsInRepo (repo, containing, since) {
   const endpoint = `https://api.github.com/repos/${repo}/commits`
   console.log('Getting', endpoint)
-  cp.execSync(`curl -L ${endpoint} -o commits.json`, { stdio: 'inherit', shell: true })
+  cp.execSync(`curl -L ${endpoint} -o commits.json`, {
+    stdio: 'inherit',
+    shell: true
+  })
   const commits = JSON.parse(fs.readFileSync('./commits.json', 'utf-8'))
   const relevant = []
   for (const commit of commits) {
@@ -69,33 +80,55 @@ function getCommitsInRepo (repo, containing, since) {
     }
   }
   if (since) {
-    cp.execSync(`curl -L ${endpoint}?since=${since} -o commits.json`, { stdio: 'inherit', shell: true })
+    cp.execSync(`curl -L ${endpoint}?since=${since} -o commits.json`, {
+      stdio: 'inherit',
+      shell: true
+    })
     const commits = JSON.parse(fs.readFileSync('./commits.json', 'utf-8'))
     if (commits.length) {
       const head = commits[0].sha
       const tail = commits[commits.length - 1].sha
-      return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`] 
+      return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`]
     }
   }
   return [relevant]
 }
 
 function getProtocolVersion () {
-  if (!fs.existsSync('./ProtocolInfo.php')) cp.execSync('curl -LO https://raw.githubusercontent.com/pmmp/PocketMine-MP/stable/src/pocketmine/network/mcpe/protocol/ProtocolInfo.php', { stdio: 'inherit', shell: true })
+  if (!fs.existsSync('./ProtocolInfo.php'))
+    cp.execSync(
+      'curl -LO https://raw.githubusercontent.com/pmmp/PocketMine-MP/stable/src/pocketmine/network/mcpe/protocol/ProtocolInfo.php',
+      { stdio: 'inherit', shell: true }
+    )
   const currentApi = fs.readFileSync('./ProtocolInfo.php', 'utf-8')
-  const [, latestProtocolVersion] = currentApi.match(/public const CURRENT_PROTOCOL = (\d+);/)
+  const [, latestProtocolVersion] = currentApi.match(
+    /public const CURRENT_PROTOCOL = (\d+);/
+  )
   return latestProtocolVersion
 }
 
 async function fetchLatest () {
-  if (!fs.existsSync('./results.json')) cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
+  if (!fs.existsSync('./results.json'))
+    cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, {
+      stdio: 'inherit',
+      shell: true
+    })
   const json = require('./results.json')
   const result = json.results[0]
   // console.log(json)
 
-  if (!fs.existsSync('./index.d.ts')) cp.execSync('curl -LO https://raw.githubusercontent.com/PrismarineJS/bedrock-protocol/master/index.d.ts', { stdio: 'inherit', shell: true })
+  if (!fs.existsSync('./index.d.ts'))
+    cp.execSync(
+      'curl -LO https://raw.githubusercontent.com/PrismarineJS/bedrock-protocol/master/index.d.ts',
+      { stdio: 'inherit', shell: true }
+    )
   const currentApi = fs.readFileSync('./index.d.ts', 'utf-8')
-  const supportedVersions = currentApi.match(/type Version = ([^\n]+)/)[1].replace(/\||'/g, ' ').split(' ').map(k => k.trim()).filter(k => k.length)
+  const supportedVersions = currentApi
+    .match(/type Version = ([^\n]+)/)[1]
+    .replace(/\||'/g, ' ')
+    .split(' ')
+    .map(k => k.trim())
+    .filter(k => k.length)
   console.log(supportedVersions)
 
   let { version, currentVersionReleaseDate, releaseNotes } = result
@@ -113,7 +146,6 @@ async function fetchLatest () {
     return
   }
 
-
   if (issueStatus.closed) {
     // We already made an issue, but someone else already closed it, don't do anything else
     console.log('I already made an issue, but it was closed')
@@ -122,9 +154,21 @@ async function fetchLatest () {
 
   version = version.replace('.0', '')
   const issuePayload = buildFirstIssue(title, result, {
-    PocketMine: getCommitsInRepo('pmmp/PocketMine-MP', version, currentVersionReleaseDate),
-    gophertunnel: getCommitsInRepo('Sandertv/gophertunnel', version, currentVersionReleaseDate),
-    CloudburstMC: getCommitsInRepo('CloudburstMC/Protocol', version, currentVersionReleaseDate)
+    PocketMine: getCommitsInRepo(
+      'pmmp/PocketMine-MP',
+      version,
+      currentVersionReleaseDate
+    ),
+    gophertunnel: getCommitsInRepo(
+      'Sandertv/gophertunnel',
+      version,
+      currentVersionReleaseDate
+    ),
+    CloudburstMC: getCommitsInRepo(
+      'CloudburstMC/Protocol',
+      version,
+      currentVersionReleaseDate
+    )
   })
 
   if (issueStatus.open) {

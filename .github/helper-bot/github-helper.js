@@ -7,7 +7,11 @@ if (!process.env.CI) {
   process.env.GITHUB_WORKFLOW = 'Issue comments'
   process.env.GITHUB_ACTION = 'run1'
   process.env.GITHUB_ACTOR = 'test-user'
-  module.exports = { getIssueStatus: () => ({}), updateIssue: () => {}, createIssue: () => {} }
+  module.exports = {
+    getIssueStatus: () => ({}),
+    updateIssue: () => {},
+    createIssue: () => {}
+  }
   return
 }
 
@@ -24,11 +28,17 @@ async function getIssueStatus (title) {
     q: `is:issue repo:${process.env.GITHUB_REPOSITORY} in:title ${title}`
   })
   // console.log('Existing issues', existingIssues)
-  const existingIssue = existingIssues.data.items.find(issue => issue.title === title)
+  const existingIssue = existingIssues.data.items.find(
+    issue => issue.title === title
+  )
 
   if (!existingIssue) return {}
 
-  return { open: existingIssue.state === 'open', closed: existingIssue.state === 'closed', id: existingIssue.number }
+  return {
+    open: existingIssue.state === 'open',
+    closed: existingIssue.state === 'closed',
+    id: existingIssue.number
+  }
 }
 
 async function updateIssue (id, payload) {
@@ -37,7 +47,9 @@ async function updateIssue (id, payload) {
     issue_number: id,
     body: payload.body
   })
-  console.log(`Updated issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
+  console.log(
+    `Updated issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`
+  )
 }
 
 async function createIssue (payload) {
@@ -45,13 +57,26 @@ async function createIssue (payload) {
     ...context.repo,
     ...payload
   })
-  console.log(`Created issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
+  console.log(
+    `Created issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`
+  )
 }
 
 async function close (id, reason) {
-  if (reason) await octokit.rest.issues.createComment({ ...context.repo, issue_number: id, body: reason })
-  const issue = await octokit.rest.issues.update({ ...context.repo, issue_number: id, state: 'closed' })
-  console.log(`Closed issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
+  if (reason)
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: id,
+      body: reason
+    })
+  const issue = await octokit.rest.issues.update({
+    ...context.repo,
+    issue_number: id,
+    state: 'closed'
+  })
+  console.log(
+    `Closed issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`
+  )
 }
 
 if (process.env.CI) {

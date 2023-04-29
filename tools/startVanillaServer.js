@@ -1,7 +1,9 @@
 const http = require('https')
 const fs = require('fs')
 const cp = require('child_process')
-const debug = process.env.CI ? console.debug : require('debug')('minecraft-protocol')
+const debug = process.env.CI
+  ? console.debug
+  : require('debug')('minecraft-protocol')
 const https = require('https')
 const { getFiles, waitFor } = require('../src/datatypes/util')
 
@@ -9,7 +11,11 @@ function head (url) {
   return new Promise((resolve, reject) => {
     const req = http.request(url, { method: 'HEAD', timeout: 500 }, resolve)
     req.on('error', reject)
-    req.on('timeout', () => { req.destroy(); debug('HEAD request timeout'); reject(new Error('timeout')) })
+    req.on('timeout', () => {
+      req.destroy()
+      debug('HEAD request timeout')
+      reject(new Error('timeout'))
+    })
     req.end()
   })
 }
@@ -17,7 +23,8 @@ function get (url, outPath) {
   const file = fs.createWriteStream(outPath)
   return new Promise((resolve, reject) => {
     https.get(url, { timeout: 1000 * 20 }, response => {
-      if (response.statusCode !== 200) return reject(new Error('Server returned code ' + response.statusCode))
+      if (response.statusCode !== 200)
+        return reject(new Error('Server returned code ' + response.statusCode))
       response.pipe(file)
       file.on('finish', () => {
         file.close()
@@ -30,7 +37,10 @@ function get (url, outPath) {
 // Get the latest versions
 // TODO: once we support multi-versions
 function fetchLatestStable () {
-  get('https://raw.githubusercontent.com/minecraft-linux/mcpelauncher-versiondb/master/versions.json', 'versions.json')
+  get(
+    'https://raw.githubusercontent.com/minecraft-linux/mcpelauncher-versiondb/master/versions.json',
+    'versions.json'
+  )
   const versions = JSON.parse(fs.readFileSync('./versions.json'))
   const latest = versions[0]
   return latest.version_name
@@ -40,25 +50,36 @@ function fetchLatestStable () {
 async function download (os, version, path = 'bds-') {
   debug('Downloading server', os, version, 'into', path)
   process.chdir(__dirname)
-  const verStr = version.split('.').slice(0, 3).join('.')
+  const verStr = version
+    .split('.')
+    .slice(0, 3)
+    .join('.')
   const dir = path + version
 
   if (fs.existsSync(dir) && getFiles(dir).length) {
     process.chdir(path + version) // Enter server folder
     return verStr
   }
-  try { fs.mkdirSync(dir) } catch { }
+  try {
+    fs.mkdirSync(dir)
+  } catch {}
 
   process.chdir(path + version) // Enter server folder
-  const url = (os, version) => `https://minecraft.azureedge.net/bin-${os}/bedrock-server-${version}.zip`
+  const url = (os, version) =>
+    `https://minecraft.azureedge.net/bin-${os}/bedrock-server-${version}.zip`
 
   let found = false
 
-  for (let i = 0; i < 8; i++) { // Check for the latest server build for version (major.minor.patch.BUILD)
+  for (let i = 0; i < 8; i++) {
+    // Check for the latest server build for version (major.minor.patch.BUILD)
     const u = url(os, `${verStr}.${String(i).padStart(2, '0')}`)
     debug('Opening', u, Date.now())
     let ret
-    try { ret = await head(u) } catch (e) { continue }
+    try {
+      ret = await head(u)
+    } catch (e) {
+      continue
+    }
     if (ret.statusCode === 200) {
       found = u
       debug('Found server', ret.statusCode)
@@ -70,7 +91,8 @@ async function download (os, version, path = 'bds-') {
   await get(found, 'bds.zip')
   console.info('⚡ Unzipping')
   // Unzip server
-  if (process.platform === 'linux') cp.execSync('unzip -u bds.zip && chmod +777 ./bedrock_server')
+  if (process.platform === 'linux')
+    cp.execSync('unzip -u bds.zip && chmod +777 ./bedrock_server')
   else cp.execSync('tar -xf bds.zip')
   return verStr
 }
@@ -85,13 +107,15 @@ const defaultOptions = {
 function configure (options = {}) {
   const opts = { ...defaultOptions, ...options }
   let config = fs.readFileSync('./server.properties', 'utf-8')
-  config += '\nplayer-idle-timeout=1\nallow-cheats=true\ndefault-player-permission-level=operator'
+  config +=
+    '\nplayer-idle-timeout=1\nallow-cheats=true\ndefault-player-permission-level=operator'
   for (const o in opts) config += `\n${o}=${opts[o]}`
   fs.writeFileSync('./server.properties', config)
 }
 
 function run (inheritStdout = true) {
-  const exe = process.platform === 'win32' ? 'bedrock_server.exe' : './bedrock_server'
+  const exe =
+    process.platform === 'win32' ? 'bedrock_server.exe' : './bedrock_server'
   return cp.spawn(exe, inheritStdout ? { stdio: 'inherit' } : {})
 }
 
@@ -105,7 +129,7 @@ async function startServer (version, onStart, options = {}) {
   }
   await download(os, version, options.path)
   configure(options)
-  const handle = lastHandle = run(!onStart)
+  const handle = (lastHandle = run(!onStart))
   handle.on('error', (...a) => {
     console.warn('*** THE MINECRAFT PROCESS CRASHED ***', a)
     handle.kill('SIGKILL')
@@ -125,12 +149,18 @@ async function startServer (version, onStart, options = {}) {
 // Start the server and wait for it to be ready, with a timeout
 async function startServerAndWait (version, withTimeout, options) {
   let handle
-  await waitFor(async res => {
-    handle = await startServer(version, res, options)
-  }, withTimeout, () => {
-    handle?.kill()
-    throw new Error(`Server did not start on time (${withTimeout}ms, now ${Date.now()})`)
-  })
+  await waitFor(
+    async res => {
+      handle = await startServer(version, res, options)
+    },
+    withTimeout,
+    () => {
+      handle?.kill()
+      throw new Error(
+        `Server did not start on time (${withTimeout}ms, now ${Date.now()})`
+      )
+    }
+  )
   return handle
 }
 
@@ -150,7 +180,18 @@ async function startServerAndWait2 (version, withTimeout, options) {
 
 if (!module.parent) {
   // if (process.argv.length < 3) throw Error('Missing version argument')
-  startServer(process.argv[2] || '1.17.10', null, process.argv[3] ? { 'server-port': process.argv[3], 'online-mode': !!process.argv[4] } : undefined)
+  startServer(
+    process.argv[2] || '1.17.10',
+    null,
+    process.argv[3]
+      ? { 'server-port': process.argv[3], 'online-mode': !!process.argv[4] }
+      : undefined
+  )
 }
 
-module.exports = { fetchLatestStable, startServer, startServerAndWait, startServerAndWait2 }
+module.exports = {
+  fetchLatestStable,
+  startServer,
+  startServerAndWait,
+  startServerAndWait2
+}

@@ -112,16 +112,16 @@ declare module 'bedrock-protocol' {
     readonly status: ClientStatus
 
     // Check if the passed version is less than or greater than the current connected client version.
-    versionLessThan(version: string | number): boolean
-    versionGreaterThan(version: string | number): boolean
-    versionGreaterThanOrEqualTo(version: string | number): boolean
+    versionLessThan (version: string | number): boolean
+    versionGreaterThan (version: string | number): boolean
+    versionGreaterThanOrEqualTo (version: string | number): boolean
 
     // Writes a Minecraft bedrock packet and sends it without queue batching
-    write(name: string, params: object): void
+    write (name: string, params: object): void
     // Adds a Minecraft bedrock packet to be sent in the next outgoing batch
-    queue(name: string, params: object): void
+    queue (name: string, params: object): void
     // Writes a MCPE buffer to the connection and skips Protodef serialization. `immediate` if skip queue.
-    sendBuffer(buffer: Buffer, immediate?: boolean): void
+    sendBuffer (buffer: Buffer, immediate?: boolean): void
   }
 
   type PlayStatus =
@@ -142,19 +142,19 @@ declare module 'bedrock-protocol' {
     | 'failed_server_full'
 
   export class Client extends Connection {
-    constructor(options: Options)
+    constructor (options: Options)
     // The client's EntityID returned by the server
     readonly entityId: BigInt
 
     /**
      * Close the connection, leave the server.
      */
-    close(reason?: string): void
+    close (reason?: string): void
 
     /**
      * Send a disconnect packet and close the connection
      */
-    disconnect(): void
+    disconnect (): void
   }
 
   /**
@@ -170,43 +170,43 @@ declare module 'bedrock-protocol' {
     skinData?: object
     version: string
 
-    getUserData(): object
+    getUserData (): object
 
     /**
      * Disconnects a client before it has logged in via a PlayStatus packet.
      * @param {string} playStatus
      */
-    sendDisconnectStatus(playStatus: PlayStatus): void
+    sendDisconnectStatus (playStatus: PlayStatus): void
 
     /**
      * Disconnects a client
      * @param reason The message to be shown to the user on disconnect
      * @param hide Don't show the client the reason for the disconnect
      */
-    disconnect(reason: string, hide?: boolean): void
+    disconnect (reason: string, hide?: boolean): void
 
     /**
      * Close the connection. Already called by disconnect. Call this to manually close RakNet connection.
      */
-    close(): void
+    close (): void
 
-    on(event: 'login', cb: () => void): any
-    on(event: 'join', cb: () => void): any
-    on(event: 'close', cb: (reason: string) => void): any
-    on(event: 'packet', cb: (packet: object) => void): any
-    on(event: 'spawn', cb: (reason: string) => void): any
+    on (event: 'login', cb: () => void): any
+    on (event: 'join', cb: () => void): any
+    on (event: 'close', cb: (reason: string) => void): any
+    on (event: 'packet', cb: (packet: object) => void): any
+    on (event: 'spawn', cb: (reason: string) => void): any
   }
 
   export class Server extends EventEmitter {
     clients: Map<string, Player>
     conLog: Function
 
-    constructor(options: Options)
+    constructor (options: Options)
 
-    listen(host?: string, port?: number): void
-    close(disconnectReason?: string): void
+    listen (host?: string, port?: number): void
+    close (disconnectReason?: string): void
 
-    on(event: 'connect', cb: (client: Player) => void): any
+    on (event: 'connect', cb: (client: Player) => void): any
   }
 
   type RelayOptions = Options & {
@@ -237,7 +237,7 @@ declare module 'bedrock-protocol' {
   }
 
   export class Relay extends Server {
-    constructor(options: RelayOptions)
+    constructor (options: RelayOptions)
   }
 
   export class ServerAdvertisement {
@@ -253,7 +253,7 @@ declare module 'bedrock-protocol' {
     portV4: number
     portV6: number
 
-    constructor(obj: object, port: number, version: string)
+    constructor (obj: object, port: number, version: string)
   }
 
   export interface RealmsOptions {
@@ -262,10 +262,10 @@ declare module 'bedrock-protocol' {
     pickRealm?: (realms: Realm[]) => Realm
   }
 
-  export function createClient(options: ClientOptions): Client
-  export function createServer(options: ServerOptions): Server
+  export function createClient (options: ClientOptions): Client
+  export function createServer (options: ServerOptions): Server
 
-  export function ping({
+  export function ping ({
     host,
     port
   }: {

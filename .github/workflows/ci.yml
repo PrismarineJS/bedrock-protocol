@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ '*', '!gh-pages' ]
+    branches: ['*', '!gh-pages']
   pull_request:
-    branches: [ '*', '!gh-pages' ]
+    branches: ['*', '!gh-pages']
   workflow_dispatch:
     inputs:
       via:
-          description: 'trigger origin'
-          required: true
+        description: 'trigger origin'
+        required: true
 
 jobs:
   build:
@@ -21,10 +21,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 12
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm install
-    - run: npm test
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install
+      - run: npm test

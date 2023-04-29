@@ -2,7 +2,9 @@ const { Client } = require('./client')
 const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
 const { realmAuthenticate } = require('./client/auth')
-const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
+const debug = globalThis.isElectron
+  ? console.debug
+  : require('debug')('minecraft-protocol')
 
 const debugging = false // Do re-encoding tests
 
@@ -11,7 +13,8 @@ class RelayPlayer extends Player {
     super(server, conn)
 
     this.startRelaying = false
-    this.once('join', () => { // The client has joined our proxy
+    this.once('join', () => {
+      // The client has joined our proxy
       this.flushDownQueue() // Send queued packets from the upstream backend
       this.startRelaying = true
     })
@@ -23,10 +26,10 @@ class RelayPlayer extends Player {
     this.downOutLog = (...msg) => console.debug('* Proxy -> Client', ...msg)
 
     if (!server.options.logging) {
-      this.upInLog = () => { }
-      this.upOutLog = () => { }
-      this.downInLog = () => { }
-      this.downOutLog = () => { }
+      this.upInLog = () => {}
+      this.upOutLog = () => {}
+      this.downInLog = () => {}
+      this.downOutLog = () => {}
     }
 
     this.outLog = this.downOutLog
@@ -58,7 +61,8 @@ class RelayPlayer extends Player {
 
     if (name === 'play_status' && params.status === 'login_success') return // Already sent this, this needs to be sent ASAP or client will disconnect
 
-    if (debugging) { // some packet encode/decode testing stuff
+    if (debugging) {
+      // some packet encode/decode testing stuff
       this.server.deserializer.verify(des, this.server.serializer)
     }
 
@@ -98,7 +102,8 @@ class RelayPlayer extends Player {
   // Send queued packets to the backend upstream server from the client
   flushUpQueue () {
     this.upOutLog('Flushing upstream queue')
-    for (const e of this.upQ) { // Send the queue
+    for (const e of this.upQ) {
+      // Send the queue
       const des = this.server.deserializer.parsePacketBuffer(e)
       if (des.data.name === 'client_cache_status') {
         // Currently not working, force off the chunk cache
@@ -116,7 +121,10 @@ class RelayPlayer extends Player {
       // Upstream is still connecting/handshaking
       if (!this.upstream) {
         const des = this.server.deserializer.parsePacketBuffer(packet)
-        this.downInLog('Got downstream connected packet but upstream is not connected yet, added to q', des)
+        this.downInLog(
+          'Got downstream connected packet but upstream is not connected yet, added to q',
+          des
+        )
         this.upQ.push(packet) // Put into a queue
         return
       }
@@ -128,7 +136,8 @@ class RelayPlayer extends Player {
       // TODO: If we fail to parse a packet, proxy it raw and log an error
       const des = this.server.deserializer.parsePacketBuffer(packet)
 
-      if (debugging) { // some packet encode/decode testing stuff
+      if (debugging) {
+        // some packet encode/decode testing stuff
         this.server.deserializer.verify(des, this.server.serializer)
       }
 
@@ -138,7 +147,9 @@ class RelayPlayer extends Player {
       switch (des.data.name) {
         case 'client_cache_status':
           // Force the chunk cache off.
-          this.upstream.queue('client_cache_status', { enabled: this.enableChunkCaching })
+          this.upstream.queue('client_cache_status', {
+            enabled: this.enableChunkCaching
+          })
           break
         case 'set_local_player_as_initialized':
           this.status = 3
@@ -188,11 +199,14 @@ class Relay extends Server {
       realms: this.options.destination.realms,
       host: this.options.destination.host,
       port: this.options.destination.port,
-      onMsaCode: (code) => {
+      onMsaCode: code => {
         if (this.options.onMsaCode) {
           this.options.onMsaCode(code, ds)
         } else {
-          ds.disconnect("It's your first time joining. Please sign in and reconnect to join this server:\n\n" + code.message)
+          ds.disconnect(
+            "It's your first time joining. Please sign in and reconnect to join this server:\n\n" +
+              code.message
+          )
         }
       },
       profilesFolder: this.options.profilesFolder,
@@ -207,11 +221,14 @@ class Relay extends Server {
     const client = new Client(options)
     // Set the login payload unless `noLoginForward` option
     if (!client.noLoginForward) client.options.skinData = ds.skinData
-    client.ping().then(pongData => {
-      client.connect()
-    }).catch(err => {
-      this.emit('error', err)
-    })
+    client
+      .ping()
+      .then(pongData => {
+        client.connect()
+      })
+      .catch(err => {
+        this.emit('error', err)
+      })
     this.conLog('Connecting to', options.host, options.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
@@ -223,16 +240,20 @@ class Relay extends Server {
       ds.upstream = client
       ds.flushUpQueue()
       this.conLog('Connected to upstream server')
-      client.readPacket = (packet) => ds.readUpstream(packet)
+      client.readPacket = packet => ds.readUpstream(packet)
 
-      this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
+      this.emit(
+        'join',
+        /* client connected to proxy */ ds,
+        /* backend server */ client
+      )
     })
-    client.on('error', (err) => {
+    client.on('error', err => {
       ds.disconnect('Server error: ' + err.message)
       debug(clientAddr, 'was disconnected because of error', err)
       this.upstreams.delete(clientAddr.hash)
     })
-    client.on('close', (reason) => {
+    client.on('close', reason => {
       ds.disconnect('Backend server closed connection')
       this.upstreams.delete(clientAddr.hash)
     })
@@ -243,7 +264,8 @@ class Relay extends Server {
   // Close a connection to a remote backend server.
   closeUpstreamConnection (clientAddr) {
     const up = this.upstreams.get(clientAddr.hash)
-    if (!up) throw Error(`unable to close non-open connection ${clientAddr.hash}`)
+    if (!up)
+      throw Error(`unable to close non-open connection ${clientAddr.hash}`)
     up.close()
     this.upstreams.delete(clientAddr.hash)
     this.conLog('closed upstream connection', clientAddr)
@@ -251,7 +273,7 @@ class Relay extends Server {
 
   // Called when a new player connects to our proxy server. Once the player has authenticated,
   // we can open an upstream connection to the backend server.
-  onOpenConnection = (conn) => {
+  onOpenConnection = conn => {
     if (this.forceSingle && this.clientCount > 0) {
       this.conLog('dropping connection as single client relay', conn)
       conn.close()
@@ -264,7 +286,7 @@ class Relay extends Server {
       player.on('login', () => {
         this.openUpstreamConnection(player, conn.address)
       })
-      player.on('close', (reason) => {
+      player.on('close', reason => {
         this.conLog('player disconnected', conn.address, reason)
         this.clientCount--
         delete this.clients[conn.address]

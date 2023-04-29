@@ -13,7 +13,7 @@ function connect (host, port) {
 let raknet
 
 function main () {
-  parentPort.on('message', (evt) => {
+  parentPort.on('message', evt => {
     if (evt.type === 'connect') {
       const { host, port } = evt
       raknet = new Client(host, port)
@@ -27,7 +27,7 @@ function main () {
         parentPort.postMessage('message', { type: 'connecting' })
       })
 
-      raknet.once('connected', (connection) => {
+      raknet.once('connected', connection => {
         debug('[worker] connected!')
         globalThis.raknetConnection = connection
         parentPort.postMessage({ type: 'connected' })
@@ -37,7 +37,7 @@ function main () {
         parentPort.postMessage({ type: 'encapsulated', args })
       })
 
-      raknet.on('disconnect', (reason) => {
+      raknet.on('disconnect', reason => {
         debug('[worker] disconnected!')
         parentPort.postMessage({ type: 'disconnect', reason })
       })
@@ -58,7 +58,7 @@ function main () {
       raknet.close()
       process.exit(0)
     } else if (evt.type === 'ping') {
-      raknet.ping((args) => {
+      raknet.ping(args => {
         parentPort.postMessage({ type: 'pong', args })
       })
     }

@@ -2,32 +2,63 @@ const { EventEmitter } = require('events')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
 
-let Client, Server, PacketPriority, EncapsulatedPacket, PacketReliability, Reliability
-class RakTimeout extends Error {};
+let Client,
+  Server,
+  PacketPriority,
+  EncapsulatedPacket,
+  PacketReliability,
+  Reliability
+class RakTimeout extends Error {}
 
 function setBackend (backend) {
   // We have to explicitly require the backend for bundlers
   switch (backend) {
     case 'raknet-node':
-      ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-node'))
-      return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
+      ;({
+        Client,
+        Server,
+        PacketPriority,
+        PacketReliability
+      } = require('raknet-node'))
+      return {
+        RakServer: RakNativeServer,
+        RakClient: RakNativeClient,
+        RakTimeout
+      }
     case 'raknet-native':
-      ({ Client, Server, PacketPriority, PacketReliability } = require('raknet-native'))
-      return { RakServer: RakNativeServer, RakClient: RakNativeClient, RakTimeout }
+      ;({
+        Client,
+        Server,
+        PacketPriority,
+        PacketReliability
+      } = require('raknet-native'))
+      return {
+        RakServer: RakNativeServer,
+        RakClient: RakNativeClient,
+        RakTimeout
+      }
     case 'jsp-raknet':
-      ({ Client, Server, EncapsulatedPacket, Reliability } = require('jsp-raknet'))
+      ;({
+        Client,
+        Server,
+        EncapsulatedPacket,
+        Reliability
+      } = require('jsp-raknet'))
       return { RakServer: RakJsServer, RakClient: RakJsClient, RakTimeout }
   }
 }
 
-module.exports = (backend) => {
+module.exports = backend => {
   if (backend) {
     return setBackend(backend)
   } else {
     try {
       return setBackend('raknet-native')
     } catch (e) {
-      console.debug(`[raknet] ${backend} library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.`, e)
+      console.debug(
+        `[raknet] ${backend} library not found, defaulting to jsp-raknet. Correct the "raknetBackend" option to avoid this error.`,
+        e
+      )
       return setBackend('jsp-raknet')
     }
   }
@@ -37,14 +68,17 @@ class RakNativeClient extends EventEmitter {
   constructor (options, client) {
     super()
     this.connected = false
-    this.onConnected = () => { }
-    this.onCloseConnection = () => { }
-    this.onEncapsulated = () => { }
+    this.onConnected = () => {}
+    this.onCloseConnection = () => {}
+    this.onEncapsulated = () => {}
 
-    const protocolVersion = client?.versionGreaterThanOrEqualTo('1.19.30') ? 11 : 10
+    const protocolVersion = client?.versionGreaterThanOrEqualTo('1.19.30')
+      ? 11
+      : 10
     this.raknet = new Client(options.host, options.port, { protocolVersion })
     this.raknet.on('encapsulated', ({ buffer, address }) => {
-      if (this.connected) { // Discard packets that are queued to be sent to us after close
+      if (this.connected) {
+        // Discard packets that are queued to be sent to us after close
         this.onEncapsulated(buffer, address)
       }
     })
@@ -62,13 +96,19 @@ class RakNativeClient extends EventEmitter {
 
   async ping (timeout = 1000) {
     this.raknet.ping()
-    return waitFor((done) => {
-      this.raknet.on('pong', (ret) => {
-        if (ret.extra) {
-          done(ret.extra.toString())
-        }
-      })
-    }, timeout, () => { throw new RakTimeout('Ping timed out') })
+    return waitFor(
+      done => {
+        this.raknet.on('pong', ret => {
+          if (ret.extra) {
+            done(ret.extra.toString())
+          }
+        })
+      },
+      timeout,
+      () => {
+        throw new RakTimeout('Ping timed out')
+      }
+    )
   }
 
   connect () {
@@ -84,17 +124,24 @@ class RakNativeClient extends EventEmitter {
 
   sendReliable (buffer, immediate) {
     if (!this.connected) return
-    const priority = immediate ? PacketPriority.IMMEDIATE_PRIORITY : PacketPriority.MEDIUM_PRIORITY
-    return this.raknet.send(buffer, priority, PacketReliability.RELIABLE_ORDERED, 0)
+    const priority = immediate
+      ? PacketPriority.IMMEDIATE_PRIORITY
+      : PacketPriority.MEDIUM_PRIORITY
+    return this.raknet.send(
+      buffer,
+      priority,
+      PacketReliability.RELIABLE_ORDERED,
+      0
+    )
   }
 }
 
 class RakNativeServer extends EventEmitter {
   constructor (options = {}, server) {
     super()
-    this.onOpenConnection = () => { }
-    this.onCloseConnection = () => { }
-    this.onEncapsulated = () => { }
+    this.onOpenConnection = () => {}
+    this.onCloseConnection = () => {}
+    this.onEncapsulated = () => {}
     this.raknet = new Server(options.host, options.port, {
       maxConnections: options.maxPlayers || 3,
       protocolVersion: server.versionLessThan('1.19.30') ? 10 : 11,
@@ -106,15 +153,22 @@ class RakNativeServer extends EventEmitter {
       this.raknet.setOfflineMessage(server.getAdvertisement().toBuffer())
     }
 
-    this.raknet.on('openConnection', (client) => {
+    this.raknet.on('openConnection', client => {
       client.sendReliable = function (buffer, immediate) {
-        const priority = immediate ? PacketPriority.IMMEDIATE_PRIORITY : PacketPriority.MEDIUM_PRIORITY
-        return this.send(buffer, priority, PacketReliability.RELIABLE_ORDERED, 0)
+        const priority = immediate
+          ? PacketPriority.IMMEDIATE_PRIORITY
+          : PacketPriority.MEDIUM_PRIORITY
+        return this.send(
+          buffer,
+          priority,
+          PacketReliability.RELIABLE_ORDERED,
+          0
+        )
       }
       this.onOpenConnection(client)
     })
 
-    this.raknet.on('closeConnection', (client) => {
+    this.raknet.on('closeConnection', client => {
       this.onCloseConnection(client)
     })
 
@@ -122,7 +176,7 @@ class RakNativeServer extends EventEmitter {
       this.onEncapsulated(buffer, address)
     })
 
-    this.raknet.on('close', (reason) => this.onClose(reason))
+    this.raknet.on('close', reason => this.onClose(reason))
   }
 
   listen () {
@@ -138,9 +192,9 @@ class RakJsClient extends EventEmitter {
   constructor (options = {}) {
     super()
     this.options = options
-    this.onConnected = () => { }
-    this.onCloseConnection = () => { }
-    this.onEncapsulated = () => { }
+    this.onConnected = () => {}
+    this.onCloseConnection = () => {}
+    this.onEncapsulated = () => {}
     if (options.useWorkers) {
       this.connect = this.workerConnect
       this.close = reason => this.worker?.postMessage({ type: 'close', reason })
@@ -156,7 +210,7 @@ class RakJsClient extends EventEmitter {
   workerConnect (host = this.options.host, port = this.options.port) {
     this.worker = ConnWorker.connect(host, port)
 
-    this.worker.on('message', (evt) => {
+    this.worker.on('message', evt => {
       switch (evt.type) {
         case 'connected': {
           this.onConnected()
@@ -186,12 +240,18 @@ class RakJsClient extends EventEmitter {
     })
 
     this.raknet.on('connected', this.onConnected)
-    this.raknet.on('encapsulated', (encapsulated, addr) => this.onEncapsulated(encapsulated, addr.hash))
-    this.raknet.on('disconnect', (reason) => this.onCloseConnection(reason))
+    this.raknet.on('encapsulated', (encapsulated, addr) =>
+      this.onEncapsulated(encapsulated, addr.hash)
+    )
+    this.raknet.on('disconnect', reason => this.onCloseConnection(reason))
   }
 
   workerSendReliable (buffer, immediate) {
-    this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
+    this.worker.postMessage({
+      type: 'queueEncapsulated',
+      packet: buffer,
+      immediate
+    })
   }
 
   plainSendReliable (buffer, immediate) {
@@ -205,17 +265,30 @@ class RakJsClient extends EventEmitter {
   async ping (timeout = 1000) {
     if (this.worker) {
       this.worker.postMessage({ type: 'ping' })
-      return waitFor(res => {
-        this.pongCb = data => res(data)
-      }, timeout, () => { throw new RakTimeout('Ping timed out') })
+      return waitFor(
+        res => {
+          this.pongCb = data => res(data)
+        },
+        timeout,
+        () => {
+          throw new RakTimeout('Ping timed out')
+        }
+      )
     } else {
-      if (!this.raknet) this.raknet = new Client(this.options.host, this.options.port)
-      return waitFor(res => {
-        this.raknet.ping(data => {
-          this.raknet.close()
-          res(data)
-        })
-      }, timeout, () => { throw new RakTimeout('Ping timed out') })
+      if (!this.raknet)
+        this.raknet = new Client(this.options.host, this.options.port)
+      return waitFor(
+        res => {
+          this.raknet.ping(data => {
+            this.raknet.close()
+            res(data)
+          })
+        },
+        timeout,
+        () => {
+          throw new RakTimeout('Ping timed out')
+        }
+      )
     }
   }
 }
@@ -225,9 +298,10 @@ class RakJsServer extends EventEmitter {
     super()
     this.options = options
     this.server = server
-    this.onOpenConnection = () => { }
-    this.onCloseConnection = () => { }
-    this.onEncapsulated = (packet, address) => server.onEncapsulated(packet.buffer, address)
+    this.onOpenConnection = () => {}
+    this.onCloseConnection = () => {}
+    this.onEncapsulated = (packet, address) =>
+      server.onEncapsulated(packet.buffer, address)
     this.onClose = () => {}
     this.updateAdvertisement = () => {
       this.raknet.setPongAdvertisement(server.getAdvertisement())
@@ -240,9 +314,13 @@ class RakJsServer extends EventEmitter {
   }
 
   async plainListen () {
-    this.raknet = new Server(this.options.host, this.options.port, this.server.getAdvertisement())
+    this.raknet = new Server(
+      this.options.host,
+      this.options.port,
+      this.server.getAdvertisement()
+    )
     await this.raknet.listen(this.options.host, this.options.port)
-    this.raknet.on('openConnection', (conn) => {
+    this.raknet.on('openConnection', conn => {
       conn.sendReliable = (buffer, immediate) => {
         const sendPacket = new EncapsulatedPacket()
         sendPacket.reliability = Reliability.ReliableOrdered

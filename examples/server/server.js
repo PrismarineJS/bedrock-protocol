@@ -22,7 +22,9 @@ const { join } = require('path')
 
 async function startServer (version = '1.17.10', ok) {
   if (!hasDumps(version)) {
-    throw Error('You need to dump some packets first. Run tools/genPacketDumps.js')
+    throw Error(
+      'You need to dump some packets first. Run tools/genPacketDumps.js'
+    )
   }
 
   const Item = require('../../types/Item')(version)
@@ -30,8 +32,10 @@ async function startServer (version = '1.17.10', ok) {
   const server = new Server({ host: '0.0.0.0', port, version })
   let loop
 
-  const getPath = (packetPath) => join(__dirname, `../data/${server.options.version}/${packetPath}`)
-  const get = (packetName) => require(getPath(`sample/packets/${packetName}.json`))
+  const getPath = packetPath =>
+    join(__dirname, `../data/${server.options.version}/${packetPath}`)
+  const get = packetName =>
+    require(getPath(`sample/packets/${packetName}.json`))
 
   server.listen()
   console.log('Started server')
@@ -72,7 +76,11 @@ async function startServer (version = '1.17.10', ok) {
         client.write('network_settings', { compression_threshold: 1 })
         // Send some inventory slots
         for (let i = 0; i < 3; i++) {
-          client.queue('inventory_slot', { window_id: 120, slot: 0, item: new Item().toBedrock() })
+          client.queue('inventory_slot', {
+            window_id: 120,
+            slot: 0,
+            item: new Item().toBedrock()
+          })
         }
 
         client.queue('player_list', get('player_list'))
@@ -84,11 +92,18 @@ async function startServer (version = '1.17.10', ok) {
         client.queue('set_commands_enabled', { enabled: true })
         client.queue('adventure_settings', get('adventure_settings'))
         client.queue('biome_definition_list', get('biome_definition_list'))
-        client.queue('available_entity_identifiers', get('available_entity_identifiers'))
+        client.queue(
+          'available_entity_identifiers',
+          get('available_entity_identifiers')
+        )
         client.queue('update_attributes', get('update_attributes'))
         client.queue('creative_content', get('creative_content'))
         client.queue('inventory_content', get('inventory_content'))
-        client.queue('player_hotbar', { selected_slot: 3, window_id: 'inventory', select_slot: true })
+        client.queue('player_hotbar', {
+          selected_slot: 3,
+          window_id: 'inventory',
+          select_slot: true
+        })
         client.queue('crafting_data', get('crafting_data'))
         client.queue('available_commands', get('available_commands'))
         client.queue('chunk_radius_update', { chunk_radius: 1 })
@@ -109,7 +124,10 @@ async function startServer (version = '1.17.10', ok) {
         // Constantly send this packet to the client to tell it the center position for chunks. The client should then request these
         // missing chunks from the us if it's missing any within the radius. `radius` is in blocks.
         loop = setInterval(() => {
-          client.write('network_chunk_publisher_update', { coordinates: { x: respawnPacket.x, y: 130, z: respawnPacket.z }, radius: 80 })
+          client.write('network_chunk_publisher_update', {
+            coordinates: { x: respawnPacket.x, y: 130, z: respawnPacket.z },
+            radius: 80
+          })
         }, 4500)
 
         // Wait some time to allow for the client to recieve and load all the chunks
@@ -119,7 +137,7 @@ async function startServer (version = '1.17.10', ok) {
         }, 6000)
 
         // Respond to tick synchronization packets
-        client.on('tick_sync', (packet) => {
+        client.on('tick_sync', packet => {
           client.queue('tick_sync', {
             request_time: packet.request_time,
             response_time: BigInt(Date.now())
@@ -140,10 +158,14 @@ async function startServer (version = '1.17.10', ok) {
 }
 
 let server
-waitFor((res) => {
-  server = startServer(process.argv[2], res)
-}, 1000 * 60 /* Wait 60 seconds for the server to start */, function onTimeout () {
-  console.error('Server did not start in time')
-  server?.close()
-  process.exit(1)
-})
+waitFor(
+  res => {
+    server = startServer(process.argv[2], res)
+  },
+  1000 * 60 /* Wait 60 seconds for the server to start */,
+  function onTimeout () {
+    console.error('Server did not start in time')
+    server?.close()
+    process.exit(1)
+  }
+)

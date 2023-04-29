@@ -18,9 +18,15 @@ function KeyExchange (client, server, options) {
   function startClientboundEncryption (publicKey) {
     debug('[encrypt] Client pub key base64: ', publicKey)
 
-    const pubKeyDer = crypto.createPublicKey({ key: Buffer.from(publicKey.key, 'base64'), ...der })
+    const pubKeyDer = crypto.createPublicKey({
+      key: Buffer.from(publicKey.key, 'base64'),
+      ...der
+    })
     // Shared secret from the client's public key + our private key
-    client.sharedSecret = crypto.diffieHellman({ privateKey: client.ecdhKeyPair.privateKey, publicKey: pubKeyDer })
+    client.sharedSecret = crypto.diffieHellman({
+      privateKey: client.ecdhKeyPair.privateKey,
+      publicKey: pubKeyDer
+    })
 
     // Secret hash we use for packet encryption:
     // From the public key of the remote and the private key
@@ -34,10 +40,14 @@ function KeyExchange (client, server, options) {
 
     client.secretKeyBytes = secretHash.digest()
 
-    const token = JWT.sign({
-      salt: toBase64(SALT),
-      signedToken: client.clientX509
-    }, client.ecdhKeyPair.privateKey, { algorithm: 'ES384', header: { x5u: client.clientX509 } })
+    const token = JWT.sign(
+      {
+        salt: toBase64(SALT),
+        signedToken: client.clientX509
+      },
+      client.ecdhKeyPair.privateKey,
+      { algorithm: 'ES384', header: { x5u: client.clientX509 } }
+    )
 
     client.write('server_to_client_handshake', { token })
 
@@ -61,10 +71,16 @@ function KeyExchange (client, server, options) {
     const head = JSON.parse(String(header))
     const body = JSON.parse(String(payload))
 
-    const pubKeyDer = crypto.createPublicKey({ key: Buffer.from(head.x5u, 'base64'), ...der })
+    const pubKeyDer = crypto.createPublicKey({
+      key: Buffer.from(head.x5u, 'base64'),
+      ...der
+    })
 
     // Shared secret from the client's public key + our private key
-    client.sharedSecret = crypto.diffieHellman({ privateKey: client.ecdhKeyPair.privateKey, publicKey: pubKeyDer })
+    client.sharedSecret = crypto.diffieHellman({
+      privateKey: client.ecdhKeyPair.privateKey,
+      publicKey: pubKeyDer
+    })
 
     const salt = Buffer.from(body.salt, 'base64')
     const secretHash = crypto.createHash('sha256')

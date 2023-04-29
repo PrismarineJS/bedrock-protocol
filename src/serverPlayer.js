@@ -78,7 +78,10 @@ class Player extends Connection {
     const skinChain = tokens.client
 
     try {
-      var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
+      var { key, userData, skinData } = this.decodeLoginJWT(
+        authChain.chain,
+        skinChain
+      ) // eslint-disable-line
     } catch (e) {
       debug(this.address, e)
       this.disconnect('Server authentication error')
@@ -133,7 +136,8 @@ class Player extends Connection {
   close (reason) {
     if (this.status !== ClientStatus.Disconnected) {
       this.emit('close') // Emit close once
-      if (!reason) this.inLog?.('Client closed connection', this.connection?.address)
+      if (!reason)
+        this.inLog?.('Client closed connection', this.connection?.address)
     }
     this.q = []
     this.q2 = []
@@ -178,7 +182,10 @@ class Player extends Connection {
         this.emit('spawn')
         break
       default:
-        if (this.status === ClientStatus.Disconnected || this.status === ClientStatus.Authenticating) {
+        if (
+          this.status === ClientStatus.Disconnected ||
+          this.status === ClientStatus.Authenticating
+        ) {
           this.inLog?.('ignoring', des.data.name)
           return
         }

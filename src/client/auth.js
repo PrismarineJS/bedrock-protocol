@@ -19,14 +19,20 @@ function validateOptions (options) {
 async function realmAuthenticate (options) {
   validateOptions(options)
 
-  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+  options.authflow = new PrismarineAuth(
+    options.username,
+    options.profilesFolder,
+    options,
+    options.onMsaCode
+  )
 
   const api = RealmAPI.from(options.authflow, 'bedrock')
 
   const getRealms = async () => {
     const realms = await api.getRealms()
     debug('realms', realms)
-    if (!realms.length) throw Error('Couldn\'t find any Realms for the authenticated account')
+    if (!realms.length)
+      throw Error("Couldn't find any Realms for the authenticated account")
     return realms
   }
 
@@ -38,12 +44,16 @@ async function realmAuthenticate (options) {
   } else if (options.realms.realmInvite) {
     realm = await api.getRealmFromInvite(options.realms.realmInvite)
   } else if (options.realms.pickRealm) {
-    if (typeof options.realms.pickRealm !== 'function') throw Error('realms.pickRealm must be a function')
+    if (typeof options.realms.pickRealm !== 'function')
+      throw Error('realms.pickRealm must be a function')
     const realms = await getRealms()
     realm = await options.realms.pickRealm(realms)
   }
 
-  if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
+  if (!realm)
+    throw Error(
+      "Couldn't find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm."
+    )
 
   const { host, port } = await realm.getAddress()
 
@@ -64,24 +74,38 @@ async function realmAuthenticate (options) {
 async function authenticate (client, options) {
   validateOptions(options)
   try {
-    const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
-      if (options.password) console.warn('Sign in failed, try removing the password field')
-      throw e
-    })
+    const authflow =
+      options.authflow ||
+      new PrismarineAuth(
+        options.username,
+        options.profilesFolder,
+        options,
+        options.onMsaCode
+      )
+    const chains = await authflow
+      .getMinecraftBedrockToken(client.clientX509)
+      .catch(e => {
+        if (options.password)
+          console.warn('Sign in failed, try removing the password field')
+        throw e
+      })
 
     debug('chains', chains)
 
     // First chain is Mojang stuff, second is Xbox profile data used by mc
     const jwt = chains[1]
-    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
+    const [header, payload, signature] = jwt
+      .split('.')
+      .map(k => Buffer.from(k, 'base64')) // eslint-disable-line
     const xboxProfile = JSON.parse(String(payload))
 
     debug('got xbox profile', xboxProfile)
 
     const profile = {
       name: xboxProfile?.extraData?.displayName || 'Player',
-      uuid: xboxProfile?.extraData?.identity || 'adfcf5ca-206c-404a-aec4-f59fff264c9b', // random
+      uuid:
+        xboxProfile?.extraData?.identity ||
+        'adfcf5ca-206c-404a-aec4-f59fff264c9b', // random
       xuid: xboxProfile?.extraData?.XUID || 0
     }
 

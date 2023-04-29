@@ -21,9 +21,41 @@ class ServerAdvertisement {
   }
 
   fromString (str) {
-    const [header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode, gamemodeId, portV4, portV6] = str.split(';')
-    Object.assign(this, { header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode, gamemodeId, portV4, portV6 })
-    for (const numeric of ['playersOnline', 'playersMax', 'gamemodeId', 'portV4', 'portV6']) {
+    const [
+      header,
+      motd,
+      protocol,
+      version,
+      playersOnline,
+      playersMax,
+      serverId,
+      levelName,
+      gamemode,
+      gamemodeId,
+      portV4,
+      portV6
+    ] = str.split(';')
+    Object.assign(this, {
+      header,
+      motd,
+      protocol,
+      version,
+      playersOnline,
+      playersMax,
+      serverId,
+      levelName,
+      gamemode,
+      gamemodeId,
+      portV4,
+      portV6
+    })
+    for (const numeric of [
+      'playersOnline',
+      'playersMax',
+      'gamemodeId',
+      'portV4',
+      'portV6'
+    ]) {
       if (this[numeric] !== undefined) {
         this[numeric] = this[numeric] ? parseInt(this[numeric]) : null
       }
@@ -32,21 +64,23 @@ class ServerAdvertisement {
   }
 
   toString () {
-    return [
-      'MCPE',
-      this.motd,
-      this.protocol,
-      this.version,
-      this.playersOnline,
-      this.playersMax,
-      this.serverId,
-      this.levelName,
-      this.gamemode,
-      this.gamemodeId,
-      this.portV4,
-      this.portV6,
-      '0'
-    ].join(';') + ';'
+    return (
+      [
+        'MCPE',
+        this.motd,
+        this.protocol,
+        this.version,
+        this.playersOnline,
+        this.playersMax,
+        this.serverId,
+        this.levelName,
+        this.gamemode,
+        this.gamemodeId,
+        this.portV4,
+        this.portV6,
+        '0'
+      ].join(';') + ';'
+    )
   }
 
   toBuffer (version) {

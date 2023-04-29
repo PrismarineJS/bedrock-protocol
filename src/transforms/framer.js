@@ -14,19 +14,26 @@ class Framer {
   // No compression in base class
   compress (buffer) {
     switch (this.compressor) {
-      case 'deflate': return zlib.deflateRawSync(buffer, { level: this.compressionLevel })
-      case 'snappy': throw Error('Snappy compression not implemented')
-      case 'none': return buffer
+      case 'deflate':
+        return zlib.deflateRawSync(buffer, { level: this.compressionLevel })
+      case 'snappy':
+        throw Error('Snappy compression not implemented')
+      case 'none':
+        return buffer
     }
   }
 
   static decompress (algorithm, buffer) {
     try {
       switch (algorithm) {
-        case 'deflate': return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
-        case 'snappy': throw Error('Snappy compression not implemented')
-        case 'none': return buffer
-        default: throw Error('Unknown compression type ' + this.compressor)
+        case 'deflate':
+          return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
+        case 'snappy':
+          throw Error('Snappy compression not implemented')
+        case 'none':
+          return buffer
+        default:
+          throw Error('Unknown compression type ' + this.compressor)
       }
     } catch {
       return buffer
@@ -43,7 +50,8 @@ class Framer {
 
   encode () {
     const buf = Buffer.concat(this.packets)
-    const compressed = (buf.length > this.compressionThreshold) ? this.compress(buf) : buf
+    const compressed =
+      buf.length > this.compressionThreshold ? this.compress(buf) : buf
     return Buffer.concat([Buffer.from([0xfe]), compressed])
   }
 

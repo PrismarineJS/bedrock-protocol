@@ -1,10 +1,15 @@
 const { EventEmitter } = require('events')
-const { createDeserializer, createSerializer } = require('./transforms/serializer')
+const {
+  createDeserializer,
+  createSerializer
+} = require('./transforms/serializer')
 const { Player } = require('./serverPlayer')
 const { sleep } = require('./datatypes/util')
 const { ServerAdvertisement } = require('./server/advertisement')
 const Options = require('./options')
-const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
+const debug = globalThis.isElectron
+  ? console.debug
+  : require('debug')('minecraft-protocol')
 
 class Server extends EventEmitter {
   constructor (options) {
@@ -17,14 +22,22 @@ class Server extends EventEmitter {
 
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
-    this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)
+    this.advertisement = new ServerAdvertisement(
+      this.options.motd,
+      this.options.port,
+      this.options.version
+    )
     this.advertisement.playersMax = options.maxPlayers ?? 3
     /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
     this.conLog = debug
 
-    this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
+    this.setCompressor(
+      this.options.compressionAlgorithm,
+      this.options.compressionLevel,
+      this.options.compressionThreshold
+    )
   }
 
   setCompressor (algorithm, level = 1, threshold = 256) {
@@ -53,18 +66,27 @@ class Server extends EventEmitter {
   }
 
   versionLessThan (version) {
-    return this.options.protocolVersion < (typeof version === 'string' ? Options.Versions[version] : version)
+    return (
+      this.options.protocolVersion <
+      (typeof version === 'string' ? Options.Versions[version] : version)
+    )
   }
 
   versionGreaterThan (version) {
-    return this.options.protocolVersion > (typeof version === 'string' ? Options.Versions[version] : version)
+    return (
+      this.options.protocolVersion >
+      (typeof version === 'string' ? Options.Versions[version] : version)
+    )
   }
 
   versionGreaterThanOrEqualTo (version) {
-    return this.options.protocolVersion >= (typeof version === 'string' ? Options.Versions[version] : version)
+    return (
+      this.options.protocolVersion >=
+      (typeof version === 'string' ? Options.Versions[version] : version)
+    )
   }
 
-  onOpenConnection = (conn) => {
+  onOpenConnection = conn => {
     this.conLog('New connection: ', conn?.address)
 
     const player = new Player(this, conn)
@@ -108,7 +130,9 @@ class Server extends EventEmitter {
     try {
       await this.raknet.listen()
     } catch (e) {
-      console.warn(`Failed to bind server on [${this.options.host}]/${this.options.port}, is the port free?`)
+      console.warn(
+        `Failed to bind server on [${this.options.host}]/${this.options.port}, is the port free?`
+      )
       throw e
     }
 
@@ -116,7 +140,7 @@ class Server extends EventEmitter {
     this.raknet.onOpenConnection = this.onOpenConnection
     this.raknet.onCloseConnection = this.onCloseConnection
     this.raknet.onEncapsulated = this.onEncapsulated
-    this.raknet.onClose = (reason) => this.close(reason || 'Raknet closed')
+    this.raknet.onClose = reason => this.close(reason || 'Raknet closed')
 
     this.serverTimer = setInterval(() => {
       this.raknet.updateAdvertisement()

@@ -1,5 +1,8 @@
 const { ClientStatus, Connection } = require('./connection')
-const { createDeserializer, createSerializer } = require('./transforms/serializer')
+const {
+  createDeserializer,
+  createSerializer
+} = require('./transforms/serializer')
 const { serialize, isDebug } = require('./datatypes/util')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
@@ -23,7 +26,9 @@ class Client extends Connection {
     this.startGameData = {}
     this.clientRuntimeId = null
     // Start off without compression on 1.19.30, zlib on below
-    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
+    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30')
+      ? 'none'
+      : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
 
@@ -31,7 +36,8 @@ class Client extends Connection {
       this.inLog = (...args) => debug('C ->', ...args)
       this.outLog = (...args) => debug('C <-', ...args)
     }
-    this.conLog = this.options.conLog === undefined ? console.log : this.options.conLog
+    this.conLog =
+      this.options.conLog === undefined ? console.log : this.options.conLog
 
     if (!options.delayedInit) {
       this.init()
@@ -50,7 +56,10 @@ class Client extends Connection {
     const { RakClient } = initRaknet(this.options.raknetBackend)
     const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
+    this.connection = new RakClient(
+      { useWorkers: this.options.useRaknetWorkers, host, port },
+      this
+    )
 
     this.emit('connect_allowed')
   }
@@ -70,7 +79,8 @@ class Client extends Connection {
   }
 
   validateOptions () {
-    if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
+    if (!this.options.host || this.options.port == null)
+      throw Error('Invalid host/port')
     Options.validateOptions(this.options)
   }
 
@@ -87,23 +97,34 @@ class Client extends Connection {
     try {
       return await this.connection.ping(this.options.connectTimeout)
     } catch (e) {
-      this.conLog?.(`Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`)
+      this.conLog?.(
+        `Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`
+      )
       throw e
     }
   }
 
-  _connect = async (sessionData) => {
-    debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
+  _connect = async sessionData => {
+    debug(
+      '[client] connecting to',
+      this.options.host,
+      this.options.port,
+      sessionData,
+      this.connection
+    )
     this.connection.onConnected = () => {
       this.status = ClientStatus.Connecting
       if (this.versionGreaterThanOrEqualTo('1.19.30')) {
-        this.queue('request_network_settings', { client_protocol: this.options.protocolVersion })
+        this.queue('request_network_settings', {
+          client_protocol: this.options.protocolVersion
+        })
       } else {
         this.sendLogin()
       }
     }
-    this.connection.onCloseConnection = (reason) => {
-      if (this.status === ClientStatus.Disconnected) this.conLog?.(`Server closed connection: ${reason}`)
+    this.connection.onCloseConnection = reason => {
+      if (this.status === ClientStatus.Disconnected)
+        this.conLog?.(`Server closed connection: ${reason}`)
       this.close()
     }
     this.connection.onEncapsulated = this.onEncapsulated
@@ -146,20 +167,33 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    this.conLog?.(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
+    this.conLog?.(
+      `Server requested ${
+        packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'
+      }: ${packet.message}`
+    )
     this.emit('kick', packet)
     this.close()
   }
 
   onPlayStatus (statusPacket) {
-    if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
+    if (
+      this.status === ClientStatus.Initializing &&
+      this.options.autoInitPlayer === true
+    ) {
       if (statusPacket.status === 'player_spawn') {
         this.status = ClientStatus.Initialized
         if (!this.entityId) {
           // We need to wait for start_game in the rare event we get a player_spawn before start_game race condition
-          this.on('start_game', () => this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId }))
+          this.on('start_game', () =>
+            this.write('set_local_player_as_initialized', {
+              runtime_entity_id: this.entityId
+            })
+          )
         } else {
-          this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
+          this.write('set_local_player_as_initialized', {
+            runtime_entity_id: this.entityId
+          })
         }
         this.emit('spawn')
       }
@@ -194,12 +228,17 @@ class Client extends Connection {
       var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
       // Dump information about the packet only if user is not handling error event.
-      if (this.listenerCount('error') === 0) this.deserializer.dumpFailedBuffer(packet)
+      if (this.listenerCount('error') === 0)
+        this.deserializer.dumpFailedBuffer(packet)
       this.emit('error', e)
       return
     }
     const pakData = { name: des.data.name, params: des.data.params }
-    this.inLog?.('-> C', pakData.name, this.options.logging ? serialize(pakData.params) : '')
+    this.inLog?.(
+      '-> C',
+      pakData.name,
+      this.options.logging ? serialize(pakData.params) : ''
+    )
     this.emit('packet', des)
 
     if (debugging) {
@@ -229,7 +268,10 @@ class Client extends Connection {
         this.startGameData.itemstates.forEach(state => {
           if (state.name === 'minecraft:shield') {
             this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
-            this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
+            this.deserializer.proto.setVariable(
+              'ShieldItemID',
+              state.runtime_id
+            )
           }
         })
         break
@@ -242,8 +284,13 @@ class Client extends Connection {
         this.onPlayStatus(pakData.params)
         break
       default:
-        if (this.status !== ClientStatus.Initializing && this.status !== ClientStatus.Initialized) {
-          this.inLog?.(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
+        if (
+          this.status !== ClientStatus.Initializing &&
+          this.status !== ClientStatus.Initialized
+        ) {
+          this.inLog?.(
+            `Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`
+          )
           return
         }
     }

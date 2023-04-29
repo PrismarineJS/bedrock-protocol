@@ -11,7 +11,7 @@ function createRelay () {
     /* Where to send upstream packets to */
     destination: {
       realms: {
-        pickRealm: (realms) => realms.find(e => e.name === 'Realm Name')
+        pickRealm: realms => realms.find(e => e.name === 'Realm Name')
       },
       offline: false
     }

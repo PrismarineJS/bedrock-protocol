@@ -34,7 +34,12 @@ async function startTest (version = CURRENT_VERSION, ok) {
   console.assert(pongData, 'did not get valid pong data from server')
 
   const respawnPacket = get('packets/respawn.json')
-  const chunks = await requestChunks(version, respawnPacket.x, respawnPacket.z, 1)
+  const chunks = await requestChunks(
+    version,
+    respawnPacket.x,
+    respawnPacket.z,
+    1
+  )
 
   let loop
 
@@ -55,38 +60,64 @@ async function startTest (version = CURRENT_VERSION, ok) {
         client.write('network_settings', { compression_threshold: 1 })
         // Send some inventory slots
         for (let i = 0; i < 3; i++) {
-          client.queue('inventory_slot', { window_id: 'armor', slot: 0, item: new Item().toBedrock() })
+          client.queue('inventory_slot', {
+            window_id: 'armor',
+            slot: 0,
+            item: new Item().toBedrock()
+          })
         }
 
         // client.queue('inventory_transaction', get('packets/inventory_transaction.json'))
         client.queue('player_list', get('packets/player_list.json'))
         client.queue('start_game', get('packets/start_game.json'))
         client.queue('item_component', { entries: [] })
-        client.queue('set_spawn_position', get('packets/set_spawn_position.json'))
+        client.queue(
+          'set_spawn_position',
+          get('packets/set_spawn_position.json')
+        )
         client.queue('set_time', { time: 5433771 })
         client.queue('set_difficulty', { difficulty: 1 })
         client.queue('set_commands_enabled', { enabled: true })
 
         if (client.versionLessThan('1.19.10')) {
-          client.queue('adventure_settings', get('packets/adventure_settings.json'))
+          client.queue(
+            'adventure_settings',
+            get('packets/adventure_settings.json')
+          )
         }
 
-        client.queue('biome_definition_list', get('packets/biome_definition_list.json'))
-        client.queue('available_entity_identifiers', get('packets/available_entity_identifiers.json'))
+        client.queue(
+          'biome_definition_list',
+          get('packets/biome_definition_list.json')
+        )
+        client.queue(
+          'available_entity_identifiers',
+          get('packets/available_entity_identifiers.json')
+        )
 
         client.queue('update_attributes', get('packets/update_attributes.json'))
         client.queue('creative_content', get('packets/creative_content.json'))
         client.queue('inventory_content', get('packets/inventory_content.json'))
 
-        client.queue('player_hotbar', { selected_slot: 3, window_id: 'inventory', select_slot: true })
+        client.queue('player_hotbar', {
+          selected_slot: 3,
+          window_id: 'inventory',
+          select_slot: true
+        })
 
         client.queue('crafting_data', get('packets/crafting_data.json'))
-        client.queue('available_commands', get('packets/available_commands.json'))
+        client.queue(
+          'available_commands',
+          get('packets/available_commands.json')
+        )
         client.queue('chunk_radius_update', { chunk_radius: 5 })
 
         // client.queue('set_entity_data', get('packets/set_entity_data.json'))
 
-        client.queue('game_rules_changed', get('packets/game_rules_changed.json'))
+        client.queue(
+          'game_rules_changed',
+          get('packets/game_rules_changed.json')
+        )
         client.queue('respawn', get('packets/respawn.json'))
 
         for (const chunk of chunks) {
@@ -94,7 +125,10 @@ async function startTest (version = CURRENT_VERSION, ok) {
         }
 
         loop = setInterval(() => {
-          client.write('network_chunk_publisher_update', { coordinates: { x: 646, y: 130, z: 77 }, radius: 64 })
+          client.write('network_chunk_publisher_update', {
+            coordinates: { x: 646, y: 130, z: 77 },
+            radius: 64
+          })
         }, 9500)
 
         setTimeout(() => {
@@ -102,7 +136,7 @@ async function startTest (version = CURRENT_VERSION, ok) {
         }, 6000)
 
         // Respond to tick synchronization packets
-        client.on('tick_sync', (packet) => {
+        client.on('tick_sync', packet => {
           client.queue('tick_sync', {
             request_time: packet.request_time,
             response_time: BigInt(Date.now())
@@ -123,13 +157,13 @@ async function startTest (version = CURRENT_VERSION, ok) {
 
   console.log('Started client')
 
-  client.once('resource_packs_info', (packet) => {
+  client.once('resource_packs_info', packet => {
     client.write('resource_pack_client_response', {
       response_status: 'completed',
       resourcepackids: []
     })
 
-    client.once('resource_pack_stack', (stack) => {
+    client.once('resource_pack_stack', stack => {
       client.write('resource_pack_client_response', {
         response_status: 'completed',
         resourcepackids: []
@@ -138,7 +172,10 @@ async function startTest (version = CURRENT_VERSION, ok) {
 
     client.queue('client_cache_status', { enabled: false })
     client.queue('request_chunk_radius', { chunk_radius: 1 })
-    client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
+    client.queue('tick_sync', {
+      request_time: BigInt(Date.now()),
+      response_time: 0n
+    })
   })
 
   client.once('spawn', () => {
@@ -202,12 +239,16 @@ async function requestChunks (version, x, z, radius) {
 }
 
 async function timedTest (version, timeout = 1000 * 220) {
-  await waitFor((resolve, reject) => {
-    // mocha eats up stack traces...
-    startTest(version, resolve).catch(reject)
-  }, timeout, () => {
-    throw Error('timed out')
-  })
+  await waitFor(
+    (resolve, reject) => {
+      // mocha eats up stack traces...
+      startTest(version, resolve).catch(reject)
+    },
+    timeout,
+    () => {
+      throw Error('timed out')
+    }
+  )
   console.info('✔ ok')
 }
 

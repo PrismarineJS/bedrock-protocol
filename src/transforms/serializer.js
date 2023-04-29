@@ -8,9 +8,22 @@ class Parser extends FullPacketParser {
     if (packet.length > 1000) {
       const now = Date.now()
       fs.writeFileSync(now + '_packetReadError.txt', packet.toString('hex'))
-      console.log(prefix, `Deserialization failure for packet 0x${packet.slice(0, 1).toString('hex')}. Packet buffer saved in ./${now}_packetReadError.txt as buffer was too large (${packet.length} bytes).`)
+      console.log(
+        prefix,
+        `Deserialization failure for packet 0x${packet
+          .slice(0, 1)
+          .toString(
+            'hex'
+          )}. Packet buffer saved in ./${now}_packetReadError.txt as buffer was too large (${
+          packet.length
+        } bytes).`
+      )
     } else {
-      console.log(prefix, 'Read failure for 0x' + packet.slice(0, 1).toString('hex'), packet.slice(0, 1000))
+      console.log(
+        prefix,
+        'Read failure for 0x' + packet.slice(0, 1).toString('hex'),
+        packet.slice(0, 1000)
+      )
     }
   }
 
@@ -22,7 +35,14 @@ class Parser extends FullPacketParser {
       const fs = require('fs')
       fs.writeFileSync('new.bin', newBuffer)
       fs.writeFileSync('old.bin', oldBuffer)
-      fs.writeFileSync('failed.json', JSON.stringify(params, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2))
+      fs.writeFileSync(
+        'failed.json',
+        JSON.stringify(
+          params,
+          (k, v) => (typeof v === 'bigint' ? v.toString() : v),
+          2
+        )
+      )
       console.warn('Failed to re-encode', name)
     }
   }
@@ -31,7 +51,10 @@ class Parser extends FullPacketParser {
 // Compiles the ProtoDef schema at runtime
 function createProtocol (version) {
   // Try and load from .js if available
-  try { require(`../../data/${version}/size.js`); return getProtocol(version) } catch {}
+  try {
+    require(`../../data/${version}/size.js`)
+    return getProtocol(version)
+  } catch {}
 
   const protocol = require('minecraft-data')('bedrock_' + version).protocol
   const compiler = new ProtoDefCompiler()
@@ -53,9 +76,18 @@ function getProtocol (version) {
   const compile = (compiler, file) => require(file)(compiler.native)
 
   return new CompiledProtodef(
-    compile(compiler.sizeOfCompiler, join(__dirname, `../../data/${version}/size.js`)),
-    compile(compiler.writeCompiler, join(__dirname, `../../data/${version}/write.js`)),
-    compile(compiler.readCompiler, join(__dirname, `../../data/${version}/read.js`))
+    compile(
+      compiler.sizeOfCompiler,
+      join(__dirname, `../../data/${version}/size.js`)
+    ),
+    compile(
+      compiler.writeCompiler,
+      join(__dirname, `../../data/${version}/write.js`)
+    ),
+    compile(
+      compiler.readCompiler,
+      join(__dirname, `../../data/${version}/read.js`)
+    )
   )
 }
 

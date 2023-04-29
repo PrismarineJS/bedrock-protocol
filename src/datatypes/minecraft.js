@@ -8,7 +8,9 @@ const protoLEV = nbt.protos.littleVarint
 const zigzag = require('prismarine-nbt/compiler-zigzag')
 
 function readUUID (buffer, offset) {
-  if (offset + 16 > buffer.length) { throw new PartialReadError() }
+  if (offset + 16 > buffer.length) {
+    throw new PartialReadError()
+  }
   return {
     value: UUID.stringify(buffer.slice(offset, 16 + offset)),
     size: 16
@@ -102,7 +104,14 @@ function sizeOfEntityMetadata (value, _ref3) {
 }
 
 function readIpAddress (buffer, offset) {
-  const address = buffer[offset] + '.' + buffer[offset + 1] + '.' + buffer[offset + 2] + '.' + buffer[offset + 3]
+  const address =
+    buffer[offset] +
+    '.' +
+    buffer[offset + 1] +
+    '.' +
+    buffer[offset + 2] +
+    '.' +
+    buffer[offset + 3]
   return {
     size: 4,
     value: address
@@ -157,7 +166,11 @@ module.exports = {
   uuid: [readUUID, writeUUID, 16],
   nbt: [readNbt, writeNbt, sizeOfNbt],
   lnbt: [readNbtLE, writeNbtLE, sizeOfNbtLE],
-  entityMetadataLoop: [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
+  entityMetadataLoop: [
+    readEntityMetadata,
+    writeEntityMetadata,
+    sizeOfEntityMetadata
+  ],
   ipAddress: [readIpAddress, writeIpAddress, 4],
   endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],
   zigzag32: zigzag.zigzag32,

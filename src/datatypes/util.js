@@ -4,7 +4,7 @@ const UUID = require('uuid-1345')
 function getFiles (dir) {
   let results = []
   const list = fs.readdirSync(dir)
-  list.forEach((file) => {
+  list.forEach(file => {
     file = dir + '/' + file
     const stat = fs.statSync(file)
     if (stat && stat.isDirectory()) {
@@ -24,7 +24,9 @@ async function waitFor (cb, withTimeout, onTimeout) {
   let t
   const ret = await Promise.race([
     new Promise((resolve, reject) => cb(resolve, reject)),
-    new Promise(resolve => { t = setTimeout(() => resolve('timeout'), withTimeout) })
+    new Promise(resolve => {
+      t = setTimeout(() => resolve('timeout'), withTimeout)
+    })
   ])
   clearTimeout(t)
   if (ret === 'timeout') await onTimeout()
@@ -32,11 +34,18 @@ async function waitFor (cb, withTimeout, onTimeout) {
 }
 
 function serialize (obj = {}, fmt) {
-  return JSON.stringify(obj, (k, v) => typeof v === 'bigint' ? v.toString() : v, fmt)
+  return JSON.stringify(
+    obj,
+    (k, v) => (typeof v === 'bigint' ? v.toString() : v),
+    fmt
+  )
 }
 
 function uuidFrom (string) {
-  return UUID.v3({ namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: string })
+  return UUID.v3({
+    namespace: '6ba7b811-9dad-11d1-80b4-00c04fd430c8',
+    name: string
+  })
 }
 
 function nextUUID () {
@@ -45,4 +54,12 @@ function nextUUID () {
 
 const isDebug = process.env.DEBUG?.includes('minecraft-protocol')
 
-module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom, nextUUID, isDebug }
+module.exports = {
+  getFiles,
+  sleep,
+  waitFor,
+  serialize,
+  uuidFrom,
+  nextUUID,
+  isDebug
+}

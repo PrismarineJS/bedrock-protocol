@@ -4,7 +4,8 @@ const { PUBLIC_KEY } = require('./constants')
 const algorithm = 'ES384'
 
 module.exports = (client, server, options) => {
-  const skinData = require('minecraft-data')('bedrock_' + options.version).defaultSkin
+  const skinData = require('minecraft-data')('bedrock_' + options.version)
+    .defaultSkin
 
   client.createClientChain = (mojangKey, offline) => {
     const privateKey = client.ecdhKeyPair.privateKey
@@ -21,19 +22,29 @@ module.exports = (client, server, options) => {
         certificateAuthority: true,
         identityPublicKey: client.clientX509
       }
-      token = JWT.sign(payload, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509, typ: undefined } })
+      token = JWT.sign(payload, privateKey, {
+        algorithm,
+        notBefore: 0,
+        issuer: 'self',
+        expiresIn: 60 * 60,
+        header: { x5u: client.clientX509, typ: undefined }
+      })
     } else {
-      token = JWT.sign({
-        identityPublicKey: mojangKey || PUBLIC_KEY,
-        certificateAuthority: true
-      }, privateKey, { algorithm, header: { x5u: client.clientX509, typ: undefined } })
+      token = JWT.sign(
+        {
+          identityPublicKey: mojangKey || PUBLIC_KEY,
+          certificateAuthority: true
+        },
+        privateKey,
+        { algorithm, header: { x5u: client.clientX509, typ: undefined } }
+      )
     }
 
     client.clientIdentityChain = token
     client.createClientUserChain(privateKey)
   }
 
-  client.createClientUserChain = (privateKey) => {
+  client.createClientUserChain = privateKey => {
     let payload = {
       ...skinData,
       SkinGeometryDataEngineVersion: '', // 1.17.30
@@ -53,7 +64,9 @@ module.exports = (client, server, options) => {
       // PlayFabID is the PlayFab ID produced for the skin. PlayFab is the company that hosts the Marketplace,
       // skins and other related features from the game. This ID is the ID of the skin used to store the skin
       // inside of PlayFab.
-      PlayFabId: nextUUID().replace(/-/g, '').slice(0, 16), // 1.16.210
+      PlayFabId: nextUUID()
+        .replace(/-/g, '')
+        .slice(0, 16), // 1.16.210
 
       SelfSignedId: nextUUID(),
       ServerAddress: `${options.host}:${options.port}`,
@@ -69,6 +82,10 @@ module.exports = (client, server, options) => {
     payload = { ...payload, ...customPayload }
     payload.ServerAddress = `${options.host}:${options.port}`
 
-    client.clientUserChain = JWT.sign(payload, privateKey, { algorithm, header: { x5u: client.clientX509, typ: undefined }, noTimestamp: true /* pocketmine.. */ })
+    client.clientUserChain = JWT.sign(payload, privateKey, {
+      algorithm,
+      header: { x5u: client.clientX509, typ: undefined },
+      noTimestamp: true /* pocketmine.. */
+    })
   }
 }

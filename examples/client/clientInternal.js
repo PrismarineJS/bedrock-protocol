@@ -14,13 +14,13 @@ async function test () {
   })
   client.connect()
 
-  client.once('resource_packs_info', (packet) => {
+  client.once('resource_packs_info', packet => {
     client.write('resource_pack_client_response', {
       response_status: 'completed',
       resourcepackids: []
     })
 
-    client.once('resource_pack_stack', (stack) => {
+    client.once('resource_pack_stack', stack => {
       client.write('resource_pack_client_response', {
         response_status: 'completed',
         resourcepackids: []
@@ -29,7 +29,10 @@ async function test () {
 
     client.queue('client_cache_status', { enabled: false })
     client.queue('request_chunk_radius', { chunk_radius: 1 })
-    client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
+    client.queue('tick_sync', {
+      request_time: BigInt(Date.now()),
+      response_time: 0n
+    })
   })
 
   client.on('level_chunk', async packet => {

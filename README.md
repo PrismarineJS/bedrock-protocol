@@ -1,4 +1,5 @@
 # bedrock-protocol
+
 [![NPM version](https://img.shields.io/npm/v/bedrock-protocol.svg)](http://npmjs.com/package/bedrock-protocol)
 [![Build Status](https://github.com/PrismarineJS/bedrock-protocol/workflows/CI/badge.svg)](https://github.com/PrismarineJS/bedrock-protocol/actions?query=workflow%3A%22CI%22)
 [![Try it on gitpod](https://img.shields.io/badge/try-on%20gitpod-brightgreen.svg)](https://gitpod.io/#https://github.com/PrismarineJS/bedrock-protocol)
@@ -11,22 +12,21 @@ Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication
 
 ## Features
 
- - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0, 1.17.10, 1.17.30, 1.17.40, 1.18.0, 1.18.11, 1.18.30, 1.19.1, 1.19.10, 1.19.20, 1.19.21, 1.19.30, 1.19.40, 1.19.41, 1.19.50, 1.19.60, 1.19.62, 1.19.63, 1.19.70, 1.19.80
- - Parse and serialize packets as JavaScript objects
- - Automatically respond to keep-alive packets
- - [Proxy and mitm connections](docs/API.md#proxy-docs)
- - Client
-   - Authentication
-   - Encryption
-   - [Ping a server for status](docs/API.md#beping-host-port---serveradvertisement)
- - Server
-   - Autheticate clients with Xbox Live 
-   - Ping status
+- Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0, 1.17.10, 1.17.30, 1.17.40, 1.18.0, 1.18.11, 1.18.30, 1.19.1, 1.19.10, 1.19.20, 1.19.21, 1.19.30, 1.19.40, 1.19.41, 1.19.50, 1.19.60, 1.19.62, 1.19.63, 1.19.70, 1.19.80
+- Parse and serialize packets as JavaScript objects
+- Automatically respond to keep-alive packets
+- [Proxy and mitm connections](docs/API.md#proxy-docs)
+- Client
+  - Authentication
+  - Encryption
+  - [Ping a server for status](docs/API.md#beping-host-port---serveradvertisement)
+- Server
+  - Autheticate clients with Xbox Live
+  - Ping status
 
- * Robust test coverage.
- * Easily extend with many other PrismarineJS projects, world providers, and more 
- * Optimized for rapidly staying up to date with Minecraft protocol updates.
-
+* Robust test coverage.
+* Easily extend with many other PrismarineJS projects, world providers, and more
+* Optimized for rapidly staying up to date with Minecraft protocol updates.
 
 Want to contribute on something important for PrismarineJS ? go to https://github.com/PrismarineJS/mineflayer/wiki/Big-Prismarine-projects
 
@@ -43,17 +43,24 @@ Example to connect to a server in offline mode, and relay chat messages back:
 ```js
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
-  host: 'localhost',   // optional
-  port: 19132,         // optional, default 19132
-  username: 'Notch',   // the username you want to join as, optional if online mode
-  offline: true       // optional, default false. if true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
+  host: 'localhost', // optional
+  port: 19132, // optional, default 19132
+  username: 'Notch', // the username you want to join as, optional if online mode
+  offline: true // optional, default false. if true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
 })
 
-client.on('text', (packet) => { // Listen for chat messages from the server and echo them back.
+client.on('text', packet => {
+  // Listen for chat messages from the server and echo them back.
   if (packet.source_name != client.username) {
     client.queue('text', {
-      type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '',
-      message: `${packet.source_name} said: ${packet.message} on ${new Date().toLocaleString()}`
+      type: 'chat',
+      needs_translation: false,
+      source_name: client.username,
+      xuid: '',
+      platform_chat_id: '',
+      message: `${packet.source_name} said: ${
+        packet.message
+      } on ${new Date().toLocaleString()}`
     })
   }
 })
@@ -67,26 +74,32 @@ Example to connect to a Realm that the authenticating account is owner of or has
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
   realms: {
-    pickRealm: (realms) => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+    pickRealm: realms => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
   }
 })
 ```
 
 ### Server example
 
-*Can't connect locally on Windows? See the [faq](docs/FAQ.md)*
+_Can't connect locally on Windows? See the [faq](docs/FAQ.md)_
+
 ```js
 const bedrock = require('bedrock-protocol')
 const server = bedrock.createServer({
-  host: '0.0.0.0',       // optional. host to bind as.
-  port: 19132,           // optional
-  version: '1.17.10',   // optional. The server version, latest if not specified. 
+  host: '0.0.0.0', // optional. host to bind as.
+  port: 19132, // optional
+  version: '1.17.10' // optional. The server version, latest if not specified.
 })
 
 server.on('connect', client => {
-  client.on('join', () => { // The client has joined the server.
-    const d = new Date()  // Once client is in the server, send a colorful kick message
-    client.disconnect(`Good ${d.getHours() < 12 ? '§emorning§r' : '§3afternoon§r'} :)\n\nMy time is ${d.toLocaleString()} !`)
+  client.on('join', () => {
+    // The client has joined the server.
+    const d = new Date() // Once client is in the server, send a colorful kick message
+    client.disconnect(
+      `Good ${
+        d.getHours() < 12 ? '§emorning§r' : '§3afternoon§r'
+      } :)\n\nMy time is ${d.toLocaleString()} !`
+    )
   })
 })
 ```
@@ -104,9 +117,9 @@ ping({ host: 'play.cubecraft.net', port: 19132 }).then(res => {
 
 For documentation on the protocol, and packets/fields see the [protocol documentation](https://prismarinejs.github.io/minecraft-data/protocol).
 
-* See [API documentation](docs/API.md)
+- See [API documentation](docs/API.md)
 
-* See [frequently asked questions and answers](docs/FAQ.md)
+- See [frequently asked questions and answers](docs/FAQ.md)
 
 <!-- ## Projects Using bedrock-protocol
 
@@ -116,7 +129,7 @@ For documentation on the protocol, and packets/fields see the [protocol document
 
 ## Testing
 
-```npm test```
+`npm test`
 
 ## Debugging
 
