@@ -4,13 +4,15 @@ import { ServerDeviceCodeResponse } from 'prismarine-auth'
 
 declare module 'bedrock-protocol' {
   type Version =
+    | '1.19.80'
     | '1.19.70'
     | '1.19.63'
     | '1.19.62'
     | '1.19.60'
     | '1.19.51'
     | '1.19.50'
-    | '1.19.41 | 1.19.40'
+    | '1.19.41' 
+    | '1.19.40'
     | '1.19.31'
     | '1.19.30'
     | '1.19.22'
