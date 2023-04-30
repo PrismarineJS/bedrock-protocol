@@ -11,7 +11,7 @@ declare module 'bedrock-protocol' {
     | '1.19.60'
     | '1.19.51'
     | '1.19.50'
-    | '1.19.41' 
+    | '1.19.41'
     | '1.19.40'
     | '1.19.31'
     | '1.19.30'
@@ -168,8 +168,6 @@ declare module 'bedrock-protocol' {
       uuid: string
       name: string
     }
-    userData?: object
-    skinData?: object
     version: string
 
     getUserData(): object
