@@ -3,6 +3,7 @@
   "version": "3.28.0",
   "description": "Minecraft Bedrock Edition protocol library",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "build": "cd tools && node compileProtocol.js",
     "test": "mocha --bail --exit",
