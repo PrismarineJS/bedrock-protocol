@@ -10,9 +10,11 @@ const { getPort } = require('../test/util')
 
 function hasDumps (version) {
   const root = join(__dirname, `../data/${version}/sample/packets/`)
+
   if (!fs.existsSync(root) || getFiles(root).length < 10) {
     return false
   }
+
   return true
 }
 
@@ -30,16 +32,15 @@ async function dump (version, force = true) {
     host: '127.0.0.1',
     port,
     version,
-    username: 'Boat' + random,
+    username: 'Packet' + random,
     offline: true
   })
   client.connect()
   return waitFor(async res => {
     const root = join(__dirname, `../data/${client.options.version}/sample/`)
-    if (!fs.existsSync(root + 'packets') || !fs.existsSync(root + 'chunks')) {
-      fs.mkdirSync(root + 'packets', { recursive: true })
-      fs.mkdirSync(root + 'chunks', { recursive: true })
-    }
+
+    fs.mkdirSync(root + 'packets', { recursive: true })
+    fs.mkdirSync(root + 'chunks', { recursive: true })
 
     client.once('resource_packs_info', (packet) => {
       client.write('resource_pack_client_response', {
@@ -56,9 +57,9 @@ async function dump (version, force = true) {
 
       client.queue('client_cache_status', { enabled: false })
       client.queue('request_chunk_radius', { chunk_radius: 1 })
-      // client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
 
       clearInterval(loop)
+
       loop = setInterval(() => {
         client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: BigInt(Date.now()) })
       }, 200)
@@ -68,10 +69,12 @@ async function dump (version, force = true) {
 
     client.on('packet', async packet => { // Packet dumping
       const { name, params } = packet.data
+
       if (name === 'level_chunk') {
         fs.writeFileSync(root + `chunks/${name}-${i++}.bin`, packet.buffer)
         return
       }
+      
       try {
         if (!fs.existsSync(root + `packets/${name}.json`) || force) {
           fs.writeFileSync(root + `packets/${name}.json`, serialize(params, 2))
@@ -83,6 +86,7 @@ async function dump (version, force = true) {
 
     client.on('spawn', () => {
       console.log('Spawned!')
+
       clearInterval(loop)
       client.close()
       handle.kill()
@@ -91,7 +95,7 @@ async function dump (version, force = true) {
   }, 1000 * 60, () => {
     clearInterval(loop)
     handle.kill()
-    throw Error('timed out')
+    throw Error('Timed out')
   })
 }
 
