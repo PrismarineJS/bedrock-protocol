@@ -74,7 +74,7 @@ async function dump (version, force = true) {
         fs.writeFileSync(root + `chunks/${name}-${i++}.bin`, packet.buffer)
         return
       }
-      
+
       try {
         if (!fs.existsSync(root + `packets/${name}.json`) || force) {
           fs.writeFileSync(root + `packets/${name}.json`, serialize(params, 2))
