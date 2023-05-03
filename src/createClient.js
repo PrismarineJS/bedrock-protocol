@@ -20,7 +20,7 @@ function createClient (options) {
         const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
         client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
 
-        if (ad.portV4 && options.followPort) {
+        if (ad.portV4 && client.options.followPort) {
           client.options.port = ad.portV4
         }
 
