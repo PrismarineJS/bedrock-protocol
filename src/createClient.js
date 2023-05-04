@@ -20,8 +20,8 @@ function createClient (options) {
         const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
         client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
 
-        if (ad.port && options.followPort) {
-          client.options.port = ad.port
+        if (ad.portV4 && client.options.followPort) {
+          client.options.port = ad.portV4
         }
 
         client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${ad.version} ${client.options.version !== ad.version ? ` (as ${client.options.version})` : ''}`)
