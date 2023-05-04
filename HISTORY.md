@@ -1,3 +1,8 @@
+## 3.28.1
+  * Improvements to genPacketDumps.js (@andriycraft)
+  * Fix `followPort` option (@LucienHH)
+  * Improve type definitions (@hvlxh)
+
 ## 3.28.0
 * 1.19.80 support
 
