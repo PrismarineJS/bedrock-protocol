@@ -21,5 +21,9 @@ Get-AppxPackage -AllUsers | Where Name -Match ".*Minecraft.*" | Select Name,Inst
 Use the PackageFullName field in place of the `Microsoft.MinecraftUWP_8wekyb3d8bbwe` for the command above.
 
 ## Kicked during login
+NOTE: If you not receiving any errors, the error probably logged in debug mode which is not enabled. To enable it, set `process.env.DEBUG = 'minecraft-protocol'` to the top of the file
 
 Some servers can kick you if you don't set `authTitle` as explained in the README. 
+
+## Kicked during login due to "JWT not active"
+This is due to the NTP (Network Time Protocol) is not synchronized. To fix this, enable the NTP Service
