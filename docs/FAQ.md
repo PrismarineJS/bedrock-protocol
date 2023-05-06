@@ -25,5 +25,6 @@ NOTE: If you not receiving any errors, the error probably logged in debug mode w
 
 Some servers can kick you if you don't set `authTitle` as explained in the README. 
 
-## Kicked during login due to "JWT not active"
-This is due to the NTP (Network Time Protocol) is not synchronized. To fix this, enable the NTP Service
+## Server clients kicked due to "jwt not active"
+
+The system time is incorrect and needs to be corrected.
