@@ -5,25 +5,9 @@ const debug = process.env.CI ? console.debug : require('debug')('minecraft-proto
 const https = require('https')
 const { getFiles, waitFor } = require('../src/datatypes/util')
 
-const agents = [
-  ['Windows', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'],
-  ['macOS', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'],
-  ['Linux', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'],
-  ['iOS', 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/114.0.5735.99 Mobile/15E148 Safari/604.1']
-]
-function getHeaders () {
-  const [plat, agent] = agents[Math.floor(Math.random() * agents.length)]
-  return {
-    Referer: 'https://www.minecraft.net/',
-    'User-Agent': agent,
-    'Sec-Ch-Ua-Platform': plat,
-    'Sec-Ch-Ua': '"Google Chrome";v="114", "Chromium";v="114", ";Not A Brand";v="99"',
-    'Upgrade-Insecure-Requests': '1'
-  }
-}
 function head (url) {
   return new Promise((resolve, reject) => {
-    const req = http.request(url, { method: 'HEAD', timeout: 1000, headers: getHeaders() }, resolve)
+    const req = http.request(url, { method: 'HEAD', timeout: 1000 }, resolve)
     req.on('error', reject)
     req.on('timeout', () => { req.destroy(); debug('HEAD request timeout'); reject(new Error('timeout')) })
     req.end()
@@ -32,7 +16,7 @@ function head (url) {
 function get (url, outPath) {
   const file = fs.createWriteStream(outPath)
   return new Promise((resolve, reject) => {
-    https.get(url, { timeout: 1000 * 20, headers: getHeaders() }, response => {
+    https.get(url, { timeout: 1000 * 20 }, response => {
       if (response.statusCode !== 200) return reject(new Error('Server returned code ' + response.statusCode))
       response.pipe(file)
       file.on('finish', () => {
