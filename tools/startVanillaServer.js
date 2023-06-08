@@ -23,7 +23,7 @@ function getHeaders () {
 }
 function head (url) {
   return new Promise((resolve, reject) => {
-    const req = http.request(url, { method: 'HEAD', timeout: 500, headers: getHeaders() }, resolve)
+    const req = http.request(url, { method: 'HEAD', timeout: 1000, headers: getHeaders() }, resolve)
     req.on('error', reject)
     req.on('timeout', () => { req.destroy(); debug('HEAD request timeout'); reject(new Error('timeout')) })
     req.end()
