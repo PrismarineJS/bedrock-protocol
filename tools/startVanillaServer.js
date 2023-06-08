@@ -18,7 +18,7 @@ function getHeaders () {
     'User-Agent': agent,
     'Sec-Ch-Ua-Platform': plat,
     'Sec-Ch-Ua': '"Google Chrome";v="114", "Chromium";v="114", ";Not A Brand";v="99"',
-    'Upgrade-Insecure-Requests': '1',
+    'Upgrade-Insecure-Requests': '1'
   }
 }
 function head (url) {
