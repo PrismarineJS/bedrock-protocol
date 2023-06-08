@@ -7,7 +7,7 @@ const { getFiles, waitFor } = require('../src/datatypes/util')
 
 function head (url) {
   return new Promise((resolve, reject) => {
-    const req = http.request(url, { method: 'HEAD', timeout: 500 }, resolve)
+    const req = http.request(url, { method: 'HEAD', timeout: 1000 }, resolve)
     req.on('error', reject)
     req.on('timeout', () => { req.destroy(); debug('HEAD request timeout'); reject(new Error('timeout')) })
     req.end()

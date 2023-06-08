@@ -1,3 +1,6 @@
+## 3.29.0
+* 1.20.0 support
+
 ## 3.28.1
 * Fix `followPort` option (@LucienHH)
 * Typescript definition fixes (@hvlxh)
