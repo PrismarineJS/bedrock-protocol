@@ -174,7 +174,7 @@ declare module 'bedrock-protocol' {
     // Skip authentication for connecting clients?
     offline?: false
     // Specifies which game edition to sign in as to the destination server. Optional, but some servers verify this.
-    authTitle?: title | string
+    authTitle?: string
     // Where to proxy requests to.
     destination: {
       realms?: RealmsOptions
