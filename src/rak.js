@@ -68,7 +68,12 @@ class RakNativeClient extends EventEmitter {
           done(ret.extra.toString())
         }
       })
-    }, timeout, () => { throw new RakTimeout('Ping timed out') })
+    }, timeout, () => {
+      if ('REPLIT_ENVIRONMENT' in process.env) {
+        console.warn('A Replit environment was detected. Replit may not support the necessary outbound UDP connections required to connect to a Minecraft server. Please see https://github.com/PrismarineJS/bedrock-protocol/blob/master/docs/FAQ.md for more information.')
+      }
+      throw new RakTimeout('Ping timed out')
+    })
   }
 
   connect () {
