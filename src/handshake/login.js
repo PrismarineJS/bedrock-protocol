@@ -39,6 +39,7 @@ module.exports = (client, server, options) => {
       SkinGeometryDataEngineVersion: client.versionGreaterThanOrEqualTo('1.17.30') ? '' : undefined,
 
       ClientRandomId: Date.now(),
+      CompatibleWithClientSideChunkGen: true,
       CurrentInputMode: 1,
       DefaultInputMode: 1,
       DeviceId: nextUUID(),
