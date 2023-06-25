@@ -1,3 +1,8 @@
+## 3.29.1
+* Add missing data to client login user chain (#420)
+* Add FAQ entry and replit warning on client ping error (#415)
+* types: Fix Relay authTitle type (#418)
+
 ## 3.29.0
 * 1.20.0 support
 
