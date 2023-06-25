@@ -5,4 +5,4 @@ __*
 # Runtime generated data
 data/
 tools/bds*
-*.txt
+tools/pmmp*
