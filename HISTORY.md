@@ -2,7 +2,6 @@
 * Add missing data to client login user chain (#420)
 * Add FAQ entry and replit warning on client ping error (#415)
 * Types: Fix Relay authTitle type (#418)
-* Add tools/installPMMP.sh which allows user to install [PMMP](https://github.com/pmmp/PocketMine-MP) and [PHP Binairies](https://github.com/pmmp/PHP-Binaries) for PM5
 
 ## 3.29.0
 * 1.20.0 support
