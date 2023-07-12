@@ -1,3 +1,7 @@
+## 3.30.0
+* 1.20.10 support (thanks @CreeperG16)
+* [Fix upstream relay batchingInterval (#425)](https://github.com/PrismarineJS/bedrock-protocol/commit/b2c141c25f3fad9641644742b6cc1a71bc601d61) (thanks @GameParrot)
+
 ## 3.29.1
 * Add missing data to client login user chain (#420)
 * Add FAQ entry and replit warning on client ping error (#415)
