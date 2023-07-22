@@ -50,7 +50,7 @@ class RelayPlayer extends Player {
       this.server.deserializer.dumpFailedBuffer(packet, this.connection.address)
       console.error(this.connection.address, e)
 
-      if (this.options.disconnectOnParseError) {
+      if (!this.options.omitParseErrors) {
         this.disconnect('Server packet parse error')
       }
 
