@@ -265,7 +265,7 @@ class Relay extends Server {
       })
       player.on('error', (err) => {
 
-      });
+      })
       player.on('close', (reason) => {
         this.conLog('player disconnected', conn.address, reason)
         this.clientCount--
