@@ -229,7 +229,7 @@ class Relay extends Server {
       this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
     })
     client.on('error', (err) => {
-      ds.emit('error', err);
+      ds.emit('error', err)
     })
     client.on('close', (reason) => {
       ds.disconnect('Backend server closed connection')
