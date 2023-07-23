@@ -264,7 +264,7 @@ class Relay extends Server {
         this.openUpstreamConnection(player, conn.address)
       })
       player.on('error', (err) => {
-
+        console.log(error)
       })
       player.on('close', (reason) => {
         this.conLog('player disconnected', conn.address, reason)
