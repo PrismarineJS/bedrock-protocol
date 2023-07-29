@@ -189,6 +189,9 @@ declare module 'bedrock-protocol' {
     // Only allow one client to connect at a time (default: false)
     forceSinge?: boolean
 
+    // Do not disconnect clients on server packet parsing errors and drop the packet instead (default: false)
+    omitParseErrors?: boolean
+
     // Dispatched when a new client has logged in, and we need authentication
     // tokens to join the backend server. Cached after the first login.
     // If this is not specified, the client will be disconnected with a login prompt.

@@ -49,7 +49,11 @@ class RelayPlayer extends Player {
     } catch (e) {
       this.server.deserializer.dumpFailedBuffer(packet, this.connection.address)
       console.error(this.connection.address, e)
-      this.disconnect('Server packet parse error')
+
+      if (!this.options.omitParseErrors) {
+        this.disconnect('Server packet parse error')
+      }
+
       return
     }
     const name = des.data.name
