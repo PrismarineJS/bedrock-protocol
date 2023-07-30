@@ -162,8 +162,8 @@ declare module 'bedrock-protocol' {
 
     constructor(options: Options)
 
-    listen(host?: string, port?: number): void
-    close(disconnectReason?: string): void
+    listen(host?: string, port?: number): Promise<void>
+    close(disconnectReason?: string): Promise<void>
 
     on(event: 'connect', cb: (client: Player) => void): any
   }
