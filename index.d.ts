@@ -187,7 +187,7 @@ declare module 'bedrock-protocol' {
     enableChunkCaching?: boolean
 
     // Only allow one client to connect at a time (default: false)
-    forceSinge?: boolean
+    forceSingle?: boolean
 
     // Do not disconnect clients on server packet parsing errors and drop the packet instead (default: false)
     omitParseErrors?: boolean
