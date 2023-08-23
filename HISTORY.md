@@ -1,3 +1,10 @@
+## 3.30.1
+* [Update Mojang public key used for logins (#443)](https://github.com/PrismarineJS/bedrock-protocol/commit/f0f1351d40966192e38ee9fe21b7c37754abba04) (thanks @GameParrot)
+* [index.d.ts: Fixed a typo (#441)](https://github.com/PrismarineJS/bedrock-protocol/commit/2c00402a9e9a0a283e712bf4f52190a57ea12c3f) (thanks @kotinash)
+* [Mark `listen` and `close` as async (#440)](https://github.com/PrismarineJS/bedrock-protocol/commit/50cd489f6e16fa6fe04b1825617d8246bd3935f4) (thanks @MrSterdy)
+* [Stop disconnecting when upstream packet deserialization fails (#435)](https://github.com/PrismarineJS/bedrock-protocol/commit/141442057464b3247ace8468863f27a3c334306e) (thanks @MrSterdy)
+* [Add 1.20.0 and 1.20.10 to index.d.ts (#431)](https://github.com/PrismarineJS/bedrock-protocol/commit/010d57e78a9130c612e48db7a32f841de83e9c68) (thanks @CreeperG16)
+
 ## 3.30.0
 * 1.20.10 support (thanks @CreeperG16)
 * [Fix upstream relay batchingInterval (#425)](https://github.com/PrismarineJS/bedrock-protocol/commit/b2c141c25f3fad9641644742b6cc1a71bc601d61) (thanks @GameParrot)
