@@ -1,3 +1,8 @@
+## 3.31.0
+* [1.20.30](https://github.com/PrismarineJS/bedrock-protocol/commit/22502b90fdc29f6327239c6c201370c8f839c892) (thanks @extremeheat)
+* [Add links field to server resource_packs_info](https://github.com/PrismarineJS/bedrock-protocol/commit/f92db61c89851dfbdbc906f926fc1433162854d0) (thanks @extremeheat)
+* [Update API.md (#448)](https://github.com/PrismarineJS/bedrock-protocol/commit/8f3b6c5aecf24d6f8d235afe2a9d911840e6a3f8) (thanks @Laamy)
+
 ## 3.30.1
 * [Update Mojang public key used for logins (#443)](https://github.com/PrismarineJS/bedrock-protocol/commit/f0f1351d40966192e38ee9fe21b7c37754abba04) (thanks @GameParrot)
 * [index.d.ts: Fixed a typo (#441)](https://github.com/PrismarineJS/bedrock-protocol/commit/2c00402a9e9a0a283e712bf4f52190a57ea12c3f) (thanks @kotinash)
