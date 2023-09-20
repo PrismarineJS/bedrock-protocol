@@ -47,7 +47,8 @@ async function startTest (version = CURRENT_VERSION, ok) {
         must_accept: false,
         has_scripts: false,
         behaviour_packs: [],
-        texture_packs: []
+        texture_packs: [],
+        resource_pack_links: []
       })
 
       client.once('resource_pack_client_response', async rp => {
