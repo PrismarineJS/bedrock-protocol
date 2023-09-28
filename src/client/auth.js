@@ -14,12 +14,13 @@ function validateOptions (options) {
     options.deviceType = 'Nintendo'
     options.flow = 'live'
   }
+  if (!(options.authflow instanceof PrismarineAuth)) {
+    options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+  }
 }
 
 async function realmAuthenticate (options) {
   validateOptions(options)
-
-  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
   const api = RealmAPI.from(options.authflow, 'bedrock')
 
@@ -64,7 +65,7 @@ async function realmAuthenticate (options) {
 async function authenticate (client, options) {
   validateOptions(options)
   try {
-    const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+    const authflow = options.authflow
     const chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
       if (options.password) console.warn('Sign in failed, try removing the password field')
       throw e
