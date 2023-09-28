@@ -65,8 +65,7 @@ async function realmAuthenticate (options) {
 async function authenticate (client, options) {
   validateOptions(options)
   try {
-    const authflow = options.authflow
-    const chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
+    const chains = await options.authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
       if (options.password) console.warn('Sign in failed, try removing the password field')
       throw e
     })
