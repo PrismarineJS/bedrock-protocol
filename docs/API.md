@@ -23,6 +23,7 @@ Returns a `Client` instance and connects to the server.
 | raknetBackend | *optional* | Specifies the raknet implementation to use. Possible options are 'raknet-native' (default, original C++ implementation), 'jsp-raknet' (JS port), and 'raknet-node' (Rust port). Please note when using the non-JS implementation you may the need approporate build tools on your system (for example a C++ or Rust compiler). |
 | compressionLevel | *optional* | What zlib compression level to use, default to **7** |
 | batchingInterval | *optional* | How frequently, in milliseconds to flush and write the packet queue (default: 20ms) |
+| authflow | *optional* | You can optionally provide your own [Authflow](https://github.com/PrismarineJS/prismarine-auth#authflow) instance using this option. If not provided, the client will create one automatically and passthrough options from the client. |
 | realms | *optional* | An object which should contain one of the following properties: `realmId`, `realmInvite`, `pickRealm`. When defined will attempt to join a Realm without needing to specify host/port. **The authenticated account must either own the Realm or have been invited to it** |
 | realms.realmId | *optional* | The id of the Realm to join. |
 | realms.realmInvite | *optional* | The invite link/code of the Realm to join. |
