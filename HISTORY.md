@@ -1,3 +1,7 @@
+## 3.32.0
+* [1.20.40 support (#459)](https://github.com/PrismarineJS/bedrock-protocol/commit/63eb673c1f30beb58f97e3b37295129000bf6a10) (thanks @CreeperG16)
+* [Update Minecraft wiki link to new domain (#455)](https://github.com/PrismarineJS/bedrock-protocol/commit/689658c4ab1ccb3ef1ae812d78d090212b1acf3f) (thanks @Spongecade)
+
 ## 3.31.0
 * [1.20.30](https://github.com/PrismarineJS/bedrock-protocol/commit/22502b90fdc29f6327239c6c201370c8f839c892) (thanks @extremeheat)
 * [Add links field to server resource_packs_info](https://github.com/PrismarineJS/bedrock-protocol/commit/f92db61c89851dfbdbc906f926fc1433162854d0) (thanks @extremeheat)
