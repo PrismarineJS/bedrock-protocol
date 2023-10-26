@@ -1,6 +1,5 @@
 ## 3.32.0
-* [1.20.40 (#459)](https://github.com/PrismarineJS/bedrock-protocol/commit/63eb673c1f30beb58f97e3b37295129000bf6a10) (thanks @extremeheat)
-* [Update workflow node version](https://github.com/PrismarineJS/bedrock-protocol/commit/50911d2463aeb5f78c16429d2d16b71a2496ad95) (thanks @extremeheat)
+* [1.20.40 support (#459)](https://github.com/PrismarineJS/bedrock-protocol/commit/63eb673c1f30beb58f97e3b37295129000bf6a10) (thanks @CreeperG16)
 * [Update Minecraft wiki link to new domain (#455)](https://github.com/PrismarineJS/bedrock-protocol/commit/689658c4ab1ccb3ef1ae812d78d090212b1acf3f) (thanks @Spongecade)
 
 ## 3.31.0
