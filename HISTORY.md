@@ -1,3 +1,7 @@
+## 3.33.0
+* [1.20.50 (#466)](https://github.com/PrismarineJS/bedrock-protocol/commit/d53211c6a1fe5f941ce547886ad6ec031ae05d9d) (thanks @extremeheat)
+* [Add 1.20.30 and 1.20.40 to index.d.ts (#461)](https://github.com/PrismarineJS/bedrock-protocol/commit/2ecf01d63e64b910b87f303fc4fb2b30f392cb28) (thanks @CreeperG16)
+
 ## 3.32.0
 * [1.20.40 support (#459)](https://github.com/PrismarineJS/bedrock-protocol/commit/63eb673c1f30beb58f97e3b37295129000bf6a10) (thanks @CreeperG16)
 * [Update Minecraft wiki link to new domain (#455)](https://github.com/PrismarineJS/bedrock-protocol/commit/689658c4ab1ccb3ef1ae812d78d090212b1acf3f) (thanks @Spongecade)
