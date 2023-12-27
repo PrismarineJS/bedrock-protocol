@@ -1,3 +1,6 @@
+## 3.33.1
+* [Fix zigzag type move in prismarine-nbt (#471)](https://github.com/PrismarineJS/bedrock-protocol/commit/7b74cbf7129646adc80d50304afce6240848cfae) (thanks @extremeheat)
+
 ## 3.33.0
 * [1.20.50 (#466)](https://github.com/PrismarineJS/bedrock-protocol/commit/d53211c6a1fe5f941ce547886ad6ec031ae05d9d) (thanks @extremeheat)
 * [Add 1.20.30 and 1.20.40 to index.d.ts (#461)](https://github.com/PrismarineJS/bedrock-protocol/commit/2ecf01d63e64b910b87f303fc4fb2b30f392cb28) (thanks @CreeperG16)
