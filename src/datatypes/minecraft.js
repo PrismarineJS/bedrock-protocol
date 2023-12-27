@@ -5,7 +5,7 @@ const UUID = require('uuid-1345')
 const protoLE = nbt.protos.little
 const protoLEV = nbt.protos.littleVarint
 // TODO: deal with this:
-const zigzag = require('prismarine-nbt/compiler-zigzag')
+const zigzag = require('prismarine-nbt/zigzag')
 
 function readUUID (buffer, offset) {
   if (offset + 16 > buffer.length) { throw new PartialReadError() }
@@ -160,6 +160,6 @@ module.exports = {
   entityMetadataLoop: [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
   ipAddress: [readIpAddress, writeIpAddress, 4],
   endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],
-  zigzag32: zigzag.zigzag32,
-  zigzag64: zigzag.zigzag64
+  zigzag32: zigzag.interpret.zigzag32,
+  zigzag64: zigzag.interpret.zigzag64
 }
