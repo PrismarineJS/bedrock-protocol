@@ -15,7 +15,7 @@ function createProtocol (version) {
   const compiler = new ProtoDefCompiler()
   const protocol = mcData('bedrock_' + version).protocol.types
   compiler.addTypes(require('../src/datatypes/compiler-minecraft'))
-  compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
+  compiler.addTypes(require('prismarine-nbt/zigzag').compiler)
   compiler.addTypesToCompile(protocol)
 
   fs.writeFileSync('./read.js', 'module.exports = ' + compiler.readCompiler.generate().replace('() =>', 'native =>'))

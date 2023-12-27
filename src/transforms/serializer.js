@@ -37,7 +37,7 @@ function createProtocol (version) {
   const compiler = new ProtoDefCompiler()
   compiler.addTypesToCompile(protocol.types)
   compiler.addTypes(require('../datatypes/compiler-minecraft'))
-  compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
+  compiler.addTypes(require('prismarine-nbt/zigzag').compiler)
 
   const compiledProto = compiler.compileProtoDefSync()
   return compiledProto
@@ -47,7 +47,7 @@ function createProtocol (version) {
 function getProtocol (version) {
   const compiler = new ProtoDefCompiler()
   compiler.addTypes(require(join(__dirname, '../datatypes/compiler-minecraft')))
-  compiler.addTypes(require('prismarine-nbt/compiler-zigzag'))
+  compiler.addTypes(require('prismarine-nbt/zigzag').compiler)
 
   global.PartialReadError = require('protodef/src/utils').PartialReadError
   const compile = (compiler, file) => require(file)(compiler.native)
