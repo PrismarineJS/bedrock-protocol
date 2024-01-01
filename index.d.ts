@@ -196,6 +196,9 @@ declare module 'bedrock-protocol' {
     // tokens to join the backend server. Cached after the first login.
     // If this is not specified, the client will be disconnected with a login prompt.
     onMsaCode?(data: ServerDeviceCodeResponse, client: Client): any
+    // prismarine-auth configuration
+    flow?: string,
+    deviceType?: string
   }
 
   export class Relay extends Server {
