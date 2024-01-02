@@ -186,6 +186,8 @@ class Relay extends Server {
   async openUpstreamConnection (ds, clientAddr) {
     const options = {
       authTitle: this.options.authTitle,
+      flow: this.options.flow,
+      deviceType: this.options.deviceType,
       offline: this.options.destination.offline ?? this.options.offline,
       username: this.options.offline ? ds.profile.name : ds.profile.xuid,
       version: this.options.version,
