@@ -5,7 +5,7 @@
 
 [![Official Discord](https://img.shields.io/static/v1.svg?label=OFFICIAL&message=DISCORD&color=blue&logo=discord&style=for-the-badge)](https://discord.gg/GsEFRM8)
 
-Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [contribute](CONTRIBUTING.md).
+Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication and encryption. Help [contribute](docs/CONTRIBUTING.md).
 
 [Protocol doc](https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.19.10&d=protocol)
 
@@ -126,7 +126,7 @@ Through node.js, add `process.env.DEBUG = 'minecraft-protocol'` at the top of yo
 
 ## Contribute
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) and https://github.com/PrismarineJS/prismarine-contribute
+Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) and https://github.com/PrismarineJS/prismarine-contribute
 
 ## History
 
