@@ -126,7 +126,7 @@ function read_player_position(stream) {
         case 'player_jump':
         case 'player_autojump':
             ret.original_position = read_position(stream)
-            ret.jump_tick = stream.readLI64(stream)
+            ret.jump_tick = stream.readLI64()
             break
         case 'player_fall':
             ret.original_position = read_position(stream)
