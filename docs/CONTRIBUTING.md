@@ -110,37 +110,39 @@ The above roughly translates to the following JavaScript code to read a packet:
 ```js
 function read_position(stream) {
     const ret = {}
-    ret.x = stream.readSignedInt32LE()
-    ret.z = stream.readUnsignedInt32LE()
-    ret.y = stream.readFloat32LE()
+    ret.x = stream.readLI32()
+    ret.z = stream.readLU32()
+    ret.y = stream.readLF32()
     return ret
 }
 
 function read_player_position(stream) {
     const ret = {}
     ret.on_ground = Boolean(stream.readU8())
-    ret.position = read_player_position(stream)
+    ret.position = read_position(stream)
     let __movement_reason = stream.readU8()
     let movement_reason = { 0: 'player_jump', 1: 'player_autojump', 2: 'player_sneak', 3: 'player_sprint', 4: 'player_fall' }[__movement_reason]
     switch (movement_reason) {
         case 'player_jump':
         case 'player_autojump':
-            ret.original_position = read_player_position(stream)
-            ret.jump_tick = stream.readInt64LE(stream)
+            ret.original_position = read_position(stream)
+            ret.jump_tick = stream.readLI64()
             break
         case 'player_fall':
-            ret.original_position = read_player_position(stream)
+            ret.original_position = read_position(stream)
             break
         default: break
     }
     ret.player_hunger = undefined
     if (movement_reason == 'player_sprint') ret.player_hunger = stream.readU8()
     ret.last_positions = []
-    for (let i = 0; i < stream.readUnsignedVarInt(); i++) {
+    let __latest_positions_len = stream.readUnsignedVarInt()
+    for (let i = 0; i < __latest_positions_len; i++) {
         ret.last_positions.push(read_player_position(stream))
     }
     ret.keys_down = []
-    for (let i = 0; i < stream.readZigZagVarInt(); i++) {
+    let __keys_down_len = stream.readZigZagVarInt()
+    for (let i = 0; i < __keys_down_len; i++) {
         const ret1 = {}
         ret1.up = Boolean(stream.readU8())
         ret1.down = Boolean(stream.readU8())
