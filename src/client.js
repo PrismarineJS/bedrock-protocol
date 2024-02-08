@@ -42,6 +42,7 @@ class Client extends Connection {
     this.validateOptions()
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
+    this._loadFeatures()
 
     KeyExchange(this, null, this.options)
     Login(this, null, this.options)
@@ -53,6 +54,17 @@ class Client extends Connection {
     this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
 
     this.emit('connect_allowed')
+  }
+
+  _loadFeatures () {
+    try {
+      const mcData = require('minecraft-data')('bedrock_' + this.options.version)
+      this.features = {
+        compressorInHeader: mcData.supportFeature('compressorInPacketHeader')
+      }
+    } catch (e) {
+      throw new Error(`Unsupported version: '${this.options.version}', no data available`)
+    }
   }
 
   connect () {
@@ -120,6 +132,7 @@ class Client extends Connection {
   updateCompressorSettings (packet) {
     this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
     this.compressionThreshold = packet.compression_threshold
+    this.compressionReady = true
   }
 
   sendLogin () {

@@ -36,7 +36,10 @@ function createEncryptor (client, iv) {
   // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
 
   function process (chunk) {
-    const buffer = Zlib.deflateRawSync(chunk, { level: client.compressionLevel })
+    const compressed = Zlib.deflateRawSync(chunk, { level: client.compressionLevel })
+    const buffer = client.features.compressorInHeader
+      ? Buffer.concat([Buffer.from([0]), compressed])
+      : compressed
     const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
     client.sendCounter++
     client.cipher.write(packet)
@@ -70,7 +73,22 @@ function createDecryptor (client, iv) {
       return
     }
 
-    const buffer = Zlib.inflateRawSync(chunk, { chunkSize: 512000 })
+    let buffer
+    if (client.features.compressorInHeader) {
+      switch (packet[0]) {
+        case 0:
+          buffer = Zlib.inflateRawSync(packet.slice(1), { chunkSize: 512000 })
+          break
+        case 255:
+          buffer = packet.slice(1)
+          break
+        default:
+          client.emit('error', Error(`Unsupported compressor: ${packet[0]}`))
+      }
+    } else {
+      buffer = Zlib.inflateRawSync(packet, { chunkSize: 512000 })
+    }
+
     client.onDecryptedPacket(buffer)
   }
 

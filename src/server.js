@@ -15,6 +15,7 @@ class Server extends EventEmitter {
 
     this.RakServer = require('./rak')(this.options.raknetBackend).RakServer
 
+    this._loadFeatures(this.options.version)
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
     this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)
@@ -25,6 +26,17 @@ class Server extends EventEmitter {
     this.conLog = debug
 
     this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
+  }
+
+  _loadFeatures (version) {
+    try {
+      const mcData = require('minecraft-data')('bedrock_' + version)
+      this.features = {
+        compressorInHeader: mcData.supportFeature('compressorInPacketHeader')
+      }
+    } catch (e) {
+      throw new Error(`Unsupported version: '${version}', no data available`)
+    }
   }
 
   setCompressor (algorithm, level = 1, threshold = 256) {
