@@ -37,7 +37,7 @@ function createEncryptor (client, iv) {
 
   function process (chunk) {
     const compressed = Zlib.deflateRawSync(chunk, { level: client.compressionLevel })
-    const buffer = client.versionGreaterThanOrEqualTo('1.20.61')
+    const buffer = client.features.compressorInHeader
       ? Buffer.concat([Buffer.from([0]), compressed])
       : compressed
     const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
@@ -74,9 +74,7 @@ function createDecryptor (client, iv) {
     }
 
     let buffer
-    if (client.versionLessThan('1.20.61')) {
-      buffer = Zlib.inflateRawSync(packet, { chunkSize: 512000 })
-    } else {
+    if (client.features.compressorInHeader) {
       switch (packet[0]) {
         case 0:
           buffer = Zlib.inflateRawSync(packet.slice(1), { chunkSize: 512000 })
@@ -87,6 +85,8 @@ function createDecryptor (client, iv) {
         default:
           client.emit('error', Error(`Unsupported compressor: ${packet[0]}`))
       }
+    } else {
+      buffer = Zlib.inflateRawSync(packet, { chunkSize: 512000 })
     }
 
     client.onDecryptedPacket(buffer)

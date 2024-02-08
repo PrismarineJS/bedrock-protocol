@@ -10,6 +10,7 @@ class Player extends Connection {
   constructor (server, connection) {
     super()
     this.server = server
+    this.features = server.features
     this.serializer = server.serializer
     this.deserializer = server.deserializer
     this.connection = connection

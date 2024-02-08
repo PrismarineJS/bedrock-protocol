@@ -3,13 +3,13 @@ const zlib = require('zlib')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
-  constructor (compressor, compressionLevel, compressionThreshold, writeCompressor) {
+  constructor (client) {
     // Encoding
     this.packets = []
-    this.compressor = compressor || 'none'
-    this.compressionLevel = compressionLevel
-    this.compressionThreshold = compressionThreshold
-    this.writeCompressor = writeCompressor
+    this.compressor = client.compressionAlgorithm || 'none'
+    this.compressionLevel = client.compressionLevel
+    this.compressionThreshold = client.compressionThreshold
+    this.writeCompressor = client.features.compressorInHeader && client.compressionReady
   }
 
   // No compression in base class
@@ -22,23 +22,16 @@ class Framer {
   }
 
   static decompress (algorithm, buffer) {
-    try {
-      switch (algorithm) {
-        case 'deflate': return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
-        case 'snappy': throw Error('Snappy compression not implemented')
-        case 'none': return buffer
-        default: throw Error('Unknown compression type ' + algorithm)
-      }
-    } catch {
-      return buffer
-    }
-  }
-
-  static decompress2 (algorithm, buffer) {
     switch (algorithm) {
-      case 0: return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
-      case 1: throw Error('Snappy compression not implemented')
-      case 255: return buffer
+      case 0:
+      case 'deflate':
+        return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
+      case 1:
+      case 'snappy':
+        throw Error('Snappy compression not implemented')
+      case 'none':
+      case 255:
+        return buffer
       default: throw Error('Unknown compression type ' + algorithm)
     }
   }
@@ -47,11 +40,18 @@ class Framer {
     // Read header
     if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
     const buffer = buf.slice(1)
+    // Decompress
     let decompressed
-    if (client.compressionReady && client.versionGreaterThanOrEqualTo('1.20.61')) {
-      decompressed = this.decompress2(buffer[0], buffer.slice(1))
+    if (client.features.compressorInHeader && client.compressionReady) {
+      decompressed = this.decompress(buffer[0], buffer.slice(1))
     } else {
-      decompressed = this.decompress(client.compressionAlgorithm, buffer)
+      // On old versions, compressor is session-wide ; failing to decompress
+      // a packet will assume it's not compressed
+      try {
+        decompressed = this.decompress(client.compressionAlgorithm, buffer)
+      } catch (e) {
+        decompressed = buffer
+      }
     }
     return Framer.getPackets(decompressed)
   }

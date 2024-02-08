@@ -67,9 +67,7 @@ class Connection extends EventEmitter {
   write (name, params) {
     this.outLog?.(name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
-    const shouldWriteCompressor = this.compressionReady && this.versionGreaterThanOrEqualTo('1.20.61')
-  console.log('Should write compressor', shouldWriteCompressor, this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
-    const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold, shouldWriteCompressor)
+    const batch = new Framer(this)
     const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
 
@@ -95,8 +93,7 @@ class Connection extends EventEmitter {
 
   _tick () {
     if (this.sendQ.length) {
-      const shouldWriteCompressor = this.compressionReady && this.versionGreaterThanOrEqualTo('1.20.61')
-      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold, shouldWriteCompressor)
+      const batch = new Framer(this)
       batch.addEncodedPackets(this.sendQ)
       this.sendQ = []
       this.sendIds = []
@@ -120,8 +117,7 @@ class Connection extends EventEmitter {
    */
   sendBuffer (buffer, immediate = false) {
     if (immediate) {
-      const shouldWriteCompressor = this.compressionReady && this.versionGreaterThanOrEqualTo('1.20.61')
-      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold, shouldWriteCompressor)
+      const batch = new Framer(this)
       batch.addEncodedPacket(buffer)
       if (this.encryptionEnabled) {
         this.sendEncryptedBatch(batch)
