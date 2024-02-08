@@ -28,6 +28,7 @@ class Connection extends EventEmitter {
   }
 
   versionLessThan (version) {
+    // console.log('Version Less than', version, this.options.protocolVersion < (typeof version === 'string' ? Versions[version] : version))
     return this.options.protocolVersion < (typeof version === 'string' ? Versions[version] : version)
   }
 
@@ -36,6 +37,7 @@ class Connection extends EventEmitter {
   }
 
   versionGreaterThanOrEqualTo (version) {
+    // console.log(Versions, this.options.protocolVersion)
     return this.options.protocolVersion >= (typeof version === 'string' ? Versions[version] : version)
   }
 
@@ -65,7 +67,9 @@ class Connection extends EventEmitter {
   write (name, params) {
     this.outLog?.(name, params)
     if (name === 'start_game') this.updateItemPalette(params.itemstates)
-    const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
+    const shouldWriteCompressor = this.compressionReady && this.versionGreaterThanOrEqualTo('1.20.61')
+  console.log('Should write compressor', shouldWriteCompressor, this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
+    const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold, shouldWriteCompressor)
     const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
 
@@ -91,7 +95,8 @@ class Connection extends EventEmitter {
 
   _tick () {
     if (this.sendQ.length) {
-      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
+      const shouldWriteCompressor = this.compressionReady && this.versionGreaterThanOrEqualTo('1.20.61')
+      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold, shouldWriteCompressor)
       batch.addEncodedPackets(this.sendQ)
       this.sendQ = []
       this.sendIds = []
@@ -115,7 +120,8 @@ class Connection extends EventEmitter {
    */
   sendBuffer (buffer, immediate = false) {
     if (immediate) {
-      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold)
+      const shouldWriteCompressor = this.compressionReady && this.versionGreaterThanOrEqualTo('1.20.61')
+      const batch = new Framer(this.compressionAlgorithm, this.compressionLevel, this.compressionThreshold, shouldWriteCompressor)
       batch.addEncodedPacket(buffer)
       if (this.encryptionEnabled) {
         this.sendEncryptedBatch(batch)
@@ -150,13 +156,11 @@ class Connection extends EventEmitter {
   // These are callbacks called from encryption.js
   onEncryptedPacket = (buf) => {
     const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
-
     this.sendMCPE(packet)
   }
 
   onDecryptedPacket = (buf) => {
     const packets = Framer.getPackets(buf)
-
     for (const packet of packets) {
       this.readPacket(packet)
     }
@@ -167,11 +171,13 @@ class Connection extends EventEmitter {
       if (this.encryptionEnabled) {
         this.decrypt(buffer.slice(1))
       } else {
-        const packets = Framer.decode(this.compressionAlgorithm, buffer)
+        const packets = Framer.decode(this, buffer)
         for (const packet of packets) {
           this.readPacket(packet)
         }
       }
+    } else {
+      throw Error('Bad packet header ' + buffer[0])
     }
   }
 }

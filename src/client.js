@@ -120,6 +120,7 @@ class Client extends Connection {
   updateCompressorSettings (packet) {
     this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
     this.compressionThreshold = packet.compression_threshold
+    this.compressionReady = true
   }
 
   sendLogin () {

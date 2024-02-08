@@ -3,12 +3,13 @@ const zlib = require('zlib')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
-  constructor (compressor, compressionLevel, compressionThreshold) {
+  constructor (compressor, compressionLevel, compressionThreshold, writeCompressor) {
     // Encoding
     this.packets = []
     this.compressor = compressor || 'none'
     this.compressionLevel = compressionLevel
     this.compressionThreshold = compressionThreshold
+    this.writeCompressor = writeCompressor
   }
 
   // No compression in base class
@@ -26,25 +27,40 @@ class Framer {
         case 'deflate': return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
         case 'snappy': throw Error('Snappy compression not implemented')
         case 'none': return buffer
-        default: throw Error('Unknown compression type ' + this.compressor)
+        default: throw Error('Unknown compression type ' + algorithm)
       }
     } catch {
       return buffer
     }
   }
 
-  static decode (compressor, buf) {
+  static decompress2 (algorithm, buffer) {
+    switch (algorithm) {
+      case 0: return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
+      case 1: throw Error('Snappy compression not implemented')
+      case 255: return buffer
+      default: throw Error('Unknown compression type ' + algorithm)
+    }
+  }
+
+  static decode (client, buf) {
     // Read header
     if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
     const buffer = buf.slice(1)
-    const decompressed = this.decompress(compressor, buffer)
+    let decompressed
+    if (client.compressionReady && client.versionGreaterThanOrEqualTo('1.20.61')) {
+      decompressed = this.decompress2(buffer[0], buffer.slice(1))
+    } else {
+      decompressed = this.decompress(client.compressionAlgorithm, buffer)
+    }
     return Framer.getPackets(decompressed)
   }
 
   encode () {
     const buf = Buffer.concat(this.packets)
     const compressed = (buf.length > this.compressionThreshold) ? this.compress(buf) : buf
-    return Buffer.concat([Buffer.from([0xfe]), compressed])
+    const header = this.writeCompressor ? [0xfe, 0] : [0xfe]
+    return Buffer.concat([Buffer.from(header), compressed])
   }
 
   addEncodedPacket (chunk) {

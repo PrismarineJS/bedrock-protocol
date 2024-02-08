@@ -23,8 +23,8 @@ class Player extends Connection {
     this.status = ClientStatus.Authenticating
 
     if (isDebug) {
-      this.inLog = (...args) => debug('S ->', ...args)
-      this.outLog = (...args) => debug('S <-', ...args)
+      this.inLog = (...args) => debug('-> S', ...args)
+      this.outLog = (...args) => debug('<- S', ...args)
     }
 
     // Compression is server-wide
@@ -48,6 +48,7 @@ class Player extends Connection {
       client_throttle_scalar: 0
     })
     this._sentNetworkSettings = true
+    this.compressionReady = true
   }
 
   handleClientProtocolVersion (clientVersion) {
@@ -152,7 +153,7 @@ class Player extends Connection {
       return
     }
 
-    this.inLog?.(des.data.name, serialize(des.data.params).slice(0, 200))
+    this.inLog?.(des.data.name, serialize(des.data.params))
 
     switch (des.data.name) {
       // This is the first packet on 1.19.30 & above
