@@ -28,7 +28,6 @@ class Connection extends EventEmitter {
   }
 
   versionLessThan (version) {
-    // console.log('Version Less than', version, this.options.protocolVersion < (typeof version === 'string' ? Versions[version] : version))
     return this.options.protocolVersion < (typeof version === 'string' ? Versions[version] : version)
   }
 
@@ -37,7 +36,6 @@ class Connection extends EventEmitter {
   }
 
   versionGreaterThanOrEqualTo (version) {
-    // console.log(Versions, this.options.protocolVersion)
     return this.options.protocolVersion >= (typeof version === 'string' ? Versions[version] : version)
   }
 
