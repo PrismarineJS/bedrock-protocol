@@ -1,3 +1,9 @@
+## 3.34.0
+* [1.20.61 support (#480)](https://github.com/PrismarineJS/bedrock-protocol/commit/c278a03f952d23320b80f8c09b6372d41eeff26a) (thanks @extremeheat)
+* [Compressor handling update for 1.20.60 (#479)](https://github.com/PrismarineJS/bedrock-protocol/commit/d3161badc65f2eba4b6e7c9e974ca4e3529a7e94) (thanks @extremeheat)
+* [Update and rename CONTRIBUTING.md to docs/CONTRIBUTING.md (#475)](https://github.com/PrismarineJS/bedrock-protocol/commit/be6f0cde9f7970a4f9aa376c589c58d8cb4187c3) (thanks @extremeheat)
+* [Add flow and deviceType options to relay (#464)](https://github.com/PrismarineJS/bedrock-protocol/commit/842e66266f09e8670a644a618d0ac4157746cd43) (thanks @GameParrot)
+
 ## 3.33.1
 * [Fix zigzag type move in prismarine-nbt (#471)](https://github.com/PrismarineJS/bedrock-protocol/commit/7b74cbf7129646adc80d50304afce6240848cfae) (thanks @extremeheat)
 
