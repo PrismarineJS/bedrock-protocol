@@ -34,6 +34,8 @@ Want to contribute on something important for PrismarineJS ? go to https://githu
 
 `npm install bedrock-protocol`
 
+To update bedrock-protocol (or any Node.js package) and its dependencies after a previous install, you must run `npm update --depth 9999`
+
 ## Usage
 
 ### Client example
