@@ -15,8 +15,8 @@ jobs:
       uses: actions/setup-node@master
       with:
         node-version: 18.0.0
-    - name: Install Github Actions toolkit
-      run: npm i @actions/github
+    - name: Install Github Actions helper
+      run: npm i gh-helpers
     # The env vars contain the relevant trigger information, so we don't need to pass it
     - name: Runs helper
       run: cd .github/helper-bot && node index.js
