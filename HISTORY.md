@@ -1,3 +1,9 @@
+## 3.35.0
+* [1.20.71](https://github.com/PrismarineJS/bedrock-protocol/commit/d8e707112acc038b6c9564d9a21b2f977326e47f) (thanks @extremeheat)
+* [Update update helper for gh-helpers v0.1](https://github.com/PrismarineJS/bedrock-protocol/commit/5ee5744ec91301e70017801bd153365c382ff09e) (thanks @extremeheat)
+* [Move github-helper script to new gh-helpers (#485)](https://github.com/PrismarineJS/bedrock-protocol/commit/914ed6840bedf94c485b449a151d8a4862405c01) (thanks @extremeheat)
+* [Note `npm update` command in readme](https://github.com/PrismarineJS/bedrock-protocol/commit/ab93d0d0824bd0ace250fb73f703dc7b60ecd780) (thanks @extremeheat)
+
 ## 3.34.0
 * [1.20.61 support (#480)](https://github.com/PrismarineJS/bedrock-protocol/commit/c278a03f952d23320b80f8c09b6372d41eeff26a) (thanks @extremeheat)
 * [Compressor handling update for 1.20.60 (#479)](https://github.com/PrismarineJS/bedrock-protocol/commit/d3161badc65f2eba4b6e7c9e974ca4e3529a7e94) (thanks @extremeheat)
