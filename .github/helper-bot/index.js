@@ -103,7 +103,7 @@ async function fetchLatest () {
 
   const title = `Support Minecraft ${result.version}`
 
-  const issueStatus = await helper.findIssue({ title }) || {}
+  const issueStatus = await helper.findIssue({ titleIncludes }) || {}
 
   if (supportedVersions.includes(version)) {
     if (issueStatus.isOpen) {
