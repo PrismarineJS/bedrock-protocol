@@ -103,10 +103,10 @@ async function fetchLatest () {
 
   const title = `Support Minecraft ${result.version}`
 
-  const issueStatus = await helper.getIssueStatus({ title })
+  const issueStatus = await helper.findIssue({ title }) || {}
 
   if (supportedVersions.includes(version)) {
-    if (issueStatus.open) {
+    if (issueStatus.isOpen) {
       helper.close(issueStatus.id, `Closing as ${version} is now supported`)
     }
     console.log('Latest version is supported.')
@@ -114,7 +114,7 @@ async function fetchLatest () {
   }
 
 
-  if (issueStatus.closed) {
+  if (issueStatus.isClosed) {
     // We already made an issue, but someone else already closed it, don't do anything else
     console.log('I already made an issue, but it was closed')
     return
@@ -127,7 +127,7 @@ async function fetchLatest () {
     CloudburstMC: getCommitsInRepo('CloudburstMC/Protocol', version, currentVersionReleaseDate)
   })
 
-  if (issueStatus.open) {
+  if (issueStatus.isOpen) {
     helper.updateIssue(issueStatus.id, issuePayload)
   } else {
     helper.createIssue(issuePayload)
