@@ -1,6 +1,7 @@
 // Automatic version update checker for Minecraft bedrock edition.
 const fs = require('fs')
 const cp = require('child_process')
+const core = require('@actions/core')
 const helper = require('gh-helpers')()
 const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
 const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
@@ -127,9 +128,11 @@ async function fetchLatest () {
   })
 
   if (issueStatus.isOpen) {
-    helper.updateIssue(issueStatus.id, issuePayload)
+    await helper.updateIssue(issueStatus.id, issuePayload)
   } else {
-    helper.createIssue(issuePayload)
+    const issue = await helper.createIssue(issuePayload)
+    core.setOutput('updateVersion', version)
+    core.setOutput('issueNumber', issue.number)
   }
 
   fs.writeFileSync('./issue.md', issuePayload.body)
