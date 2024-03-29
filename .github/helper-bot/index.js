@@ -102,8 +102,7 @@ async function fetchLatest () {
   console.log(version, currentVersionReleaseDate, releaseNotes)
 
   const title = `Support Minecraft ${result.version}`
-
-  const issueStatus = await helper.findIssue({ titleIncludes }) || {}
+  const issueStatus = await helper.findIssue({ titleIncludes: title }) || {}
 
   if (supportedVersions.includes(version)) {
     if (issueStatus.isOpen) {
