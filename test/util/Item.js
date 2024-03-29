@@ -1,4 +1,4 @@
-const { Versions } = require('../src/options')
+const { Versions } = require('../../src/options')
 
 module.exports = (version) =>
   class Item {

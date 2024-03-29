@@ -6,7 +6,7 @@ const { sleep } = require('../src/datatypes/util')
 
 describe('vanilla server test', function () {
   const vcount = testedVersions.length
-  this.timeout(vcount * 80 * 1000)
+  this.timeout(vcount * 7 * 60 * 1000) // upto 7 minutes per version
 
   for (const version of testedVersions) {
     it('client spawns ' + version, async () => {

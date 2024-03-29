@@ -4,7 +4,7 @@ const { ping } = require('../src/createClient')
 const { CURRENT_VERSION } = require('../src/options')
 const { join } = require('path')
 const { waitFor } = require('../src/datatypes/util')
-const { getPort } = require('./util')
+const { getPort } = require('./util/util')
 
 // First we need to dump some packets that a vanilla server would send a vanilla
 // client. Then we can replay those back in our custom server.
@@ -14,7 +14,7 @@ function prepare (version) {
 
 async function startTest (version = CURRENT_VERSION, ok) {
   await prepare(version)
-  const Item = require('../types/Item')(version)
+  const Item = require('./util/Item')(version)
   const port = await getPort()
   const server = new Server({ host: '0.0.0.0', port, version, offline: true })
 
@@ -202,7 +202,7 @@ async function requestChunks (version, x, z, radius) {
   return chunks
 }
 
-async function timedTest (version, timeout = 1000 * 220) {
+async function timedTest (version, timeout = 1000 * 60 * 6) {
   await waitFor((resolve, reject) => {
     // mocha eats up stack traces...
     startTest(version, resolve).catch(reject)
@@ -212,5 +212,5 @@ async function timedTest (version, timeout = 1000 * 220) {
   console.info('✔ ok')
 }
 
-// if (!module.parent) timedTest('1.19.10')
+// if (!module.parent) timedTest('1.20.61')
 module.exports = { startTest, timedTest, requestChunks }

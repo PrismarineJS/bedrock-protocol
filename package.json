@@ -6,10 +6,11 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "cd tools && node compileProtocol.js",
-    "test": "mocha --bail --exit",
+    "mocha": "mocha --bail --exit",
     "pretest": "npm run lint",
+    "test": "mocha --bail --exit",
     "lint": "standard",
-    "vanillaServer": "node tools/startVanillaServer.js",
+    "vanillaServer": "minecraft-bedrock-server --root tools",
     "dumpPackets": "node tools/genPacketDumps.js",
     "fix": "standard --fix"
   },
@@ -40,6 +41,7 @@
     "bedrock-protocol": "file:.",
     "bedrock-provider": "^2.0.0",
     "leveldb-zlib": "^1.0.1",
+    "minecraft-bedrock-server": "^1.2.0",
     "mocha": "^10.0.0",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"
