@@ -62,6 +62,14 @@ async function main (inputUpdateVer, inputIssueNo) {
   fs.writeFileSync(path.join(__dirname, '/updatedBody.md', updatedBody))
   await github.updateIssue({ number: inputIssueNo, body: updatedBody })
   handle.kill()
+  console.log('✅ Finished working with Linux server binary')
+  console.log('Working now on Windows')
+  const winPath = serverPath.replace('bds-', 'bds-win-')
+  await bedrockServer.downloadServer(latestServers.windows.version3, winPath)
+  core.setOutput('serverWinPath', winPath)
+  core.setOutput('serverWinBin', winPath + '/bedrock_server.exe')
+  core.setOutput('serverWinPdb', winPath + '/bedrock_server.pdb')
+  console.log('✅ Finished working with Windows server binary')
 }
 
 // main(process.env.UPDATE_VERSION, process.env.ISSUE_NUMBER)

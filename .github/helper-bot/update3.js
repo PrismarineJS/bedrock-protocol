@@ -1,0 +1,28 @@
+const fs = require('fs')
+const github = require('gh-helpers')()
+
+async function main () {
+  const stages = ['stage1.txt', 'stage2.txt', 'stage3.txt', 'stage4.txt']
+  const allStages = fs.createWriteStream('merged.txt')
+  for (const stage of stages) {
+    allStages.write(fs.readFileSync(stage, 'latin1'))
+  }
+  allStages.end()
+  const artifact = await github.artifacts.createTextArtifact('updatorData', {
+    content: fs.readFileSync('merged.txt', 'latin1')
+  })
+  console.log('Created artifact', artifact)
+  const dispatch = await github.sendWorkflowDispatch({
+    repo: 'llm-services',
+    workflow: 'dispatch.yml',
+    branch: 'main',
+    inputs: {
+      repoData: await github.getRepoDetails(),
+      artifactId: artifact.id,
+      artifactSize: artifact.size
+    }
+  })
+  console.log('Sent workflow dispatch', dispatch)
+}
+
+main()

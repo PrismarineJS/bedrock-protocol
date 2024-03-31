@@ -8,6 +8,9 @@ jobs:
   helper:
     name: update-checker
     runs-on: ubuntu-latest
+    outputs:
+      updateVersion: ${{ steps.helperRun.outputs.updateVersion }}
+      issueNumber: ${{ steps.helperRun.outputs.issueNumber }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@master
@@ -20,7 +23,66 @@ jobs:
       working-directory: .github/helper-bot
     # The env vars contain the relevant trigger information, so we don't need to pass it
     - name: Runs helper
+      id: helperRun
       run: node index.js
       working-directory: .github/helper-bot
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT_PASSWORD }}
+    # Above step sets output of updateVersion, issueNumber with actions/core
+
+  update:
+    name: Update
+    needs: helper
+    runs-on: ubuntu-latest
+    # run if updateVersion exists
+    if: ${{ needs.helper.outputs.updateVersion }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@master
+    - name: Set up Node.js
+      uses: actions/setup-node@master
+      with:
+        node-version: 18.0.0
+    - name: Compile disa
+      run: clang++ -std=c++20 -O3 -o disa.exe disa.cpp
+      working-directory: .github/helper-bot
+    - name: Compile pdba
+      run: clang++-14 -g `llvm-config-14 --cxxflags --ldflags --libs` -o pdb.exe pdba.cpp
+    - name: Install radare2
+      run: sudo apt-get install radare2
+    - name: Install 
+      run: npm install gh-helpers
+    # This step sets the "serverVersion" and "serverPath" outputs
+    - name: Update Step 1
+      id: update1Run
+      run: cd .github/helper-bot && node update1.js
+      # Pass the output from the helper job to the update job
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_PASSWORD }}
+        UPDATE_VERSION: ${{ needs.helper.outputs.updateVersion }}
+        ISSUE_NUMBER: ${{ needs.helper.outputs.issueNumber }}
+    - name: Dump .rodata strings
+      run: rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
+      # radare2 -a x86 -b elf -qc 'izz~ro' ${{ steps.update1Run.outputs.serverBin }} > ./github/helper-bot/botstr.txt
+    - name: Dump .rodata
+      run: readelf -x .rodata ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/rodata.txt
+    - name: Proc strings (Stage 0)
+      run: node update2.js -s0 > strings.tsv
+      working-directory: .github/helper-bot
+    # objdump the server binary .text, using "serverPath" output from the previous step
+    - name: Process Linux server (Stage 1)
+      run: objdump -d --demangle --no-show-raw-insn --debugging ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/strings.txt > .github/helper-bot/stage1.txt
+    - name: Process Windows bin (Stage 2)
+      run: objdump -d --demangle -M intel ${{ steps.update1Run.outputs.serverWinBin }} | .github/helper-bot/disa.exe -s2 .github/helper-bot/stage1.txt > .github/helper-bot/stage2.txt
+    - name: Resolve numbers (Stage 3)
+      run : node update2.js -s3
+      working-directory: .github/helper-bot
+    - name: Resolve PDB (Stage 4)
+      run: llvm-pdbutil dump --all ${{ steps.update1Run.outputs.serverWinPdb }} | .github/helper-bot/pdba.exe > .github/helper-bot/stage4.txt
+    - name: Aggregate and finish
+      run: node update3.js
+      working-directory: .github/helper-bot
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_PASSWORD }}
+        UPDATE_VERSION: ${{ needs.helper.outputs.updateVersion }}
+        ISSUE_NUMBER: ${{ needs.helper.outputs.issueNumber }}

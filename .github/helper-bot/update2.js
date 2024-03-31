@@ -110,12 +110,12 @@ function postProc (rodataDump, s1file) {
 }
 
 const stage = process.argv[2]
-if (stage === 'stage0') {
+if (stage === '-s0') {
   writeStringsTSV(
     join(__dirname, 'rodata.txt'),
     join(__dirname, 'strings.txt')
   )
-} else if (stage === 'stage3') {
+} else if (stage === '-s3') {
   postProc(
     join(__dirname, 'rodata.txt'),
     join(__dirname, 'stage1.txt')
