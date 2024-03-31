@@ -1,4 +1,9 @@
 {
+  "description": "Minecraft Bedrock automatic update system",
+  "scripts": {
+    "test": "standard",
+    "fix": "standard --fix"
+  },
   "dependencies": {
     "gh-helpers": "^0.2.0"
   }

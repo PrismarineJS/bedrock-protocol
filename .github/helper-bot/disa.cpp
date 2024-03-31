@@ -175,7 +175,6 @@ void loadDisassembly(std::string filePath) {
 
       size_t pos = line.find("#");
       if (pos != std::string::npos) {
-        // std::cout << trackingBlock << " " << buffer << std::endl;
         auto comment = line.substr(pos + 2, line.size() - pos - 1);
         // above bounds to skip the comment+space
         // split the comment by the first space
@@ -227,7 +226,7 @@ void loadDisassembly(std::string filePath) {
       if (pos != std::string::npos) {
         auto comment = line.substr(pos + 2, line.size() - pos - 1);
 
-        // For some reason some blocks are loaded outside of the block registry?
+        // Some reason some blocks are loaded outside of the block registry
         if (isInBlockRegistry || currentBlockData.has_value()) {
           auto addressPos = comment.find(" ");
           if (addressPos != std::string::npos) {
@@ -332,10 +331,10 @@ void split4(std::string_view line, std::string &a, std::string &b, std::string &
 }
 
 void loadStage1(std::string filePath) {
-  // load stage1.txt which is the output of above loadDisassembly function
+  // load stage1 which is the output of above loadDisassembly function
   std::ifstream stage1Stream(filePath, std::ios::binary);
   if (!stage1Stream.is_open()) {
-    std::cerr << "Failed to open file: stage1.txt" << std::endl;
+    std::cerr << "Failed to open file: " << filePath << std::endl;
     return;
   }
   // split by tabs
@@ -345,7 +344,7 @@ void loadStage1(std::string filePath) {
     std::string_view line(buffer);
     size_t pos = line.find("\t");
     if (pos != std::string::npos) {
-      // VanillaState    StateID         StatHash                StateName
+      // VanillaState    StateID         StateHash                StateName
       // VanillaState    BiteCounter     0x6bcbbe2ee1f42f72      bite_counter
       // we are interested in the 2nd and 3rd columns
       std::string name, id, hash, stateName;
@@ -358,7 +357,6 @@ void loadStage1(std::string filePath) {
 }
 
 void loadDisassembly2(std::string filePath) {
-  // now load the disassembly again, but windows.asm which has a bit more information, like the state variants
   std::istream *disStream = &std::cin;
   if (!filePath.empty()) {
     disStream = new std::ifstream(filePath, std::ios::binary);
@@ -407,7 +405,6 @@ void loadDisassembly2(std::string filePath) {
       if (pos != std::string::npos) {
         auto hexStr = line.substr(pos + 1, line.size() - pos);
         unsigned int value = hexStr2IntLE(hexStr);
-        // std::cout << "Found state data: [" << hexStr << "] (" << value << ")" << std::endl;
         stateVariantMap[currentHash].push_back(value);
         // max is 3 entries
         if (stateVariantMap[currentHash].size() == 3) {
@@ -423,7 +420,6 @@ void loadDisassembly2(std::string filePath) {
     delete disStream;
   }
 
-  // print out the state variant data
   for (auto &entry : stateVariantMap) {
     std::cout << "StateVariantData\t" << entry.first << "\t";
     for (auto &value : entry.second) {

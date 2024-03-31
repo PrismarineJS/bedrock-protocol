@@ -13,7 +13,6 @@ const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186
 
 function buildFirstIssue (title, result, externalPatches) {
   let commitData = ''
-  let protocolVersion = '?'
   const date = new Date(result.currentVersionReleaseDate).toUTCString()
 
   for (const name in externalPatches) {
@@ -25,7 +24,6 @@ function buildFirstIssue (title, result, externalPatches) {
     if (diff) commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
     else commitData += '\n(No changes so far)\n'
   }
-  try { protocolVersion = getProtocolVersion() } catch (e) { console.log(e) }
 
   return {
     title,
@@ -73,17 +71,10 @@ function getCommitsInRepo (repo, containing, since) {
     if (commits.length) {
       const head = commits[0].sha
       const tail = commits[commits.length - 1].sha
-      return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`] 
+      return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`]
     }
   }
   return [relevant]
-}
-
-function getProtocolVersion () {
-  if (!fs.existsSync('./ProtocolInfo.php')) cp.execSync('curl -LO https://raw.githubusercontent.com/pmmp/PocketMine-MP/stable/src/pocketmine/network/mcpe/protocol/ProtocolInfo.php', { stdio: 'inherit', shell: true })
-  const currentApi = fs.readFileSync('./ProtocolInfo.php', 'utf-8')
-  const [, latestProtocolVersion] = currentApi.match(/public const CURRENT_PROTOCOL = (\d+);/)
-  return latestProtocolVersion
 }
 
 async function fetchLatest () {
@@ -110,7 +101,6 @@ async function fetchLatest () {
     console.log('Latest version is supported.')
     return
   }
-
 
   if (issueStatus.isClosed) {
     // We already made an issue, but someone else already closed it, don't do anything else
