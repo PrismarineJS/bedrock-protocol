@@ -46,7 +46,6 @@ async function test (version) {
         client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: BigInt(Date.now()) })
       }, 200)
 
-
       console.log('Awaiting join')
 
       client.on('spawn', () => {

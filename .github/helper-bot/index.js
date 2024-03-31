@@ -43,11 +43,9 @@ ${commitData}
 (I will close this issue automatically if "${result.version}" is added to index.d.ts on "master" and there are no X's below)
 <table>
   <tr><td><b>Name</b></td><td>${result.version}</td>
-  <tr><td><b>Protocol ID</b></td><td>${protocolVersion}</td>
-  <!-- TODO ... automatically fetch server, test and grab relevant information and dump
-  <tr><td><b>Partly Already Compatible</b></td><td></td>
-  <tr><td><b>Protocol Dumpers Work</b></td><td></td>
-  -->
+  <!--(Special Server Version?)-->
+  <!--<tr><td><b>Protocol ID</b></td><td></td>-->
+  <!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->
 </table>
 
 -----
