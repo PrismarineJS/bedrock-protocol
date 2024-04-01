@@ -2,6 +2,7 @@ const fs = require('fs')
 const core = require('@actions/core')
 const github = require('gh-helpers')()
 const bedrock = require('bedrock-protocol')
+const { sleep } = require('bedrock-protocol/src/datatypes/util')
 const bedrockServer = require('minecraft-bedrock-server')
 const path = require('path')
 
@@ -50,7 +51,8 @@ async function main (inputUpdateVer, inputIssueNo) {
   core.setOutput('serverPath', serverPath)
   core.setOutput('serverBin', serverPath + '/bedrock_server_symbols.debug')
   const handle = await bedrockServer.startServerAndWait(serverVersion, 60000, { root })
-  const pong = await bedrock.ping({ host: 'localhost', port: 19132 })
+  await sleep(2000)
+  const pong = await bedrock.ping({ host: 'localhost', port: 19130 })
   updatedBody = updatedBody.replace('<!--<tr><td><b>Protocol ID</b></td><td></td>-->', `<tr><td><b>Protocol ID</b></td><td>${pong.protocol} (${pong.version})</td>`)
   try {
     await tryConnect({ protocolVersion: pong.protocol })
