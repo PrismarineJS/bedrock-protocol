@@ -17,7 +17,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@master
       with:
-        node-version: 18.0.0
+        node-version: 20.0.0
     - name: Install deps in helper-bot
       run: npm install
       working-directory: .github/helper-bot
@@ -42,7 +42,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@master
       with:
-        node-version: 18.0.0
+        node-version: 20.0.0
     - name: Compile disa
       run: clang++ -std=c++20 -O3 -o disa.exe disa.cpp
       working-directory: .github/helper-bot
@@ -54,7 +54,7 @@ jobs:
       # run: sudo apt-get install radare2 -y
       run: sudo snap install radare2 --classic
     - name: Install 
-      run: npm install gh-helpers
+      run: pnpm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
     - name: Update Step 1
       id: update1Run

@@ -51,7 +51,7 @@ async function main (inputUpdateVer, inputIssueNo) {
   core.setOutput('serverPath', serverPath)
   core.setOutput('serverBin', serverPath + '/bedrock_server_symbols.debug')
   const handle = await bedrockServer.startServerAndWait(serverVersion, 60000, { root })
-  await sleep(2000)
+  await sleep(9000)
   const pong = await bedrock.ping({ host: 'localhost', port: 19130 })
   updatedBody = updatedBody.replace('<!--<tr><td><b>Protocol ID</b></td><td></td>-->', `<tr><td><b>Protocol ID</b></td><td>${pong.protocol} (${pong.version})</td>`)
   try {
