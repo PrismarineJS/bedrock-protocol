@@ -117,6 +117,8 @@ async function fetchLatest () {
 
   if (issueStatus.isOpen) {
     await helper.updateIssue(issueStatus.id, issuePayload)
+    // TEMP TEST
+    core.setOutput('updateVersion', version)
   } else {
     const issue = await helper.createIssue(issuePayload)
     core.setOutput('updateVersion', version)
