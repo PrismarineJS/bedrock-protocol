@@ -74,3 +74,5 @@ async function main (inputUpdateVer, inputIssueNo) {
 
 // main(process.env.UPDATE_VERSION, process.env.ISSUE_NUMBER)
 main(process.env.UPDATE_VERSION, process.env.ISSUE_NUMBER)
+
+// TODO: determine if protocol version has changed before doing anything

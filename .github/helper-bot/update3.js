@@ -19,7 +19,9 @@ async function main () {
     inputs: {
       repoData: await github.getRepoDetails(),
       artifactId: artifact.id,
-      artifactSize: artifact.size
+      artifactSize: artifact.size,
+      updateVersion: process.env.UPDATE_VERSION,
+      issueNo: process.env.ISSUE_NUMBER
     }
   })
   console.log('Sent workflow dispatch', dispatch)
