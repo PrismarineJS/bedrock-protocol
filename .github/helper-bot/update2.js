@@ -95,18 +95,21 @@ if (process.argv.length < 2) {
 function postProc (rodataDump, s1file) {
   const { readFloatLEFromHexDump } = loadRoDataHexDump(rodataDump)
   const stage2 = fs.readFileSync(s1file, 'latin1')
+  let result = ''
   for (const line of stage2.split('\n')) {
     const slices = line.split('\t')
     if (slices[0] === 'BlockData') {
       // console.log(slices)
       try {
         const float = readFloatLEFromHexDump(parseInt(slices[3]))
-        console.log('BlockData', slices[1], slices[2], float)
+        console.log('BlockExtraData', slices[1], float)
+        result += `BlockExtraData\t${slices[1]}\t${float}\n`
       } catch (e) {
-        console.log('BlockData', slices[1], slices[2], 0)
+        result += `BlockExtraData\t${slices[1]}\t${0}\n`
       }
     }
   }
+  fs.writeFileSync('stage3.txt', result)
 }
 
 const stage = process.argv[2]

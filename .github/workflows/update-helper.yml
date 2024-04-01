@@ -47,9 +47,9 @@ jobs:
       run: clang++ -std=c++20 -O3 -o disa.exe disa.cpp
       working-directory: .github/helper-bot
     - name: Compile pdba
-      run: clang++-14 -g `llvm-config-14 --cxxflags --ldflags --libs` -o pdb.exe pdba.cpp
+      run: clang++-14 -g `llvm-config-14 --cxxflags --ldflags --libs` -o pdba.exe pdba.cpp
     - name: Install radare2
-      run: sudo apt-get install radare2
+      run: sudo apt-get install radare2 -y
     - name: Install 
       run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
@@ -67,7 +67,7 @@ jobs:
     - name: Dump .rodata
       run: readelf -x .rodata ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/rodata.txt
     - name: Proc strings (Stage 0)
-      run: node update2.js -s0 > strings.tsv
+      run: node update2.js -s0
       working-directory: .github/helper-bot
     # objdump the server binary .text, using "serverPath" output from the previous step
     - name: Process Linux server (Stage 1)
