@@ -1,12 +1,12 @@
 // Collect sample packets needed for `serverTest.js`
 // process.env.DEBUG = 'minecraft-protocol'
 const fs = require('fs')
-const vanillaServer = require('../tools/startVanillaServer')
+const vanillaServer = require('minecraft-bedrock-server')
 const { Client } = require('../src/client')
 const { serialize, waitFor, getFiles } = require('../src/datatypes/util')
 const { CURRENT_VERSION } = require('../src/options')
 const { join } = require('path')
-const { getPort } = require('../test/util')
+const { getPort } = require('../test/util/util')
 
 function hasDumps (version) {
   const root = join(__dirname, `../data/${version}/sample/packets/`)
@@ -25,7 +25,7 @@ async function dump (version, force = true) {
   const [port, v6] = [await getPort(), await getPort()]
 
   console.log('Starting dump server', version)
-  const handle = await vanillaServer.startServerAndWait2(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port, 'server-portv6': v6 })
+  const handle = await vanillaServer.startServerAndWait2(version || CURRENT_VERSION, 1000 * 60 * 3, { 'server-port': port, 'server-portv6': v6 })
 
   console.log('Started dump server', version)
   const client = new Client({

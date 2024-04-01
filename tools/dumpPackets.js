@@ -2,7 +2,7 @@
 // uses the same format as prismarine-packet-dumper
 const assert = require('assert')
 const fs = require('fs')
-const vanillaServer = require('../tools/startVanillaServer')
+const vanillaServer = require('minecraft-bedrock-server')
 const { Client } = require('../src/client')
 const { serialize, waitFor } = require('../src/datatypes/util')
 const { CURRENT_VERSION } = require('../src/options')
