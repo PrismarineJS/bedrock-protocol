@@ -50,7 +50,9 @@ jobs:
       run: clang++-14 -g `llvm-config-14 --cxxflags --ldflags --libs` -o pdba.exe pdba.cpp
       working-directory: .github/helper-bot
     - name: Install radare2
-      run: sudo apt-get install radare2 -y
+      # For some reason it's not appearing on GH Actions' apt.. so use snap
+      # run: sudo apt-get install radare2 -y
+      run: sudo snap install radare2 --classic
     - name: Install 
       run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
@@ -63,8 +65,7 @@ jobs:
         UPDATE_VERSION: ${{ needs.helper.outputs.updateVersion }}
         ISSUE_NUMBER: ${{ needs.helper.outputs.issueNumber }}
     - name: Dump .rodata strings
-      run: rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
-      # radare2 -a x86 -b elf -qc 'izz~ro' ${{ steps.update1Run.outputs.serverBin }} > ./github/helper-bot/botstr.txt
+      run: /snap/bin/radare2.rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
     - name: Dump .rodata
       run: readelf -x .rodata ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/rodata.txt
     - name: Proc strings (Stage 0)
