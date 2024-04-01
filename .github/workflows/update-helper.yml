@@ -54,7 +54,7 @@ jobs:
       # run: sudo apt-get install radare2 -y
       run: sudo snap install radare2 --classic
     - name: Install 
-      run: pnpm install gh-helpers
+      run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
     - name: Update Step 1
       id: update1Run
