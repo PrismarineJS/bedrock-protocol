@@ -16,7 +16,10 @@ async function dump (version) {
   const random = ((Math.random() * 100) | 0)
   const port = 19130 + random
 
-  const handle = await vanillaServer.startServerAndWait(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port })
+  const handle = await vanillaServer.startServerAndWait(version || CURRENT_VERSION, 1000 * 120, {
+    'server-port': port,
+    root: __dirname
+  })
 
   console.log('Started server')
   const client = new Client({
