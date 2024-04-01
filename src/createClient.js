@@ -83,10 +83,10 @@ function connect (client) {
   })
 }
 
-async function ping ({ host, port }) {
+async function ping ({ host, port, timeout }) {
   const con = new RakClient({ host, port })
   try {
-    return advertisement.fromServerName(await con.ping())
+    return advertisement.fromServerName(await con.ping(timeout))
   } finally {
     con.close()
   }
