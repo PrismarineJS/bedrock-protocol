@@ -37,6 +37,8 @@ jobs:
     # run if updateVersion exists
     if: ${{ needs.helper.outputs.updateVersion }}
     steps:
+    - name: Log debug
+      run: echo ${{ needs.helper.outputs.updateVersion }} ${{ needs.helper.outputs.issueNumber }}
     - name: Checkout repository
       uses: actions/checkout@master
     - name: Set up Node.js
