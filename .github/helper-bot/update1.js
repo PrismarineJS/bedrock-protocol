@@ -85,7 +85,7 @@ async function main (inputUpdateVer, inputIssueNo) {
     updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<tr><td><b>Partly Already Compatible</b></td>NO<td></td>')
   }
   fs.writeFileSync(path.join(__dirname, '/updatedBody.md'), updatedBody)
-  await github.updateIssue({ number: inputIssueNo, body: updatedBody })
+  await github.updateIssue(inputIssueNo, { body: updatedBody })
   handle.kill()
 
   // Check if protocol version has changed
@@ -112,5 +112,3 @@ async function main (inputUpdateVer, inputIssueNo) {
 
 main(process.env.UPDATE_VERSION, process.env.ISSUE_NUMBER)
 // main('1.20.73', 0)
-
-// TODO: determine if protocol version has changed before doing anything
