@@ -103,7 +103,7 @@ async function main (inputUpdateVer, inputIssueNo) {
   console.log('✅ Finished working with Linux server binary')
   console.log('Working now on Windows')
   const winPath = serverPath.replace('bds-', 'bds-win-')
-  await bedrockServer.downloadServer(latestServers.windows.version3, { path: winPath })
+  await bedrockServer.downloadServer(latestServers.windows.version3, { path: winPath, platform: 'windows' })
   core.setOutput('serverWinPath', winPath)
   core.setOutput('serverWinBin', winPath + '/bedrock_server.exe')
   core.setOutput('serverWinPdb', winPath + '/bedrock_server.pdb')

@@ -1,9 +1,10 @@
 // Automatic version update checker for Minecraft bedrock edition.
 const fs = require('fs')
+const { join } = require('path')
 const cp = require('child_process')
 const core = require('@actions/core')
 const helper = require('gh-helpers')()
-const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
+const latestVersionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
 const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
 
 // Relevant infomation for us is:
@@ -38,13 +39,15 @@ A new Minecraft Bedrock version is available (as of ${date}), version **${result
 ${commitData}
 
 ## Protocol Details
-(I will close this issue automatically if "${result.version}" is added to index.d.ts on "master" and there are no X's below)
 <table>
   <tr><td><b>Name</b></td><td>${result.version}</td>
   <!--(Special Server Version?)-->
   <!--<tr><td><b>Protocol ID</b></td><td></td>-->
   <!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->
 </table>
+
+*I'll try to close this issue automatically if the protocol version didn't change.
+If the protocol version did change, the automatic update system will try to complete an update to minecraft-data and bedrock-protocol and if successful it will auto close this issue.*
 
 -----
 
@@ -78,15 +81,13 @@ function getCommitsInRepo (repo, containing, since) {
 }
 
 async function fetchLatest () {
-  if (!fs.existsSync('./results.json')) cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
+  cp.execSync(`curl -L "${latestVersionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
   const json = require('./results.json')
   const result = json.results[0]
-  // console.log(json)
 
-  if (!fs.existsSync('./index.d.ts')) cp.execSync('curl -LO https://raw.githubusercontent.com/PrismarineJS/bedrock-protocol/master/index.d.ts', { stdio: 'inherit', shell: true })
-  const currentApi = fs.readFileSync('./index.d.ts', 'utf-8')
-  const supportedVersions = currentApi.match(/type Version = ([^\n]+)/)[1].replace(/\||'/g, ' ').split(' ').map(k => k.trim()).filter(k => k.length)
-  console.log(supportedVersions)
+  const currentTypes = fs.readFileSync(join(__dirname, '../../index.d.ts'), 'utf-8')
+  const supportedVersions = currentTypes.match(/type Version = ([^\n]+)/)[1].replace(/\||'/g, ' ').split(' ').map(k => k.trim()).filter(k => k.length)
+  console.log('Supported versions', supportedVersions)
 
   let { version, currentVersionReleaseDate, releaseNotes } = result
   console.log(version, currentVersionReleaseDate, releaseNotes)

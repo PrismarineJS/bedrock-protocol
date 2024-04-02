@@ -7,8 +7,11 @@ async function main () {
   for (const stage of stages) {
     allStages.write(fs.readFileSync(stage, 'latin1'))
   }
-  allStages.end()
-  const artifact = await github.artifacts.createTextArtifact('updatorData', {
+  allStages.end(upload)
+}
+
+async function upload () {
+  const artifact = await github.artifacts.createTextArtifact('updateData-' + process.env.UPDATE_VERSION, {
     extracted: fs.readFileSync('merged.txt', 'latin1'),
     collected: JSON.stringify(require('./collected.json'))
   })

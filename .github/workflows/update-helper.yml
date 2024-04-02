@@ -53,8 +53,8 @@ jobs:
       # For some reason it's not appearing on GH Actions' apt.. so use snap
       # run: sudo apt-get install radare2 -y
       run: sudo snap install radare2 --classic
-    - name: Install 
-      run: npm install extremeheat/gh-helpers
+    - name: Install bedrock-protocol
+      run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
     # Note, sometimes the serverVersionStr != clientVersionStr, so we handle that too via protocol check
     - name: Update Step 1
@@ -88,7 +88,7 @@ jobs:
       working-directory: .github/helper-bot
     - name: Resolve PDB symbols (Stage 4)
       if: steps.update1Run.outputs.needsUpdate
-      run: llvm-pdbutil dump --all ${{ steps.update1Run.outputs.serverWinPdb }} | .github/helper-bot/pdba.exe > .github/helper-bot/stage4.txt
+      run: llvm-pdbutil-14 dump --all ${{ steps.update1Run.outputs.serverWinPdb }} | .github/helper-bot/pdba.exe > .github/helper-bot/stage4.txt
     - name: Aggregate and finish
       if: steps.update1Run.outputs.needsUpdate
       run: node update3.js
