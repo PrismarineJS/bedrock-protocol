@@ -61,7 +61,7 @@ async function tryConnect (opts) {
 }
 
 async function main (inputUpdateVer, inputIssueNo) {
-  const issue = await github.findIssue({ number: inputIssueNo })
+  const issue = await github.findIssue({ number: inputIssueNo, author: null })
   const latestServers = await bedrockServer.getLatestVersions()
   let updatedBody = issue.body
   const serverVersion = latestServers.linux.version3
