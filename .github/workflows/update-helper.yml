@@ -56,6 +56,7 @@ jobs:
     - name: Install 
       run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
+    # Note, sometimes the serverVersionStr != clientVersionStr, so we handle that too via protocol check
     - name: Update Step 1
       id: update1Run
       run: cd .github/helper-bot && node update1.js
@@ -64,26 +65,37 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.PAT_PASSWORD }}
         UPDATE_VERSION: ${{ needs.helper.outputs.updateVersion }}
         ISSUE_NUMBER: ${{ needs.helper.outputs.issueNumber }}
+    # The above will return a "needsUpdate" output.
     - name: Dump .rodata strings
+      if: steps.update1Run.outputs.needsUpdate
       run: /snap/bin/radare2.rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
     - name: Dump .rodata
+      if: steps.update1Run.outputs.needsUpdate
       run: readelf -x .rodata ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/rodata.txt
     - name: Proc strings (Stage 0)
+      if: steps.update1Run.outputs.needsUpdate
       run: node update2.js -s0
       working-directory: .github/helper-bot
     - name: Process Linux server (Stage 1)
+      if: steps.update1Run.outputs.needsUpdate
       run: objdump -d --demangle --no-show-raw-insn --debugging ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/strings.txt > .github/helper-bot/stage1.txt
     - name: Process Windows bin (Stage 2)
+      if: steps.update1Run.outputs.needsUpdate
       run: objdump -d --demangle -M intel ${{ steps.update1Run.outputs.serverWinBin }} | .github/helper-bot/disa.exe -s2 .github/helper-bot/stage1.txt > .github/helper-bot/stage2.txt
     - name: Resolve numbers (Stage 3)
+      if: steps.update1Run.outputs.needsUpdate
       run : node update2.js -s3
       working-directory: .github/helper-bot
     - name: Resolve PDB symbols (Stage 4)
+      if: steps.update1Run.outputs.needsUpdate
       run: llvm-pdbutil dump --all ${{ steps.update1Run.outputs.serverWinPdb }} | .github/helper-bot/pdba.exe > .github/helper-bot/stage4.txt
     - name: Aggregate and finish
+      if: steps.update1Run.outputs.needsUpdate
       run: node update3.js
       working-directory: .github/helper-bot
       env:
         GITHUB_TOKEN: ${{ secrets.PAT_PASSWORD }}
         UPDATE_VERSION: ${{ needs.helper.outputs.updateVersion }}
+        SERVER_VERSION: ${{ steps.update1Run.outputs.serverVersion }}
+        PROTOCOL_VERSION: ${{ steps.update1Run.outputs.protocolVersion }}
         ISSUE_NUMBER: ${{ needs.helper.outputs.issueNumber }}

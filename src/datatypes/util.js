@@ -22,10 +22,10 @@ function sleep (ms) {
 
 async function waitFor (cb, withTimeout, onTimeout) {
   let t
-  const ret = await Promise.race([
-    new Promise((resolve, reject) => cb(resolve, reject)),
-    new Promise(resolve => { t = setTimeout(() => resolve('timeout'), withTimeout) })
-  ])
+  const ret = await new Promise((resolve) => {
+    t = setTimeout(() => resolve('timeout'), withTimeout)
+    cb(resolve)
+  })
   clearTimeout(t)
   if (ret === 'timeout') await onTimeout()
   return ret

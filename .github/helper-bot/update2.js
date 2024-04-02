@@ -66,11 +66,10 @@ function writeStringsTSV (rodataDump, stringsFile) {
     const contents = subStr.split('ascii')[1]?.trim()
     if (!contents || !contents.match(/^[a-zA-Z0-9_:]+$/) || contents.length > 64) {
       if (subStr.includes('utf16le')) {
-        // sigh, some ascii strings are written as utf16le
+        // unfortunately some ascii strings are incorrectly written as utf16le
         const contents16 = subStr.split('utf16le')[1]?.trim()
         for (let j = 0; j < contents16.length; j += 1) {
           // write each char one by one as 1 length string
-          // const char = contents16[j]
           const newAddress = `0x${(parseInt(address, 16) + (j * 2)).toString(16).padStart(8, '0')}`
           result += `# fromU16LE ${address}\n`
           const ntString = readStringNTFromHexDump(newAddress)

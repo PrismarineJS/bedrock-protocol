@@ -9,7 +9,8 @@ async function main () {
   }
   allStages.end()
   const artifact = await github.artifacts.createTextArtifact('updatorData', {
-    content: fs.readFileSync('merged.txt', 'latin1')
+    extracted: fs.readFileSync('merged.txt', 'latin1'),
+    collected: JSON.stringify(require('./collected.json'))
   })
   console.log('Created artifact', artifact)
   const dispatch = await github.sendWorkflowDispatch({
@@ -21,6 +22,8 @@ async function main () {
       artifactId: artifact.id,
       artifactSize: artifact.size,
       updateVersion: process.env.UPDATE_VERSION,
+      serverVersion: process.env.SERVER_VERSION,
+      protocolVersion: process.env.PROTOCOL_VERSION,
       issueNo: process.env.ISSUE_NUMBER
     }
   })
