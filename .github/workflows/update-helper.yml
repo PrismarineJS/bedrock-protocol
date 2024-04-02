@@ -78,7 +78,7 @@ jobs:
       working-directory: .github/helper-bot
     - name: Process Linux server (Stage 1)
       if: steps.update1Run.outputs.needsUpdate
-      run: objdump -d --demangle --no-show-raw-insn --debugging ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/strings.txt > .github/helper-bot/stage1.txt
+      run: objdump -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/strings.tsv > .github/helper-bot/stage1.txt
     - name: Process Windows bin (Stage 2)
       if: steps.update1Run.outputs.needsUpdate
       run: objdump -d --demangle -M intel ${{ steps.update1Run.outputs.serverWinBin }} | .github/helper-bot/disa.exe -s2 .github/helper-bot/stage1.txt > .github/helper-bot/stage2.txt
