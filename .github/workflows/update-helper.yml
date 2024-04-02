@@ -54,7 +54,7 @@ jobs:
       # run: sudo apt-get install radare2 -y
       run: sudo snap install radare2 --classic
     - name: Install 
-      run: npm install gh-helpers
+      run: npm install extremeheat/gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
     # Note, sometimes the serverVersionStr != clientVersionStr, so we handle that too via protocol check
     - name: Update Step 1
