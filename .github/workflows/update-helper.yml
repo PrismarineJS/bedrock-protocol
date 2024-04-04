@@ -51,11 +51,12 @@ jobs:
       working-directory: .github/helper-bot
     # For some reason radare2 isn't installable on GH with apt as it's missing the
     # ubuntu/archive/focal/universe repo. So we can either install with snap, or try to update the apt repos.
-    - name: Update system packages
-      run: sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu focal universe"
+    # We get newer version with snap so let's use that...
+    # - name: Update system packages
+    #   run: sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu focal universe"
     - name: Install radare2
-      run: sudo apt update && sudo apt-get install radare2 -y
-      # run: sudo snap install radare2 --classic
+      # run: sudo apt update && sudo apt-get install radare2 -y
+      run: sudo snap install radare2 --classic
     - name: Install bedrock-protocol
       run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
@@ -71,7 +72,7 @@ jobs:
     # The above will return a "needsUpdate" output.
     - name: Dump .rodata strings
       if: steps.update1Run.outputs.needsUpdate
-      run: rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
+      run: /snap/bin/radare2.rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
     - name: Dump .rodata
       if: steps.update1Run.outputs.needsUpdate
       run: objcopy -O binary -j .rodata ${{ steps.update1Run.outputs.serverBin }} .github/helper-bot/rodata.bin
