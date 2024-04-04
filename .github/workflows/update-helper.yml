@@ -49,14 +49,6 @@ jobs:
     - name: Compile pdba
       run: clang++-14 -g `llvm-config-14 --cxxflags --ldflags --libs` -o pdba.exe pdba.cpp
       working-directory: .github/helper-bot
-    # For some reason radare2 isn't installable on GH with apt as it's missing the
-    # ubuntu/archive/focal/universe repo. So we can either install with snap, or try to update the apt repos.
-    # We get newer version with snap so let's use that...
-    # - name: Update system packages
-    #   run: sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu focal universe"
-    - name: Install radare2
-      # run: sudo apt update && sudo apt-get install radare2 -y
-      run: sudo snap install radare2 --classic
     - name: Install bedrock-protocol
       run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
@@ -70,19 +62,12 @@ jobs:
         UPDATE_VERSION: ${{ needs.helper.outputs.updateVersion }}
         ISSUE_NUMBER: ${{ needs.helper.outputs.issueNumber }}
     # The above will return a "needsUpdate" output.
-    - name: Dump .rodata strings
-      if: steps.update1Run.outputs.needsUpdate
-      run: /snap/bin/radare2.rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
     - name: Dump .rodata
       if: steps.update1Run.outputs.needsUpdate
       run: objcopy -O binary -j .rodata ${{ steps.update1Run.outputs.serverBin }} .github/helper-bot/rodata.bin
-    - name: Proc strings (Stage 0)
-      if: steps.update1Run.outputs.needsUpdate
-      run: node update2.js -s0
-      working-directory: .github/helper-bot
     - name: Process Linux server (Stage 1)
       if: steps.update1Run.outputs.needsUpdate
-      run: objdump -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/strings.tsv > .github/helper-bot/stage1.txt
+      run: objdump -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/rodata.bin > .github/helper-bot/stage1.txt
     - name: Process Windows bin (Stage 2)
       if: steps.update1Run.outputs.needsUpdate
       run: objdump -d --demangle -M intel ${{ steps.update1Run.outputs.serverWinBin }} | .github/helper-bot/disa.exe -s2 .github/helper-bot/stage1.txt > .github/helper-bot/stage2.txt

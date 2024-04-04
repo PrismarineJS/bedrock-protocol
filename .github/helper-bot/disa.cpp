@@ -38,27 +38,47 @@ unsigned int hexStr2IntLE(const std::string_view &hexStr) {
   return swapped;
 }
 
-std::map<unsigned int, std::string> stringsMap;
-void loadStrings(std::string filePath) {
-  // Load the strings file TSV into a map
-  std::ifstream stringsStream(filePath, std::ios::binary);
-  if (!stringsStream.is_open()) {
-    std::cerr << "Failed to open file: " << filePath << std::endl;
+char *roData;
+int roDataOffset;
+int roDataEnd;
+void loadRoData(std::string binFile) {
+  std::ifstream binStream(binFile, std::ios::binary);
+  if (!binStream.is_open()) {
+    std::cerr << "Failed to open file: " << binFile << std::endl;
     return;
   }
-  const int bufferSize = 1024 * 64;
-  char buffer[bufferSize];
-  while (stringsStream.getline(buffer, bufferSize)) {
-    std::string_view line(buffer);
-    size_t pos = line.find('\t');
-    if (pos != std::string::npos) {
-      std::string_view key = line.substr(0, pos);
-      std::string_view value = line.substr(pos + 1, line.size() - pos - 1);
-      unsigned int keyInt = hexStr2Int(key);
-      stringsMap[keyInt] = std::string(value);
-    }
+  binStream.seekg(0, std::ios::end);
+  int size = binStream.tellg();
+  binStream.seekg(0, std::ios::beg);
+  roData = new char[size];
+  binStream.read(roData, size);
+  binStream.close();
+  // End 9 bytes holds offset of the rodata section
+  std::string_view offsetStr(roData + size - 9, 8);
+  roDataOffset = hexStr2Int(offsetStr);
+  roDataEnd = roDataOffset + size;
+}
+
+bool isAddressInRoData(unsigned int address) { return address >= roDataOffset && address < roDataEnd; }
+bool isRoDataStringNT(unsigned int address) {
+  if (!isAddressInRoData(address)) {
+    return false;
   }
-  stringsStream.close();
+  auto bufferOffset = address - roDataOffset;
+  return roData[bufferOffset] != '\0';
+}
+
+// Get a null-terminated string from the rodata section
+std::string getRoDataStringNT(unsigned int offset) {
+  if (!isRoDataStringNT(offset)) {
+    return "";
+  }
+  auto bufferOffset = offset - roDataOffset;
+  int len = 0;
+  while (roData[bufferOffset + len] != '\0') {
+    len++;
+  }
+  return std::string(roData + bufferOffset, len);
 }
 
 struct CurrentBlockData {
@@ -129,9 +149,9 @@ void loadDisassembly(std::string filePath) {
         // B1. if we are tracking a block, then print the constant
         if (!trackingBlock.empty()) {
           // if line includes '#', then split by the comment and get the comment
-          if (stringsMap.find(lastLoadedAddress) != stringsMap.end()) {
-            std::cout << "BlockID\t" << trackingBlock << "\t" << addressStr << "\t" << stringsMap[lastLoadedAddress]
-                      << std::endl;
+          if (isRoDataStringNT(lastLoadedAddress)) {
+            std::string str = getRoDataStringNT(lastLoadedAddress);
+            std::cout << "BlockID\t" << trackingBlock << "\t" << addressStr << "\t" << str << std::endl;
             seenBlockIds.push_back(trackingBlock);
           }
         }
@@ -198,8 +218,9 @@ void loadDisassembly(std::string filePath) {
 
           if (inStateSerializer.size() > 0) {
             // we are interested in capturing all loaded constants inside the state serializer
-            if (stringsMap.find(addressInt) != stringsMap.end()) {
-              stateEntries[inStateSerializer].push_back(stringsMap[addressInt]);
+            if (isRoDataStringNT(addressInt)) {
+              auto str = getRoDataStringNT(addressInt);
+              stateEntries[inStateSerializer].push_back(str);
             }
           }
 
@@ -242,9 +263,9 @@ void loadDisassembly(std::string filePath) {
         // If we've already seen the block, above check is not needed
         if (!contains(seenBlockIds, trackingBlock)) {
           // if line includes '#', then split by the comment and get the comment
-          if (stringsMap.find(lastLoadedAddress) != stringsMap.end()) {
-            std::cout << "BlockID\t" << trackingBlock << "\t" << "UNK" << "\t" << stringsMap[lastLoadedAddress]
-                      << std::endl;
+          if (isRoDataStringNT(lastLoadedAddress)) {
+            auto str = getRoDataStringNT(lastLoadedAddress);
+            std::cout << "BlockID\t" << trackingBlock << "\t" << "UNK" << "\t" << str << std::endl;
           }
         }
       }
@@ -280,14 +301,12 @@ void loadDisassembly(std::string filePath) {
               continue;
             }
             auto states = comment.substr(statesPos + 15, comment.size() - statesPos - 16);
-            if (stringsMap.find(lastLoadedAddress) != stringsMap.end()) {
-              std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t"
-                        << stringsMap[lastLoadedAddress] << std::endl;
-            } else if (stringsMap.find(lastLastLoadedAddress) != stringsMap.end()) {
-              // try once more but with the last last loaded address...
-              // this can happen if another LEA code is between
-              std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t"
-                        << stringsMap[lastLastLoadedAddress] << std::endl;
+            if (isRoDataStringNT(lastLoadedAddress)) {
+              auto str = getRoDataStringNT(lastLoadedAddress);
+              std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t" << str << std::endl;
+            } else if (isRoDataStringNT(lastLastLoadedAddress)) {
+              auto str = getRoDataStringNT(lastLastLoadedAddress);
+              std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t" << str << std::endl;
             } else {
               // std::cout << "? NOT adding VanillaState\t" << states << " " << lastLoadedAddress << "\t"
               //           << lastLoadedAddressAbsMovStr << std::endl;
@@ -475,7 +494,7 @@ void loadDisassembly2(std::string filePath) {
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    std::cerr << "Usage: disa -s1 <stringsFile> [dis]" << std::endl;
+    std::cerr << "Usage: disa -s1 <rodataFile> [dis]" << std::endl;
     std::cerr << "Usage: disa -s2 <stage1File> [dis]" << std::endl;
     return 1;
   }
@@ -490,11 +509,12 @@ int main(int argc, char **argv) {
     std::cout << "(waiting for stdin)" << std::endl;
   }
   if (stage == "-s1") {
-    loadStrings(file);
+    loadRoData(file);
     loadDisassembly(disFile);
   } else if (stage == "-s2") {
     loadStage1(file);
     loadDisassembly2(disFile);
   }
+  printf("Done\n");
   return 0;
 }

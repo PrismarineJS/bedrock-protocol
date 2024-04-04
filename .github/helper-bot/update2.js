@@ -6,7 +6,7 @@ const fs = require('fs')
 function loadRoDataHexDump (filePath) {
   const rodataHexDump = fs.readFileSync(filePath)
   const buffer = rodataHexDump
-  const initialBufferOffset = Buffer.from(rodataHexDump.slice(-8).toString('latin1'), 'latin1').readUInt32BE(0)
+  const initialBufferOffset = Buffer.from(rodataHexDump.slice(-9, -1).toString('latin1'), 'latin1').readUInt32BE(0)
 
   function readStringNTFromHexDump (addr) {
     const addrNum = typeof addr === 'string' ? parseInt(addr, 16) : addr
