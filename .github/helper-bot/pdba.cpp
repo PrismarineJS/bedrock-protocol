@@ -20,11 +20,19 @@ void loadDump() {
 
       auto vanillaStateName = demangled.substr(vanillaStatesPos + 15);
       if (demangled.find("Variant<int>") != std::string::npos) {
-        std::cout << "VST " << "\t" << vanillaStateName << "\t" << "int" << std::endl;
+        std::cout << "VST\t" << vanillaStateName << "\t" << "int" << std::endl;
       } else if (demangled.find("Variant<bool>") != std::string::npos) {
-        std::cout << "VST " << "\t" << vanillaStateName << "\t" << "bool" << std::endl;
+        std::cout << "VST\t" << vanillaStateName << "\t" << "bool" << std::endl;
       } else {
-        std::cout << "VST " << "\t" << vanillaStateName << "\t" << "string" << std::endl;
+        // Capture what's in the Variant<...>
+        auto variantPos = demangled.find("Variant<");
+        if (variantPos != std::string::npos) {
+          auto variantEndPos = demangled.find(">", variantPos);
+          auto variantType = demangled.substr(variantPos + 8, variantEndPos - variantPos - 8);
+          std::cout << "VST\t" << vanillaStateName << "\t" << "string" << "\t" << variantType << std::endl;
+        } else {
+          std::cout << "VST\t" << vanillaStateName << "\t" << "string" << std::endl;
+        }
       }
     }
   }

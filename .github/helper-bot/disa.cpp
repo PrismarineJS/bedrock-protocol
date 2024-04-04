@@ -77,6 +77,10 @@ bool hasSeenBlockClass(const std::string_view &blockClass) {
   return false;
 }
 
+bool contains(const std::vector<std::string> &vec, const std::string &str) {
+  return std::find(vec.begin(), vec.end(), str) != vec.end();
+}
+
 void loadDisassembly(std::string filePath) {
   // *uses AT&T syntax ; too late to change now
   std::istream *disStream = &std::cin;
@@ -105,6 +109,9 @@ void loadDisassembly(std::string filePath) {
 
   std::optional<CurrentBlockData> currentBlockData;
 
+  std::vector<std::string> seenBlockIds;
+  // std::vector<std::string> seenStates;
+
   while (disStream->getline(buffer, bufferSize)) {
     // movabs $0x116b2c0, %rbx -> move the address to rbx
     if (buffer[10] == 'm' && buffer[11] == 'o' && buffer[12] == 'v' && buffer[13] == 'a' && buffer[14] == 'b' &&
@@ -117,12 +124,13 @@ void loadDisassembly(std::string filePath) {
         lastLoadedAddressAbsMovStr = addressStr;
         // auto addressInt = hexStr2Int(addressStr);
 
-        // if we are tracking a block, then print the constant
+        // B1. if we are tracking a block, then print the constant
         if (!trackingBlock.empty()) {
           // if line includes '#', then split by the comment and get the comment
           if (stringsMap.find(lastLoadedAddress) != stringsMap.end()) {
             std::cout << "BlockID\t" << trackingBlock << "\t" << addressStr << "\t" << stringsMap[lastLoadedAddress]
                       << std::endl;
+            seenBlockIds.push_back(trackingBlock);
           }
         }
       }
@@ -197,6 +205,7 @@ void loadDisassembly(std::string filePath) {
         size_t pos = line.find("VanillaBlockTypeIds::");
         if (pos != std::string::npos) {
           trackingBlock = line.substr(pos + 21, line.size() - pos - 22);
+          // std::cout << "Now tracking: " << trackingBlock << "- " << line << std::endl;
         }
 
         if (currentBlockData.has_value()) {
@@ -215,7 +224,22 @@ void loadDisassembly(std::string filePath) {
         }
       }
     } else {
-      trackingBlock.clear();
+      // B1. cont. Sometimes the movabs with hash is not after 2x lea ops, so we dump what we have and continue
+      if (!trackingBlock.empty() && !(buffer[10] == 'm' && buffer[11] == 'o' && buffer[12] == 'v' &&
+                                      buffer[13] == 'a' && buffer[14] == 'b' && buffer[15] == 's')) {
+        // If we've already seen the block, above check is not needed
+        if (!contains(seenBlockIds, trackingBlock)) {
+          // if line includes '#', then split by the comment and get the comment
+          if (stringsMap.find(lastLoadedAddress) != stringsMap.end()) {
+            std::cout << "BlockID\t" << trackingBlock << "\t" << "UNK" << "\t" << stringsMap[lastLoadedAddress]
+                      << std::endl;
+          }
+        }
+      }
+      // lea/mov are both used to load constants before a call, so we can keep tracking if it's also a mov
+      if (!(buffer[10] == 'm' && buffer[11] == 'o' && buffer[12] == 'v')) {
+        trackingBlock.clear();
+      }
     }
 
     // if a move over lea, we maybe loading block states
@@ -247,6 +271,14 @@ void loadDisassembly(std::string filePath) {
             if (stringsMap.find(lastLoadedAddress) != stringsMap.end()) {
               std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t"
                         << stringsMap[lastLoadedAddress] << std::endl;
+            } else if (stringsMap.find(lastLastLoadedAddress) != stringsMap.end()) {
+              // try once more but with the last last loaded address...
+              // this can happen if another LEA code is between
+              std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t"
+                        << stringsMap[lastLastLoadedAddress] << std::endl;
+            } else {
+              // std::cout << "? NOT adding VanillaState\t" << states << " " << lastLoadedAddress << "\t"
+              //           << lastLoadedAddressAbsMovStr << std::endl;
             }
           }
         }
@@ -278,7 +310,7 @@ void loadDisassembly(std::string filePath) {
         auto pos = line.find("StateSerializationUtils::fromNBT<");
         auto end = line.find(">", pos);
         auto substr = line.substr(pos + 33, end - pos - 33);
-        std::cout << "StateSerializer\t" << substr << std::endl;
+        // std::cout << "StateSerializer\t" << substr << std::endl;
         inStateSerializer = std::string(substr);
       } else {
         inStateSerializer.clear();
