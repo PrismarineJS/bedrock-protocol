@@ -72,7 +72,8 @@ jobs:
     # The above will return a "needsUpdate" output.
     - name: Dump .rodata strings
       if: steps.update1Run.outputs.needsUpdate
-      run: /snap/bin/radare2.rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
+      # run: /snap/bin/radare2.rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
+      run: rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
     - name: Dump .rodata
       if: steps.update1Run.outputs.needsUpdate
       run: objcopy -O binary -j .rodata ${{ steps.update1Run.outputs.serverBin }} .github/helper-bot/rodata.bin
