@@ -13,9 +13,7 @@ async function main () {
 async function upload () {
   const artifact = await github.artifacts.createTextArtifact('updateData-' + process.env.UPDATE_VERSION, {
     extracted: fs.readFileSync('merged.txt', 'latin1'),
-    collected: JSON.stringify(require('./collected.json')),
-    rodata: fs.readFileSync('rodata.bin'),
-    strings: fs.readFileSync('strings.tsv')
+    collected: JSON.stringify(require('./collected.json'))
   })
   console.log('Created artifact', artifact)
   const dispatch = await github.sendWorkflowDispatch({
