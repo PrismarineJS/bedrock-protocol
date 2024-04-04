@@ -49,10 +49,14 @@ jobs:
     - name: Compile pdba
       run: clang++-14 -g `llvm-config-14 --cxxflags --ldflags --libs` -o pdba.exe pdba.cpp
       working-directory: .github/helper-bot
+    # For some reason radare2 isn't installable on GH with apt as it's missing
+    # the `http://archive.ubuntu.com/ubuntu focal/universe amd64` repo. So we can either
+    # install with snap, or try to update the apt repos.
+    - name: Update system packages
+      run: sudo sed -i '1i deb http://archive.ubuntu.com/ubuntu focal/universe amd64' /etc/apt/sources.list
     - name: Install radare2
-      # For some reason it's not appearing on GH Actions' apt.. so use snap
-      # run: sudo apt-get install radare2 -y
-      run: sudo snap install radare2 --classic
+      run: sudo apt update && sudo apt-get install radare2 -y
+      # run: sudo snap install radare2 --classic
     - name: Install bedrock-protocol
       run: npm install gh-helpers
     # This step sets the "serverVersion" and "serverPath" outputs
