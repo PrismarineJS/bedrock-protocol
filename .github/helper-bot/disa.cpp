@@ -111,6 +111,7 @@ void loadDisassembly(std::string filePath) {
   std::optional<CurrentBlockData> currentBlockData;
 
   std::vector<std::string> seenBlockIds;
+  std::vector<std::string> seenConstants;
   // std::vector<std::string> seenStates;
 
   while (disStream->getline(buffer, bufferSize)) {
@@ -199,6 +200,16 @@ void loadDisassembly(std::string filePath) {
             // we are interested in capturing all loaded constants inside the state serializer
             if (stringsMap.find(addressInt) != stringsMap.end()) {
               stateEntries[inStateSerializer].push_back(stringsMap[addressInt]);
+            }
+          }
+
+          size_t constPos = line.find("SharedConstants::");
+          if (constPos != std::string::npos) {
+            auto sharedName = line.substr(constPos + 17, line.size() - constPos - 18);
+            auto sharedNameStr = std::string(sharedName);
+            if (!contains(seenConstants, sharedNameStr)) {
+              seenConstants.push_back(sharedNameStr);
+              std::cout << "Const\t" << sharedName << "\t" << addressStr << std::endl;
             }
           }
         }

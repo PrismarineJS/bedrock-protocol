@@ -71,7 +71,7 @@ jobs:
       run: /snap/bin/radare2.rabin2 -N 1 -z ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/strings.txt
     - name: Dump .rodata
       if: steps.update1Run.outputs.needsUpdate
-      run: readelf -x .rodata ${{ steps.update1Run.outputs.serverBin }} > .github/helper-bot/rodata.txt
+      run: objcopy -O binary -j .rodata ${{ steps.update1Run.outputs.serverBin }} .github/helper-bot/rodata.bin
     - name: Proc strings (Stage 0)
       if: steps.update1Run.outputs.needsUpdate
       run: node update2.js -s0

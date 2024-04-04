@@ -2,25 +2,11 @@
 const { join } = require('path')
 const fs = require('fs')
 
-/*
-Hex dump of section '.rodata':
-	0x00ba0080 00004a42 000000c0 17b7d138 9a99193e ..JB.......8...>
-	0x00ba0090 00008043 000020c2 c3f5e8be 0000003c ...C.. ........<
-*/
-
+// 00ba0080
 function loadRoDataHexDump (filePath) {
-  const rodataHexDump = fs.readFileSync(filePath, 'latin1')
-  const hexDumpLines = rodataHexDump.split('\n')
-  const buffer = Buffer.alloc(hexDumpLines.length * 16)
-  let initialBufferIx
-  let bufferIx = 0
-  for (const line of hexDumpLines) {
-    if (!line.startsWith(' ')) continue
-    initialBufferIx ||= line.slice(2, 12)
-    const data = line.slice(13, 48).replaceAll(' ', '')
-    bufferIx += buffer.write(data, bufferIx, 'hex')
-  }
-  const initialBufferOffset = parseInt(initialBufferIx, 16)
+  const rodataHexDump = fs.readFileSync(filePath)
+  const buffer = rodataHexDump
+  const initialBufferOffset = Buffer.from(rodataHexDump.slice(-8).toString('latin1'), 'latin1').readUInt32BE(0)
 
   function readStringNTFromHexDump (addr) {
     const addrNum = typeof addr === 'string' ? parseInt(addr, 16) : addr
@@ -114,12 +100,12 @@ function postProc (rodataDump, s1file) {
 const stage = process.argv[2]
 if (stage === '-s0') {
   writeStringsTSV(
-    join(__dirname, 'rodata.txt'),
+    join(__dirname, 'rodata.bin'),
     join(__dirname, 'strings.txt')
   )
 } else if (stage === '-s3') {
   postProc(
-    join(__dirname, 'rodata.txt'),
+    join(__dirname, 'rodata.bin'),
     join(__dirname, 'stage1.txt')
   )
 }

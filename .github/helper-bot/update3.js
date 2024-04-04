@@ -13,7 +13,8 @@ async function main () {
 async function upload () {
   const artifact = await github.artifacts.createTextArtifact('updateData-' + process.env.UPDATE_VERSION, {
     extracted: fs.readFileSync('merged.txt', 'latin1'),
-    collected: JSON.stringify(require('./collected.json'))
+    collected: JSON.stringify(require('./collected.json')),
+    rodata: fs.readFileSync('rodata.bin')
   })
   console.log('Created artifact', artifact)
   const dispatch = await github.sendWorkflowDispatch({
@@ -21,13 +22,16 @@ async function upload () {
     workflow: 'dispatch.yml',
     branch: 'main',
     inputs: {
-      repoData: await github.getRepoDetails(),
-      artifactId: artifact.id,
-      artifactSize: artifact.size,
-      updateVersion: process.env.UPDATE_VERSION,
-      serverVersion: process.env.SERVER_VERSION,
-      protocolVersion: process.env.PROTOCOL_VERSION,
-      issueNo: process.env.ISSUE_NUMBER
+      action: 'minecraft/bedrockDataUpdate',
+      payload: JSON.stringify({
+        repoData: await github.getRepoDetails(),
+        artifactId: artifact.id,
+        artifactSize: artifact.size,
+        updateVersion: process.env.UPDATE_VERSION,
+        serverVersion: process.env.SERVER_VERSION,
+        protocolVersion: process.env.PROTOCOL_VERSION,
+        issueNo: process.env.ISSUE_NUMBER
+      })
     }
   })
   console.log('Sent workflow dispatch', dispatch)
