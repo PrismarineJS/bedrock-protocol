@@ -2,7 +2,7 @@ const fs = require('fs')
 const github = require('gh-helpers')()
 
 async function main () {
-  const stages = ['stage1.txt', 'stage2.txt', 'stage3.txt', 'stage4.txt']
+  const stages = ['stage1.txt', 'stage2.txt', 'stage4.txt']
   const allStages = fs.createWriteStream('merged.txt')
   for (const stage of stages) {
     allStages.write(fs.readFileSync(stage, 'latin1'))
