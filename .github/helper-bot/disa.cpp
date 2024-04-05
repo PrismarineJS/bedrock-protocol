@@ -81,6 +81,194 @@ std::string getRoDataStringNT(unsigned int offset) {
   return std::string(roData + bufferOffset, len);
 }
 
+//
+//  708c23b:	lea    0x1647ede(%rip),%rsi        # 86d4120 <VanillaStates::Height>
+enum InstructionType { NO_INSTR, MOVABS, MOV, LEA, CALL, OTHER, FUNCTION_START };
+struct Instruction {
+  InstructionType type;
+  bool isFunctionStart;
+  char *asciiAddressStart;
+  char *asciiAddressEnd;
+  char *asciiOpStart;
+  char *asciiOpEnd;
+  char *asciiOperandsStart;
+  char *asciiOperandsEnd;
+  char *asciiCommentStart;
+  char *asciiCommentEnd;
+  unsigned int commentAddr;
+  char *commentSymbolStart;
+  char *commentSymbolEnd;
+};
+void clearInstruction(Instruction &instr) {
+  instr.type = NO_INSTR;
+  instr.isFunctionStart = false;
+  instr.asciiAddressStart = nullptr;
+  instr.asciiAddressEnd = nullptr;
+  instr.asciiOpStart = nullptr;
+  instr.asciiOpEnd = nullptr;
+  instr.asciiOperandsStart = nullptr;
+  instr.asciiOperandsEnd = nullptr;
+  instr.asciiCommentStart = nullptr;
+  instr.asciiCommentEnd = nullptr;
+}
+void parseAttLine(char *buffer, Instruction &instr) {
+  instr.asciiAddressStart = buffer;
+  if (buffer[0] == ' ') {
+    instr.isFunctionStart = false;
+  } else {
+    instr.isFunctionStart = true;
+  }
+
+  if (instr.isFunctionStart) {
+    // 0000000002c44530 <deregister_tm_clones>:
+    bool readingAddress = true;
+    bool readingSymbol = false;
+    int i = 0;
+    for (;; i++) {
+      auto c = buffer[i];
+      if (c == '\0')
+        break;
+      if (c == ' ' || c == '\t') {
+        if (readingAddress) {
+          readingAddress = false;
+          readingSymbol = true;
+          instr.asciiAddressEnd = buffer + i;
+          instr.asciiOpStart = buffer + i + 1;
+        }
+      }
+    }
+    instr.asciiOpEnd = buffer + i;
+    // op end here holds the symbol name
+    // remove the colon
+    instr.asciiOpEnd--;
+  } else {
+    bool readingAddress = true;
+    bool readingOp = false;
+    bool readingOperands = false;
+    bool readingComment = false;
+    for (int i = 0; true; i++) {
+      auto c = buffer[i];
+      if (c == '\0')
+        break;
+
+      if (readingAddress) {
+        for (int j = i; true; j++) {
+          auto c = buffer[j];
+          if (c == '\0')
+            break;
+          if (c == ':') {
+            readingAddress = false;
+            readingOp = true;
+            instr.asciiAddressEnd = buffer + j;
+            i = j;
+            break;
+          }
+        }
+      } else if (readingOp) {
+        for (int j = i; true; j++) {
+          auto c = buffer[j];
+          if (c == '\0')
+            break;
+          if (c == ' ' || c == '\t') {
+            if (instr.asciiOpStart) {
+              readingOp = false;
+              readingOperands = true;
+              instr.asciiOpEnd = buffer + j;
+              i = j;
+              break;
+            }
+          } else if (!instr.asciiOpStart) {
+            instr.asciiOpStart = buffer + j;
+          }
+        }
+      } else if (readingOperands) {
+        for (int j = i; true; j++) {
+          auto c = buffer[j];
+          if (c == '#' || c == '\0') {
+            readingOperands = false;
+            readingComment = true;
+            instr.asciiOperandsEnd = buffer + j;
+            i = j;
+            break;
+          } else if (!(c == ' ' || c == '\t')) {
+            if (!instr.asciiOperandsStart) {
+              instr.asciiOperandsStart = buffer + j;
+            }
+          }
+        }
+      } else if (readingComment) {
+        for (int j = i; true; j++) {
+          auto c = buffer[j];
+          if (c == '\0') {
+            readingComment = false;
+            instr.asciiCommentEnd = buffer + j;
+            i = j;
+            break;
+          } else if (!instr.asciiCommentStart) {
+            instr.asciiCommentStart = buffer + j;
+          }
+        }
+      }
+    }
+  }
+
+  // Sanity check: make sure we have at least an op start and end (this also covers functions)
+  if (!instr.asciiOpStart || !instr.asciiOpEnd) {
+    instr.type = NO_INSTR;
+    instr.isFunctionStart = false;
+    return;
+  }
+
+  if (instr.isFunctionStart) {
+    instr.type = FUNCTION_START;
+    return;
+  }
+
+  auto op = instr.asciiOpStart;
+  if (op[0] == 'm' && op[1] == 'o' && op[2] == 'v' && op[3] == 'a' && op[4] == 'b' && op[5] == 's') {
+    instr.type = MOVABS;
+  } else if (op[0] == 'm' && op[1] == 'o' && op[2] == 'v') {
+    instr.type = MOV;
+  } else if (op[0] == 'l' && op[1] == 'e' && op[2] == 'a') {
+    instr.type = LEA;
+  } else if (op[0] == 'c' && op[1] == 'a' && op[2] == 'l' && op[3] == 'l') {
+    instr.type = CALL;
+  } else {
+    instr.type = OTHER;
+  }
+
+  if (instr.asciiCommentStart && instr.asciiCommentEnd) {
+    // Comment Start: [ 86d4120 <VanillaStates::Height>]
+    // Comment End: []
+    // iterate until the first '<' and then until the first '>'
+    char *asciiCommentAddrStart = instr.asciiCommentStart + 1;
+    char *asciiCommentAddrEnd = nullptr;
+    char *asciiCommentSymbolStart = nullptr;
+    char *asciiCommentSymbolEnd = nullptr;
+    for (int i = 0; true; i++) {
+      auto c = asciiCommentAddrStart[i];
+      if (c == '\0')
+        break;
+      if (c == '<' && !asciiCommentAddrEnd) {
+        asciiCommentAddrEnd = asciiCommentAddrStart + i;
+        asciiCommentSymbolStart = asciiCommentAddrStart + i + 1;
+      } else if (c == '>') {
+        asciiCommentSymbolEnd = asciiCommentAddrStart + i;
+        break;
+      }
+    }
+    if (asciiCommentAddrEnd && asciiCommentSymbolStart && asciiCommentSymbolEnd) {
+      instr.commentAddr =
+          hexStr2Int(std::string_view(asciiCommentAddrStart, asciiCommentAddrEnd - asciiCommentAddrStart));
+      instr.commentSymbolStart = asciiCommentSymbolStart;
+      instr.commentSymbolEnd = asciiCommentSymbolEnd;
+    }
+  }
+}
+//
+
+// void parseIntelLine() {}
+
 struct CurrentBlockData {
   std::string blockName;
   std::string blockClass;
@@ -134,44 +322,46 @@ void loadDisassembly(std::string filePath) {
   std::vector<std::string> seenConstants;
   // std::vector<std::string> seenStates;
 
+  Instruction instr;
+
   while (disStream->getline(buffer, bufferSize)) {
+    parseAttLine(buffer, instr);
+    if (instr.type == NO_INSTR) {
+      goto finish;
+    }
+
     // movabs $0x116b2c0, %rbx -> move the address to rbx
-    if (buffer[10] == 'm' && buffer[11] == 'o' && buffer[12] == 'v' && buffer[13] == 'a' && buffer[14] == 'b' &&
-        buffer[15] == 's') {
+    if (instr.type == MOVABS) {
       std::string_view line(buffer);
       size_t pos = line.find("$");
       size_t endPos = line.find(",");
       if (pos != std::string::npos && endPos != std::string::npos) {
-        auto addressStr = line.substr(pos + 1, endPos - pos - 1);
-        lastLoadedAddressAbsMovStr = addressStr;
-        // auto addressInt = hexStr2Int(addressStr);
+        auto loadedStr = line.substr(pos + 1, endPos - pos - 1);
+        lastLoadedAddressAbsMovStr = loadedStr;
 
         // B1. if we are tracking a block, then print the constant
         if (!trackingBlock.empty()) {
           // if line includes '#', then split by the comment and get the comment
           if (isRoDataStringNT(lastLoadedAddress)) {
             std::string str = getRoDataStringNT(lastLoadedAddress);
-            std::cout << "BlockID\t" << trackingBlock << "\t" << addressStr << "\t" << str << std::endl;
+            std::cout << "BlockID\t" << trackingBlock << "\t" << loadedStr << "\t" << str << std::endl;
             seenBlockIds.push_back(trackingBlock);
           }
         }
       }
     }
 
-    // callq  745ef90 <DirtBlock& BlockTypeRegistry::registerBlock<DirtBlock, int>(HashedString const&, int&&)>
-    if (buffer[10] == 'c' && buffer[11] == 'a' && buffer[12] == 'l' && buffer[13] == 'l') {
+    if (instr.type == CALL) {
       std::string_view line(buffer);
-
-      // if line contains registerBlock, then it's a block registration
-      size_t registerPos = line.find("registerBlock<");
-      if (registerPos != std::string::npos) {
+      size_t pos = line.find("registerBlock<");
+      if (pos != std::string::npos) {
         if (currentBlockData.has_value()) {
           blockData.push_back(currentBlockData.value());
           currentBlockData.reset();
         }
 
         // class name is between "registerBlock<" and ","
-        size_t classStart = registerPos;
+        size_t classStart = pos;
         size_t classEnd = line.find(",", classStart);
         auto blockClass = line.substr(classStart + 14, classEnd - classStart - 14);
         if (trackingBlock.empty()) {
@@ -180,7 +370,6 @@ void loadDisassembly(std::string filePath) {
           }
         } else {
           currentBlockData = CurrentBlockData{.blockClass = std::string(blockClass)};
-          // std::cout << "BlockRegistration\t" << trackingBlock << "\t" << blockClass << std::endl;
           currentBlockData->blockName = trackingBlock;
         }
       }
@@ -200,45 +389,35 @@ void loadDisassembly(std::string filePath) {
       }
     }
 
-    if (buffer[10] == 'l' && buffer[11] == 'e' && buffer[12] == 'a') {
+    if (instr.type == LEA) {
       std::string_view line(buffer);
 
-      size_t pos = line.find("#");
-      if (pos != std::string::npos) {
-        auto comment = line.substr(pos + 2, line.size() - pos - 1);
-        // above bounds to skip the comment+space
-        // split the comment by the first space
-        auto addressPos = comment.find(" ");
-        if (addressPos != std::string::npos) {
-          auto addressStr = comment.substr(0, addressPos);
-          auto addressInt = hexStr2Int(addressStr);
+      if (instr.commentSymbolStart && instr.commentSymbolEnd) {
+        // there is a "# 86d4858 <VanillaBlockTypeIds::Air>" comment
+        lastLastLoadedAddress = lastLoadedAddress;
+        lastLoadedAddress = instr.commentAddr;
 
-          lastLastLoadedAddress = lastLoadedAddress;
-          lastLoadedAddress = addressInt;
-
-          if (inStateSerializer.size() > 0) {
-            // we are interested in capturing all loaded constants inside the state serializer
-            if (isRoDataStringNT(addressInt)) {
-              auto str = getRoDataStringNT(addressInt);
-              stateEntries[inStateSerializer].push_back(str);
-            }
+        if (inStateSerializer.size() > 0) {
+          // we are interested in capturing all loaded constants inside the state serializer
+          if (isRoDataStringNT(instr.commentAddr)) {
+            auto str = getRoDataStringNT(instr.commentAddr);
+            stateEntries[inStateSerializer].push_back(str);
           }
+        }
 
-          size_t constPos = line.find("SharedConstants::");
-          if (constPos != std::string::npos) {
-            auto sharedName = line.substr(constPos + 17, line.size() - constPos - 18);
-            auto sharedNameStr = std::string(sharedName);
-            if (!contains(seenConstants, sharedNameStr)) {
-              seenConstants.push_back(sharedNameStr);
-              std::cout << "Const\t" << sharedName << "\t" << addressStr << std::endl;
-            }
+        size_t constPos = line.find("SharedConstants::");
+        if (constPos != std::string::npos) {
+          auto sharedName = line.substr(constPos + 17, line.size() - constPos - 18);
+          auto sharedNameStr = std::string(sharedName);
+          if (!contains(seenConstants, sharedNameStr)) {
+            seenConstants.push_back(sharedNameStr);
+            std::cout << "Const\t" << sharedName << "\t" << instr.commentAddr << std::endl;
           }
         }
 
         size_t pos = line.find("VanillaBlockTypeIds::");
         if (pos != std::string::npos) {
           trackingBlock = line.substr(pos + 21, line.size() - pos - 22);
-          // std::cout << "Now tracking: " << trackingBlock << "- " << line << std::endl;
         }
 
         if (currentBlockData.has_value()) {
@@ -246,10 +425,10 @@ void loadDisassembly(std::string filePath) {
           size_t statesPos = line.find("VanillaStates::");
           if (statesPos != std::string::npos) {
             // ensure there's no + in the symbol
-            if (comment.find("+") != std::string::npos) {
+            if (line.find("+") != std::string::npos) {
               continue;
             }
-            auto end = comment.find(">");
+            auto end = line.find(">");
             auto states = line.substr(statesPos + 15, line.size() - statesPos - 16);
             auto statesStr = std::string(states);
             currentBlockData->stateKeys.push_back(statesStr);
@@ -258,8 +437,7 @@ void loadDisassembly(std::string filePath) {
       }
     } else {
       // B1. cont. Sometimes the movabs with hash is not after 2x lea ops, so we dump what we have and continue
-      if (!trackingBlock.empty() && !(buffer[10] == 'm' && buffer[11] == 'o' && buffer[12] == 'v' &&
-                                      buffer[13] == 'a' && buffer[14] == 'b' && buffer[15] == 's')) {
+      if (!trackingBlock.empty() && instr.type != MOVABS) {
         // If we've already seen the block, above check is not needed
         if (!contains(seenBlockIds, trackingBlock)) {
           // if line includes '#', then split by the comment and get the comment
@@ -270,37 +448,28 @@ void loadDisassembly(std::string filePath) {
         }
       }
       // lea/mov are both used to load constants before a call, so we can keep tracking if it's also a mov
-      if (!(buffer[10] == 'm' && buffer[11] == 'o' && buffer[12] == 'v')) {
+      if (instr.type != MOV) {
         trackingBlock.clear();
       }
     }
 
     // if a move over lea, we maybe loading block states
-    if (buffer[10] == 'm' && buffer[11] == 'o' && buffer[12] == 'v') {
+    if (instr.type == MOV) {
       std::string_view line(buffer);
       // if line includes '#', then split by the comment and get the comment
-      size_t pos = line.find("#");
-      if (pos != std::string::npos) {
-        auto comment = line.substr(pos + 2, line.size() - pos - 1);
-
-        // Some reason some blocks are loaded outside of the block registry
+      if (instr.commentAddr) {
         if (isInBlockRegistry || currentBlockData.has_value()) {
-          auto addressPos = comment.find(" ");
-          if (addressPos != std::string::npos) {
-            auto addressStr = comment.substr(0, addressPos);
-            auto addressInt = hexStr2Int(addressStr);
-            lastLastLoadedAddress = lastLoadedAddress;
-            lastLoadedAddress = addressInt;
-          }
+          lastLastLoadedAddress = lastLoadedAddress;
+          lastLoadedAddress = instr.commentAddr;
         } else if (isInGlobalBlock) {
           // State Registration?
-          auto statesPos = comment.find("VanillaStates::");
+          size_t statesPos = line.find("VanillaStates::");
           if (statesPos != std::string::npos) {
             // ensure there's no + in the symbol
-            if (comment.find("+") != std::string::npos) {
-              continue;
+            if (line.find("+") != std::string::npos) {
+              goto finish;
             }
-            auto states = comment.substr(statesPos + 15, comment.size() - statesPos - 16);
+            auto states = line.substr(statesPos + 15, line.size() - statesPos - 16);
             if (isRoDataStringNT(lastLoadedAddress)) {
               auto str = getRoDataStringNT(lastLoadedAddress);
               std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t" << str << std::endl;
@@ -317,11 +486,11 @@ void loadDisassembly(std::string filePath) {
     }
 
     // if buffer ends with a colon, then it's a new block
-    if (buffer[0] == '0') {
+    if (instr.isFunctionStart) {
       std::string_view line(buffer);
       trackingBlock.clear();
       // globals initialization
-      if (line.find("<_GLOBAL_") != std::string::npos) {
+      if (line.find("_GLOBAL_") != std::string::npos) {
         isInGlobalBlock = true;
       } else {
         isInGlobalBlock = false;
@@ -341,13 +510,14 @@ void loadDisassembly(std::string filePath) {
         auto pos = line.find("StateSerializationUtils::fromNBT<");
         auto end = line.find(">", pos);
         auto substr = line.substr(pos + 33, end - pos - 33);
-        // std::cout << "StateSerializer\t" << substr << std::endl;
         inStateSerializer = std::string(substr);
       } else {
         inStateSerializer.clear();
       }
     }
+  finish:
     ZeroMemory(buffer, bufferSize);
+    clearInstruction(instr);
   }
 
   if (!filePath.empty()) {
@@ -516,5 +686,6 @@ int main(int argc, char **argv) {
     loadDisassembly2(disFile);
   }
   printf("Done\n");
+  std::cerr << "Done" << std::endl;
   return 0;
 }

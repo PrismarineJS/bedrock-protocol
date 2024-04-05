@@ -65,10 +65,8 @@ jobs:
     - name: Dump .rodata
       if: steps.update1Run.outputs.needsUpdate
       run: objcopy -O binary -j .rodata ${{ steps.update1Run.outputs.serverBin }} .github/helper-bot/rodata.bin
-    # Debug
-    - run: objdump -v
     - run: objdump -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} > bedrock.asm
-    - run: sha1sum bedrock.asm
+    - run: head -n 20 bedrock.asm
     - name: Process Linux server (Stage 1)
       if: steps.update1Run.outputs.needsUpdate
       run: objdump -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/rodata.bin > .github/helper-bot/stage1.txt
