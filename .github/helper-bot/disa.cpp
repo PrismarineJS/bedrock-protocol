@@ -82,6 +82,17 @@ std::string getRoDataStringNT(unsigned int offset) {
   return std::string(roData + bufferOffset, len);
 }
 
+std::string fnv64Hex(std::string_view str) {
+  unsigned long long hash = 0xcbf29ce484222325;
+  for (size_t i = 0; i < str.size(); i++) {
+    hash *= 0x100000001b3;
+    hash ^= str[i];
+  }
+  char buffer[17];
+  snprintf(buffer, 17, "%016llx", hash);
+  return "0x" + std::string(buffer);
+}
+
 //
 //  708c23b:	lea    0x1647ede(%rip),%rsi        # 86d4120 <VanillaStates::Height>
 enum InstructionType { NO_INSTR, MOVABS, MOV, LEA, CALL, OTHER, FUNCTION_START };
@@ -476,10 +487,12 @@ void loadDisassembly(std::string filePath) {
             auto states = line.substr(statesPos + 15, line.size() - statesPos - 16);
             if (isRoDataStringNT(lastLoadedAddress)) {
               auto str = getRoDataStringNT(lastLoadedAddress);
-              std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t" << str << std::endl;
+              auto computedHash = fnv64Hex(str); // lastLoadedAddressAbsMovStr can be optimized out
+              std::cout << "VanillaState\t" << states << "\t" << computedHash << "\t" << str << std::endl;
             } else if (isRoDataStringNT(lastLastLoadedAddress)) {
               auto str = getRoDataStringNT(lastLastLoadedAddress);
-              std::cout << "VanillaState\t" << states << "\t" << lastLoadedAddressAbsMovStr << "\t" << str << std::endl;
+              auto computedHash = fnv64Hex(str);
+              std::cout << "VanillaState\t" << states << "\t" << computedHash << "\t" << str << std::endl;
             } else {
               // std::cout << "? NOT adding VanillaState\t" << states << " " << lastLoadedAddress << "\t"
               //           << lastLoadedAddressAbsMovStr << std::endl;
