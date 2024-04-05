@@ -75,7 +75,8 @@ async function main (inputUpdateVer, inputIssueNo) {
   core.setOutput('serverPath', serverPath)
   core.setOutput('serverBin', serverPath + '/bedrock_server_symbols.debug')
   const handle = await bedrockServer.startServerAndWait(serverVersion, 60000, { root: __dirname })
-  const pong = await bedrock.ping({ host: '127.0.0.1', port: 19130 })
+  await new Promise((resolve) => setTimeout(resolve, 2000))
+  const pong = await bedrock.ping({ host: '127.0.0.1', port: 19130, timeout: 4000 })
   updatedBody = updatedBody.replace('<!--<tr><td><b>Protocol ID</b></td><td></td>-->', `<tr><td><b>Protocol ID</b></td><td>${pong.protocol} (${pong.version})</td>`)
   try {
     await tryConnect({ protocolVersion: pong.protocol })
@@ -86,6 +87,7 @@ async function main (inputUpdateVer, inputIssueNo) {
   }
   fs.writeFileSync(path.join(__dirname, '/updatedBody.md'), updatedBody)
   await github.updateIssue(inputIssueNo, { body: updatedBody })
+  console.log('Updated issue body', inputIssueNo, updatedBody)
   handle.kill()
 
   // Check if protocol version has changed

@@ -65,11 +65,12 @@ jobs:
     - name: Dump .rodata
       if: steps.update1Run.outputs.needsUpdate
       run: objcopy -O binary -j .rodata ${{ steps.update1Run.outputs.serverBin }} .github/helper-bot/rodata.bin
-    - run: objdump -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} > bedrock.asm
-    - run: head -n 20 bedrock.asm
+    - run: sha1sum ${{ steps.update1Run.outputs.serverBin }}
+    - run: llvm-objdump-14 -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} > llvm.asm
+    - run: head -n 20 llvm.asm
     - name: Process Linux server (Stage 1)
       if: steps.update1Run.outputs.needsUpdate
-      run: objdump -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/rodata.bin > .github/helper-bot/stage1.txt
+      run: llvm-objdump-14 -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} | .github/helper-bot/disa.exe -s1 .github/helper-bot/rodata.bin > .github/helper-bot/stage1.txt
     - name: Process Windows bin (Stage 2)
       if: steps.update1Run.outputs.needsUpdate
       run: objdump -d --demangle -M intel ${{ steps.update1Run.outputs.serverWinBin }} | .github/helper-bot/disa.exe -s2 .github/helper-bot/stage1.txt > .github/helper-bot/stage2.txt
