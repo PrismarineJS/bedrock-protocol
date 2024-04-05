@@ -73,7 +73,6 @@ jobs:
     - name: Process Windows bin (Stage 2)
       if: steps.update1Run.outputs.needsUpdate
       run: objdump -d --demangle -M intel ${{ steps.update1Run.outputs.serverWinBin }} | .github/helper-bot/disa.exe -s2 .github/helper-bot/stage1.txt > .github/helper-bot/stage2.txt
-      working-directory: .github/helper-bot
     - name: Resolve PDB symbols (Stage 4)
       if: steps.update1Run.outputs.needsUpdate
       run: llvm-pdbutil-14 dump --all ${{ steps.update1Run.outputs.serverWinPdb }} | .github/helper-bot/pdba.exe > .github/helper-bot/stage4.txt

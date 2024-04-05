@@ -69,7 +69,6 @@ bool isValidRoDataStrAddr(unsigned int address) {
   }
   auto bufferOffset = address - roDataOffset;
   auto c = roData[bufferOffset];
-  // Check that c is an ASCII char
   return isValidAsciiChar(c);
 }
 
@@ -92,7 +91,20 @@ float getRoDataFloat(unsigned int offset) {
   auto bufferOffset = offset - roDataOffset;
   return *(float *)(roData + bufferOffset);
 }
-
+std::string getRoDataHexDump(unsigned int offset, int len) {
+  if (!isAddressInRoData(offset)) {
+    return "";
+  }
+  auto bufferOffset = offset - roDataOffset;
+  std::string hexDump;
+  for (int i = 0; i < len; i++) {
+    char c = roData[bufferOffset + i];
+    char buffer[4];
+    snprintf(buffer, 4, "%02x", c);
+    hexDump += buffer;
+  }
+  return hexDump;
+}
 std::string fnv64Hex(std::string_view str) {
   unsigned long long hash = 0xcbf29ce484222325;
   for (size_t i = 0; i < str.size(); i++) {
@@ -163,9 +175,9 @@ void parseAttLine(char *buffer, Instruction &instr) {
         }
       }
     }
-    instr.asciiOpEnd = buffer + i;
     // op end here holds the symbol name
-    // remove the colon
+    instr.asciiOpEnd = buffer + i;
+    // remove the trailing colon
     instr.asciiOpEnd--;
   } else {
     bool readingAddress = true;
@@ -266,7 +278,6 @@ void parseAttLine(char *buffer, Instruction &instr) {
   if (instr.asciiCommentStart && instr.asciiCommentEnd) {
     // Comment Start: [ 86d4120 <VanillaStates::Height>]
     // Comment End: []
-    // iterate until the first '<' and then until the first '>'
     char *asciiCommentAddrStart = instr.asciiCommentStart + 1;
     char *asciiCommentAddrEnd = nullptr;
     char *asciiCommentSymbolStart = nullptr;
@@ -395,8 +406,7 @@ void loadDisassembly(std::string filePath) {
             std::cerr << "? Unloaded Block registration: " << line << std::endl;
           }
         } else {
-          currentBlockData = CurrentBlockData{.blockClass = std::string(blockClass)};
-          currentBlockData->blockName = trackingBlock;
+          currentBlockData = CurrentBlockData{.blockName = trackingBlock, .blockClass = std::string(blockClass)};
         }
       }
 
@@ -437,7 +447,8 @@ void loadDisassembly(std::string filePath) {
           auto sharedNameStr = std::string(sharedName);
           if (!contains(seenConstants, sharedNameStr)) {
             seenConstants.push_back(sharedNameStr);
-            std::cout << "Const\t" << sharedName << "\t" << instr.commentAddr << std::endl;
+            auto hexDump = getRoDataHexDump(instr.commentAddr, 32);
+            std::cout << "Const\t" << sharedName << "\t" << instr.commentAddr << "\t" << hexDump << std::endl;
           }
         }
 
@@ -473,7 +484,7 @@ void loadDisassembly(std::string filePath) {
           }
         }
       }
-      // lea/mov are both used to load constants before a call, so we can keep tracking if it's also a mov
+      // lea/mov are both used to load args before a call, so we can keep tracking if it's also a mov
       if (instr.type != MOV) {
         trackingBlock.clear();
       }
@@ -488,10 +499,10 @@ void loadDisassembly(std::string filePath) {
           lastLastLoadedAddress = lastLoadedAddress;
           lastLoadedAddress = instr.commentAddr;
         } else if (isInGlobalBlock) {
-          // State Registration?
           size_t statesPos = line.find("VanillaStates::");
+          // State Registration
           if (statesPos != std::string::npos) {
-            // ensure there's no + in the symbol
+            // ensure there's no + offset in the symbol
             if (line.find("+") != std::string::npos) {
               goto finish;
             }
@@ -517,7 +528,7 @@ void loadDisassembly(std::string filePath) {
     if (instr.isFunctionStart) {
       std::string_view line(buffer);
       trackingBlock.clear();
-      // globals initialization
+      // globals initialization block
       if (line.find("_GLOBAL_") != std::string::npos) {
         isInGlobalBlock = true;
       } else {
@@ -714,7 +725,7 @@ int main(int argc, char **argv) {
   }
   std::cout << "Stage: " << stage << std::endl;
   if (disFile.empty()) {
-    std::cout << "(waiting for stdin)" << std::endl;
+    std::cerr << "(waiting for stdin)" << std::endl;
   }
   if (stage == "-s1") {
     loadRoData(file);
@@ -723,7 +734,6 @@ int main(int argc, char **argv) {
     loadStage1(file);
     loadDisassembly2(disFile);
   }
-  printf("Done\n");
   std::cerr << "Done" << std::endl;
   return 0;
 }
