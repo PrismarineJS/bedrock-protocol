@@ -57,6 +57,7 @@ void loadRoData(std::string binFile) {
   std::string_view offsetStr(roData + size - 9, 8);
   roDataOffset = hexStr2Int(offsetStr);
   roDataEnd = roDataOffset + size;
+  fprintf(stderr, "Opened rodata file '%s', size: %d, offset: %d\n", binFile.c_str(), size, roDataOffset);
 }
 
 bool isAddressInRoData(unsigned int address) { return address >= roDataOffset && address < roDataEnd; }
@@ -110,6 +111,9 @@ void clearInstruction(Instruction &instr) {
   instr.asciiOperandsEnd = nullptr;
   instr.asciiCommentStart = nullptr;
   instr.asciiCommentEnd = nullptr;
+  instr.commentAddr = 0;
+  instr.commentSymbolStart = nullptr;
+  instr.commentSymbolEnd = nullptr;
 }
 void parseAttLine(char *buffer, Instruction &instr) {
   instr.asciiAddressStart = buffer;

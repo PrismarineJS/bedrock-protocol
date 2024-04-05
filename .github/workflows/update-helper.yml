@@ -66,6 +66,7 @@ jobs:
       if: steps.update1Run.outputs.needsUpdate
       run: objcopy -O binary -j .rodata ${{ steps.update1Run.outputs.serverBin }} .github/helper-bot/rodata.bin
     - run: sha1sum ${{ steps.update1Run.outputs.serverBin }}
+    - run: sha1sum .github/helper-bot/rodata.bin
     - run: llvm-objdump-14 -d --demangle --no-show-raw-insn ${{ steps.update1Run.outputs.serverBin }} > llvm.asm
     - run: head -n 20 llvm.asm
     - name: Process Linux server (Stage 1)
