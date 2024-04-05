@@ -60,26 +60,37 @@ void loadRoData(std::string binFile) {
   fprintf(stderr, "Opened rodata file '%s', size: %d, offset: %d\n", binFile.c_str(), size, roDataOffset);
 }
 
+// (A-Z, a-z, 0-9, symbols)
+bool isValidAsciiChar(char c) { return c >= 'A' && c <= '~'; }
 bool isAddressInRoData(unsigned int address) { return address >= roDataOffset && address < roDataEnd; }
-bool isRoDataStringNT(unsigned int address) {
-  if (!isAddressInRoData(address)) {
+bool isValidRoDataStrAddr(unsigned int address) {
+  if (!isAddressInRoData(address + 1)) {
     return false;
   }
   auto bufferOffset = address - roDataOffset;
-  return roData[bufferOffset] != '\0';
+  auto c = roData[bufferOffset];
+  // Check that c is an ASCII char
+  return isValidAsciiChar(c);
 }
 
 // Get a null-terminated string from the rodata section
 std::string getRoDataStringNT(unsigned int offset) {
-  if (!isRoDataStringNT(offset)) {
+  if (!isValidRoDataStrAddr(offset)) {
     return "";
   }
   auto bufferOffset = offset - roDataOffset;
   int len = 0;
-  while (roData[bufferOffset + len] != '\0') {
+  while (isAddressInRoData(offset + len) && roData[bufferOffset + len] != '\0') {
     len++;
   }
   return std::string(roData + bufferOffset, len);
+}
+float getRoDataFloat(unsigned int offset) {
+  if (!isAddressInRoData(offset)) {
+    return -0.0f;
+  }
+  auto bufferOffset = offset - roDataOffset;
+  return *(float *)(roData + bufferOffset);
 }
 
 std::string fnv64Hex(std::string_view str) {
@@ -357,7 +368,7 @@ void loadDisassembly(std::string filePath) {
         // B1. if we are tracking a block, then print the constant
         if (!trackingBlock.empty()) {
           // if line includes '#', then split by the comment and get the comment
-          if (isRoDataStringNT(lastLoadedAddress)) {
+          if (isValidRoDataStrAddr(lastLoadedAddress)) {
             std::string str = getRoDataStringNT(lastLoadedAddress);
             std::cout << "BlockID\t" << trackingBlock << "\t" << loadedStr << "\t" << str << std::endl;
             seenBlockIds.push_back(trackingBlock);
@@ -414,7 +425,7 @@ void loadDisassembly(std::string filePath) {
 
         if (inStateSerializer.size() > 0) {
           // we are interested in capturing all loaded constants inside the state serializer
-          if (isRoDataStringNT(instr.commentAddr)) {
+          if (isValidRoDataStrAddr(instr.commentAddr)) {
             auto str = getRoDataStringNT(instr.commentAddr);
             stateEntries[inStateSerializer].push_back(str);
           }
@@ -456,7 +467,7 @@ void loadDisassembly(std::string filePath) {
         // If we've already seen the block, above check is not needed
         if (!contains(seenBlockIds, trackingBlock)) {
           // if line includes '#', then split by the comment and get the comment
-          if (isRoDataStringNT(lastLoadedAddress)) {
+          if (isValidRoDataStrAddr(lastLoadedAddress)) {
             auto str = getRoDataStringNT(lastLoadedAddress);
             std::cout << "BlockID\t" << trackingBlock << "\t" << "UNK" << "\t" << str << std::endl;
           }
@@ -485,11 +496,11 @@ void loadDisassembly(std::string filePath) {
               goto finish;
             }
             auto states = line.substr(statesPos + 15, line.size() - statesPos - 16);
-            if (isRoDataStringNT(lastLoadedAddress)) {
+            if (isValidRoDataStrAddr(lastLoadedAddress)) {
               auto str = getRoDataStringNT(lastLoadedAddress);
               auto computedHash = fnv64Hex(str); // lastLoadedAddressAbsMovStr can be optimized out
               std::cout << "VanillaState\t" << states << "\t" << computedHash << "\t" << str << std::endl;
-            } else if (isRoDataStringNT(lastLastLoadedAddress)) {
+            } else if (isValidRoDataStrAddr(lastLastLoadedAddress)) {
               auto str = getRoDataStringNT(lastLastLoadedAddress);
               auto computedHash = fnv64Hex(str);
               std::cout << "VanillaState\t" << states << "\t" << computedHash << "\t" << str << std::endl;
@@ -541,10 +552,10 @@ void loadDisassembly(std::string filePath) {
     ((std::ifstream *)disStream)->close();
     delete disStream;
   }
-
   // Print out the block data
   for (auto &block : blockData) {
-    std::cout << "BlockData\t" << block.blockName << "\t" << block.blockClass << "\t" << block.breakTimeAddr << "\t";
+    auto flt = getRoDataFloat(block.breakTimeAddr);
+    std::cout << "BlockData\t" << block.blockName << "\t" << block.blockClass << "\t" << flt << "\t";
     for (auto &state : block.stateKeys) {
       std::cout << state << ",";
     }
@@ -600,6 +611,10 @@ void loadStage1(std::string filePath) {
       std::string name, id, hash, stateName;
       split4(line, name, id, hash, stateName);
       if (name == "VanillaState") {
+        // Strip the 0x prefix and leading zeros - not insignificant and disassembler may not include them
+        while (hash.size() > 0 && (hash[0] == '0' || hash[0] == 'x')) {
+          hash = hash.substr(1, hash.size() - 1);
+        }
         stateVariantMap[hash] = {};
       }
     }
@@ -671,7 +686,13 @@ void loadDisassembly2(std::string filePath) {
   }
 
   for (auto &entry : stateVariantMap) {
-    std::cout << "StateVariantData\t" << entry.first << "\t";
+    auto hash = entry.first;
+    // re-add the 0x and leading 0s
+    while (hash.size() < 16) {
+      hash = "0" + hash;
+    }
+    hash = "0x" + hash;
+    std::cout << "StateVariantData\t" << hash << "\t";
     for (auto &value : entry.second) {
       std::cout << value << ",";
     }
