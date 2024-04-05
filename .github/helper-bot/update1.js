@@ -81,7 +81,7 @@ async function main (inputUpdateVer, inputIssueNo) {
   updatedBody = updatedBody.replace('<!--<tr><td><b>Protocol ID</b></td><td></td>-->', `<tr><td><b>Protocol ID</b></td><td>${pong.protocol} (${pong.version})</td>`)
   try {
     await tryConnect({ protocolVersion: pong.protocol })
-    updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<!--<tr><td><b>Partly Already Compatible</b></td>Yes<td></td>-->')
+    updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<tr><td><b>Partly Already Compatible</b></td>Yes<td></td>')
   } catch (e) {
     console.error(e)
     updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<tr><td><b>Partly Already Compatible</b></td>NO<td></td>')
