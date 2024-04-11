@@ -308,6 +308,8 @@ union RegisterVal {
   enum RegisterDataType { RDTGeneric, RDTVanillaState, RDTBlockTypeID };
   u64 value;
   char symbolValue[MAX_SYMBOL_SIZE + 1];
+
+  double doubleValue() { return value == 0 ? -0 : *(double *)&value; }
 };
 struct RegisterState {
   RegisterVal rax; //
@@ -362,10 +364,11 @@ enum Register {
 
 void registerClearState() { g_registerState = RegisterState{}; }
 
-#define STR_STARTS_WITH2(str, other) (str[0] == other[0] && str[1] == other[1])
-#define STR_STARTS_WITH3(str, other) (str[0] == other[0] && str[1] == other[1] && str[2] == other[2])
-#define STR_STARTS_WITH4(s, o) (s[0] == o[0] && s[1] == o[1] && s[2] == o[2] && s[3] == o[3])
-#define STR_STARTS_WITH5(s, o) (s[0] == o[0] && s[1] == o[1] && s[2] == o[2] && s[3] == o[3] && s[4] == o[4])
+#define STR_STARTS_WITH2(str, other) ((str)[0] == other[0] && (str)[1] == other[1])
+#define STR_STARTS_WITH3(str, other) ((str)[0] == other[0] && (str)[1] == other[1] && str[2] == other[2])
+#define STR_STARTS_WITH4(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3])
+#define STR_STARTS_WITH5(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3] && (s)[4] == o[4])
+#define STR_STARTS_WITH6(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3] && (s)[4] == o[4] && (s)[5] == o[5])
 
 Register registerGetType(std::string_view str) {
   // in AT&T syntax, registers are prefixed with %
@@ -420,6 +423,11 @@ RegisterVal registerGetArgFloat(int index) {
     return RegisterVal{};
   }
 }
+// double registerGetArgFloatVal(int index) {
+//   // Registers are stored as u64 so we need to cast to doubles
+//   u64 value = registerGetArgFloat(index).value;
+//   return *(double *)&value;
+// }
 
 RegisterVal registerGetArgInt(int index) {
   switch (index) {
@@ -607,4 +615,24 @@ void registerProcessInstruction(Instruction &instr) {
   default:
     break;
   }
+}
+
+void registerDumpCallArgs() {
+  auto arg1 = registerGetArgInt(0);
+  auto arg2 = registerGetArgInt(1);
+  auto arg3 = registerGetArgInt(2);
+  auto fArg1 = registerGetArgFloat(0);
+  auto fArg2 = registerGetArgFloat(1);
+  auto fArg3 = registerGetArgFloat(2);
+  // clang-format off
+  fprintf(
+      stderr,
+      "Args: iArg1: %lld (%s), iArg2: %lld (%s), iArg3: %lld (%s) ; fArg1: %f (%s), fArg2: %f (%s), fArg3: %f (%s)\n",
+      arg1.value, arg1.symbolValue, 
+      arg2.value, arg2.symbolValue, 
+      arg3.value, arg3.symbolValue, 
+      fArg1.doubleValue(), fArg1.symbolValue,
+      fArg2.doubleValue(), fArg2.symbolValue, 
+      fArg3.doubleValue(), fArg3.symbolValue);
+  // clang-format on
 }

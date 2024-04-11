@@ -31,8 +31,12 @@ void loadRoData(std::string binFile) {
 }
 
 // (A-Z, a-z, 0-9, symbols)
-bool isValidAsciiChar(char c) { return c >= 'A' && c <= '~'; }
-bool isAddressInRoData(unsigned int address) { return address >= roDataOffset && address < roDataEnd; }
+bool isValidAsciiChar(char c) {
+  return c >= 'A' && c <= '~';
+}
+bool isAddressInRoData(unsigned int address) {
+  return address >= roDataOffset && address < roDataEnd;
+}
 bool isValidRoDataStrAddr(unsigned int address) {
   if (!isAddressInRoData(address + 1)) {
     return false;
@@ -191,6 +195,25 @@ void loadDisassembly(std::string filePath) {
         }
       }
 
+      size_t addStatePos = line.find("::addState(BlockState");
+      if (addStatePos != std::string::npos) {
+        if (currentBlockData.has_value()) {
+          auto arg2 = registerGetArgInt(1);
+          if (arg2.symbolValue[0] && !contains(currentBlockData->stateKeys, arg2.symbolValue)) {
+            // VanillaStates::UpdateBit
+            auto symbol = std::string(arg2.symbolValue);
+            size_t statePos = symbol.find("::");
+            if (statePos != std::string::npos) {
+              auto stateName = symbol.substr(statePos + 2);
+              if (stateName.find("::") != std::string::npos) {
+                stateName = stateName.substr(stateName.find("::") + 2);
+              }
+              currentBlockData->stateKeys.push_back(stateName);
+            }
+          }
+        }
+      }
+
       if (currentBlockData.has_value()) {
         //  74061b8:	callq  6bd9f60 <BlockLegacy::setDestroyTime(float, float)>
         size_t destroyPos = line.find("setDestroyTime");
@@ -238,20 +261,6 @@ void loadDisassembly(std::string filePath) {
           trackingBlock = line.substr(pos + 21, line.size() - pos - 22);
         }
 
-        if (currentBlockData.has_value()) {
-          //  758eaa3:	lea    0x1145dae(%rip),%rsi        # 86d4858 <VanillaStates::UpdateBit>
-          size_t statesPos = line.find("VanillaStates::");
-          if (statesPos != std::string::npos) {
-            // ensure there's no + in the symbol
-            if (line.find("+") != std::string::npos) {
-              continue;
-            }
-            auto end = line.find(">");
-            auto states = line.substr(statesPos + 15, line.size() - statesPos - 16);
-            auto statesStr = std::string(states);
-            currentBlockData->stateKeys.push_back(statesStr);
-          }
-        }
       }
     } else {
       // B1. cont. Sometimes the movabs with hash is not after 2x lea ops, so we dump what we have and continue
@@ -281,13 +290,15 @@ void loadDisassembly(std::string filePath) {
           lastLoadedAddress = instr.commentAddr;
         } else if (isInGlobalBlock) {
           size_t statesPos = line.find("VanillaStates::");
+          size_t altStatePos = line.find("BuiltInBlockStates::");
           // State Registration
-          if (statesPos != std::string::npos) {
+          if ((statesPos != std::string::npos) || (altStatePos != std::string::npos)) {
             // ensure there's no + offset in the symbol
             if (line.find("+") != std::string::npos) {
               goto finish;
             }
-            auto states = line.substr(statesPos + 15, line.size() - statesPos - 16);
+            auto states = statesPos != std::string::npos ? line.substr(statesPos + 15, line.size() - statesPos - 16)
+                                                         : line.substr(altStatePos, line.size() - altStatePos - 1);
             if (isValidRoDataStrAddr(lastLoadedAddress)) {
               auto str = getRoDataStringNT(lastLoadedAddress);
               auto computedHash = fnv64Hex(str); // lastLoadedAddressAbsMovStr can be optimized out
@@ -364,6 +375,10 @@ void loadDisassembly(std::string filePath) {
   }
 }
 
+// STAGE 2
+
+#define STR_INCLUDES(haystack, needle) (haystack.find(needle) != std::string::npos)
+
 // StateHash -> integer data for this state (like number of variants)
 std::map<std::string, std::vector<unsigned int>> stateVariantMap;
 
@@ -378,6 +393,8 @@ void split4(std::string_view line, std::string &a, std::string &b, std::string &
       if (pos3 != std::string::npos) {
         c = std::string(line.substr(pos2 + 1, pos3 - pos2 - 1));
         d = std::string(line.substr(pos3 + 1, line.size() - pos3 - 1));
+      } else {
+        c = std::string(line.substr(pos2 + 1, line.size() - pos2 - 1));
       }
     }
   }
@@ -411,6 +428,48 @@ void loadStage1(std::string filePath) {
       }
     }
   }
+  fprintf(stderr, "Loaded %d state variants from stage1\n", stateVariantMap.size());
+}
+
+std::map<std::string, std::string> symbolMap;
+
+void loadStage4(std::string filePath) {
+  // load stage1 which is the output of above loadDisassembly function
+  std::ifstream stage4Stream(filePath, std::ios::binary);
+  if (!stage4Stream.is_open()) {
+    std::cerr << "Failed to open file: " << filePath << std::endl;
+    return;
+  }
+  // split by tabs
+  const int bufferSize = 1024 * 64;
+  char buffer[bufferSize];
+  while (stage4Stream.getline(buffer, bufferSize)) {
+    std::string_view line(buffer);
+    size_t pos = line.find("\t");
+    if (pos != std::string::npos) {
+      // WSYM    Address         SymbolNams
+      // WSYM    0x6bcbbe2ee1f42f72      BlockTrait::Something
+      std::string name, address, symbolName, _;
+      split4(line, name, address, symbolName, _);
+      if (name == "WSYM") {
+        symbolMap[address] = symbolName;
+      }
+    }
+  }
+  fprintf(stderr, "Loaded %d symbols from stage4\n", symbolMap.size());
+}
+
+bool haveSymbolForAddress(std::string address) {
+  return symbolMap.find(address) != symbolMap.end();
+}
+bool haveSymbolForAddress(std::string_view address) {
+  return haveSymbolForAddress(std::string(address));
+}
+std::string getSymbolForAddress(std::string address) {
+  return symbolMap[address];
+}
+std::string getSymbolForAddress(std::string_view address) {
+  return getSymbolForAddress(std::string(address));
 }
 
 void loadDisassembly2(std::string filePath) {
@@ -429,18 +488,22 @@ void loadDisassembly2(std::string filePath) {
   const int bufferSize = 1024 * 64;
   char buffer[bufferSize]{0};
 
+  std::string trackingBlock;
+  // if trackingBlockFoundReg is > 0, we're tracking a block. We continue tracking for n instructions.
+  int trackingBlockFoundReg = 0;
+
   bool inMovInstruction = false;
   //  140064b38:	48 c7 05 ad 7f 95 02 	mov    QWORD PTR [rip+0x2957fad],0x4        # 0x1429bcaf0
   while (disStream->getline(buffer, bufferSize)) {
-    if (buffer[36] == 'm' && buffer[37] == 'o' && buffer[38] == 'v' && buffer[39] == ' ') {
+    if (STR_STARTS_WITH4(&buffer[36], "mov ")) {
       inMovInstruction = true;
     } else if (buffer[36] != ' ' && buffer[36] != '\0') {
       // if the instruction is not a continuation of the previous instruction
       inMovInstruction = false;
     }
+
     // now we are looking for the state variants... first look for movabs
-    if (buffer[36] == 'm' && buffer[37] == 'o' && buffer[38] == 'v' && buffer[39] == 'a' && buffer[40] == 'b' &&
-        buffer[41] == 's') {
+    if (STR_STARTS_WITH4(&buffer[36], "movabs")) {
       std::string_view line(buffer);
 
       for (auto &entry : stateVariantMap) {
@@ -450,6 +513,50 @@ void loadDisassembly2(std::string filePath) {
           currentHash = entry.first;
         }
       }
+    }
+
+    if (STR_STARTS_WITH4(&buffer[36], "lea ")) {
+      std::string_view line(buffer);
+      size_t addressPos = line.find(" # ");
+      if (addressPos != std::string::npos) {
+        auto addressStr = line.substr(addressPos + 5);
+        if (haveSymbolForAddress(addressStr)) {
+          auto symbol = getSymbolForAddress(addressStr);
+          size_t blockPos = symbol.find("VanillaBlockTypeIds::");
+          if (blockPos != std::string::npos) {
+            trackingBlock = symbol.substr(blockPos + 21);
+            trackingBlockFoundReg = 0;
+          }
+        }
+      }
+    }
+
+    if (STR_STARTS_WITH4(&buffer[36], "call")) {
+      std::string_view line(buffer);
+      auto addressIx = line.find("0x");
+      if (addressIx != std::string::npos) {
+        auto addressStr = line.substr(addressIx + 2);
+        if (haveSymbolForAddress(addressStr)) {
+          auto symbol = getSymbolForAddress(addressStr);
+          if (trackingBlockFoundReg > 0) {
+            size_t traitPos = symbol.find("BlockTrait::");
+            if (traitPos != std::string::npos) {
+              auto traitStr = symbol.substr(traitPos);
+              std::cout << "BlockTrait\t" << trackingBlock << "\t" << symbol << std::endl;
+            }
+          }
+          size_t pos = symbol.find("registerBlock<");
+          if (pos != std::string::npos) {
+            trackingBlockFoundReg = trackingBlock.empty() ? 0 : 40;
+          }
+        }
+      }
+    }
+
+    if (trackingBlockFoundReg) {
+      trackingBlockFoundReg--;
+      if (trackingBlockFoundReg == 0)
+        trackingBlock.clear();
     }
 
     //    140064b3f:	04 00 00 00
@@ -469,6 +576,7 @@ void loadDisassembly2(std::string filePath) {
         }
       }
     }
+
     ZeroMemory(buffer, bufferSize);
   }
 
@@ -513,6 +621,7 @@ int main(int argc, char **argv) {
     loadDisassembly(disFile);
   } else if (stage == "-s2") {
     loadStage1(file);
+    //loadStage4("stage4.txt");
     loadDisassembly2(disFile);
   }
   std::cerr << "Done" << std::endl;
