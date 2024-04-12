@@ -425,7 +425,7 @@ void loadStage1(std::string filePath) {
       }
     }
   }
-  fprintf(stderr, "Loaded %lld state variants from stage1\n", stateVariantMap.size());
+  fprintf(stderr, "Loaded %lu state variants from stage1\n", stateVariantMap.size());
 }
 
 std::map<uint64_t, std::string> symbolMap;
@@ -454,7 +454,7 @@ void loadStage4(std::string filePath) {
       }
     }
   }
-  fprintf(stderr, "Loaded %lld symbols from stage4\n", symbolMap.size());
+  fprintf(stderr, "Loaded %lu symbols from stage4\n", symbolMap.size());
 }
 
 bool haveSymbolForAddress(std::string_view addressStr) {

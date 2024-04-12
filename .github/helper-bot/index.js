@@ -46,8 +46,7 @@ ${commitData}
   <!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->
 </table>
 
-*I'll try to close this issue automatically if the protocol version didn't change.
-If the protocol version did change, the automatic update system will try to complete an update to minecraft-data and bedrock-protocol and if successful it will auto close this issue.*
+*I'll try to close this issue automatically if the protocol version didn't change. If the protocol version did change, the automatic update system will try to complete an update to minecraft-data and bedrock-protocol and if successful it will auto close this issue.*
 
 -----
 
@@ -56,11 +55,10 @@ If the protocol version did change, the automatic update system will try to comp
   }
 }
 
-function getCommitsInRepo (repo, containing, since) {
+async function getCommitsInRepo (repo, containing, since) {
   const endpoint = `https://api.github.com/repos/${repo}/commits`
   console.log('Getting', endpoint)
-  cp.execSync(`curl -L ${endpoint} -o commits.json`, { stdio: 'inherit', shell: true })
-  const commits = JSON.parse(fs.readFileSync('./commits.json', 'utf-8'))
+  const commits = await fetch(endpoint).then(res => res.json())
   const relevant = []
   for (const commit of commits) {
     if (commit.commit.message.includes(containing)) {
@@ -81,8 +79,8 @@ function getCommitsInRepo (repo, containing, since) {
 }
 
 async function fetchLatest () {
-  cp.execSync(`curl -L "${latestVersionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
-  const json = require('./results.json')
+  // curl -L "https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe" -o results.json
+  const json = await fetch(latestVersionEndpoint).then(res => res.json())
   const result = json.results[0]
 
   const currentTypes = fs.readFileSync(join(__dirname, '../../index.d.ts'), 'utf-8')
@@ -111,9 +109,9 @@ async function fetchLatest () {
 
   version = version.replace('.0', '')
   const issuePayload = buildFirstIssue(title, result, {
-    PocketMine: getCommitsInRepo('pmmp/PocketMine-MP', version, currentVersionReleaseDate),
-    gophertunnel: getCommitsInRepo('Sandertv/gophertunnel', version, currentVersionReleaseDate),
-    CloudburstMC: getCommitsInRepo('CloudburstMC/Protocol', version, currentVersionReleaseDate)
+    PocketMine: await getCommitsInRepo('pmmp/PocketMine-MP', version, currentVersionReleaseDate),
+    gophertunnel: await getCommitsInRepo('Sandertv/gophertunnel', version, currentVersionReleaseDate),
+    CloudburstMC: await getCommitsInRepo('CloudburstMC/Protocol', version, currentVersionReleaseDate)
   })
 
   if (issueStatus.isOpen) {

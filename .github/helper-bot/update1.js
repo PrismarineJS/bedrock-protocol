@@ -83,10 +83,10 @@ async function main (inputUpdateVer, inputIssueNo) {
   updatedBody = updatedBody.replace('<!--<tr><td><b>Protocol ID</b></td><td></td>-->', `<tr><td><b>Protocol ID</b></td><td>${pong.protocol} (${pong.version})</td>`)
   try {
     await tryConnect({ protocolVersion: pong.protocol })
-    updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<tr><td><b>Partly Already Compatible</b></td>Yes<td></td>')
+    updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<tr><td><b>Partly Already Compatible</b></td><td>Yes<td></td>')
   } catch (e) {
     console.error(e)
-    updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<tr><td><b>Partly Already Compatible</b></td>NO<td></td>')
+    updatedBody = updatedBody.replace('<!--<tr><td><b>Partly Already Compatible</b></td><td></td>-->', '<tr><td><b>Partly Already Compatible</b></td><td>NO<td></td>')
   }
   fs.writeFileSync(path.join(__dirname, '/updatedBody.md'), updatedBody)
   await github.updateIssue(inputIssueNo, { body: updatedBody })
@@ -94,7 +94,7 @@ async function main (inputUpdateVer, inputIssueNo) {
   handle.kill()
 
   // Check if protocol version has changed
-  if (false && pong.protocol === latestSupportedProtocol) {
+  if (pong.protocol === latestSupportedProtocol) {
     console.log('Protocol version has not changed')
     // Close the github issue
     await github.close(inputIssueNo, 'Protocol version has not changed, assuming no compatibility issues.')
