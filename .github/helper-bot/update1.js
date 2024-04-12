@@ -2,7 +2,6 @@
 const fs = require('fs')
 const path = require('path')
 const mcData = require('minecraft-data')
-const nbt = require('prismarine-nbt')
 const latestSupportedProtocol = mcData.versions.bedrock[0].version
 const bedrock = require('bedrock-protocol')
 const bedrockServer = require('minecraft-bedrock-server')
@@ -32,15 +31,22 @@ async function tryConnect (opts) {
   })
   client.on('connect_allowed', () => { Object.assign(client.options, opts) })
 
+  const collected = {}
+  const forCollection = ['start_game', 'available_commands']
+
   return new Promise((resolve, reject) => {
-    let timeout // eslint-disable-line
+    const timeout = setTimeout(() => {
+      if (Object.keys(collected).length !== forCollection.length) {
+        reject(Error('Unable to collect all packets'))
+      }
+    }, 1000 * 60 * 2)
+
     function done (data) {
       client.close()
       clearTimeout(timeout)
       resolve(data)
     }
-    const collected = {}
-    const forCollection = ['start_game', 'available_commands']
+
     for (const packet of forCollection) {
       console.log('Waiting for', packet)
       client.once(packet, (data) => {
@@ -52,12 +58,6 @@ async function tryConnect (opts) {
         }
       })
     }
-
-    timeout = setTimeout(() => {
-      if (Object.keys(collected).length !== forCollection.length) {
-        reject(Error('Unable to collect all packets'))
-      }
-    }, 1000 * 60 * 2)
   })
 }
 
@@ -70,14 +70,14 @@ async function main (inputUpdateVer, inputIssueNo) {
   if (serverVersion !== inputUpdateVer) {
     updatedBody = updatedBody.replace('<!--(Special Server Version?)-->', `<tr><td><b>Server version</b></td><td>${serverVersion}</td>`)
   }
-  const root = __dirname
-  const serverPath = root + '/bds-' + serverVersion
-  console.log('Server version', serverVersion, root, 'Server path', serverPath)
+  const server = await bedrockServer.prepare(serverVersion, { root: __dirname })
+  const serverPath = server.path
+  console.log('Server version', serverVersion, 'Server path', serverPath)
   core.setOutput('serverVersion', serverVersion)
   core.setOutput('serverPath', serverPath)
   core.setOutput('serverBin', serverPath + '/bedrock_server_symbols.debug')
-  fs.rmSync(path.join(serverPath, 'worlds/Bedrock level/world_behavior_packs.json'), { force: true, recursive: true })
-  const handle = await bedrockServer.startServerAndWait(serverVersion, 60000, { root: __dirname })
+  await server.clearBehaviorPacks()
+  const handle = await server.startAndWaitReady(60000)
   await new Promise((resolve) => setTimeout(resolve, 2000))
   const pong = await bedrock.ping({ host: '127.0.0.1', port: 19130, timeout: 4000 })
   updatedBody = updatedBody.replace('<!--<tr><td><b>Protocol ID</b></td><td></td>-->', `<tr><td><b>Protocol ID</b></td><td>${pong.protocol} (${pong.version})</td>`)
@@ -107,14 +107,16 @@ async function main (inputUpdateVer, inputIssueNo) {
 
   // If the protocol version was changed, start server again, but with a behavior pack
   console.log('⚒️ Re-running Bedrock server with extractor behavior pack')
+
   // First, determine the latest script version
-  injectPack(path.join(__dirname, 'bds-' + serverVersion))
-  const handle2 = await bedrockServer.startServerAndWait(serverVersion, 10000, { root: __dirname })
+  injectPack2(server, '1.0.0-beta')
+  const handle2 = await server.startAndWaitReady(10000)
   const scriptVersion = await collectScriptVersion(handle2)
   handle2.kill()
+
   // Re-run the server with the new script version
-  injectPack(path.join(__dirname, 'bds-' + serverVersion), scriptVersion)
-  const handle3 = await bedrockServer.startServerAndWait(serverVersion, 10000, { root: __dirname })
+  injectPack2(server, scriptVersion)
+  const handle3 = await server.startAndWaitReady(10000)
   const blockData = await collectDump(handle3)
   fs.writeFileSync(path.join(__dirname, '/collectedBlockData.json'), blockData)
   handle3.kill()
@@ -129,8 +131,8 @@ async function main (inputUpdateVer, inputIssueNo) {
   console.log('✅ Finished working with Windows server binary')
 }
 
-// main(process.env.UPDATE_VERSION, process.env.ISSUE_NUMBER)
-main('1.20.73', 0)
+main(process.env.UPDATE_VERSION, process.env.ISSUE_NUMBER)
+// if (!process.env.CI) main('1.20.73', 0)
 
 function collectScriptVersion (handle, timeout = 1000 * 20) {
   // The scripting API doesn't support semantic versioning with tilde or caret operators
@@ -193,56 +195,34 @@ function collectDump (handle, timeout = 1000 * 60 * 2) {
   })
 }
 
-function injectPack (serverPath, scriptVersion) {
-  const localScriptPath = path.join(__dirname, 'serverScript.js')
-  const serverPackPath = path.join(serverPath, 'development_behavior_packs')
-  const packScriptPath = path.join(serverPackPath, 'extractor/scripts/')
-
-  fs.mkdirSync(packScriptPath, { recursive: true })
-  fs.copyFileSync(localScriptPath, packScriptPath + 'main.js')
-  fs.writeFileSync(path.join(serverPackPath, 'extractor/scripts/main.js'), fs.readFileSync(localScriptPath))
-
-  packManifest.dependencies[0].version = scriptVersion || '1.0.0-beta'
-  fs.writeFileSync(path.join(serverPackPath, 'extractor/manifest.json'), JSON.stringify(packManifest, null, 2))
-  console.log(JSON.stringify(packManifest, null, 2))
-  const levelPath = path.join(serverPath, 'worlds/Bedrock level/level.dat')
-  const tagBuf = fs.readFileSync(levelPath)
-  const parsed = nbt.parseUncompressed(tagBuf.slice(8), 'little')
-  // console.log('Loaded world level.dat', nbt.simplify(parsed))
-  parsed.value.experiments = nbt.comp({
-    experiments_ever_used: nbt.byte(1),
-    gametest: nbt.byte(1),
-    saved_with_toggled_experiments: nbt.byte(1)
-  })
-  const tagHead = Buffer.from([0x0A, 0, 0, 0, 0, 0, 0, 0])
-  const tagBody = nbt.writeUncompressed(parsed, 'little')
-  tagHead.writeUInt32LE(tagBody.length, 4)
-  fs.writeFileSync(levelPath, Buffer.concat([tagHead, tagBody]))
-  console.log('Updated world level.dat', levelPath)
-  const worldPacks = [{ pack_id: 'f604a121-974a-3e04-927a-8a1c9518c96a', version: [1, 0, 0] }]
-  fs.writeFileSync(path.join(serverPath, 'worlds/Bedrock level/world_behavior_packs.json'), JSON.stringify(worldPacks, null, 2))
-  console.log('Updated world behavior_packs.json', worldPacks)
-}
-
-const packManifest = {
-  format_version: 2,
-  header: {
-    allow_random_seed: false,
-    description: 'DataExtractor',
-    name: 'DataExtractor',
-    platform_locked: false,
-    uuid: 'f604a121-974a-3e04-927a-8a1c9518c96a',
-    version: [1, 0, 0],
-    min_engine_version: [1, 20, 0]
-  },
-  modules: [{
-    type: 'script',
-    language: 'javascript',
-    uuid: 'fa04a121-974a-3e04-927a-8a1c9518c96a',
-    entry: 'scripts/main.js',
-    version: [0, 1, 0]
-  }],
-  dependencies: [
-    { module_name: '@minecraft/server', version: '1.0.0-beta' }
-  ]
+function injectPack2 (/** @type {import('minecraft-bedrock-server').BedrockVanillaServer} */ server, scriptVersion) {
+  server.clearBehaviorPacks()
+  server.addQuickScript({
+    manifest: {
+      format_version: 2,
+      header: {
+        allow_random_seed: false,
+        description: 'DataExtractor',
+        name: 'DataExtractor',
+        platform_locked: false,
+        uuid: 'f604a121-974a-3e04-927a-8a1c9518c96a',
+        version: [1, 0, 0],
+        min_engine_version: [1, 20, 0]
+      },
+      modules: [{
+        type: 'script',
+        language: 'javascript',
+        uuid: 'fa04a121-974a-3e04-927a-8a1c9518c96a',
+        entry: 'scripts/main.js',
+        version: [0, 1, 0]
+      }],
+      dependencies: [
+        { module_name: '@minecraft/server', version: scriptVersion || '1.0.0-beta' }
+      ]
+    },
+    scripts: {
+      'scripts/main.js': path.join(__dirname, 'serverScript.js')
+    }
+  }, true, true)
+  server.toggleExperiments({ gametest: true })
 }
