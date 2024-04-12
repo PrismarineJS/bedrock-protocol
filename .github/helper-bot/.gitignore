@@ -1,5 +1,11 @@
+# server
 bds-*
+# built PDB and server disassembly analysis executables
 *.exe
-stage*
+# intermediates from pdba/disa
 rodata.*
 strings.*
+stage*.txt
+# update1
+collected*.json
+updatedBody.md
