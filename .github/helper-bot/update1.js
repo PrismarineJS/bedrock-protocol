@@ -109,13 +109,13 @@ async function main (inputUpdateVer, inputIssueNo) {
   console.log('⚒️ Re-running Bedrock server with extractor behavior pack')
 
   // First, determine the latest script version
-  injectPack2(server, '1.0.0-beta')
+  injectPack(server, '1.0.0-beta')
   const handle2 = await server.startAndWaitReady(10000)
   const scriptVersion = await collectScriptVersion(handle2)
   handle2.kill()
 
   // Re-run the server with the new script version
-  injectPack2(server, scriptVersion)
+  injectPack(server, scriptVersion)
   const handle3 = await server.startAndWaitReady(10000)
   const blockData = await collectDump(handle3)
   fs.writeFileSync(path.join(__dirname, '/collectedBlockData.json'), blockData)
@@ -182,7 +182,6 @@ function collectDump (handle, timeout = 1000 * 60 * 2) {
       total += data
       for (const line of total.split('\n')) {
         if (line.includes('<BLOCK_DATA>') && line.includes('</BLOCK_DATA>')) {
-          console.log('Found dump data!!')
           const blockData = line.split('<BLOCK_DATA>')[1].split('</BLOCK_DATA>')[0]
           clearTimeout(timer)
           resolve(blockData)
@@ -195,7 +194,7 @@ function collectDump (handle, timeout = 1000 * 60 * 2) {
   })
 }
 
-function injectPack2 (/** @type {import('minecraft-bedrock-server').BedrockVanillaServer} */ server, scriptVersion) {
+function injectPack (/** @type {import('minecraft-bedrock-server').BedrockVanillaServer} */ server, scriptVersion) {
   server.clearBehaviorPacks()
   server.addQuickScript({
     manifest: {
