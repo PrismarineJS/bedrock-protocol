@@ -75,7 +75,10 @@ jobs:
       run: objdump -d --demangle -M intel ${{ steps.update1Run.outputs.serverWinBin }} | .github/helper-bot/disa.exe -s2 .github/helper-bot/stage1.txt > .github/helper-bot/stage2.txt
     - name: Resolve PDB symbols (Stage 4)
       if: steps.update1Run.outputs.needsUpdate
-      run: llvm-pdbutil-14 dump --all ${{ steps.update1Run.outputs.serverWinPdb }} | .github/helper-bot/pdba.exe > .github/helper-bot/stage4.txt
+      run: |
+        WIN_BIN_TEXT_OFF=objdump -h ${{ steps.update1Run.outputs.serverWinBin }} | grep ".text" | cut -b 29-45
+        WIN_BIN_RELOC_OFF=objdump -h ${{ steps.update1Run.outputs.serverWinBin }} | grep ".reloc" | cut -b 29-45
+        llvm-pdbutil-14 dump --all ${{ steps.update1Run.outputs.serverWinPdb }} | .github/helper-bot/pdba.exe $WIN_BIN_TEXT_OFF $WIN_BIN_RELOC_OFF > .github/helper-bot/stage4.txt
     # We use Artifacts API for cross repo com which is only avaliable within an Action, but not normal run jobs.
     # So we need to store the keys in the env for update3 to use to do a workflow dispatch
     # as in https://github.com/extremeheat/gh-helpers/blob/main/.github/workflows/ci.yml

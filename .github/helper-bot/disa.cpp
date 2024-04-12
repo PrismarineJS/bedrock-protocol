@@ -260,7 +260,6 @@ void loadDisassembly(std::string filePath) {
         if (pos != std::string::npos) {
           trackingBlock = line.substr(pos + 21, line.size() - pos - 22);
         }
-
       }
     } else {
       // B1. cont. Sometimes the movabs with hash is not after 2x lea ops, so we dump what we have and continue
@@ -377,8 +376,6 @@ void loadDisassembly(std::string filePath) {
 
 // STAGE 2
 
-#define STR_INCLUDES(haystack, needle) (haystack.find(needle) != std::string::npos)
-
 // StateHash -> integer data for this state (like number of variants)
 std::map<std::string, std::vector<unsigned int>> stateVariantMap;
 
@@ -428,10 +425,10 @@ void loadStage1(std::string filePath) {
       }
     }
   }
-  fprintf(stderr, "Loaded %d state variants from stage1\n", stateVariantMap.size());
+  fprintf(stderr, "Loaded %lld state variants from stage1\n", stateVariantMap.size());
 }
 
-std::map<std::string, std::string> symbolMap;
+std::map<uint64_t, std::string> symbolMap;
 
 void loadStage4(std::string filePath) {
   // load stage1 which is the output of above loadDisassembly function
@@ -452,24 +449,21 @@ void loadStage4(std::string filePath) {
       std::string name, address, symbolName, _;
       split4(line, name, address, symbolName, _);
       if (name == "WSYM") {
-        symbolMap[address] = symbolName;
+        uint64_t addressInt = hexStr2Int64(address);
+        symbolMap[addressInt] = symbolName;
       }
     }
   }
-  fprintf(stderr, "Loaded %d symbols from stage4\n", symbolMap.size());
+  fprintf(stderr, "Loaded %lld symbols from stage4\n", symbolMap.size());
 }
 
-bool haveSymbolForAddress(std::string address) {
-  return symbolMap.find(address) != symbolMap.end();
+bool haveSymbolForAddress(std::string_view addressStr) {
+  uint64_t addr = hexStr2Int64(addressStr);
+  return symbolMap.find(addr) != symbolMap.end();
 }
-bool haveSymbolForAddress(std::string_view address) {
-  return haveSymbolForAddress(std::string(address));
-}
-std::string getSymbolForAddress(std::string address) {
-  return symbolMap[address];
-}
+
 std::string getSymbolForAddress(std::string_view address) {
-  return getSymbolForAddress(std::string(address));
+  return symbolMap[hexStr2Int64(address)];
 }
 
 void loadDisassembly2(std::string filePath) {
@@ -621,7 +615,8 @@ int main(int argc, char **argv) {
     loadDisassembly(disFile);
   } else if (stage == "-s2") {
     loadStage1(file);
-    //loadStage4("stage4.txt");
+    // Not yet implemented: trait data extraction. This will require re-ordering and running stage4 before doing stage2.
+    // loadStage4("stage4.txt");
     loadDisassembly2(disFile);
   }
   std::cerr << "Done" << std::endl;

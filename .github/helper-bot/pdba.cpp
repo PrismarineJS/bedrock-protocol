@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdint.h>
 #include <llvm/Demangle/Demangle.h>
 
 void readVanillaState(std::string &demangled) {
@@ -94,10 +95,10 @@ void loadDump(uint64_t textOffset = 0x140001000, uint64_t relocOffset = 0x142bbd
           auto sectionId = line[addr - 1];
           auto addrStr = line.substr(addr + 1);
           if (sectionId == '1') { // .text
-            auto addrInt = parseInt(addrStr) + textOffset;
+            uint64_t addrInt = parseInt(addrStr) + textOffset;
             std::cout << "WSYM\t" << int2hex(addrInt) << "\t" << readingBlockTrait << std::endl;
           } else if (sectionId == '3') { // .data
-            auto addrInt = parseInt(addrStr) + newOffset;
+            uint64_t addrInt = parseInt(addrStr) + newOffset;
             std::cout << "WSYM\t" << int2hex(addrInt) << "\t" << readingBlockTrait << std::endl;
           }
         }
@@ -135,11 +136,11 @@ int main(int argc, char **argv) {
     return 1;
   }
   std::string textOffsetStr = argv[1];
-  std::string relocOffsetStr = argv[2];  
+  std::string relocOffsetStr = argv[2];
   std::cerr << "textOffset: " << textOffsetStr << std::endl;
   std::cerr << "relocOffset: " << relocOffsetStr << std::endl;
-  uint64_t textOffset = hex2int(textOffsetStr);
-  uint64_t relocOffset = hex2int(relocOffsetStr);
+  uint64_t textOffset = std::stol(textOffsetStr, nullptr, 16);
+  uint64_t relocOffset = std::stol(relocOffsetStr, nullptr, 16);
   loadDump(textOffset, relocOffset);
   return 0;
 }

@@ -1,7 +1,17 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <iostream>
 #include <string>
 #include <vector>
+
+// clang-format off
+#define STR_STARTS_WITH2(str, other) ((str)[0] == other[0] && (str)[1] == other[1])
+#define STR_STARTS_WITH3(str, other) ((str)[0] == other[0] && (str)[1] == other[1] && str[2] == other[2])
+#define STR_STARTS_WITH4(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3])
+#define STR_STARTS_WITH5(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3] && (s)[4] == o[4])
+#define STR_STARTS_WITH6(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3] && (s)[4] == o[4] && (s)[5] == o[5])
+#define STR_INCLUDES(haystack, needle) (haystack.find(needle) != std::string::npos)
+// clang-format on
 
 typedef unsigned long long int u64;
 
@@ -309,7 +319,9 @@ union RegisterVal {
   u64 value;
   char symbolValue[MAX_SYMBOL_SIZE + 1];
 
-  double doubleValue() { return value == 0 ? -0 : *(double *)&value; }
+  double doubleValue() {
+    return value == 0 ? -0 : *(double *)&value;
+  }
 };
 struct RegisterState {
   RegisterVal rax; //
@@ -362,13 +374,9 @@ enum Register {
   XMM3
 };
 
-void registerClearState() { g_registerState = RegisterState{}; }
-
-#define STR_STARTS_WITH2(str, other) ((str)[0] == other[0] && (str)[1] == other[1])
-#define STR_STARTS_WITH3(str, other) ((str)[0] == other[0] && (str)[1] == other[1] && str[2] == other[2])
-#define STR_STARTS_WITH4(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3])
-#define STR_STARTS_WITH5(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3] && (s)[4] == o[4])
-#define STR_STARTS_WITH6(s, o) ((s)[0] == o[0] && (s)[1] == o[1] && (s)[2] == o[2] && (s)[3] == o[3] && (s)[4] == o[4] && (s)[5] == o[5])
+void registerClearState() {
+  g_registerState = RegisterState{};
+}
 
 Register registerGetType(std::string_view str) {
   // in AT&T syntax, registers are prefixed with %
@@ -423,11 +431,6 @@ RegisterVal registerGetArgFloat(int index) {
     return RegisterVal{};
   }
 }
-// double registerGetArgFloatVal(int index) {
-//   // Registers are stored as u64 so we need to cast to doubles
-//   u64 value = registerGetArgFloat(index).value;
-//   return *(double *)&value;
-// }
 
 RegisterVal registerGetArgInt(int index) {
   switch (index) {
@@ -568,15 +571,10 @@ void registerProcessInstruction(Instruction &instr) {
   std::string_view operand1, operand2, operand3;
   instructionReadOperands(instr, operand1, operand2, operand3);
 
-  // std::cout << "Operand1: " << operand1 << std::endl;
-  // std::cout << "Operand2: " << operand2 << std::endl;
-  // std::cout << "Operand3: " << operand3 << std::endl;
-
   std::string_view commentSymbol;
   bool hasCommentSymbol = instr.commentSymbolStart && instr.commentSymbolEnd;
   if (hasCommentSymbol) {
     commentSymbol = std::string_view(instr.commentSymbolStart, instr.commentSymbolEnd - instr.commentSymbolStart);
-    // std::cout << "Reading Comment Symbol: " << commentSymbol << std::endl;
   }
 
   switch (instr.type) {
@@ -626,13 +624,14 @@ void registerDumpCallArgs() {
   auto fArg3 = registerGetArgFloat(2);
   // clang-format off
   fprintf(
-      stderr,
-      "Args: iArg1: %lld (%s), iArg2: %lld (%s), iArg3: %lld (%s) ; fArg1: %f (%s), fArg2: %f (%s), fArg3: %f (%s)\n",
-      arg1.value, arg1.symbolValue, 
-      arg2.value, arg2.symbolValue, 
-      arg3.value, arg3.symbolValue, 
-      fArg1.doubleValue(), fArg1.symbolValue,
-      fArg2.doubleValue(), fArg2.symbolValue, 
-      fArg3.doubleValue(), fArg3.symbolValue);
+    stderr,
+    "Args: iArg1: %lld (%s), iArg2: %lld (%s), iArg3: %lld (%s) ; fArg1: %f (%s), fArg2: %f (%s), fArg3: %f (%s)\n",
+    arg1.value, arg1.symbolValue, 
+    arg2.value, arg2.symbolValue, 
+    arg3.value, arg3.symbolValue, 
+    fArg1.doubleValue(), fArg1.symbolValue,
+    fArg2.doubleValue(), fArg2.symbolValue, 
+    fArg3.doubleValue(), fArg3.symbolValue
+  );
   // clang-format on
 }
