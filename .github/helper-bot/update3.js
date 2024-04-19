@@ -24,7 +24,7 @@ async function upload () {
     inputs: {
       action: 'minecraft/bedrockDataUpdate',
       payload: JSON.stringify({
-        repoData: await github.getRepoDetails(),
+        repo: await github.getRepoDetails(),
         artifactId: artifact.id,
         artifactSize: artifact.size,
         updateVersion: process.env.UPDATE_VERSION,
