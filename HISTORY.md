@@ -1,3 +1,9 @@
+## 3.36.0
+* [1.20.80](https://github.com/PrismarineJS/bedrock-protocol/commit/bd32aa8d04555fa2fdc4ecd6abbeb6124e2ae8bb) (thanks @extremeheat)
+* [helper-bot fix](https://github.com/PrismarineJS/bedrock-protocol/commit/c65fea29169ae8079e1a303ce51f06b85eca3b3d) (thanks @extremeheat)
+* [helper-bot fix](https://github.com/PrismarineJS/bedrock-protocol/commit/3e5158bebe9ae3bc684e3312cc67327fbf5b1ca7) (thanks @extremeheat)
+* [update helper-bot for gh-helpers v0.2](https://github.com/PrismarineJS/bedrock-protocol/commit/a7ae528c1619afce3d95061d94851b9e4445ca6d) (thanks @extremeheat)
+
 ## 3.35.0
 * [Support 1.20.71](https://github.com/PrismarineJS/bedrock-protocol/commit/d8e707112acc038b6c9564d9a21b2f977326e47f) (thanks @extremeheat)
 * [Note `npm update` command in readme](https://github.com/PrismarineJS/bedrock-protocol/commit/ab93d0d0824bd0ace250fb73f703dc7b60ecd780) (thanks @extremeheat)
