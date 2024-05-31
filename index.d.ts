@@ -63,7 +63,7 @@ declare module 'bedrock-protocol' {
   }
 
   enum ClientStatus {
-    Disconected,
+    Disconnected,
     Authenticating,
     Initializing,
     Initialized
