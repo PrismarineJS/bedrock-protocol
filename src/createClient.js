@@ -5,13 +5,14 @@ const assert = require('assert')
 const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
+const { Connection } = require('./connection')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
-function createClient (options) {
+function createClient(options) {
   assert(options)
   const client = new Client({ port: 19132, followPort: !options.realms, ...options, delayedInit: true })
 
-  function onServerInfo () {
+  function onServerInfo() {
     client.on('connect_allowed', () => connect(client))
     if (options.skipPing) {
       client.init()
@@ -38,7 +39,7 @@ function createClient (options) {
   return client
 }
 
-function connect (client) {
+function connect(client) {
   // Actually connect
   client.connect()
 
@@ -56,12 +57,41 @@ function connect (client) {
     })
 
     client.queue('client_cache_status', { enabled: false })
+
+    if (client.versionLessThanOrEqualTo('1.20.80')) client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
+
     sleep(500).then(() => client.queue('request_chunk_radius', { chunk_radius: client.viewDistance || 10 }))
   })
+
+  if (client.versionLessThanOrEqualTo('1.20.80')) {
+    const keepAliveInterval = 10
+    const keepAliveIntervalBig = BigInt(keepAliveInterval)
+
+    let keepalive
+    client.tick = 0n
+
+    client.once('spawn', () => {
+      keepalive = setInterval(() => {
+        // Client fills out the request_time and the server does response_time in its reply.
+        client.queue('tick_sync', { request_time: client.tick, response_time: 0n })
+        client.tick += keepAliveIntervalBig
+      }, 50 * keepAliveInterval)
+
+      client.on('tick_sync', async packet => {
+        client.emit('heartbeat', packet.response_time)
+        client.tick = packet.response_time
+      })
+    })
+
+    client.once('close', () => {
+      clearInterval(keepalive)
+    })
+  }
 }
 
-async function ping ({ host, port }) {
+async function ping({ host, port }) {
   const con = new RakClient({ host, port })
+
   try {
     return advertisement.fromServerName(await con.ping())
   } finally {
