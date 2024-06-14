@@ -1,3 +1,9 @@
+## 3.37.0
+* [Support 1.21.0](https://github.com/PrismarineJS/bedrock-protocol/commit/5b2d78792c9b4c070d727a9028a6b3a266483e1c) (thanks @extremeheat)
+* [Update vanilla.js disable chunk tests](https://github.com/PrismarineJS/bedrock-protocol/commit/19ade45ea5b983512c6c621255b8c6e147fc80b7) (thanks @extremeheat)
+* [Fix typo in types (#501)](https://github.com/PrismarineJS/bedrock-protocol/commit/16e15d80a5084a19ed2fbabc023789ee38922b3a) (thanks @Kaaaaii)
+* [Update README](https://github.com/PrismarineJS/bedrock-protocol/commit/1ddc5251695fda670c70ea506e0d1d267997e053) (thanks @extremeheat)
+
 ## 3.36.0
 * [Support 1.20.80](https://github.com/PrismarineJS/bedrock-protocol/commit/bd32aa8d04555fa2fdc4ecd6abbeb6124e2ae8bb) (thanks @extremeheat)
 
