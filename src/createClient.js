@@ -7,11 +7,11 @@ const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
-function createClient(options) {
+function createClient (options) {
   assert(options)
   const client = new Client({ port: 19132, followPort: !options.realms, ...options, delayedInit: true })
 
-  function onServerInfo() {
+  function onServerInfo () {
     client.on('connect_allowed', () => connect(client))
     if (options.skipPing) {
       client.init()
@@ -38,7 +38,7 @@ function createClient(options) {
   return client
 }
 
-function connect(client) {
+function connect (client) {
   // Actually connect
   client.connect()
 
@@ -88,7 +88,7 @@ function connect(client) {
   }
 }
 
-async function ping({ host, port }) {
+async function ping ({ host, port }) {
   const con = new RakClient({ host, port })
 
   try {
