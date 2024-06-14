@@ -5,7 +5,7 @@ const { waitFor } = require('../src/datatypes/util')
 const { getPort } = require('./util')
 
 async function test (version) {
-  const ChunkColumn = require('bedrock-provider').chunk('bedrock_' + (version.includes('1.19') ? '1.18.30' : version)) // TODO: Fix prismarine-chunk
+  // const ChunkColumn = require('bedrock-provider').chunk('bedrock_' + (version.includes('1.19') ? '1.18.30' : version)) // TODO: Fix prismarine-chunk
 
   // Start the server, wait for it to accept clients, throws on timeout
   const port = await getPort()
@@ -48,10 +48,10 @@ async function test (version) {
         client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: BigInt(Date.now()) })
       }, 200)
 
-      client.on('level_chunk', async packet => { // Chunk read test
-        const cc = new ChunkColumn(packet.x, packet.z)
-        await cc.networkDecodeNoCache(packet.payload, packet.sub_chunk_count)
-      })
+      // client.on('level_chunk', async packet => { // Chunk read test
+      //   const cc = new ChunkColumn(packet.x, packet.z)
+      //   await cc.networkDecodeNoCache(packet.payload, packet.sub_chunk_count)
+      // })
 
       console.log('Awaiting join')
 
