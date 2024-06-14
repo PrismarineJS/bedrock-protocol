@@ -39,6 +39,10 @@ class Connection extends EventEmitter {
     return this.options.protocolVersion >= (typeof version === 'string' ? Versions[version] : version)
   }
 
+  versionLessThanOrEqualTo (version) {
+    return this.options.protocolVersion <= (typeof version === 'string' ? Versions[version] : version)
+  }
+
   startEncryption (iv) {
     this.encryptionEnabled = true
     this.inLog?.('Started encryption', this.sharedSecret, iv)
