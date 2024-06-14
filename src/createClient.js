@@ -5,7 +5,6 @@ const assert = require('assert')
 const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
-const { Connection } = require('./connection')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient(options) {
