@@ -55,7 +55,7 @@ client.on('text', (packet) => { // Listen for chat messages from the server and 
   if (packet.source_name != client.username) {
     client.queue('text', {
       type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '',
-      message: `${packet.source_name} said: ${packet.message} on ${new Date().toLocaleString()}`
+      message: `${packet.source_name} said: ${packet.message} on ${new Date().toLocaleString()}`, filtered_message: ''
     })
   }
 })
