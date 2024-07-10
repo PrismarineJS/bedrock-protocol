@@ -10,7 +10,7 @@ const client = bedrock.createClient({
 client.on('text', (packet) => { // Listen for chat messages and echo them back.
   if (packet.source_name != client.username) {
     client.queue('text', {
-      type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '',
+      type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '', filtered_message: '',
       message: `${packet.source_name} said: ${packet.message} on ${new Date().toLocaleString()}`
     })
   }
