@@ -1,3 +1,8 @@
+## 3.38.0
+* [Support 1.21.2, and add missing versions to type definitions (#510)](https://github.com/PrismarineJS/bedrock-protocol/commit/5d3986924d3f262708d7c7e55a7f410f12c7903c) (thanks @CreeperG16)
+* [Fix example in README.md for 1.21 (#506)](https://github.com/PrismarineJS/bedrock-protocol/commit/c4593aa355d6ce9e2ac65cc2102cd9285a6b6449) (thanks @Ant767)
+* [Don't send now deprecated tick sync packets on 1.21 and newer (#504)](https://github.com/PrismarineJS/bedrock-protocol/commit/84c5231b92df9f5f1a09b29a05e7abfed62f1c2b) (thanks @w0ahL)
+
 ## 3.37.0
 * [Support 1.21.0](https://github.com/PrismarineJS/bedrock-protocol/commit/5b2d78792c9b4c070d727a9028a6b3a266483e1c) (thanks @CreeperG16)
 * [Fix typo in types (#501)](https://github.com/PrismarineJS/bedrock-protocol/commit/16e15d80a5084a19ed2fbabc023789ee38922b3a) (thanks @Kaaaaii)
