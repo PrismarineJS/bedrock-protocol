@@ -29,4 +29,5 @@ jobs:
     - run: npm install
     - run: curl -L https://raw.githubusercontent.com/extremeheat/node-protodef/fix-anon-containers/src/datatypes/compiler-structures.js -o node_modules/protodef/src/datatypes/compiler-structures.js
     - run: curl -L https://raw.githubusercontent.com/extremeheat/node-protodef/fix-anon-containers/src/datatypes/compiler-conditional.js -o node_modules/protodef/src/datatypes/compiler-conditional.js
+    - run: curl -L https://raw.githubusercontent.com/extremeheat/node-protodef/fix-anon-containers/src/compiler.js -o node_modules/protodef/src/compiler.js
     - run: npm test
