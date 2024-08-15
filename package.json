@@ -31,8 +31,7 @@
     "prismarine-realms": "^1.1.0",
     "protodef": "^1.14.0",
     "raknet-native": "^1.0.3",
-    "uuid-1345": "^1.0.2",
-    "protodef": "extremeheat/node-protodef#fix-anon-containers"
+    "uuid-1345": "^1.0.2"
   },
   "optionalDependencies": {
     "raknet-node": "^0.5.0"
