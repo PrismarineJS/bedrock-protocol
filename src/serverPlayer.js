@@ -117,7 +117,8 @@ class Player extends Connection {
     if (this.status === ClientStatus.Disconnected) return
     this.write('disconnect', {
       hide_disconnect_screen: hide,
-      message: reason
+      message: reason,
+      filtered_message: ''
     })
     this.server.conLog('Kicked ', this.connection?.address, reason)
     setTimeout(() => this.close('kick'), 100) // Allow time for message to be recieved.

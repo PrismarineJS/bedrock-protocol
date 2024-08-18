@@ -183,7 +183,8 @@ class Client extends Connection {
     if (this.status === ClientStatus.Disconnected) return
     this.write('disconnect', {
       hide_disconnect_screen: hide,
-      message: reason
+      message: reason,
+      filtered_message: ''
     })
     this.close(reason)
   }
