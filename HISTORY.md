@@ -1,3 +1,7 @@
+## 3.39.0
+* [1.21.20](https://github.com/PrismarineJS/bedrock-protocol/commit/3be55777fab4949179d3a7108ee29bbd8fada5a7) (thanks @extremeheat)
+* [update disconnect packet](https://github.com/PrismarineJS/bedrock-protocol/commit/4c3f62567e0f6ce20b70ea23238fce8606011e95) (thanks @extremeheat)
+
 ## 3.38.0
 * [Support 1.21.2, and add missing versions to type definitions (#510)](https://github.com/PrismarineJS/bedrock-protocol/commit/5d3986924d3f262708d7c7e55a7f410f12c7903c) (thanks @CreeperG16)
 * [Fix example in README.md for 1.21 (#506)](https://github.com/PrismarineJS/bedrock-protocol/commit/c4593aa355d6ce9e2ac65cc2102cd9285a6b6449) (thanks @Ant767)
