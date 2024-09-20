@@ -1,4 +1,3 @@
-process.env.DEBUG = 'minecraft-protocol'
 const { Server, Client } = require('../')
 const { dumpPackets } = require('../tools/genPacketDumps')
 const { ping } = require('../src/createClient')
@@ -52,7 +51,10 @@ async function startTest (version = CURRENT_VERSION, ok) {
         resource_pack_links: []
       })
 
+      console.log('Sent resource_packs_info')
+
       client.once('resource_pack_client_response', async rp => {
+        console.log('Server recv resource_pack_client_response')
         // Tell the server we will compress everything (>=1 byte)
         client.write('network_settings', { compression_threshold: 1 })
         // Send some inventory slots
@@ -126,12 +128,14 @@ async function startTest (version = CURRENT_VERSION, ok) {
   console.log('Started client')
 
   client.once('resource_packs_info', (packet) => {
+    console.log('client recieve resource_packs_info', packet)
     client.write('resource_pack_client_response', {
       response_status: 'completed',
       resourcepackids: []
     })
 
     client.once('resource_pack_stack', (stack) => {
+      console.log('client recieve resource_pack_stack')
       client.write('resource_pack_client_response', {
         response_status: 'completed',
         resourcepackids: []
