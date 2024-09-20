@@ -14,7 +14,7 @@ function prepare (version) {
 
 async function startTest (version = CURRENT_VERSION, ok) {
   await prepare(version)
-  const Item = require('../types/Item')(version)
+  // const Item = require('../types/Item')(version)
   const port = await getPort()
   const server = new Server({ host: '0.0.0.0', port, version, offline: true })
 
