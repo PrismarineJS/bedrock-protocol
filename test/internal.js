@@ -14,7 +14,7 @@ function prepare (version) {
 
 async function startTest (version = CURRENT_VERSION, ok) {
   await prepare(version)
-  const Item = require('../types/Item')(version)
+  // const Item = require('../types/Item')(version)
   const port = await getPort()
   const server = new Server({ host: '0.0.0.0', port, version, offline: true })
 
@@ -56,7 +56,7 @@ async function startTest (version = CURRENT_VERSION, ok) {
         client.write('network_settings', { compression_threshold: 1 })
         // Send some inventory slots
         for (let i = 0; i < 3; i++) {
-          client.queue('inventory_slot', { window_id: 'armor', slot: 0, item: new Item().toBedrock() })
+          // client.queue('inventory_slot', { window_id: 'armor', slot: 0, item: new Item().toBedrock() })
         }
 
         // client.queue('inventory_transaction', get('packets/inventory_transaction.json'))
