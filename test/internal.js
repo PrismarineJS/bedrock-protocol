@@ -1,3 +1,4 @@
+process.env.DEBUG = 'minecraft-protocol'
 const { Server, Client } = require('../')
 const { dumpPackets } = require('../tools/genPacketDumps')
 const { ping } = require('../src/createClient')
