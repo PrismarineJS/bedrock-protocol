@@ -4,7 +4,7 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
-const { SessionDirectory } = require('../xsapi/session')
+const { SessionDirectory } = require('../xsapi/rta')
 
 function validateOptions (options) {
   if (!options.profilesFolder) {
@@ -22,7 +22,7 @@ async function serverAuthenticate (server, options) {
 
   options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
-  server.nethernet.session = new SessionDirectory(options.authflow, {
+  server.session = new SessionDirectory(options.authflow, {
     world: {
       hostName: server.advertisement.motd,
       name: server.advertisement.levelName,
@@ -33,7 +33,7 @@ async function serverAuthenticate (server, options) {
     }
   })
 
-  await server.nethernet.session.createSession(options.networkId)
+  await server.session.createSession(options.networkId)
 }
 
 async function worldAuthenticate (client, options) {
@@ -43,10 +43,10 @@ async function worldAuthenticate (client, options) {
 
   const xbl = await options.authflow.getXboxToken()
 
-  client.nethernet.session = new SessionDirectory(options.authflow, {})
+  client.session = new SessionDirectory(options.authflow, {})
 
   const getSessions = async () => {
-    const sessions = await client.nethernet.session.host.rest.getSessions(xbl.userXUID)
+    const sessions = await client.session.host.rest.getSessions(xbl.userXUID)
     debug('sessions', sessions)
     if (!sessions.length) throw Error('Couldn\'t find any sessions for the authenticated account')
     return sessions
@@ -62,7 +62,7 @@ async function worldAuthenticate (client, options) {
 
   if (!world) throw Error('Couldn\'t find a session to connect to.')
 
-  const session = await client.nethernet.session.joinSession(world.sessionRef.name)
+  const session = await client.session.joinSession(world.sessionRef.name)
 
   const networkId = session.properties.custom.SupportedConnections.find(e => e.ConnectionType === 3).NetherNetId
 

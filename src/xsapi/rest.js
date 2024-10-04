@@ -1,4 +1,5 @@
 const { stringify } = require('json-bigint')
+const { default: fetch } = require('node-fetch')
 const { checkStatus } = require('../datatypes/util')
 
 const SessionConfig = {
@@ -150,6 +151,11 @@ class Rest {
     })
 
     return response
+  }
+
+  async updateMemberCount (sessionName, count, maxCount) {
+    const payload = maxCount ? { MemberCount: count, MaxMemberCount: maxCount } : { MemberCount: count }
+    await this.updateSession(sessionName, { properties: { custom: payload } })
   }
 
   async addConnection (sessionName, xuid, connectionId, subscriptionId) {
