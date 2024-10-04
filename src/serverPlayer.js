@@ -29,6 +29,8 @@ class Player extends Connection {
     }
 
     this.batchHeader = this.server.batchHeader
+    this.disableEncryption = this.server.disableEncryption
+
     // Compression is server-wide
     this.compressionAlgorithm = this.server.compressionAlgorithm
     this.compressionLevel = this.server.compressionLevel

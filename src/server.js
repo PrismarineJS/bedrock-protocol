@@ -2,8 +2,9 @@ const { EventEmitter } = require('events')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { Player } = require('./serverPlayer')
 const { sleep } = require('./datatypes/util')
-const { ServerAdvertisement } = require('./server/advertisement')
+const { ServerAdvertisement, NethernetServerAdvertisement } = require('./server/advertisement')
 const Options = require('./options')
+
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
 class Server extends EventEmitter {
@@ -13,12 +14,23 @@ class Server extends EventEmitter {
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
 
-    this.RakServer = require('./rak')(this.options.raknetBackend).RakServer
+    if (this.options.transport === 'nethernet') {
+      this.transportServer = require('./nethernet').NethernetServer
+      this.advertisement = new NethernetServerAdvertisement(this.options.motd, this.options.version)
+      this.batchHeader = []
+      this.disableEncryption = true
+    } else if (this.options.transport === 'raknet') {
+      this.transportServer = require('./rak')(this.options.raknetBackend).RakServer
+      this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)
+      this.batchHeader = [0xfe]
+      this.disableEncryption = false
+    } else {
+      throw new Error(`Unsupported transport: ${this.options.transport} (nethernet, raknet)`)
+    }
 
     this._loadFeatures(this.options.version)
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
-    this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)
     this.advertisement.playersMax = options.maxPlayers ?? 3
     /** @type {Object<string, Player>} */
     this.clients = {}
@@ -120,29 +132,31 @@ class Server extends EventEmitter {
 
   async listen () {
     const { host, port, maxPlayers } = this.options
-    this.raknet = new this.RakServer({ host, port, maxPlayers }, this)
+    // eslint-disable-next-line new-cap
+    this.transport = new this.transportServer({ host, port, networkId: this.options.networkId }, this)
 
     try {
-      await this.raknet.listen()
+      await this.transport.listen()
     } catch (e) {
       console.warn(`Failed to bind server on [${this.options.host}]/${this.options.port}, is the port free?`)
       throw e
     }
 
     this.conLog('Listening on', host, port, this.options.version)
-    this.raknet.onOpenConnection = this.onOpenConnection
-    this.raknet.onCloseConnection = this.onCloseConnection
-    this.raknet.onEncapsulated = this.onEncapsulated
-    this.raknet.onClose = (reason) => this.close(reason || 'Raknet closed')
+    this.transport.onOpenConnection = this.onOpenConnection
+    this.transport.onCloseConnection = this.onCloseConnection
+    this.transport.onEncapsulated = this.onEncapsulated
+    this.transport.onClose = (reason) => this.close(reason || 'Transport closed')
 
     this.serverTimer = setInterval(() => {
-      this.raknet.updateAdvertisement()
+      this.transport.updateAdvertisement()
     }, 1000)
 
     return { host, port }
   }
 
   async close (disconnectReason = 'Server closed') {
+    this.emit('close', disconnectReason)
     for (const caddr in this.clients) {
       const client = this.clients[caddr]
       client.disconnect(disconnectReason)
@@ -154,7 +168,7 @@ class Server extends EventEmitter {
 
     // Allow some time for client to get disconnect before closing connection.
     await sleep(60)
-    this.raknet.close()
+    this.transport.close()
   }
 }
 
