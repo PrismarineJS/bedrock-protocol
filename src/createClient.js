@@ -5,6 +5,8 @@ const assert = require('assert')
 const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
+const { NethernetClient } = require('./nethernet')
+const { Signal } = require('./websocket/signal')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
@@ -17,20 +19,34 @@ function createClient (options) {
       client.init()
     } else {
       ping(client.options).then(ad => {
-        const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
-        client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
+        if (client.options.transport === 'raknet') {
+          const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
+          client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
 
-        if (ad.portV4 && client.options.followPort) {
-          client.options.port = ad.portV4
+          if (ad.portV4 && client.options.followPort) {
+            client.options.port = ad.portV4
+          }
+
+          client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${ad.version} ${client.options.version !== ad.version ? ` (as ${client.options.version})` : ''}`)
+        } else if (client.options.transport === 'nethernet') {
+          client.conLog?.(`Connecting to ${client.options.networkId} ${ad.motd} (${ad.levelName})`)
         }
 
-        client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${ad.version} ${client.options.version !== ad.version ? ` (as ${client.options.version})` : ''}`)
         client.init()
-      }).catch(e => client.emit('error', e))
+      }).catch(e => {
+        if (!client.options.useSignalling) {
+          client.emit('error', e)
+        } else {
+          client.conLog?.('Could not ping server through local signalling, trying to connect over franchise signalling instead')
+          client.init()
+        }
+      })
     }
   }
 
-  if (options.realms) {
+  if (options.world) {
+    auth.worldAuthenticate(client, client.options).then(onServerInfo).catch(e => client.emit('error', e))
+  } else if (options.realms) {
     auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.emit('error', e))
   } else {
     onServerInfo()
@@ -38,7 +54,19 @@ function createClient (options) {
   return client
 }
 
-function connect (client) {
+/** @param {Client} client */
+async function connect (client) {
+  if (client.options.useSignalling) {
+    client.signalling = new Signal(client.connection.nethernet.networkId, client.options.authflow)
+
+    await client.signalling.connect()
+
+    client.connection.nethernet.credentials = client.signalling.credentials
+    client.connection.nethernet.signalHandler = client.signalling.write.bind(client.signalling)
+
+    client.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
+  }
+
   // Actually connect
   client.connect()
 
@@ -86,15 +114,29 @@ function connect (client) {
       clearInterval(keepalive)
     })
   }
+
+  client.once('close', () => {
+    if (client.session) client.session.end()
+    if (client.signalling) client.signalling.destroy()
+  })
 }
 
-async function ping ({ host, port }) {
-  const con = new RakClient({ host, port })
-
-  try {
-    return advertisement.fromServerName(await con.ping())
-  } finally {
-    con.close()
+async function ping ({ host, port, networkId }) {
+  console.log('Pinging', host, port, networkId)
+  if (networkId) {
+    const con = new NethernetClient({ networkId })
+    try {
+      return advertisement.NethernetServerAdvertisement.fromBuffer(await con.ping())
+    } finally {
+      con.close()
+    }
+  } else {
+    const con = new RakClient({ host, port })
+    try {
+      return advertisement.fromServerName(await con.ping())
+    } finally {
+      con.close()
+    }
   }
 }
 
