@@ -4,6 +4,7 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
+const { SessionDirectory } = require('../xsapi/rta')
 
 function validateOptions (options) {
   if (!options.profilesFolder) {
@@ -14,6 +15,60 @@ function validateOptions (options) {
     options.deviceType = 'Nintendo'
     options.flow = 'live'
   }
+}
+
+async function serverAuthenticate (server, options) {
+  validateOptions(options)
+
+  options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  server.session = new SessionDirectory(options.authflow, {
+    world: {
+      hostName: server.advertisement.motd,
+      name: server.advertisement.levelName,
+      version: options.version,
+      protocol: options.protocolVersion,
+      memberCount: server.advertisement.playerCount,
+      maxMemberCount: server.advertisement.playersMax
+    }
+  })
+
+  await server.session.createSession(options.networkId)
+}
+
+async function worldAuthenticate (client, options) {
+  validateOptions(options)
+
+  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  const xbl = await options.authflow.getXboxToken()
+
+  client.session = new SessionDirectory(options.authflow, {})
+
+  const getSessions = async () => {
+    const sessions = await client.session.host.rest.getSessions(xbl.userXUID)
+    debug('sessions', sessions)
+    if (!sessions.length) throw Error('Couldn\'t find any sessions for the authenticated account')
+    return sessions
+  }
+
+  let world
+
+  if (options.world.pickSession) {
+    if (typeof options.world.pickSession !== 'function') throw Error('world.pickSession must be a function')
+    const sessions = await getSessions()
+    world = await options.world.pickSession(sessions)
+  }
+
+  if (!world) throw Error('Couldn\'t find a session to connect to.')
+
+  const session = await client.session.joinSession(world.sessionRef.name)
+
+  const networkId = session.properties.custom.SupportedConnections.find(e => e.ConnectionType === 3).NetherNetId
+
+  if (!networkId) throw Error('Couldn\'t find a Nethernet ID to connect to.')
+
+  options.networkId = BigInt(networkId)
 }
 
 async function realmAuthenticate (options) {
@@ -64,14 +119,13 @@ async function realmAuthenticate (options) {
 async function authenticate (client, options) {
   validateOptions(options)
   try {
-    const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const loginData = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
+    options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+    const chains = await options.authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
       if (options.password) console.warn('Sign in failed, try removing the password field')
       throw e
     })
-    const chains = loginData.chain
 
-    debug('loginData', { chainLength: chains.length, hasToken: Boolean(loginData.token) })
+    debug('chains', chains)
 
     // First chain is Mojang stuff, second is Xbox profile data used by mc
     const jwt = chains[1]
@@ -86,7 +140,7 @@ async function authenticate (client, options) {
       xuid: xboxProfile?.extraData?.XUID || 0
     }
 
-    return postAuthenticate(client, profile, loginData)
+    return postAuthenticate(client, profile, chains)
   } catch (err) {
     console.error(err)
     client.emit('error', err)
@@ -103,19 +157,20 @@ function createOfflineSession (client, options) {
     uuid: uuidFrom(options.username), // random
     xuid: 0
   }
-  return postAuthenticate(client, profile, { chain: [], token: '' }) // No extra JWTs, only send our own login data
+  return postAuthenticate(client, profile, []) // No extra JWTs, only send 1 client signed chain with all the data
 }
 
-function postAuthenticate (client, profile, auth = {}) {
+function postAuthenticate (client, profile, chains) {
   client.profile = profile
   client.username = profile.name
-  client.accessToken = auth.chain || []
-  client.multiplayerToken = auth.token || ''
+  client.accessToken = chains
   client.emit('session', profile)
 }
 
 module.exports = {
   createOfflineSession,
   authenticate,
-  realmAuthenticate
+  realmAuthenticate,
+  worldAuthenticate,
+  serverAuthenticate
 }
