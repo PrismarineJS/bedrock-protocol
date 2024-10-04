@@ -1,4 +1,4 @@
-const { PACKET_TYPE, Packet } = require('./packet')
+const { PACKET_TYPE, Packet } = require('./Packet')
 
 class ResponsePacket extends Packet {
   constructor (data) {

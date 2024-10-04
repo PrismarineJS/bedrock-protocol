@@ -5,7 +5,7 @@ const { RTCIceCandidate, RTCPeerConnection } = require('werift')
 const { Connection } = require('./connection')
 const { SignalStructure, SignalType } = require('./signalling')
 
-const { PACKET_TYPE } = require('./discovery/packets/packet')
+const { PACKET_TYPE } = require('./discovery/packets/Packet')
 const { MessagePacket } = require('./discovery/packets/MessagePacket')
 const { ResponsePacket } = require('./discovery/packets/ResponsePacket')
 const { decrypt, encrypt, calculateChecksum } = require('./discovery/crypto')
