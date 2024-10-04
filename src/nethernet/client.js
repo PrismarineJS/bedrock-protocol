@@ -8,7 +8,7 @@ const { getRandomUint64 } = require('../datatypes/util')
 const { SignalType, SignalStructure } = require('./signalling')
 
 const { getBroadcastAddress } = require('./net')
-const { PACKET_TYPE } = require('./discovery/packets/packet')
+const { PACKET_TYPE } = require('./discovery/packets/Packet')
 const { RequestPacket } = require('./discovery/packets/RequestPacket')
 const { MessagePacket } = require('./discovery/packets/MessagePacket')
 const { ResponsePacket } = require('./discovery/packets/ResponsePacket')
