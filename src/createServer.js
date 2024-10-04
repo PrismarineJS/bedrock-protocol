@@ -1,10 +1,10 @@
 const { Server } = require('./server')
-const { NethernetSignal } = require('./websocket/signal')
+const { Signal } = require('./websocket/signal')
 const assert = require('assert')
 
 const { getRandomUint64 } = require('./datatypes/util')
 const { serverAuthenticate } = require('./client/auth')
-const { SignalType } = require('node-nethernet')
+const { SignalType } = require('./nethernet/signalling')
 
 /** @param {{ port?: number, version?: number, networkId?: string, transport?: string, delayedInit?: boolean }} options */
 function createServer (options) {
@@ -15,17 +15,17 @@ function createServer (options) {
 
   function startSignalling () {
     if (server.options.transport === 'nethernet') {
-      server.nethernet.signalling = new NethernetSignal(server.options.networkId, server.options.authflow)
+      server.signalling = new Signal(server.options.networkId, server.options.authflow)
 
-      server.nethernet.signalling.connect(server.options.version)
+      server.signalling.connect()
         .then(() => {
-          server.nethernet.signalling.on('signal', (signal) => {
+          server.signalling.on('signal', (signal) => {
             switch (signal.type) {
               case SignalType.ConnectRequest:
-                server.transport.nethernet.handleOffer(signal, server.nethernet.signalling.write.bind(server.nethernet.signalling), server.nethernet.signalling.credentials)
+                server.transportServer.nethernet.handleOffer(signal, server.signalling.write, server.signalling.credentials)
                 break
               case SignalType.CandidateAdd:
-                server.transport.nethernet.handleCandidate(signal)
+                server.transportServer.nethernet.handleCandidate(signal)
                 break
             }
           })
@@ -44,8 +44,8 @@ function createServer (options) {
   }
 
   server.once('close', () => {
-    if (server.nethernet.session) server.nethernet.session.end()
-    if (server.nethernet.signalling) server.nethernet.signalling.destroy()
+    if (server.session) server.session.end()
+    if (server.signalling) server.signalling.destroy()
   })
 
   return server

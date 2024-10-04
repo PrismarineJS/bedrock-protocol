@@ -6,7 +6,7 @@ const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
 const { NethernetClient } = require('./nethernet')
-const { NethernetSignal } = require('./websocket/signal')
+const { Signal } = require('./websocket/signal')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
@@ -56,19 +56,15 @@ function createClient (options) {
 
 /** @param {Client} client */
 async function connect (client) {
-  if (client.options.transport === 'nethernet') {
-    if (client.options.useSignalling) {
-      client.nethernet.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version)
+  if (client.options.useSignalling) {
+    client.signalling = new Signal(client.connection.nethernet.networkId, client.options.authflow)
 
-      await client.nethernet.signalling.connect()
+    await client.signalling.connect()
 
-      client.connection.nethernet.credentials = client.nethernet.signalling.credentials
-      client.connection.nethernet.signalHandler = client.nethernet.signalling.write.bind(client.nethernet.signalling)
+    client.connection.nethernet.credentials = client.signalling.credentials
+    client.connection.nethernet.signalHandler = client.signalling.write.bind(client.signalling)
 
-      client.nethernet.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
-    } else {
-      await client.connection.ping()
-    }
+    client.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
   }
 
   // Actually connect
@@ -120,17 +116,17 @@ async function connect (client) {
   }
 
   client.once('close', () => {
-    if (client.nethernet.session) client.nethernet.session.end()
-    if (client.nethernet.signalling) client.nethernet.signalling.destroy()
+    if (client.session) client.session.end()
+    if (client.signalling) client.signalling.destroy()
   })
 }
 
 async function ping ({ host, port, networkId }) {
-  console.log(`Pinging ${host}:${port} with networkId ${networkId}`)
+  console.log('Pinging', host, port, networkId)
   if (networkId) {
     const con = new NethernetClient({ networkId })
     try {
-      return advertisement.NethernetServerAdvertisement.fromBuffer(Buffer.from(await con.ping(), 'hex'))
+      return advertisement.NethernetServerAdvertisement.fromBuffer(await con.ping())
     } finally {
       con.close()
     }
