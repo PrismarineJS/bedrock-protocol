@@ -1,5 +1,7 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 
+const { ServerData } = require('../nethernet/discovery/ServerData')
+
 class NethernetServerAdvertisement {
   version = 3
   motd = 'Bedrock Protocol Server'
@@ -16,77 +18,31 @@ class NethernetServerAdvertisement {
   }
 
   static fromBuffer (buffer) {
-    const advertisement = new NethernetServerAdvertisement()
-    let offset = 0
+    const responsePacket = new ServerData(buffer)
 
-    advertisement.version = buffer.readUInt8(offset++)
+    responsePacket.decode()
 
-    const motdLength = buffer.readUInt8(offset++)
-    advertisement.motd = buffer.toString('utf8', offset, offset + motdLength)
-    offset += motdLength
+    Object.assign(this, responsePacket)
 
-    const levelNameLength = buffer.readUInt8(offset++)
-    advertisement.levelName = buffer.toString('utf8', offset, offset + levelNameLength)
-    offset += levelNameLength
-
-    advertisement.gamemodeId = buffer.readInt32LE(offset)
-    offset += 4
-
-    advertisement.playerCount = buffer.readInt32LE(offset)
-    offset += 4
-
-    if (offset + 4 <= buffer.length) {
-      advertisement.playersMax = buffer.readInt32LE(offset)
-      offset += 4
-    }
-
-    if (offset < buffer.length) {
-      advertisement.isEditorWorld = buffer.readUInt8(offset++) === 1
-    }
-
-    if (offset < buffer.length) {
-      advertisement.hardcore = buffer.readUInt8(offset++) === 1
-    }
-
-    if (offset < buffer.length) {
-      advertisement.transportLayer = buffer.readUInt8(offset++)
-    }
-
-    return advertisement
+    return this
   }
 
   toBuffer () {
-    const motdBuffer = Buffer.from(this.motd, 'utf8')
-    const levelNameBuffer = Buffer.from(this.levelName, 'utf8')
+    const responsePacket = new ServerData()
 
-    const buffers = []
+    responsePacket.version = this.version
+    responsePacket.motd = this.motd
+    responsePacket.levelName = this.levelName
+    responsePacket.gamemodeId = this.gamemodeId
+    responsePacket.playerCount = this.playerCount
+    responsePacket.playersMax = this.playersMax
+    responsePacket.editorWorld = this.isEditorWorld
+    responsePacket.hardcore = this.hardcore
+    responsePacket.transportLayer = this.transportLayer
 
-    buffers.push(Buffer.from([this.version]))
-    buffers.push(Buffer.from([motdBuffer.length]))
-    buffers.push(motdBuffer)
-    buffers.push(Buffer.from([levelNameBuffer.length]))
-    buffers.push(levelNameBuffer)
+    responsePacket.encode()
 
-    const gamemodeBuffer = Buffer.alloc(4)
-    gamemodeBuffer.writeInt32LE(this.gamemodeId, 0)
-    buffers.push(gamemodeBuffer)
-
-    const playerCountBuffer = Buffer.alloc(4)
-    playerCountBuffer.writeInt32LE(this.playerCount, 0)
-    buffers.push(playerCountBuffer)
-
-    const playersMaxBuffer = Buffer.alloc(4)
-    playersMaxBuffer.writeInt32LE(this.playersMax, 0)
-    buffers.push(playersMaxBuffer)
-
-    buffers.push(Buffer.from([this.isEditorWorld ? 1 : 0]))
-    buffers.push(Buffer.from([this.hardcore ? 1 : 0]))
-
-    const transportBuffer = Buffer.alloc(4)
-    transportBuffer.writeInt32LE(this.transportLayer, 0)
-    buffers.push(transportBuffer)
-
-    return Buffer.concat(buffers)
+    return responsePacket.getBuffer()
   }
 }
 
