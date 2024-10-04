@@ -1,5 +1,51 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 
+const { ServerData } = require('../nethernet/discovery/ServerData')
+
+class NethernetServerAdvertisement {
+  version = 3
+  motd = 'Bedrock Protocol Server'
+  levelName = 'bedrock-protocol'
+  gamemodeId = 2
+  playerCount = 0
+  playersMax = 5
+  isEditorWorld = false
+  hardcore = false
+  transportLayer = 2
+
+  constructor (obj) {
+    Object.assign(this, obj)
+  }
+
+  static fromBuffer (buffer) {
+    const responsePacket = new ServerData(buffer)
+
+    responsePacket.decode()
+
+    Object.assign(this, responsePacket)
+
+    return this
+  }
+
+  toBuffer () {
+    const responsePacket = new ServerData()
+
+    responsePacket.version = this.version
+    responsePacket.motd = this.motd
+    responsePacket.levelName = this.levelName
+    responsePacket.gamemodeId = this.gamemodeId
+    responsePacket.playerCount = this.playerCount
+    responsePacket.playersMax = this.playersMax
+    responsePacket.editorWorld = this.isEditorWorld
+    responsePacket.hardcore = this.hardcore
+    responsePacket.transportLayer = this.transportLayer
+
+    responsePacket.encode()
+
+    return responsePacket.getBuffer()
+  }
+}
+
 class ServerAdvertisement {
   motd = 'Bedrock Protocol Server'
   levelName = 'bedrock-protocol'
@@ -61,6 +107,7 @@ class ServerAdvertisement {
 
 module.exports = {
   ServerAdvertisement,
+  NethernetServerAdvertisement,
   getServerName (client) {
     return new ServerAdvertisement().toBuffer()
   },
