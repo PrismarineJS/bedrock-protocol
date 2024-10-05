@@ -4,6 +4,7 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
+const { SessionDirectory } = require('../xsapi/rta')
 
 function validateOptions (options) {
   if (!options.profilesFolder) {
@@ -14,6 +15,60 @@ function validateOptions (options) {
     options.deviceType = 'Nintendo'
     options.flow = 'live'
   }
+}
+
+async function serverAuthenticate (server, options) {
+  validateOptions(options)
+
+  options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  server.session = new SessionDirectory(options.authflow, {
+    world: {
+      hostName: server.advertisement.motd,
+      name: server.advertisement.levelName,
+      version: options.version,
+      protocol: options.protocolVersion,
+      memberCount: server.advertisement.playerCount,
+      maxMemberCount: server.advertisement.playersMax
+    }
+  })
+
+  await server.session.createSession(options.networkId)
+}
+
+async function worldAuthenticate (client, options) {
+  validateOptions(options)
+
+  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  const xbl = await options.authflow.getXboxToken()
+
+  client.session = new SessionDirectory(options.authflow, {})
+
+  const getSessions = async () => {
+    const sessions = await client.session.host.rest.getSessions(xbl.userXUID)
+    debug('sessions', sessions)
+    if (!sessions.length) throw Error('Couldn\'t find any sessions for the authenticated account')
+    return sessions
+  }
+
+  let world
+
+  if (options.world.pickSession) {
+    if (typeof options.world.pickSession !== 'function') throw Error('world.pickSession must be a function')
+    const sessions = await getSessions()
+    world = await options.world.pickSession(sessions)
+  }
+
+  if (!world) throw Error('Couldn\'t find a session to connect to.')
+
+  const session = await client.session.joinSession(world.sessionRef.name)
+
+  const networkId = session.properties.custom.SupportedConnections.find(e => e.ConnectionType === 3).NetherNetId
+
+  if (!networkId) throw Error('Couldn\'t find a Nethernet ID to connect to.')
+
+  options.networkId = BigInt(networkId)
 }
 
 async function realmAuthenticate (options) {
@@ -64,8 +119,8 @@ async function realmAuthenticate (options) {
 async function authenticate (client, options) {
   validateOptions(options)
   try {
-    const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
+    options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+    const chains = await options.authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
       if (options.password) console.warn('Sign in failed, try removing the password field')
       throw e
     })
@@ -115,5 +170,7 @@ function postAuthenticate (client, profile, chains) {
 module.exports = {
   createOfflineSession,
   authenticate,
-  realmAuthenticate
+  realmAuthenticate,
+  worldAuthenticate,
+  serverAuthenticate
 }
