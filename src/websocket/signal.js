@@ -139,7 +139,7 @@ class Signal extends EventEmitter {
 
         this.credentials = JSON.parse(message.Message).TurnAuthServers.map(credential => {
           return {
-            urls: credential.Urls,
+            urls: credential.Urls.join(','),
             credential: credential.Password,
             username: credential.Username
           }
