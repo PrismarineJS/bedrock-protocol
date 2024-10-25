@@ -1,3 +1,6 @@
+## 3.41.0
+* [1.21.42 support](https://github.com/PrismarineJS/bedrock-protocol/commit/dd5c4de4f2624c3654af66e9a40a65eb13de0850) (thanks @CreeperG16)
+
 ## 3.40.0
 * [1.21.30 support (#527)](https://github.com/PrismarineJS/bedrock-protocol/commit/fc30c96135ec20dca1257f702152cba61d4a59be) (thanks @pokecosimo)
 * [Update tests (#528)](https://github.com/PrismarineJS/bedrock-protocol/commit/cb530c8b45bf505f75e0e39241d88085c5564ae8) (thanks @extremeheat)
