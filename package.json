@@ -24,7 +24,7 @@
     "debug": "^4.3.1",
     "jsonwebtoken": "^9.0.0",
     "jsp-raknet": "^2.1.3",
-    "minecraft-data": "^3.0.0",
+    "https://github.com/HealingHalo8/node-minecraft-data/",
     "minecraft-folder-path": "^1.2.0",
     "prismarine-auth": "^2.0.0",
     "prismarine-nbt": "^2.0.0",
