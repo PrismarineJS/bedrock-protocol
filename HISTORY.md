@@ -1,7 +1,5 @@
 ## 3.41.0
-* [1.21.42](https://github.com/PrismarineJS/bedrock-protocol/commit/dd5c4de4f2624c3654af66e9a40a65eb13de0850) (thanks @extremeheat)
-* [Update options.js](https://github.com/PrismarineJS/bedrock-protocol/commit/a4023b987b4653a6469d28802d84f0fadc7cb382) (thanks @extremeheat)
-* [Update startVanillaServer.js](https://github.com/PrismarineJS/bedrock-protocol/commit/cd937a45d04809e71e7e043a10a81f36daf7c23f) (thanks @extremeheat)
+* [1.21.42 support](https://github.com/PrismarineJS/bedrock-protocol/commit/dd5c4de4f2624c3654af66e9a40a65eb13de0850) (thanks @CreeperG16)
 
 ## 3.40.0
 * [1.21.30 support (#527)](https://github.com/PrismarineJS/bedrock-protocol/commit/fc30c96135ec20dca1257f702152cba61d4a59be) (thanks @pokecosimo)
