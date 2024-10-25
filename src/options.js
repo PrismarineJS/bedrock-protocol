@@ -8,7 +8,7 @@ const CURRENT_VERSION = '1.21.30'
 const Versions = Object.fromEntries(mcData.versions.bedrock.filter(e => e.releaseType === 'release').map(e => [e.minecraftVersion, e.version]))
 
 // Skip some low priority versions (middle major) on Github Actions to allow faster CI
-const skippedVersionsOnGithubCI = ['1.16.210', '1.17.10', '1.17.30', '1.18.11', '1.19.10', '1.19.20', '1.19.30', '1.19.40', '1.19.50', '1.19.60', '1.19.63', '1.19.70', '1.20.10']
+const skippedVersionsOnGithubCI = ['1.16.210', '1.17.10', '1.17.30', '1.18.11', '1.19.10', '1.19.20', '1.19.30', '1.19.40', '1.19.50', '1.19.60', '1.19.63', '1.19.70', '1.20.10', '1.20.15', '1.20.30', '1.20.40', '1.20.50', '1.20.61', '1.20.71']
 const testedVersions = process.env.CI ? Object.keys(Versions).filter(v => !skippedVersionsOnGithubCI.includes(v)) : Object.keys(Versions)
 
 const defaultOptions = {
