@@ -26,6 +26,7 @@ class Client extends Connection {
     this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
+    this.batchHeader = 0xfe
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)

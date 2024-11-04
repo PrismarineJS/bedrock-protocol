@@ -24,6 +24,7 @@ class Server extends EventEmitter {
     this.clients = {}
     this.clientCount = 0
     this.conLog = debug
+    this.batchHeader = 0xfe
 
     this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
   }
@@ -44,16 +45,19 @@ class Server extends EventEmitter {
       case 'none':
         this.compressionAlgorithm = 'none'
         this.compressionLevel = 0
+        this.compressionHeader = 255
         break
       case 'deflate':
         this.compressionAlgorithm = 'deflate'
         this.compressionLevel = level
         this.compressionThreshold = threshold
+        this.compressionHeader = 0
         break
       case 'snappy':
         this.compressionAlgorithm = 'snappy'
         this.compressionLevel = level
         this.compressionThreshold = threshold
+        this.compressionHeader = 1
         break
       default:
         throw new Error(`Unknown compression algorithm: ${algorithm}`)
