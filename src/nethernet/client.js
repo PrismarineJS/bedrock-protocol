@@ -240,8 +240,6 @@ class Client extends EventEmitter {
   async connect () {
     this.running = true
 
-    await this.ping()
-
     await this.createOffer()
   }
 
