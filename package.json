@@ -36,7 +36,7 @@
     "raknet-native": "^1.0.3",
     "sdp-transform": "^2.14.2",
     "uuid-1345": "^1.0.2",
-    "werift": "^0.20.0",
+    "werift": "^0.19.9",
     "ws": "^8.18.0",
     "xbox-rta": "^2.1.0"
   },
