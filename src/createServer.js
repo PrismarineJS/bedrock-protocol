@@ -22,10 +22,10 @@ function createServer (options) {
           server.signalling.on('signal', (signal) => {
             switch (signal.type) {
               case SignalType.ConnectRequest:
-                server.transportServer.nethernet.handleOffer(signal, server.signalling.write, server.signalling.credentials)
+                server.transport.nethernet.handleOffer(signal, server.signalling.write.bind(server.signalling), server.signalling.credentials)
                 break
               case SignalType.CandidateAdd:
-                server.transportServer.nethernet.handleCandidate(signal)
+                server.transport.nethernet.handleCandidate(signal)
                 break
             }
           })
