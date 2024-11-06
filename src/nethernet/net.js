@@ -11,11 +11,6 @@ function getBroadcastAddress () {
         const netmask = iface.netmask.split('.').map(Number)
         const broadcast = ip.map((octet, i) => (octet | (~netmask[i] & 255)))
 
-        console.log(`Active Interface: ${interfaceName}`)
-        console.log(`IP Address: ${iface.address}`)
-        console.log(`Netmask: ${iface.netmask}`)
-        console.log(`Broadcast Address: ${broadcast.join('.')}`)
-
         return broadcast.join('.') // Return the broadcast address
       }
     }
