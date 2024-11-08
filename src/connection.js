@@ -44,6 +44,7 @@ class Connection extends EventEmitter {
   }
 
   startEncryption (iv) {
+    if (this.disableEncryption) return
     this.encryptionEnabled = true
     this.inLog?.('Started encryption', this.sharedSecret, iv)
     this.decrypt = cipher.createDecryptor(this, iv)
@@ -153,7 +154,7 @@ class Connection extends EventEmitter {
 
   // These are callbacks called from encryption.js
   onEncryptedPacket = (buf) => {
-    const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
+    const packet = Buffer.concat([Buffer.from(this.batchHeader), buf]) // add header
     this.sendMCPE(packet)
   }
 
@@ -165,7 +166,7 @@ class Connection extends EventEmitter {
   }
 
   handle (buffer) { // handle encapsulated
-    if (buffer[0] === 0xfe) { // wrapper
+    if (buffer.slice(0, this.batchHeader.length).equals(Buffer.from(this.batchHeader))) { // wrapper
       if (this.encryptionEnabled) {
         this.decrypt(buffer.slice(1))
       } else {
