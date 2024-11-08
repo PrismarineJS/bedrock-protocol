@@ -43,6 +43,8 @@ class Client extends EventEmitter {
 
     this.signalHandler = this.sendDiscoveryMessage
 
+    this.sendDiscoveryRequest()
+
     this.pingInterval = setInterval(() => {
       this.sendDiscoveryRequest()
     }, 2000)
