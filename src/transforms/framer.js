@@ -6,9 +6,11 @@ class Framer {
   constructor (client) {
     // Encoding
     this.packets = []
+    this.batchHeader = client.batchHeader
     this.compressor = client.compressionAlgorithm || 'none'
     this.compressionLevel = client.compressionLevel
     this.compressionThreshold = client.compressionThreshold
+    this.compressionHeader = client.compressionHeader || 0
     this.writeCompressor = client.features.compressorInHeader && client.compressionReady
   }
 
@@ -38,7 +40,7 @@ class Framer {
 
   static decode (client, buf) {
     // Read header
-    if (buf[0] !== 0xfe) throw Error('bad batch packet header ' + buf[0])
+    if (this.batchHeader && buf[0] !== this.batchHeader) throw Error(`bad batch packet header, received: ${buf[0]}, expected: ${this.batchHeader}`)
     const buffer = buf.slice(1)
     // Decompress
     let decompressed
@@ -58,9 +60,10 @@ class Framer {
 
   encode () {
     const buf = Buffer.concat(this.packets)
-    const compressed = (buf.length > this.compressionThreshold) ? this.compress(buf) : buf
-    const header = this.writeCompressor ? [0xfe, 0] : [0xfe]
-    return Buffer.concat([Buffer.from(header), compressed])
+    const shouldCompress = buf.length > this.compressionThreshold
+    const header = this.batchHeader ? [this.batchHeader] : []
+    if (this.writeCompressor) header.push(shouldCompress ? this.compressionHeader : 255)
+    return Buffer.concat([Buffer.from(header), shouldCompress ? this.compress(buf) : buf])
   }
 
   addEncodedPacket (chunk) {

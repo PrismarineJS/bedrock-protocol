@@ -28,10 +28,12 @@ class Player extends Connection {
       this.outLog = (...args) => debug('<- S', ...args)
     }
 
+    this.batchHeader = this.server.batchHeader
     // Compression is server-wide
     this.compressionAlgorithm = this.server.compressionAlgorithm
     this.compressionLevel = this.server.compressionLevel
     this.compressionThreshold = this.server.compressionThreshold
+    this.compressionHeader = this.server.compressionHeader
 
     this._sentNetworkSettings = false // 1.19.30+
   }

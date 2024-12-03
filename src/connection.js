@@ -153,7 +153,7 @@ class Connection extends EventEmitter {
 
   // These are callbacks called from encryption.js
   onEncryptedPacket = (buf) => {
-    const packet = Buffer.concat([Buffer.from([0xfe]), buf]) // add header
+    const packet = this.batchHeader ? Buffer.concat([Buffer.from([this.batchHeader]), buf]) : buf
     this.sendMCPE(packet)
   }
 
@@ -165,7 +165,7 @@ class Connection extends EventEmitter {
   }
 
   handle (buffer) { // handle encapsulated
-    if (buffer[0] === 0xfe) { // wrapper
+    if (!this.batchHeader || buffer[0] === this.batchHeader) { // wrapper
       if (this.encryptionEnabled) {
         this.decrypt(buffer.slice(1))
       } else {
