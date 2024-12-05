@@ -1,3 +1,7 @@
+## 3.42.0
+* [1.21.50 support](https://github.com/PrismarineJS/bedrock-protocol/commit/1c0836bff03d50cb12a3e45763eac6c9f605e00c) (thanks @extremeheat)
+* [Dynamic compression & batch header (#544)](https://github.com/PrismarineJS/bedrock-protocol/commit/911e0e890febc00102cd1e5406731e66f7bad0ef) (thanks @LucienHH)
+
 ## 3.41.0
 * [1.21.42 support](https://github.com/PrismarineJS/bedrock-protocol/commit/dd5c4de4f2624c3654af66e9a40a65eb13de0850) (thanks @CreeperG16)
 
