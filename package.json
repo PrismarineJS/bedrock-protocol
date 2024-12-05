@@ -9,7 +9,7 @@
     "test": "mocha --bail --exit",
     "pretest": "npm run lint",
     "lint": "standard",
-    "vanillaServer": "node tools/startVanillaServer.js",
+    "vanillaServer": "minecraft-bedrock-server --root tools --version",
     "dumpPackets": "node tools/genPacketDumps.js",
     "fix": "standard --fix"
   },
@@ -40,6 +40,7 @@
     "bedrock-protocol": "file:.",
     "bedrock-provider": "^2.0.0",
     "leveldb-zlib": "^1.0.1",
+    "minecraft-bedrock-server": "^1.4.2",
     "mocha": "^10.0.0",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"
