@@ -47,6 +47,7 @@ async function startTest (version = CURRENT_VERSION, ok) {
         must_accept: false,
         has_scripts: false,
         behaviour_packs: [],
+        world_template: { uuid: '550e8400-e29b-41d4-a716-446655440000', version: '' }, // 1.21.50
         texture_packs: [],
         resource_pack_links: []
       })
