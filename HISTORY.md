@@ -1,8 +1,5 @@
 ## 3.42.0
-* [1.21.50](https://github.com/PrismarineJS/bedrock-protocol/commit/1c0836bff03d50cb12a3e45763eac6c9f605e00c) (thanks @extremeheat)
-* [Update vanilla test server setup (#550)](https://github.com/PrismarineJS/bedrock-protocol/commit/b4adf0484573f7e61aa019f111dc5ab32591b9d4) (thanks @extremeheat)
-* [Update internal tests for 1.21.50](https://github.com/PrismarineJS/bedrock-protocol/commit/52358d72773e85cb02fae78769adbcc1238d4c2d) (thanks @extremeheat)
-* [Update startVanillaServer.js](https://github.com/PrismarineJS/bedrock-protocol/commit/29c7b92d96a7182804020d00c3f3d554fc7407c5) (thanks @extremeheat)
+* [1.21.50 support](https://github.com/PrismarineJS/bedrock-protocol/commit/1c0836bff03d50cb12a3e45763eac6c9f605e00c) (thanks @extremeheat)
 * [Dynamic compression & batch header (#544)](https://github.com/PrismarineJS/bedrock-protocol/commit/911e0e890febc00102cd1e5406731e66f7bad0ef) (thanks @LucienHH)
 
 ## 3.41.0
