@@ -65,7 +65,11 @@ module.exports = (client, server, options) => {
       IsEditorMode: false,
       TrustedSkin: client.versionGreaterThanOrEqualTo('1.19.20') ? false : undefined,
       OverrideSkin: client.versionGreaterThanOrEqualTo('1.19.62') ? false : undefined,
-      CompatibleWithClientSideChunkGen: client.versionGreaterThanOrEqualTo('1.19.80') ? false : undefined
+      CompatibleWithClientSideChunkGen: client.versionGreaterThanOrEqualTo('1.19.80') ? false : undefined,
+
+      MaxViewDistance: client.versionGreaterThanOrEqualTo('1.21.40') ? 0 : undefined,
+      MemoryTier: client.versionGreaterThanOrEqualTo('1.21.40') ? 0 : undefined,
+      PlatformType: client.versionGreaterThanOrEqualTo('1.21.40') ? 0 : undefined
     }
     const customPayload = options.skinData || {}
     payload = { ...payload, ...customPayload }
