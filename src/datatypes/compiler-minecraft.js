@@ -1,7 +1,7 @@
 /* eslint-disable */
 const UUID = require('uuid-1345')
 const minecraft = require('./minecraft')
-const { Read, Write, SizeOf } = require('./varlong')
+const [Read, Write, SizeOf] = [{}, {}, {}]
 
 /**
  * UUIDs
