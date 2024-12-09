@@ -1,7 +1,7 @@
 /* eslint-disable */
 const UUID = require('uuid-1345')
 const minecraft = require('./minecraft')
-const { Read, Write, SizeOf } = require('./varlong')
+const [Read, Write, SizeOf] = [{}, {}, {}]
 
 /**
  * UUIDs
@@ -115,74 +115,6 @@ SizeOf.nbt = ['native', minecraft.nbt[2]]
 Read.lnbt = ['native', minecraft.lnbt[0]]
 Write.lnbt = ['native', minecraft.lnbt[1]]
 SizeOf.lnbt = ['native', minecraft.lnbt[2]]
-
-/**
- * Bits
- */
-
-Read.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
-  let fstr = JSON.stringify(flags)
-  if (Array.isArray(flags)) {
-    fstr = '{'
-    flags.map((v, k) => fstr += `"${v}": ${big ? 1n << BigInt(k) : 1 << k}` + (big ? 'n,' : ','))
-    fstr += '}'
-  } else if (shift) {
-    fstr = '{'
-    for (const key in flags) fstr += `"${key}": ${1 << flags[key]},`;
-    fstr += '}'
-  }
-  return compiler.wrapCode(`
-    const { value: _value, size } = ${compiler.callType(type, 'offset')}
-    const value = { _value }
-    const flags = ${fstr}
-    for (const key in flags) {
-      value[key] = (_value & flags[key]) == flags[key]
-    }
-    return { value, size }
-  `.trim())
-}]
-
-Write.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
-  let fstr = JSON.stringify(flags)
-  if (Array.isArray(flags)) {
-    fstr = '{'
-    flags.map((v, k) => fstr += `"${v}": ${big ? 1n << BigInt(k) : 1 << k}` + (big ? 'n,' : ','))
-    fstr += '}'
-  } else if (shift) {
-    fstr = '{'
-    for (const key in flags) fstr += `"${key}": ${1 << flags[key]},`;
-    fstr += '}'
-  }
-  return compiler.wrapCode(`
-    const flags = ${fstr}
-    let val = value._value ${big ? '|| 0n' : ''}
-    for (const key in flags) {
-      if (value[key]) val |= flags[key]
-    }
-    return (ctx.${type})(val, buffer, offset)
-  `.trim())
-}]
-
-SizeOf.bitflags = ['parametrizable', (compiler, { type, flags, shift, big }) => {
-  let fstr = JSON.stringify(flags)
-  if (Array.isArray(flags)) {
-    fstr = '{'
-    flags.map((v, k) => fstr += `"${v}": ${big ? 1n << BigInt(k) : 1 << k}` + (big ? 'n,' : ','))
-    fstr += '}'
-  } else if (shift) {
-    fstr = '{'
-    for (const key in flags) fstr += `"${key}": ${1 << flags[key]},`;
-    fstr += '}'
-  }
-  return compiler.wrapCode(`
-    const flags = ${fstr}
-    let val = value._value ${big ? '|| 0n' : ''}
-    for (const key in flags) {
-      if (value[key]) val |= flags[key]
-    }
-    return (ctx.${type})(val)
-  `.trim())
-}]
 
 /**
  * Command Packet

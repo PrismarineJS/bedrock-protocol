@@ -1,14 +1,11 @@
-/* eslint-disable */
 const nbt = require('prismarine-nbt')
 const UUID = require('uuid-1345')
 
 const protoLE = nbt.protos.little
 const protoLEV = nbt.protos.littleVarint
-// TODO: deal with this:
-const zigzag = require('prismarine-nbt/zigzag')
 
 function readUUID (buffer, offset) {
-  if (offset + 16 > buffer.length) { throw new PartialReadError() }
+  if (offset + 16 > buffer.length) { throw new Error('Reached end of buffer') }
   return {
     value: UUID.stringify(buffer.slice(offset, 16 + offset)),
     size: 16
@@ -65,7 +62,7 @@ function readEntityMetadata (buffer, offset, _ref) {
   const metadata = []
   let item
   while (true) {
-    if (offset + 1 > buffer.length) throw new PartialReadError()
+    if (offset + 1 > buffer.length) throw new Error('Reached end of buffer')
     item = buffer.readUInt8(cursor)
     if (item === endVal) {
       return {
@@ -159,7 +156,5 @@ module.exports = {
   lnbt: [readNbtLE, writeNbtLE, sizeOfNbtLE],
   entityMetadataLoop: [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
   ipAddress: [readIpAddress, writeIpAddress, 4],
-  endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],
-  zigzag32: zigzag.interpret.zigzag32,
-  zigzag64: zigzag.interpret.zigzag64
+  endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray]
 }
