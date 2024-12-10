@@ -41,7 +41,7 @@
     "bedrock-provider": "^2.0.0",
     "leveldb-zlib": "^1.0.1",
     "minecraft-bedrock-server": "^1.4.2",
-    "mocha": "^10.0.0",
+    "mocha": "^11.0.1",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"
   },
