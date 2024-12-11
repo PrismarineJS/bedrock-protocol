@@ -37,7 +37,7 @@ function createProtocol (version) {
   const compiler = new ProtoDefCompiler()
   compiler.addTypesToCompile(protocol.types)
   compiler.addTypes(require('../datatypes/compiler-minecraft'))
-  compiler.addTypes(require('prismarine-nbt/zigzag').compiler)
+  //compiler.addTypes(require('prismarine-nbt/zigzag').compiler)
 
   const compiledProto = compiler.compileProtoDefSync()
   return compiledProto
