@@ -1,3 +1,6 @@
+## 3.42.2
+* Fix missing type serialization error
+ 
 ## 3.42.1
 * [Add 1.21.40 login fields (#553)](https://github.com/PrismarineJS/bedrock-protocol/commit/24d3200181c060162b04fb233fef6e0d6d1a93aa) (thanks @extremeheat)
 * [Remove protodef varint types (#552)](https://github.com/PrismarineJS/bedrock-protocol/commit/347e303ce422bdb6f6dfd4cba57d7d3937214707) (thanks @extremeheat)
