@@ -26,5 +26,11 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    # Old versions of bedrock use old libssl that Ubuntu no longer ships with; need manual install
+    - name: (Linux) Install libssl 1.1
+      if: runner.os == 'Linux'
+      run: |
+        wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+        sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
     - run: npm install
     - run: npm test
