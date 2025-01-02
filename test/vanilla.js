@@ -8,8 +8,9 @@ async function test (version) {
   // const ChunkColumn = require('bedrock-provider').chunk('bedrock_' + (version.includes('1.19') ? '1.18.30' : version)) // TODO: Fix prismarine-chunk
 
   // Start the server, wait for it to accept clients, throws on timeout
-  const port = await getPort()
-  const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220, { 'server-port': port })
+  const [port, v6] = [await getPort(), await getPort()]
+  console.log('Starting vanilla server', version, 'on port', port, v6)
+  const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220, { 'server-port': port, 'server-portv6': v6 })
   console.log('Started server')
 
   const client = new Client({

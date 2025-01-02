@@ -24,7 +24,7 @@ async function dump (version, force = true) {
   const random = (Math.random() * 1000) | 0
   const [port, v6] = [await getPort(), await getPort()]
 
-  console.log('Starting dump server', version)
+  console.log('Starting dump server', version, 'on port', port, v6)
   const handle = await vanillaServer.startServerAndWait2(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port, 'server-portv6': v6 })
 
   console.log('Started dump server', version)

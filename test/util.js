@@ -5,7 +5,12 @@ const getPort = () => new Promise(resolve => {
   server.listen(0, '127.0.0.1')
   server.on('listening', () => {
     const { port } = server.address()
-    server.close(() => resolve(port))
+    server.close(() => {
+      // Wait a bit for port to free as we try to bind right after freeing it
+      setTimeout(() => {
+        resolve(port)
+      }, 200)
+    })
   })
 })
 
