@@ -119,7 +119,7 @@ class Server extends EventEmitter {
   }
 
   async listen () {
-    const { host, port, maxPlayer } = this.options
+    const { host, port, maxPlayers } = this.options
     this.raknet = new this.RakServer({ host, port, maxPlayers }, this)
 
     try {
