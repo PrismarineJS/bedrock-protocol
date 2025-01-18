@@ -1,3 +1,8 @@
+## 3.42.3
+* [Fix Server `maxPlayers` option (#565)](https://github.com/PrismarineJS/bedrock-protocol/commit/38dc5a256105a44786d5455570d5a130e64ef561) (thanks @extremeheat)
+* [Update ci.yml](https://github.com/PrismarineJS/bedrock-protocol/commit/a79be99c0f19becabc9847eac2fa2ce4344364d4) (thanks @extremeheat)
+* [Add retry to tests](https://github.com/PrismarineJS/bedrock-protocol/commit/a37bc5054ef44664ab9f725d02e9dd6f1cb37b4f) (thanks @extremeheat)
+
 ## 3.42.2
 * Fix missing type serialization error
  
