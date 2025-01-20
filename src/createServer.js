@@ -1,5 +1,5 @@
 const { Server } = require('./server')
-const { Signal } = require('./websocket/signal')
+const { NethernetSignal } = require('./websocket/signal')
 const assert = require('assert')
 
 const { getRandomUint64 } = require('./datatypes/util')
@@ -15,7 +15,7 @@ function createServer (options) {
 
   function startSignalling () {
     if (server.options.transport === 'nethernet') {
-      server.signalling = new Signal(server.options.networkId, server.options.authflow)
+      server.signalling = new NethernetSignal(server.options.networkId, server.options.authflow)
 
       server.signalling.connect()
         .then(() => {
