@@ -11,7 +11,7 @@ const MessageType = {
   Credentials: 2
 }
 
-class Signal extends EventEmitter {
+class NethernetSignal extends EventEmitter {
   constructor (networkId, authflow) {
     super()
 
@@ -174,4 +174,4 @@ class Signal extends EventEmitter {
   }
 }
 
-module.exports = { Signal }
+module.exports = { NethernetSignal }
