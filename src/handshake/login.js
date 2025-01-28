@@ -67,9 +67,9 @@ module.exports = (client, server, options) => {
       OverrideSkin: client.versionGreaterThanOrEqualTo('1.19.62') ? false : undefined,
       CompatibleWithClientSideChunkGen: client.versionGreaterThanOrEqualTo('1.19.80') ? false : undefined,
 
-      MaxViewDistance: client.versionGreaterThanOrEqualTo('1.21.40') ? 0 : undefined,
-      MemoryTier: client.versionGreaterThanOrEqualTo('1.21.40') ? 0 : undefined,
-      PlatformType: client.versionGreaterThanOrEqualTo('1.21.40') ? 0 : undefined
+      MaxViewDistance: client.versionGreaterThanOrEqualTo('1.21.42') ? 0 : undefined,
+      MemoryTier: client.versionGreaterThanOrEqualTo('1.21.42') ? 0 : undefined,
+      PlatformType: client.versionGreaterThanOrEqualTo('1.21.42') ? 0 : undefined
     }
     const customPayload = options.skinData || {}
     payload = { ...payload, ...customPayload }
