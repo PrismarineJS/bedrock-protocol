@@ -17,12 +17,12 @@ class Server extends EventEmitter {
     if (this.options.transport === 'nethernet') {
       this.transportServer = require('./nethernet').NethernetServer
       this.advertisement = new NethernetServerAdvertisement(this.options.motd, this.options.version)
-      this.batchHeader = []
+      this.batchHeader = null
       this.disableEncryption = true
     } else if (this.options.transport === 'raknet') {
       this.transportServer = require('./rak')(this.options.raknetBackend).RakServer
       this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)
-      this.batchHeader = [0xfe]
+      this.batchHeader = 0xfe
       this.disableEncryption = false
     } else {
       throw new Error(`Unsupported transport: ${this.options.transport} (nethernet, raknet)`)
@@ -36,7 +36,6 @@ class Server extends EventEmitter {
     this.clients = {}
     this.clientCount = 0
     this.conLog = debug
-    this.batchHeader = 0xfe
 
     this.setCompressor(this.options.compressionAlgorithm, this.options.compressionLevel, this.options.compressionThreshold)
   }
@@ -133,7 +132,7 @@ class Server extends EventEmitter {
   async listen () {
     const { host, port, maxPlayers } = this.options
     // eslint-disable-next-line new-cap
-    this.transport = new this.transportServer({ host, port, networkId: this.options.networkId }, this)
+    this.transport = new this.transportServer({ host, port, networkId: this.options.networkId, maxPlayers }, this)
 
     try {
       await this.transport.listen()
