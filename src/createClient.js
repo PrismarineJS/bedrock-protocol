@@ -59,7 +59,7 @@ async function connect (client) {
   if (client.options.useSignalling) {
     client.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow)
 
-    await client.signalling.connect()
+    await client.signalling.connect(client.options.version)
 
     client.connection.nethernet.credentials = client.signalling.credentials
     client.connection.nethernet.signalHandler = client.signalling.write.bind(client.signalling)
