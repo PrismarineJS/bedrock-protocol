@@ -45,7 +45,7 @@ class Framer {
     // Decompress
     let decompressed
     if (client.features.compressorInHeader && client.compressionReady) {
-      decompressed = this.decompress(buffer[0], buffer.slice(1))
+      decompressed = this.decompress(buf[0], buffer.slice(1))
     } else {
       // On old versions, compressor is session-wide ; failing to decompress
       // a packet will assume it's not compressed
