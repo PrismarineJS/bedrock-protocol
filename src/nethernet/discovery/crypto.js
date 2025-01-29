@@ -1,4 +1,4 @@
-const crypto = require('crypto')
+const crypto = require('node:crypto')
 
 const appIdBuffer = Buffer.allocUnsafe(8)
 appIdBuffer.writeBigUInt64LE(BigInt(0xdeadbeef))

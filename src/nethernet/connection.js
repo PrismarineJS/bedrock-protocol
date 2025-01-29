@@ -61,8 +61,8 @@ class Connection {
     this.buf = null
   }
 
-  sendReliable (data) {
-    if (!this.reliable) {
+  send (data) {
+    if (!this.reliable || this.reliable.readyState !== 'open') {
       throw new Error('Reliable data channel is not available')
     }
 
