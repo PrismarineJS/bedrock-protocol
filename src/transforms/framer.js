@@ -40,12 +40,12 @@ class Framer {
 
   static decode (client, buf) {
     // Read header
-    if (this.batchHeader && buf[0] !== this.batchHeader) throw Error(`bad batch packet header, received: ${buf[0]}, expected: ${this.batchHeader}`)
-    const buffer = buf.slice(this.batchHeader ? 1 : 0)
+    if (client.batchHeader && buf[0] !== client.batchHeader) throw Error(`bad batch packet header, received: ${buf[0]}, expected: ${client.batchHeader}`)
+      const buffer = buf.slice(client.batchHeader ? 1 : 0)
     // Decompress
     let decompressed
     if (client.features.compressorInHeader && client.compressionReady) {
-      decompressed = this.decompress(buf[0], buffer.slice(1))
+      decompressed = this.decompress(buffer[0], buffer.slice(1))
     } else {
       // On old versions, compressor is session-wide ; failing to decompress
       // a packet will assume it's not compressed
