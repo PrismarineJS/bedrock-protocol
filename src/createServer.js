@@ -17,7 +17,7 @@ function createServer (options) {
     if (server.options.transport === 'nethernet') {
       server.signalling = new NethernetSignal(server.options.networkId, server.options.authflow)
 
-      server.signalling.connect()
+      server.signalling.connect(server.options.version)
         .then(() => {
           server.signalling.on('signal', (signal) => {
             switch (signal.type) {
