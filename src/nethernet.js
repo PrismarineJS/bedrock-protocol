@@ -8,7 +8,7 @@ class NethernetClient {
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
 
-    this.nethernet = new Client({ ...options })
+    this.nethernet = new Client(options.networkId)
 
     this.nethernet.on('connected', (client) => {
       this.onConnected(client)
@@ -28,12 +28,13 @@ class NethernetClient {
   }
 
   sendReliable (data) {
-    this.nethernet.connection.sendReliable(data)
+    this.nethernet.send(data)
   }
 
   async ping (timeout = 10000) {
+    this.nethernet.ping()
     return waitFor((done) => {
-      this.nethernet.ping().then(data => { done(data) })
+      this.nethernet.once('pong', (ret) => { done(ret.data) })
     }, timeout, () => {
       throw new Error('Ping timed out')
     })
@@ -49,7 +50,7 @@ class NethernetServer {
     this.onOpenConnection = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
-    this.onClose = () => {}
+    this.onClose = () => { }
     this.updateAdvertisement = () => {
       this.nethernet.setAdvertisement(server.getAdvertisement().toBuffer())
     }
@@ -57,6 +58,9 @@ class NethernetServer {
     this.nethernet = new Server({ ...options })
 
     this.nethernet.on('openConnection', (client) => {
+      client.sendReliable = function (buffer) {
+        return this.send(buffer)
+      }
       this.onOpenConnection(client)
     })
 

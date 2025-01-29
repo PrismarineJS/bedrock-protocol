@@ -1,4 +1,4 @@
-process.env.DEBUG = '*'
+process.env.DEBUG = 'minecraft-protocol'
 
 const readline = require('readline')
 const { createClient } = require('bedrock-protocol')
