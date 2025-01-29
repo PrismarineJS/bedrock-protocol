@@ -26,9 +26,9 @@ class NethernetSignal extends EventEmitter {
     this.credentials = null
   }
 
-  async connect () {
+  async connect (version) {
     if (this.ws?.readyState === WebSocket.OPEN) throw new Error('Already connected signalling server')
-    await this.init()
+    await this.init(version)
 
     await once(this, 'credentials')
   }
@@ -69,8 +69,8 @@ class NethernetSignal extends EventEmitter {
     }
   }
 
-  async init () {
-    const xbl = await this.authflow.getMinecraftServicesToken()
+  async init (version) {
+    const xbl = await this.authflow.getMinecraftBedrockServicesToken({ version })
 
     const address = `wss://signal.franchise.minecraft-services.net/ws/v1.0/signaling/${this.networkId}`
 
