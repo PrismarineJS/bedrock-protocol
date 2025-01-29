@@ -28,18 +28,22 @@ class Connection extends EventEmitter {
   }
 
   versionLessThan (version) {
+    if (typeof version === 'string' && !Versions[version]) throw Error('Unknown version: ' + version)
     return this.options.protocolVersion < (typeof version === 'string' ? Versions[version] : version)
   }
 
   versionGreaterThan (version) {
+    if (typeof version === 'string' && !Versions[version]) throw Error('Unknown version: ' + version)
     return this.options.protocolVersion > (typeof version === 'string' ? Versions[version] : version)
   }
 
   versionGreaterThanOrEqualTo (version) {
+    if (typeof version === 'string' && !Versions[version]) throw Error('Unknown version: ' + version)
     return this.options.protocolVersion >= (typeof version === 'string' ? Versions[version] : version)
   }
 
   versionLessThanOrEqualTo (version) {
+    if (typeof version === 'string' && !Versions[version]) throw Error('Unknown version: ' + version)
     return this.options.protocolVersion <= (typeof version === 'string' ? Versions[version] : version)
   }
 
