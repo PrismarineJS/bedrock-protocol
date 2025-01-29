@@ -27,7 +27,6 @@ class Client extends Connection {
     this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
-    this.batchHeader = 0xfe
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -57,12 +56,12 @@ class Client extends Connection {
 
     if (this.options.transport === 'nethernet') {
       this.connection = new NethernetClient({ networkId })
-      this.batchHeader = []
+      this.batchHeader = null
       this.disableEncryption = true
     } else if (this.options.transport === 'raknet') {
       const { RakClient } = initRaknet(this.options.raknetBackend)
       this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
-      this.batchHeader = [0xfe]
+      this.batchHeader = 0xfe
       this.disableEncryption = false
     }
 

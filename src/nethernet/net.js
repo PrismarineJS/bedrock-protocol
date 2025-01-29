@@ -1,4 +1,4 @@
-const os = require('os')
+const os = require('node:os')
 
 function getBroadcastAddress () {
   const interfaces = os.networkInterfaces()
