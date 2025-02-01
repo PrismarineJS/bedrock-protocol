@@ -61,7 +61,8 @@ class Client extends Connection {
     try {
       const mcData = require('minecraft-data')('bedrock_' + this.options.version)
       this.features = {
-        compressorInHeader: mcData.supportFeature('compressorInPacketHeader')
+        compressorInHeader: mcData.supportFeature('compressorInPacketHeader'),
+        itemRegistryPacket: mcData.supportFeature('itemRegistryPacket')
       }
     } catch (e) {
       throw new Error(`Unsupported version: '${this.options.version}', no data available`)
@@ -241,12 +242,27 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
-        this.startGameData.itemstates.forEach(state => {
-          if (state.name === 'minecraft:shield') {
-            this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
-            this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
+
+        if (!this.features.itemRegistryPacket) {
+          this.startGameData.itemstates.forEach(state => {
+            if (state.name === 'minecraft:shield') {
+              this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
+              this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
+            }
+          })
+        }
+        break
+      // Versions after 1.21.60 use a separate packet for the item registry
+      case 'item_registry':
+        if (!this.features.itemRegistryPacket) break
+
+        for (const item of pakData.params.items) {
+          if (item.name === 'minecraft:shield') {
+            this.serializer.proto.setVariable('ShieldItemID', item.network_id)
+            this.deserializer.proto.setVariable('ShieldItemID', item.network_id)
           }
-        })
+        }
+
         break
       case 'play_status':
         if (this.status === ClientStatus.Authenticating) {
