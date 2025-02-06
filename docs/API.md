@@ -142,7 +142,7 @@ client.on('text', (packet) => {
 // names and as explained in the "Protocol doc" section below, fields are all case sensitive!
 client.on('add_player', (packet) => {
   client.queue('text', {
-    type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '',
+    type: 'chat', needs_translation: false, source_name: client.username, xuid: '', platform_chat_id: '', filtered_message: '',
     message: `Hey, ${packet.username} just joined!`
   })
 })
