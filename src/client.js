@@ -242,9 +242,8 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
-        // falls through
-      // Versions after 1.21.60 use a separate packet for the item registry
-      case 'item_registry':
+        // fallsthrough
+      case 'item_registry': // 1.21.60+ send itemstates in item_registry packet
         pakData.params.itemstates?.forEach(state => {
           if (state.name === 'minecraft:shield') {
             this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
