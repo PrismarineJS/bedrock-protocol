@@ -242,27 +242,15 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
-
-        if (!this.features.itemRegistryPacket) {
-          this.startGameData.itemstates.forEach(state => {
-            if (state.name === 'minecraft:shield') {
-              this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
-              this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
-            }
-          })
-        }
-        break
+        // falls through
       // Versions after 1.21.60 use a separate packet for the item registry
       case 'item_registry':
-        if (!this.features.itemRegistryPacket) break
-
-        for (const item of pakData.params.items) {
-          if (item.name === 'minecraft:shield') {
-            this.serializer.proto.setVariable('ShieldItemID', item.network_id)
-            this.deserializer.proto.setVariable('ShieldItemID', item.network_id)
+        pakData.params.itemstates?.forEach(state => {
+          if (state.name === 'minecraft:shield') {
+            this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
+            this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
           }
-        }
-
+        })
         break
       case 'play_status':
         if (this.status === ClientStatus.Authenticating) {

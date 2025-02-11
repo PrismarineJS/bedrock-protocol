@@ -54,33 +54,29 @@ class Connection extends EventEmitter {
     // In the future, we can send down the whole item palette if we need
     // but since it's only one item, we can just make a single variable.
     let shieldItemID
-
-    const isRegistryPacket = this.features.itemRegistryPacket
-
-    for (const item of palette) {
-      if (item.name === 'minecraft:shield') {
-        shieldItemID = isRegistryPacket
-          ? item.network_id
-          : item.runtime_id
+    for (const state of palette) {
+      if (state.name === 'minecraft:shield') {
+        shieldItemID = state.runtime_id
         break
       }
     }
-
     if (shieldItemID) {
       this.serializer.proto.setVariable('ShieldItemID', shieldItemID)
       this.deserializer.proto.setVariable('ShieldItemID', shieldItemID)
     }
   }
 
+  _processOutbound (name, params) {
+    if (name === 'item_registry') {
+      this.updateItemPalette(params.itemstates)
+    } else if (!this.features.itemRegistryPacket && name === 'start_game') {
+      this.updateItemPalette(params.itemstates)
+    }
+  }
+
   write (name, params) {
     this.outLog?.(name, params)
-
-    if (this.features.itemRegistryPacket) {
-      if (name === 'item_registry') this.updateItemPalette(params.items)
-    } else {
-      if (name === 'start_game') this.updateItemPalette(params.itemstates)
-    }
-
+    this._processOutbound(name, params)
     const batch = new Framer(this)
     const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
@@ -94,13 +90,7 @@ class Connection extends EventEmitter {
 
   queue (name, params) {
     this.outLog?.('Q <- ', name, params)
-
-    if (this.features.itemRegistryPacket) {
-      if (name === 'item_registry') this.updateItemPalette(params.items)
-    } else {
-      if (name === 'start_game') this.updateItemPalette(params.itemstates)
-    }
-
+    this._processOutbound(name, params)
     const packet = this.serializer.createPacketBuffer({ name, params })
     if (name === 'level_chunk') {
       // Skip queue, send ASAP
