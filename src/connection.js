@@ -69,7 +69,7 @@ class Connection extends EventEmitter {
   _processOutbound (name, params) {
     if (name === 'item_registry') {
       this.updateItemPalette(params.itemstates)
-    } else if (!this.features.itemRegistryPacket && name === 'start_game') {
+    } else if (name === 'start_game' && params.itemstates) {
       this.updateItemPalette(params.itemstates)
     }
   }
