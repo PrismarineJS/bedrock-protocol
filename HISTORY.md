@@ -1,3 +1,10 @@
+## 3.43.0
+* [1.21.60 support (#570)](https://github.com/PrismarineJS/bedrock-protocol/commit/eeb5e47e35f31cc571a9a8a491f5a89b27e637f1) (thanks @CreeperG16)
+* [Update API.md fix chat message handling (#575)](https://github.com/PrismarineJS/bedrock-protocol/commit/2d7d32dfd18f0269831f71d8ecb968825dae7cdb) (thanks @Slauh)
+* [Fix version feature handling (#572)](https://github.com/PrismarineJS/bedrock-protocol/commit/0ed8e32be85f05926cd97d5f0317ed004ae5eefa) (thanks @ItsMax123)
+* [node 22 (#568)](https://github.com/PrismarineJS/bedrock-protocol/commit/75fa085e86708dc8d41b07c4eea1685419f005b4) (thanks @rom1504)
+* [Bump mocha from 10.8.2 to 11.0.1 (#548)](https://github.com/PrismarineJS/bedrock-protocol/commit/8e728255c7d87aacea483172ebc658d253a954d1) (thanks @dependabot[bot])
+
 ## 3.42.3
 * [Fix Server `maxPlayers` option (#565)](https://github.com/PrismarineJS/bedrock-protocol/commit/38dc5a256105a44786d5455570d5a130e64ef561) (thanks @extremeheat)
 
