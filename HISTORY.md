@@ -1,3 +1,7 @@
+## 3.43.0
+* [1.21.60 support (#570)](https://github.com/PrismarineJS/bedrock-protocol/commit/eeb5e47e35f31cc571a9a8a491f5a89b27e637f1) (thanks @CreeperG16)
+* [Fix version feature handling (#572)](https://github.com/PrismarineJS/bedrock-protocol/commit/0ed8e32be85f05926cd97d5f0317ed004ae5eefa) (thanks @ItsMax123)
+
 ## 3.42.3
 * [Fix Server `maxPlayers` option (#565)](https://github.com/PrismarineJS/bedrock-protocol/commit/38dc5a256105a44786d5455570d5a130e64ef561) (thanks @extremeheat)
 
