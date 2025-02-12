@@ -3,6 +3,7 @@
 const { timedTest } = require('./internal')
 const { testedVersions } = require('../src/options')
 const { sleep } = require('../src/datatypes/util')
+require('events').captureRejections = true
 
 describe('internal client/server test', function () {
   const vcount = testedVersions.length
