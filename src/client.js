@@ -61,7 +61,8 @@ class Client extends Connection {
     try {
       const mcData = require('minecraft-data')('bedrock_' + this.options.version)
       this.features = {
-        compressorInHeader: mcData.supportFeature('compressorInPacketHeader')
+        compressorInHeader: mcData.supportFeature('compressorInPacketHeader'),
+        itemRegistryPacket: mcData.supportFeature('itemRegistryPacket')
       }
     } catch (e) {
       throw new Error(`Unsupported version: '${this.options.version}', no data available`)
@@ -241,7 +242,9 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
-        this.startGameData.itemstates.forEach(state => {
+        // fallsthrough
+      case 'item_registry': // 1.21.60+ send itemstates in item_registry packet
+        pakData.params.itemstates?.forEach(state => {
           if (state.name === 'minecraft:shield') {
             this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
             this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)

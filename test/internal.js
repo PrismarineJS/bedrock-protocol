@@ -63,7 +63,11 @@ async function startTest (version = CURRENT_VERSION, ok) {
         // client.queue('inventory_transaction', get('packets/inventory_transaction.json'))
         client.queue('player_list', get('packets/player_list.json'))
         client.queue('start_game', get('packets/start_game.json'))
-        client.queue('item_component', { entries: [] })
+        if (client.versionLessThan('1.21.60')) {
+          client.queue('item_component', { entries: [] })
+        } else {
+          client.queue('item_registry', get('packets/item_registry.json'))
+        }
         client.queue('set_spawn_position', get('packets/set_spawn_position.json'))
         client.queue('set_time', { time: 5433771 })
         client.queue('set_difficulty', { difficulty: 1 })

@@ -70,9 +70,17 @@ class Connection extends EventEmitter {
     }
   }
 
+  _processOutbound (name, params) {
+    if (name === 'item_registry') {
+      this.updateItemPalette(params.itemstates)
+    } else if (name === 'start_game' && params.itemstates) {
+      this.updateItemPalette(params.itemstates)
+    }
+  }
+
   write (name, params) {
     this.outLog?.(name, params)
-    if (name === 'start_game') this.updateItemPalette(params.itemstates)
+    this._processOutbound(name, params)
     const batch = new Framer(this)
     const packet = this.serializer.createPacketBuffer({ name, params })
     batch.addEncodedPacket(packet)
@@ -86,7 +94,7 @@ class Connection extends EventEmitter {
 
   queue (name, params) {
     this.outLog?.('Q <- ', name, params)
-    if (name === 'start_game') this.updateItemPalette(params.itemstates)
+    this._processOutbound(name, params)
     const packet = this.serializer.createPacketBuffer({ name, params })
     if (name === 'level_chunk') {
       // Skip queue, send ASAP
