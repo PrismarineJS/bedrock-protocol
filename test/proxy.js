@@ -22,12 +22,12 @@ function proxyTest (version, raknetBackend = 'raknet-native', timeout = 1000 * 4
         console.debug('Client has authenticated')
         setTimeout(() => {
           client.disconnect('Hello world !')
-        }, 1000) // allow some time for client to connect
+        }, 500) // allow some time for client to connect
       })
     })
 
     console.debug('Server started', server.options.version)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     const relay = new Relay({
       version,
@@ -46,7 +46,7 @@ function proxyTest (version, raknetBackend = 'raknet-native', timeout = 1000 * 4
     await relay.listen()
 
     console.debug('Proxy started', server.options.version)
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     const client = createClient({ host: '127.0.0.1', port: CLIENT_PORT, version, username: 'Boat', offline: true, raknetBackend, skipPing: true })
     console.debug('Client started')
@@ -58,7 +58,7 @@ function proxyTest (version, raknetBackend = 'raknet-native', timeout = 1000 * 4
       server.close()
       relay.close()
       console.log('✔ OK')
-      sleep(500).then(res)
+      sleep(200).then(res)
     })
   }, timeout, () => { throw Error('timed out') })
 }

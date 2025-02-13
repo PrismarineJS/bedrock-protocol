@@ -101,11 +101,11 @@ async function startTest (version = CURRENT_VERSION, ok) {
 
         loop = setInterval(() => {
           client.write('network_chunk_publisher_update', { coordinates: { x: 646, y: 130, z: 77 }, radius: 64 })
-        }, 9500)
+        }, 6500)
 
         setTimeout(() => {
           client.write('play_status', { status: 'player_spawn' })
-        }, 6000)
+        }, 3000)
 
         // Respond to tick synchronization packets
         client.on('tick_sync', (packet) => {
