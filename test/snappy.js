@@ -1,5 +1,3 @@
-const { Framer } = require('bedrock-protocol') // Import from bedrock-protocol
-
 const mockClient = {
   batchHeader: 0xFE,
   compressionAlgorithm: 'snappy',
