@@ -1,6 +1,6 @@
 const [readVarInt, writeVarInt, sizeOfVarInt] = require('protodef').types.varint
 const zlib = require('zlib')
-const snappy = require("snappyjs")
+const snappy = require('snappyjs')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
