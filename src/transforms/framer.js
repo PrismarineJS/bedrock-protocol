@@ -1,6 +1,6 @@
 const [readVarInt, writeVarInt, sizeOfVarInt] = require('protodef').types.varint
 const zlib = require('zlib')
-const snappy = require("snappy");
+const snappy = require('snappy')
 
 // Concatenates packets into one batch packet, and adds length prefixs.
 class Framer {
@@ -31,7 +31,7 @@ class Framer {
         return zlib.inflateRawSync(buffer, { chunkSize: 512000 })
       case 1:
       case 'snappy':
-        return snappy.uncompressSync(buffer);
+        return snappy.uncompressSync(buffer)
       case 'none':
       case 255:
         return buffer
