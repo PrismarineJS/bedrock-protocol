@@ -94,7 +94,7 @@ class Server extends EventEmitter {
 
     delete this.clients[inetAddr]?.connection // Prevent close loop
     this.clients[inetAddr?.address ?? inetAddr]?.close()
-    delete this.clients[inetAddr]
+    delete this.clients[inetAddr?.address]
     this.clientCount--
   }
 
