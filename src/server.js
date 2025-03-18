@@ -89,12 +89,10 @@ class Server extends EventEmitter {
     this.emit('connect', player)
   }
 
-  onCloseConnection = (inetAddr, reason) => {
-    this.conLog('Connection closed: ', inetAddr?.address, reason)
-
-    delete this.clients[inetAddr]?.connection // Prevent close loop
-    this.clients[inetAddr?.address ?? inetAddr]?.close()
-    delete this.clients[inetAddr]
+  onCloseConnection = (conn, reason) => {
+    this.conLog('Connection closed: ', conn.address, reason)
+    this.clients[conn.address]?.close()
+    delete this.clients[conn.address]
     this.clientCount--
   }
 
