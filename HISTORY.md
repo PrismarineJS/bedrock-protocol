@@ -1,6 +1,5 @@
 ## 3.43.1
 * [Fix server not correctly removing clients (#588)](https://github.com/PrismarineJS/bedrock-protocol/commit/47f342ca958ba87a7719783bd5c855cebdd4aa65) (thanks @EntifiedOptics)
-* [Quicken tests](https://github.com/PrismarineJS/bedrock-protocol/commit/328785d8afa8bbd55f796e6fafa2da2357756e72) (thanks @extremeheat)
 
 ## 3.43.0
 * [1.21.60 support (#570)](https://github.com/PrismarineJS/bedrock-protocol/commit/eeb5e47e35f31cc571a9a8a491f5a89b27e637f1) (thanks @CreeperG16)
