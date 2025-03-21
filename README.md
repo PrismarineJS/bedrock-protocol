@@ -102,6 +102,15 @@ ping({ host: 'play.cubecraft.net', port: 19132 }).then(res => {
 })
 ```
 
+### Serializer/Deserializer
+
+The `createSerializer` and `createDeserializer` functions provide direct access to the packet serialization and deserialization layer of bedrock-protocol. This is particularly useful when you need to:
+
+- Work with packet data without establishing a full client/server connection
+- Write unit tests for your packet handling logic
+- Analyze or debug packet structures between different Minecraft versions
+- Save and replay packet sequences for testing or benchmarking
+
 ## Documentation
 
 For documentation on the protocol, and packets/fields see the [protocol documentation](https://prismarinejs.github.io/minecraft-data/protocol).

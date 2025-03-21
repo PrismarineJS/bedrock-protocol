@@ -11,6 +11,7 @@ const { createClient, ping } = require('./src/createClient')
 const { createServer } = require('./src/createServer')
 const { Titles } = require('prismarine-auth')
 const { ServerAdvertisement } = require('./src/server/advertisement')
+const { createSerializer, createDeserializer } = require('./src/transforms/serializer')
 
 module.exports = {
   Client,
@@ -20,5 +21,7 @@ module.exports = {
   ping,
   createServer,
   title: Titles,
-  ServerAdvertisement
+  ServerAdvertisement,
+  createSerializer,
+  createDeserializer
 }

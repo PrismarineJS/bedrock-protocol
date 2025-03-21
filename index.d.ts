@@ -237,4 +237,18 @@ declare module 'bedrock-protocol' {
     host: string
     port: number
   }): Promise<ServerAdvertisement>
+
+  /**
+   * Creates a packet serializer for the specified Minecraft Bedrock version.
+   * @param version The Minecraft Bedrock version to create the serializer for.
+   * @returns A serializer that can convert minecraft bedrock packets to binary packet data.
+   */
+  export function createSerializer(version: Version): any
+
+  /**
+   * Creates a packet deserializer for the specified Minecraft Bedrock version.
+   * @param version The Minecraft Bedrock version to create the deserializer for.
+   * @returns A deserializer that can convert binary packet data to JavaScript objects.
+   */
+  export function createDeserializer(version: Version): any
 }
