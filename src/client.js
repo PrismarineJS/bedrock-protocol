@@ -5,6 +5,7 @@ const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
 const initRaknet = require('./rak')
+const { NethernetClient } = require('./nethernet')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
@@ -26,7 +27,6 @@ class Client extends Connection {
     this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
-    this.batchHeader = 0xfe
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -49,10 +49,21 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    const { RakClient } = initRaknet(this.options.raknetBackend)
     const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
+
+    const networkId = this.options.networkId
+
+    if (this.options.transport === 'nethernet') {
+      this.connection = new NethernetClient({ networkId })
+      this.batchHeader = null
+      this.disableEncryption = true
+    } else if (this.options.transport === 'raknet') {
+      const { RakClient } = initRaknet(this.options.raknetBackend)
+      this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
+      this.batchHeader = 0xfe
+      this.disableEncryption = false
+    }
 
     this.emit('connect_allowed')
   }
@@ -84,7 +95,16 @@ class Client extends Connection {
   }
 
   validateOptions () {
-    if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
+    switch (this.options.transport) {
+      case 'nethernet':
+        if (!this.options.networkId) throw Error('Invalid networkId')
+        break
+      case 'raknet':
+        if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
+        break
+      default:
+        throw Error(`Unsupported transport: ${this.options.transport} (nethernet, raknet)`)
+    }
     Options.validateOptions(this.options)
   }
 
