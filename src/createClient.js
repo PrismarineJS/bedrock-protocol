@@ -57,14 +57,16 @@ function createClient (options) {
 /** @param {Client} client */
 async function connect (client) {
   if (client.options.useSignalling) {
-    client.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow)
+    client.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version)
 
-    await client.signalling.connect(client.options.version)
+    await client.signalling.connect()
 
     client.connection.nethernet.credentials = client.signalling.credentials
     client.connection.nethernet.signalHandler = client.signalling.write.bind(client.signalling)
 
     client.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
+  } else {
+    await client.connection.nethernet.ping()
   }
 
   // Actually connect
@@ -133,7 +135,6 @@ async function connect (client) {
 }
 
 async function ping ({ host, port, networkId }) {
-  console.log('Pinging', host, port, networkId)
   if (networkId) {
     const con = new NethernetClient({ networkId })
     try {
