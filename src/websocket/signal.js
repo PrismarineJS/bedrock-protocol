@@ -12,23 +12,27 @@ const MessageType = {
 }
 
 class NethernetSignal extends EventEmitter {
-  constructor (networkId, authflow) {
+  constructor (networkId, authflow, version) {
     super()
 
     this.networkId = networkId
 
     this.authflow = authflow
 
+    this.version = version
+
     this.ws = null
+
+    this.credentials = null
 
     this.pingInterval = null
 
-    this.credentials = null
+    this.retryCount = 0
   }
 
-  async connect (version) {
-    if (this.ws?.readyState === WebSocket.OPEN) throw new Error('Already connected signalling server')
-    await this.init(version)
+  async connect () {
+    if (this.ws?.readyState === WebSocket.OPEN) throw new Error('Already connected signaling server')
+    await this.init()
 
     await once(this, 'credentials')
   }
@@ -69,8 +73,10 @@ class NethernetSignal extends EventEmitter {
     }
   }
 
-  async init (version) {
-    const xbl = await this.authflow.getMinecraftBedrockServicesToken({ version })
+  async init () {
+    const xbl = await this.authflow.getMinecraftBedrockServicesToken({ version: this.version })
+
+    debug('Fetched XBL Token', xbl)
 
     const address = `wss://signal.franchise.minecraft-services.net/ws/v1.0/signaling/${this.networkId}`
 
@@ -84,7 +90,7 @@ class NethernetSignal extends EventEmitter {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ Type: MessageType.RequestPing }))
       }
-    })
+    }, 5000)
 
     ws.onopen = () => {
       this.onOpen()
@@ -119,7 +125,13 @@ class NethernetSignal extends EventEmitter {
     if (code === 1006) {
       debug('Signal Connection Closed Unexpectedly')
 
-      this.destroy(true)
+      if (this.retryCount < 5) {
+        this.retryCount++
+        this.destroy(true)
+      } else {
+        this.destroy()
+        throw new Error('Signal Connection Closed Unexpectedly')
+      }
     }
   }
 
@@ -137,13 +149,7 @@ class NethernetSignal extends EventEmitter {
           return
         }
 
-        this.credentials = JSON.parse(message.Message).TurnAuthServers.map(credential => {
-          return {
-            urls: credential.Urls.join(','),
-            credential: credential.Password,
-            username: credential.Username
-          }
-        })
+        this.credentials = parseTurnServers(message.Message)
 
         this.emit('credentials', this.credentials)
 
@@ -175,3 +181,29 @@ class NethernetSignal extends EventEmitter {
 }
 
 module.exports = { NethernetSignal }
+
+function parseTurnServers (dataString) {
+  const servers = []
+
+  const data = JSON.parse(dataString)
+
+  if (!data.TurnAuthServers) return servers
+
+  for (const server of data.TurnAuthServers) {
+    if (!server.Urls) continue
+
+    for (const url of server.Urls) {
+      const match = url.match(/(stun|turn):([^:]+):(\d+)/)
+      if (match) {
+        servers.push({
+          hostname: match[2],
+          port: parseInt(match[3], 10),
+          username: server.Username || undefined,
+          password: server.Password || undefined
+        })
+      }
+    }
+  }
+
+  return servers
+}
