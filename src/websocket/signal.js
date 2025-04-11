@@ -1,7 +1,7 @@
 const { WebSocket } = require('ws')
 const { stringify } = require('json-bigint')
 const { once, EventEmitter } = require('node:events')
-const { SignalStructure } = require('../nethernet/signalling')
+const { SignalStructure } = require('node-nethernet')
 
 const debug = require('debug')('minecraft-protocol')
 
