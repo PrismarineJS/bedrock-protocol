@@ -1,6 +1,6 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 
-const { ServerData } = require('../nethernet/discovery/ServerData')
+const { ServerData } = require('node-nethernet')
 
 class NethernetServerAdvertisement {
   version = 3
