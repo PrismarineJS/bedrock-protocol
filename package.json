@@ -21,7 +21,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@jsprismarine/jsbinaryutils": "^5.5.3",
     "debug": "^4.3.1",
     "json-bigint": "^1.0.0",
     "jsonwebtoken": "^9.0.0",
@@ -29,14 +28,13 @@
     "minecraft-data": "^3.0.0",
     "minecraft-folder-path": "^1.2.0",
     "node-fetch": "^2.6.1",
+    "node-nethernet": "github:LucienHH/node-nethernet#protocol",
     "prismarine-auth": "github:LucienHH/prismarine-auth#playfab",
     "prismarine-nbt": "^2.0.0",
     "prismarine-realms": "^1.1.0",
     "protodef": "^1.14.0",
     "raknet-native": "^1.0.3",
-    "sdp-transform": "^2.14.2",
     "uuid-1345": "^1.0.2",
-    "werift": "^0.19.9",
     "ws": "^8.18.0",
     "xbox-rta": "^2.1.0"
   },
