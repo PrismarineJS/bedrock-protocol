@@ -15,14 +15,14 @@ function createServer (options) {
 
   function startSignalling () {
     if (server.options.transport === 'nethernet') {
-      server.signalling = new NethernetSignal(server.options.networkId, server.options.authflow)
+      server.nethernet.signalling = new NethernetSignal(server.options.networkId, server.options.authflow)
 
-      server.signalling.connect(server.options.version)
+      server.nethernet.signalling.connect(server.options.version)
         .then(() => {
-          server.signalling.on('signal', (signal) => {
+          server.nethernet.signalling.on('signal', (signal) => {
             switch (signal.type) {
               case SignalType.ConnectRequest:
-                server.transport.nethernet.handleOffer(signal, server.signalling.write.bind(server.signalling), server.signalling.credentials)
+                server.transport.nethernet.handleOffer(signal, server.nethernet.signalling.write.bind(server.nethernet.signalling), server.nethernet.signalling.credentials)
                 break
               case SignalType.CandidateAdd:
                 server.transport.nethernet.handleCandidate(signal)
@@ -44,8 +44,8 @@ function createServer (options) {
   }
 
   server.once('close', () => {
-    if (server.session) server.session.end()
-    if (server.signalling) server.signalling.destroy()
+    if (server.nethernet.session) server.nethernet.session.end()
+    if (server.nethernet.signalling) server.nethernet.signalling.destroy()
   })
 
   return server
