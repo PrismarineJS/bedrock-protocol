@@ -4,7 +4,7 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
-const { SessionDirectory } = require('../xsapi/rta')
+const { SessionDirectory } = require('../xsapi/session')
 
 function validateOptions (options) {
   if (!options.profilesFolder) {
