@@ -1,5 +1,4 @@
 const { stringify } = require('json-bigint')
-const { default: fetch } = require('node-fetch')
 const { checkStatus } = require('../datatypes/util')
 
 const SessionConfig = {
