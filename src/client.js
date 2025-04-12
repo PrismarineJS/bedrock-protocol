@@ -21,6 +21,10 @@ class Client extends Connection {
     super()
     this.options = { ...Options.defaultOptions, ...options }
 
+    if (this.options.transport === 'nethernet') {
+      this.nethernet = {}
+    }
+
     this.startGameData = {}
     this.clientRuntimeId = null
     // Start off without compression on 1.19.30, zlib on below
