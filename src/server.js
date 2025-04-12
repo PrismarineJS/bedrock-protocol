@@ -19,6 +19,7 @@ class Server extends EventEmitter {
       this.advertisement = new NethernetServerAdvertisement(this.options.motd, this.options.version)
       this.batchHeader = null
       this.disableEncryption = true
+      this.nethernet = {}
     } else if (this.options.transport === 'raknet') {
       this.transportServer = require('./rak')(this.options.raknetBackend).RakServer
       this.advertisement = new ServerAdvertisement(this.options.motd, this.options.port, this.options.version)

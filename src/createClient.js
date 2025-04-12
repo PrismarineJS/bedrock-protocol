@@ -56,17 +56,19 @@ function createClient (options) {
 
 /** @param {Client} client */
 async function connect (client) {
-  if (client.options.useSignalling) {
-    client.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version)
+  if (client.transport === 'nethernet') {
+    if (client.options.useSignalling) {
+      client.nethernet.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version)
 
-    await client.signalling.connect()
+      await client.nethernet.signalling.connect()
 
-    client.connection.nethernet.credentials = client.signalling.credentials
-    client.connection.nethernet.signalHandler = client.signalling.write.bind(client.signalling)
+      client.connection.nethernet.credentials = client.nethernet.signalling.credentials
+      client.connection.nethernet.signalHandler = client.nethernet.signalling.write.bind(client.nethernet.signalling)
 
-    client.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
-  } else {
-    await client.connection.nethernet.ping()
+      client.nethernet.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
+    } else {
+      await client.connection.nethernet.ping()
+    }
   }
 
   // Actually connect
@@ -118,8 +120,8 @@ async function connect (client) {
   }
 
   client.once('close', () => {
-    if (client.session) client.session.end()
-    if (client.signalling) client.signalling.destroy()
+    if (client.nethernet.session) client.nethernet.session.end()
+    if (client.nethernet.signalling) client.nethernet.signalling.destroy()
   })
 }
 
