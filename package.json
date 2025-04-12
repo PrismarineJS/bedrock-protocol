@@ -27,7 +27,6 @@
     "jsp-raknet": "^2.1.3",
     "minecraft-data": "^3.0.0",
     "minecraft-folder-path": "^1.2.0",
-    "node-fetch": "^2.6.1",
     "node-nethernet": "github:LucienHH/node-nethernet#protocol",
     "prismarine-auth": "github:LucienHH/prismarine-auth#playfab",
     "prismarine-nbt": "^2.0.0",
