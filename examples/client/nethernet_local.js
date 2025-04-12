@@ -10,7 +10,7 @@ c.once('pong', (pong) => {
 
   const client = createClient({
     transport: 'nethernet', // Use the Nethernet transport
-    networkId: pong.sender_id,
+    networkId: pong.senderId,
     useSignalling: false
   })
 
