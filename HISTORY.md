@@ -1,6 +1,5 @@
 ## 3.45.0
 * [1.21.80 (#602)](https://github.com/PrismarineJS/bedrock-protocol/commit/e71fd513ddbd432983f221980080b61e11576965) (thanks @extremeheat)
-* [Update index.d.ts (#596)](https://github.com/PrismarineJS/bedrock-protocol/commit/b6b0bcdd70e565c26f021c675edac265c0665d81) (thanks @lunary-net)
 
 ## 3.44.0
 * [1.21.70 (#594)](https://github.com/PrismarineJS/bedrock-protocol/commit/065f41db8cfc8cbd8106bd9e376c899ec25f3f77) (thanks @CreeperG16)
