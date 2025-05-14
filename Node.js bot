@@ -1,0 +1,4 @@
+mkdir bedrock-bot
+cd bedrock-bot
+npm init -y
+npm install bedrock-protocol
