@@ -141,19 +141,43 @@ class Client extends Connection {
     this.status = ClientStatus.Authenticating
     this.createClientChain(null, this.options.offline)
 
-    const chain = [
-      this.clientIdentityChain, // JWT we generated for auth
-      ...this.accessToken // Mojang + Xbox JWT from auth
-    ]
+    const useNewLogin = true // TODO: mcdata feature
+    let encodedLoginPayload
 
-    const encodedChain = JSON.stringify({ chain })
+    if (useNewLogin) {
+      const authType = this.options.offline
+        ? auth.AuthenticationType.SelfSigned
+        : auth.AuthenticationType.Full
 
-    debug('Auth chain', chain)
+      // TODO: implement the new login payload (Token field)
+      // Send the legacy token chain for now
+      const chain = [
+        this.clientIdentityChain,
+        ...this.accessToken
+      ]
+
+      encodedLoginPayload = JSON.stringify({
+        AuthenticationType: authType,
+        Token: '',
+        Certificate: JSON.stringify({ chain }), // Deprecated legacy certificate chain
+      })
+
+      debug('Login payload', encodedLoginPayload)
+    } else {
+      const chain = [
+        this.clientIdentityChain, // JWT we generated for auth
+        ...this.accessToken // Mojang + Xbox JWT from auth
+      ]
+
+      encodedLoginPayload = JSON.stringify({ chain })
+
+      debug('Auth chain', chain)
+    }
 
     this.write('login', {
       protocol_version: this.options.protocolVersion,
       tokens: {
-        identity: encodedChain,
+        identity: encodedLoginPayload,
         client: this.clientUserChain
       }
     })

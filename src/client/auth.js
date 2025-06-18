@@ -5,6 +5,12 @@ const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
 
+const AuthenticationType = {
+  Full: 0, // The player's own token
+  Guest: 1, // Split screen sessions, the player is using the host's token
+  SelfSigned: 2, // Not authenticated
+}
+
 function validateOptions (options) {
   if (!options.profilesFolder) {
     options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
@@ -113,6 +119,7 @@ function postAuthenticate (client, profile, chains) {
 }
 
 module.exports = {
+  AuthenticationType,
   createOfflineSession,
   authenticate,
   realmAuthenticate
