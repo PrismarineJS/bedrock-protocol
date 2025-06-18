@@ -167,7 +167,7 @@ class Client extends Connection {
       encodedLoginPayload = JSON.stringify({
         AuthenticationType: authType,
         Token: '',
-        Certificate: JSON.stringify({ chain }), // Deprecated legacy certificate chain
+        Certificate: JSON.stringify({ chain }) // Deprecated legacy certificate chain
       })
 
       debug('Login payload', encodedLoginPayload)
