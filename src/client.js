@@ -62,7 +62,8 @@ class Client extends Connection {
       const mcData = require('minecraft-data')('bedrock_' + this.options.version)
       this.features = {
         compressorInHeader: mcData.supportFeature('compressorInPacketHeader'),
-        itemRegistryPacket: mcData.supportFeature('itemRegistryPacket')
+        itemRegistryPacket: mcData.supportFeature('itemRegistryPacket'),
+        legacyCertificateChain: mcData.supportFeature('legacyCertificateChain')
       }
     } catch (e) {
       throw new Error(`Unsupported version: '${this.options.version}', no data available`)
@@ -141,10 +142,17 @@ class Client extends Connection {
     this.status = ClientStatus.Authenticating
     this.createClientChain(null, this.options.offline)
 
-    const useNewLogin = true // TODO: mcdata feature
     let encodedLoginPayload
+    if (this.features.legacyCertificateChain) {
+      const chain = [
+        this.clientIdentityChain, // JWT we generated for auth
+        ...this.accessToken // Mojang + Xbox JWT from auth
+      ]
 
-    if (useNewLogin) {
+      encodedLoginPayload = JSON.stringify({ chain })
+
+      debug('Auth chain', chain)
+    } else {
       const authType = this.options.offline
         ? auth.AuthenticationType.SelfSigned
         : auth.AuthenticationType.Full
@@ -163,15 +171,6 @@ class Client extends Connection {
       })
 
       debug('Login payload', encodedLoginPayload)
-    } else {
-      const chain = [
-        this.clientIdentityChain, // JWT we generated for auth
-        ...this.accessToken // Mojang + Xbox JWT from auth
-      ]
-
-      encodedLoginPayload = JSON.stringify({ chain })
-
-      debug('Auth chain', chain)
     }
 
     this.write('login', {
