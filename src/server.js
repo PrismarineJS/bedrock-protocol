@@ -33,7 +33,8 @@ class Server extends EventEmitter {
     try {
       const mcData = require('minecraft-data')('bedrock_' + version)
       this.features = {
-        compressorInHeader: mcData.supportFeature('compressorInPacketHeader')
+        compressorInHeader: mcData.supportFeature('compressorInPacketHeader'),
+        legacyCertificateChain: mcData.supportFeature('legacyCertificateChain')
       }
     } catch (e) {
       throw new Error(`Unsupported version: '${version}', no data available`)

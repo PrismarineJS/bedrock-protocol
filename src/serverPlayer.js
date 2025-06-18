@@ -82,7 +82,13 @@ class Player extends Connection {
     const skinChain = tokens.client
 
     try {
-      var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
+      if (this.features.legacyCertificateChain) {
+        var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
+      } else {
+        // TODO: Migrate this from the legacy "Certificate" auth to the new auth system (Validate the token in the "Token" field)
+        const { chain } = JSON.parse(authChain.Certificate)
+        var { key, userData, skinData } = this.decodeLoginJWT(chain, skinChain) // eslint-disable-line
+      }
     } catch (e) {
       debug(this.address, e)
       this.disconnect('Server authentication error')
