@@ -78,11 +78,18 @@ class Player extends Connection {
 
     // Parse login data
     const tokens = body.params.tokens
-    const authChain = JSON.parse(tokens.identity)
-    const skinChain = tokens.client
-
     try {
-      var { key, userData, skinData } = this.decodeLoginJWT(authChain.chain, skinChain) // eslint-disable-line
+      const skinChain = tokens.client
+      const authChain = JSON.parse(tokens.identity)
+      let chain
+      if (authChain.Certificate) { // 1.21.90+
+        chain = JSON.parse(authChain.Certificate).chain
+      } else if (authChain.chain) {
+        chain = authChain.chain
+      } else {
+        throw new Error('Invalid login packet: missing chain or Certificate')
+      }
+      var { key, userData, skinData } = this.decodeLoginJWT(chain, skinChain) // eslint-disable-line
     } catch (e) {
       debug(this.address, e)
       this.disconnect('Server authentication error')

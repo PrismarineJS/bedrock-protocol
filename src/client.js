@@ -62,7 +62,8 @@ class Client extends Connection {
       const mcData = require('minecraft-data')('bedrock_' + this.options.version)
       this.features = {
         compressorInHeader: mcData.supportFeature('compressorInPacketHeader'),
-        itemRegistryPacket: mcData.supportFeature('itemRegistryPacket')
+        itemRegistryPacket: mcData.supportFeature('itemRegistryPacket'),
+        newLoginIdentityFields: mcData.supportFeature('newLoginIdentityFields')
       }
     } catch (e) {
       throw new Error(`Unsupported version: '${this.options.version}', no data available`)
@@ -146,9 +147,18 @@ class Client extends Connection {
       ...this.accessToken // Mojang + Xbox JWT from auth
     ]
 
-    const encodedChain = JSON.stringify({ chain })
-
-    debug('Auth chain', chain)
+    let encodedChain
+    if (this.features.newLoginIdentityFields) { // 1.21.90+
+      encodedChain = JSON.stringify({
+        Certificate: JSON.stringify({ chain }),
+        // 0 = normal, 1 = ss, 2 = offline
+        AuthenticationType: this.options.offline ? 2 : 0,
+        Token: ''
+      })
+    } else {
+      encodedChain = JSON.stringify({ chain })
+    }
+    debug('Auth chain', encodedChain)
 
     this.write('login', {
       protocol_version: this.options.protocolVersion,
