@@ -1,5 +1,26 @@
 const fs = require('fs')
 const UUID = require('uuid-1345')
+const { parse } = require('json-bigint')
+
+const debug = require('debug')('minecraft-protocol')
+
+async function checkStatus (res) {
+  if (res.ok) { // res.status >= 200 && res.status < 300
+    return res.text().then(parse)
+  } else {
+    const resp = await res.text()
+    debug('Request fail', resp)
+    throw Error(`${res.status} ${res.statusText} ${resp}`)
+  }
+}
+
+function getRandomUint64 () {
+  const high = Math.floor(Math.random() * 0xFFFFFFFF)
+  const low = Math.floor(Math.random() * 0xFFFFFFFF)
+
+  const result = (BigInt(high) << 32n) | BigInt(low)
+  return result
+}
 
 function getFiles (dir) {
   let results = []
@@ -45,4 +66,4 @@ function nextUUID () {
 
 const isDebug = process.env.DEBUG?.includes('minecraft-protocol')
 
-module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom, nextUUID, isDebug }
+module.exports = { getFiles, sleep, waitFor, serialize, uuidFrom, nextUUID, isDebug, getRandomUint64, checkStatus }
