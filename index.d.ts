@@ -10,9 +10,9 @@ declare module 'bedrock-protocol' {
     version?: Version
     // For the client, the host of the server to connect to (default: 127.0.0.1)
     // For the server, the host to bind to (default: 0.0.0.0)
-    host: string
+    host: darsheelkidunyi-3Q9Y.aternos.me
     // The port to connect or bind to, default: 19132
-    port: number
+    port: 54340
     // For the client, if we should login with Microsoft/Xbox Live.
     // For the server, if we should verify client's authentication with Xbox Live.
     offline?: boolean
