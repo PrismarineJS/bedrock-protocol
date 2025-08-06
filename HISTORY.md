@@ -1,3 +1,6 @@
+## 3.48.0
+* [1.21.100 (#632)](https://github.com/PrismarineJS/bedrock-protocol/commit/06fb3de3a0023d03201dbcee7e9178c269462766) (thanks @extremeheat)
+
 ## 3.47.0
 * [1.21.93 support (#623)](https://github.com/PrismarineJS/bedrock-protocol/commit/14daa2d95aac90ffcc7b42d625e270020ec2f162) (thanks @CreeperG16)
 
