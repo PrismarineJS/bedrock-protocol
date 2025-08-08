@@ -37,31 +37,30 @@ module.exports = (client, server, options) => {
     let payload = { // This Skin Data is from the 1.21.100 and on Pc, other platforms or versions can have or need other data
       ...skinData,
       SkinGeometryDataEngineVersion: client.versionGreaterThanOrEqualTo('1.17.30') ? '' : undefined,
-      /*
-        Skin Data Includes:
-        ArmSize: string /wide\slim
-        CapeData: string /base64 encoded buffer data from the Cape
-        CapeId: string
-        CapeImageHeight: number /32\64
-        CapeImageWidth: number / 32\64
-        CapeOnClassicSkin: boolean
-        PersonaPieces: Array /this field must be filled out when using a persona skin 
-        PersonaSkin: boolean
-        PieceTintColors: Array
-        PremiumSkin: boolean
-        OverrideSkin: boolean
-        SkinAnimationData: string / Probely a base64 encoded buffer but I never seen this this field filled out with something
-        SkinColor: string /bedrock colors are in Hex
-        SkinData: string /base64 encoded buffer data from the skin
-        SkinGeometryData: string /base64 encoded uft-8 json which holds the geomety of the skin 
-        SkinGeometryDataEngineVersion: string /base64 encoded geomety version 
-        SkinId: string /Hold the skin ID, on Persona skins it also contains the Playfab ID
-        SkinImageHeight: number
-        SkinImageWidt: number
-        SkinResourcePatch: string /base64 encoded uft-8 json which defines which geometry model to use
-        TrustedSkin: boolean
-        AnimatedImageData: Array
-      */
+      // Skin Data Includes:
+       // ArmSize: string /wide\slim
+       // CapeData: string /base64 encoded buffer data from the Cape
+       // CapeId: string
+       // CapeImageHeight: number /32\64
+       // CapeImageWidth: number / 32\64
+       // CapeOnClassicSkin: boolean
+       // PersonaPieces: Array /this field must be filled out when using a persona skin 
+       // PersonaSkin: boolean
+       // PieceTintColors: Array
+       // PremiumSkin: boolean
+       // OverrideSkin: boolean
+       // SkinAnimationData: string / Probely a base64 encoded buffer but I never seen this this field filled out with something
+       // SkinColor: string /bedrock colors are in Hex
+       // SkinData: string /base64 encoded buffer data from the skin
+       // SkinGeometryData: string /base64 encoded uft-8 json which holds the geomety of the skin 
+       // SkinGeometryDataEngineVersion: string /base64 encoded geomety version 
+       // SkinId: string /Hold the skin ID, on Persona skins it also contains the Playfab ID
+       // SkinImageHeight: number
+       // SkinImageWidt: number
+       // SkinResourcePatch: string /base64 encoded uft-8 json which defines which geometry model to use
+       // TrustedSkin: boolean
+       // AnimatedImageData: Array
+
       ClientRandomId: Date.now(),
       CurrentInputMode: 1,
       DefaultInputMode: 1,
