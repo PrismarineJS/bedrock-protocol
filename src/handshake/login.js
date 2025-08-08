@@ -34,10 +34,33 @@ module.exports = (client, server, options) => {
   }
 
   client.createClientUserChain = (privateKey) => {
-    let payload = {
+    let payload = { // This Skin Data is from the 1.21.100 and on Pc, other platforms or versions can have or need other data
       ...skinData,
       SkinGeometryDataEngineVersion: client.versionGreaterThanOrEqualTo('1.17.30') ? '' : undefined,
-
+      /*Skin Data Includes:
+        ArmSize: string /wide\slim
+        CapeData: string /base64 encoded buffer data from the Cape
+        CapeId: string
+        CapeImageHeight: number /32\64
+        CapeImageWidth: number / 32\64
+        CapeOnClassicSkin: boolean
+        PersonaPieces: Array /this field must be filled out when using a persona skin 
+        PersonaSkin: boolean
+        PieceTintColors: Array
+        PremiumSkin: boolean
+        OverrideSkin: boolean
+        SkinAnimationData: string / Probely a base64 encoded buffer but I never seen this this field filled out with something
+        SkinColor: string /bedrock colors are in Hex
+        SkinData: string /base64 encoded buffer data from the skin
+        SkinGeometryData: string /base64 encoded uft-8 json which holds the geomety of the skin 
+        SkinGeometryDataEngineVersion: string /base64 encoded geomety version 
+        SkinId: string /Hold the skin ID, on Persona skins it also contains the Playfab ID
+        SkinImageHeight: number
+        SkinImageWidt: number
+        SkinResourcePatch: string /base64 encoded uft-8 json which defines which geometry model to use
+        TrustedSkin: boolean
+        AnimatedImageData: Array
+      */
       ClientRandomId: Date.now(),
       CurrentInputMode: 1,
       DefaultInputMode: 1,
@@ -47,19 +70,20 @@ module.exports = (client, server, options) => {
       GameVersion: options.version || '1.16.201',
       GuiScale: -1,
       LanguageCode: 'en_GB', // TODO locale
+      GraphicsMode: 1, // 1:simple, 2:fancy, 3:advanced, 4:ray_traced
 
       PlatformOfflineId: '',
       PlatformOnlineId: '', // chat
       // PlayFabID is the PlayFab ID produced for the skin. PlayFab is the company that hosts the Marketplace,
       // skins and other related features from the game. This ID is the ID of the skin used to store the skin
-      // inside of PlayFab.
-      PlayFabId: nextUUID().replace(/-/g, '').slice(0, 16), // 1.16.210
+      // inside of PlayFab.The playfab ID is always lowercased.
+      PlayFabId: nextUUID().replace(/-/g, '').slice(0, 16).toLowerCase(), // 1.16.210
 
       SelfSignedId: nextUUID(),
       ServerAddress: `${options.host}:${options.port}`,
 
-      ThirdPartyName: client.profile.name,
-      ThirdPartyNameOnly: false,
+      ThirdPartyName: client.profile.name, // this sould always be set to your gamertag 
+      ThirdPartyNameOnly: client.versionGreaterThanOrEqualTo('1.21.90') ? undefined : false,
       UIProfile: 0,
 
       IsEditorMode: false,
