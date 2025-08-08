@@ -37,7 +37,8 @@ module.exports = (client, server, options) => {
     let payload = { // This Skin Data is from the 1.21.100 and on Pc, other platforms or versions can have or need other data
       ...skinData,
       SkinGeometryDataEngineVersion: client.versionGreaterThanOrEqualTo('1.17.30') ? '' : undefined,
-      /*Skin Data Includes:
+      /*
+        Skin Data Includes:
         ArmSize: string /wide\slim
         CapeData: string /base64 encoded buffer data from the Cape
         CapeId: string
