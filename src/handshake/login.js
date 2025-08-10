@@ -47,19 +47,20 @@ module.exports = (client, server, options) => {
       GameVersion: options.version || '1.16.201',
       GuiScale: -1,
       LanguageCode: 'en_GB', // TODO locale
+      GraphicsMode: 1, // 1:simple, 2:fancy, 3:advanced, 4:ray_traced
 
       PlatformOfflineId: '',
       PlatformOnlineId: '', // chat
       // PlayFabID is the PlayFab ID produced for the skin. PlayFab is the company that hosts the Marketplace,
       // skins and other related features from the game. This ID is the ID of the skin used to store the skin
-      // inside of PlayFab.
-      PlayFabId: nextUUID().replace(/-/g, '').slice(0, 16), // 1.16.210
+      // inside of PlayFab.The playfab ID is always lowercased.
+      PlayFabId: nextUUID().replace(/-/g, '').slice(0, 16).toLowerCase(), // 1.16.210
 
       SelfSignedId: nextUUID(),
       ServerAddress: `${options.host}:${options.port}`,
 
-      ThirdPartyName: client.profile.name,
-      ThirdPartyNameOnly: false,
+      ThirdPartyName: client.profile.name, // Gamertag
+      ThirdPartyNameOnly: client.versionGreaterThanOrEqualTo('1.21.90') ? undefined : false,
       UIProfile: 0,
 
       IsEditorMode: false,
