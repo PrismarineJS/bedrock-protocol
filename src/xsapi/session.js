@@ -127,10 +127,6 @@ class SessionDirectory {
     debug(`Invited player, xuid: ${identifier}`)
   }
 
-  async updateMemberCount (count, maxCount) {
-    await this.host.rest.updateMemberCount(this.session.name, count, maxCount)
-  }
-
   async getSession () {
     return await this.host.rest.getSession(this.session.name)
   }
