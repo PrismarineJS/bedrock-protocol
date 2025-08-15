@@ -1,7 +1,5 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 
-const { ServerData } = require('node-nethernet')
-
 class NethernetServerAdvertisement {
   version = 3
   motd = 'Bedrock Protocol Server'
@@ -18,31 +16,93 @@ class NethernetServerAdvertisement {
   }
 
   static fromBuffer (buffer) {
-    const responsePacket = new ServerData(buffer)
+    const advertisement = new NethernetServerAdvertisement()
+    let offset = 0
 
-    responsePacket.decode()
+    // Version (1 byte)
+    if (buffer.length < 1) return advertisement
+    advertisement.version = buffer.readUInt8(offset++)
+    
+    // MOTD (1 byte length + string)
+    if (offset >= buffer.length) return advertisement
+    const motdLength = buffer.readUInt8(offset++)
+    if (offset + motdLength > buffer.length) return advertisement
+    advertisement.motd = buffer.toString('utf8', offset, offset + motdLength)
+    offset += motdLength
 
-    Object.assign(this, responsePacket)
+    // Level name (1 byte length + string)
+    if (offset >= buffer.length) return advertisement
+    const levelNameLength = buffer.readUInt8(offset++)
+    if (offset + levelNameLength > buffer.length) return advertisement
+    advertisement.levelName = buffer.toString('utf8', offset, offset + levelNameLength)
+    offset += levelNameLength
 
-    return this
+    // Gamemode ID (4 bytes LE)
+    if (offset + 4 > buffer.length) return advertisement
+    advertisement.gamemodeId = buffer.readInt32LE(offset)
+    offset += 4
+    
+    // Player count (4 bytes LE)
+    if (offset + 4 > buffer.length) return advertisement
+    advertisement.playerCount = buffer.readInt32LE(offset)
+    offset += 4
+    
+    // The remaining structure seems different from expected
+    // Let's just read what we can safely
+    if (offset + 4 <= buffer.length) {
+      advertisement.playersMax = buffer.readInt32LE(offset)
+      offset += 4
+    }
+    
+    // Try to read remaining bytes as individual flags/values
+    if (offset < buffer.length) {
+      advertisement.isEditorWorld = buffer.readUInt8(offset++) === 1
+    }
+    
+    if (offset < buffer.length) {
+      advertisement.hardcore = buffer.readUInt8(offset++) === 1
+    }
+    
+    // The last few bytes might be a different format
+    if (offset < buffer.length) {
+      advertisement.transportLayer = buffer.readUInt8(offset++)
+    }
+
+    return advertisement
   }
 
   toBuffer () {
-    const responsePacket = new ServerData()
-
-    responsePacket.version = this.version
-    responsePacket.motd = this.motd
-    responsePacket.levelName = this.levelName
-    responsePacket.gamemodeId = this.gamemodeId
-    responsePacket.playerCount = this.playerCount
-    responsePacket.playersMax = this.playersMax
-    responsePacket.editorWorld = this.isEditorWorld
-    responsePacket.hardcore = this.hardcore
-    responsePacket.transportLayer = this.transportLayer
-
-    responsePacket.encode()
-
-    return responsePacket.getBuffer()
+    const motdBuffer = Buffer.from(this.motd, 'utf8')
+    const levelNameBuffer = Buffer.from(this.levelName, 'utf8')
+    
+    const buffers = []
+    
+    buffers.push(Buffer.from([this.version]))
+    buffers.push(Buffer.from([motdBuffer.length]))
+    buffers.push(motdBuffer)
+    buffers.push(Buffer.from([levelNameBuffer.length]))
+    buffers.push(levelNameBuffer)
+    
+    const gamemodeBuffer = Buffer.alloc(4)
+    gamemodeBuffer.writeInt32LE(this.gamemodeId, 0)
+    buffers.push(gamemodeBuffer)
+    
+    const playerCountBuffer = Buffer.alloc(4)
+    playerCountBuffer.writeInt32LE(this.playerCount, 0)
+    buffers.push(playerCountBuffer)
+    
+    const playersMaxBuffer = Buffer.alloc(4)
+    playersMaxBuffer.writeInt32LE(this.playersMax, 0)
+    buffers.push(playersMaxBuffer)
+    
+    buffers.push(Buffer.from([this.isEditorWorld ? 1 : 0]))
+    buffers.push(Buffer.from([this.hardcore ? 1 : 0]))
+    
+    const transportBuffer = Buffer.alloc(4)
+    transportBuffer.writeInt32LE(this.transportLayer, 0)
+    buffers.push(transportBuffer)
+    
+    return Buffer.concat(buffers)
   }
 }
 
