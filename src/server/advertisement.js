@@ -19,42 +19,27 @@ class NethernetServerAdvertisement {
     const advertisement = new NethernetServerAdvertisement()
     let offset = 0
 
-    // Version (1 byte)
-    if (buffer.length < 1) return advertisement
     advertisement.version = buffer.readUInt8(offset++)
     
-    // MOTD (1 byte length + string)
-    if (offset >= buffer.length) return advertisement
     const motdLength = buffer.readUInt8(offset++)
-    if (offset + motdLength > buffer.length) return advertisement
     advertisement.motd = buffer.toString('utf8', offset, offset + motdLength)
     offset += motdLength
 
-    // Level name (1 byte length + string)
-    if (offset >= buffer.length) return advertisement
     const levelNameLength = buffer.readUInt8(offset++)
-    if (offset + levelNameLength > buffer.length) return advertisement
     advertisement.levelName = buffer.toString('utf8', offset, offset + levelNameLength)
     offset += levelNameLength
 
-    // Gamemode ID (4 bytes LE)
-    if (offset + 4 > buffer.length) return advertisement
     advertisement.gamemodeId = buffer.readInt32LE(offset)
     offset += 4
     
-    // Player count (4 bytes LE)
-    if (offset + 4 > buffer.length) return advertisement
     advertisement.playerCount = buffer.readInt32LE(offset)
     offset += 4
-    
-    // The remaining structure seems different from expected
-    // Let's just read what we can safely
+
     if (offset + 4 <= buffer.length) {
       advertisement.playersMax = buffer.readInt32LE(offset)
       offset += 4
     }
     
-    // Try to read remaining bytes as individual flags/values
     if (offset < buffer.length) {
       advertisement.isEditorWorld = buffer.readUInt8(offset++) === 1
     }
@@ -63,7 +48,6 @@ class NethernetServerAdvertisement {
       advertisement.hardcore = buffer.readUInt8(offset++) === 1
     }
     
-    // The last few bytes might be a different format
     if (offset < buffer.length) {
       advertisement.transportLayer = buffer.readUInt8(offset++)
     }
