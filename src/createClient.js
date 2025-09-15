@@ -56,7 +56,7 @@ function createClient (options) {
 
 /** @param {Client} client */
 async function connect (client) {
-  if (client.transport === 'nethernet') {
+  if (client.options.transport === 'nethernet') {
     if (client.options.useSignalling) {
       client.nethernet.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version)
 
@@ -67,7 +67,7 @@ async function connect (client) {
 
       client.nethernet.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
     } else {
-      await client.connection.nethernet.ping()
+      await client.connection.ping()
     }
   }
 
@@ -126,10 +126,11 @@ async function connect (client) {
 }
 
 async function ping ({ host, port, networkId }) {
+  console.log(`Pinging ${host}:${port} with networkId ${networkId}`)
   if (networkId) {
     const con = new NethernetClient({ networkId })
     try {
-      return advertisement.NethernetServerAdvertisement.fromBuffer(await con.ping())
+      return advertisement.NethernetServerAdvertisement.fromBuffer(Buffer.from(await con.ping(), 'hex'))
     } finally {
       con.close()
     }
