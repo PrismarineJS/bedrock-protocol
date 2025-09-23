@@ -36,8 +36,6 @@ module.exports = (client, server, options) => {
   client.createClientUserChain = (privateKey) => {
     let payload = {
       ...skinData,
-      SkinGeometryDataEngineVersion: client.versionGreaterThanOrEqualTo('1.17.30') ? '' : undefined,
-
       ClientRandomId: Date.now(),
       CurrentInputMode: 1,
       DefaultInputMode: 1,
@@ -66,7 +64,7 @@ module.exports = (client, server, options) => {
       IsEditorMode: false,
       TrustedSkin: client.versionGreaterThanOrEqualTo('1.19.20') ? false : undefined,
       OverrideSkin: client.versionGreaterThanOrEqualTo('1.19.62') ? false : undefined,
-      CompatibleWithClientSideChunkGen: client.versionGreaterThanOrEqualTo('1.19.80') ? false : undefined,
+      CompatibleWithClientSideChunkGen: client.versionGreaterThanOrEqualTo('1.19.80') ? true : undefined,
 
       MaxViewDistance: client.versionGreaterThanOrEqualTo('1.21.42') ? 0 : undefined,
       MemoryTier: client.versionGreaterThanOrEqualTo('1.21.42') ? 0 : undefined,
