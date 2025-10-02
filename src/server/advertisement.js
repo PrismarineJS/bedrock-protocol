@@ -1,5 +1,95 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 
+class NethernetServerAdvertisement {
+  version = 3
+  motd = 'Bedrock Protocol Server'
+  levelName = 'bedrock-protocol'
+  gamemodeId = 2
+  playerCount = 0
+  playersMax = 5
+  isEditorWorld = false
+  hardcore = false
+  transportLayer = 2
+
+  constructor (obj) {
+    Object.assign(this, obj)
+  }
+
+  static fromBuffer (buffer) {
+    const advertisement = new NethernetServerAdvertisement()
+    let offset = 0
+
+    advertisement.version = buffer.readUInt8(offset++)
+
+    const motdLength = buffer.readUInt8(offset++)
+    advertisement.motd = buffer.toString('utf8', offset, offset + motdLength)
+    offset += motdLength
+
+    const levelNameLength = buffer.readUInt8(offset++)
+    advertisement.levelName = buffer.toString('utf8', offset, offset + levelNameLength)
+    offset += levelNameLength
+
+    advertisement.gamemodeId = buffer.readInt32LE(offset)
+    offset += 4
+
+    advertisement.playerCount = buffer.readInt32LE(offset)
+    offset += 4
+
+    if (offset + 4 <= buffer.length) {
+      advertisement.playersMax = buffer.readInt32LE(offset)
+      offset += 4
+    }
+
+    if (offset < buffer.length) {
+      advertisement.isEditorWorld = buffer.readUInt8(offset++) === 1
+    }
+
+    if (offset < buffer.length) {
+      advertisement.hardcore = buffer.readUInt8(offset++) === 1
+    }
+
+    if (offset < buffer.length) {
+      advertisement.transportLayer = buffer.readUInt8(offset++)
+    }
+
+    return advertisement
+  }
+
+  toBuffer () {
+    const motdBuffer = Buffer.from(this.motd, 'utf8')
+    const levelNameBuffer = Buffer.from(this.levelName, 'utf8')
+
+    const buffers = []
+
+    buffers.push(Buffer.from([this.version]))
+    buffers.push(Buffer.from([motdBuffer.length]))
+    buffers.push(motdBuffer)
+    buffers.push(Buffer.from([levelNameBuffer.length]))
+    buffers.push(levelNameBuffer)
+
+    const gamemodeBuffer = Buffer.alloc(4)
+    gamemodeBuffer.writeInt32LE(this.gamemodeId, 0)
+    buffers.push(gamemodeBuffer)
+
+    const playerCountBuffer = Buffer.alloc(4)
+    playerCountBuffer.writeInt32LE(this.playerCount, 0)
+    buffers.push(playerCountBuffer)
+
+    const playersMaxBuffer = Buffer.alloc(4)
+    playersMaxBuffer.writeInt32LE(this.playersMax, 0)
+    buffers.push(playersMaxBuffer)
+
+    buffers.push(Buffer.from([this.isEditorWorld ? 1 : 0]))
+    buffers.push(Buffer.from([this.hardcore ? 1 : 0]))
+
+    const transportBuffer = Buffer.alloc(4)
+    transportBuffer.writeInt32LE(this.transportLayer, 0)
+    buffers.push(transportBuffer)
+
+    return Buffer.concat(buffers)
+  }
+}
+
 class ServerAdvertisement {
   motd = 'Bedrock Protocol Server'
   levelName = 'bedrock-protocol'
@@ -61,6 +151,7 @@ class ServerAdvertisement {
 
 module.exports = {
   ServerAdvertisement,
+  NethernetServerAdvertisement,
   getServerName (client) {
     return new ServerAdvertisement().toBuffer()
   },
