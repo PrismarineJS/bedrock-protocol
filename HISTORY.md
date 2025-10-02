@@ -1,3 +1,7 @@
+## 3.49.0
+* [1.21.111 (#649)](https://github.com/PrismarineJS/bedrock-protocol/commit/b48518a6e79e72101fe7136433cbd6277339fc5c) (thanks @Slauh)
+* [Skin Data Changes (#647)](https://github.com/PrismarineJS/bedrock-protocol/commit/407756b93880cdda4fdbff194fc4163ceedf4e82) (thanks @thejfkvis)
+
 ## 3.48.1
 * [Update login client skinData (#635)](https://github.com/PrismarineJS/bedrock-protocol/commit/6b1474d2c6f93b47dee9d4816de59579f82ed5a9) (thanks @TSL534)
 
