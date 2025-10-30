@@ -1,3 +1,6 @@
+## 3.50.0
+* [1.21.120 (#658)](https://github.com/PrismarineJS/bedrock-protocol/commit/22eec3d9f2b2afe0ea88765786ec85480b046854) (thanks @extremeheat)
+
 ## 3.49.0
 * [1.21.111 (#649)](https://github.com/PrismarineJS/bedrock-protocol/commit/b48518a6e79e72101fe7136433cbd6277339fc5c) (thanks @Slauh)
 * [Skin Data Changes (#647)](https://github.com/PrismarineJS/bedrock-protocol/commit/407756b93880cdda4fdbff194fc4163ceedf4e82) (thanks @thejfkvis)
