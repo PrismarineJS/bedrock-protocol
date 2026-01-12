@@ -9,6 +9,7 @@ const { NethernetClient } = require('./nethernet')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
+const { NethernetSignal } = require('./websocket/signal')
 
 const debugging = false
 
@@ -87,7 +88,23 @@ class Client extends Connection {
 
   connect () {
     if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
-    this.on('session', this._connect)
+    this.on('session', (sessionData) => {
+      if (this.options.transport === 'nethernet' && this.options.useSignalling) {
+        this.nethernet.signalling = new NethernetSignal(this.connection.nethernet.networkId, this.options.authflow, this.options.version)
+
+        this.nethernet.signalling.connect()
+
+        this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
+
+        this.nethernet.signalling.on('signal', signal => this.connection.nethernet.handleSignal(signal))
+        this.nethernet.signalling.on('credentials', (credentials) => {
+          this.connection.nethernet.credentials = credentials
+          this._connect(sessionData)
+        })
+      } else {
+        this._connect(sessionData)
+      }
+    })
 
     if (this.options.offline) {
       debug('offline mode, not authenticating', this.options)
@@ -276,7 +293,7 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
-        // fallsthrough
+      // fallsthrough
       case 'item_registry': // 1.21.60+ send itemstates in item_registry packet
         pakData.params.itemstates?.forEach(state => {
           if (state.name === 'minecraft:shield') {

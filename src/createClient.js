@@ -6,7 +6,6 @@ const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
 const { NethernetClient } = require('./nethernet')
-const { NethernetSignal } = require('./websocket/signal')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
@@ -56,21 +55,6 @@ function createClient (options) {
 
 /** @param {Client} client */
 async function connect (client) {
-  if (client.options.transport === 'nethernet') {
-    if (client.options.useSignalling) {
-      client.nethernet.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version)
-
-      await client.nethernet.signalling.connect()
-
-      client.connection.nethernet.credentials = client.nethernet.signalling.credentials
-      client.connection.nethernet.signalHandler = client.nethernet.signalling.write.bind(client.nethernet.signalling)
-
-      client.nethernet.signalling.on('signal', signal => client.connection.nethernet.handleSignal(signal))
-    } else {
-      await client.connection.ping()
-    }
-  }
-
   // Actually connect
   client.connect()
 

@@ -83,7 +83,7 @@ class NethernetSignal extends EventEmitter {
     debug('Connecting to Signal', address)
 
     const ws = new WebSocket(address, {
-      headers: { Authorization: xbl.mcToken }
+      headers: { Authorization: xbl.mcToken, 'session-id': this.networkId, 'request-id': Date.now().toString() }
     })
 
     this.pingInterval = setInterval(() => {
@@ -183,27 +183,13 @@ class NethernetSignal extends EventEmitter {
 module.exports = { NethernetSignal }
 
 function parseTurnServers (dataString) {
-  const servers = []
-
   const data = JSON.parse(dataString)
 
-  if (!data.TurnAuthServers) return servers
+  const iceServers = data.TurnAuthServers.map(server => ({
+    urls: server.Urls,
+    username: server.Username,
+    credential: server.Password
+  }))
 
-  for (const server of data.TurnAuthServers) {
-    if (!server.Urls) continue
-
-    for (const url of server.Urls) {
-      const match = url.match(/(stun|turn):([^:]+):(\d+)/)
-      if (match) {
-        servers.push({
-          hostname: match[2],
-          port: parseInt(match[3], 10),
-          username: server.Username || undefined,
-          password: server.Password || undefined
-        })
-      }
-    }
-  }
-
-  return servers
+  return iceServers
 }
