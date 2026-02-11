@@ -12,6 +12,8 @@ const skippedVersionsOnGithubCI = ['1.16.210', '1.17.10', '1.17.30', '1.18.11', 
 const testedVersions = process.env.CI ? Object.keys(Versions).filter(v => !skippedVersionsOnGithubCI.includes(v)) : Object.keys(Versions)
 
 const defaultOptions = {
+  // Choice of raknet or nethernet
+  transport: 'raknet',
   // https://minecraft.wiki/w/Protocol_version#Bedrock_Edition_2
   version: CURRENT_VERSION,
   // client: If we should send SetPlayerInitialized to the server after getting play_status spawn.
