@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const Zlib = require('zlib')
+const snappy=require('snappy')
 
 function createCipher (secret, initialValue, cipherAlgorithm) {
   if (crypto.getCiphers().includes(cipherAlgorithm)) {
@@ -78,6 +79,9 @@ function createDecryptor (client, iv) {
       switch (packet[0]) {
         case 0:
           buffer = Zlib.inflateRawSync(packet.slice(1), { chunkSize: 512000 })
+          break
+        case 1:
+          buffer = snappy.uncompressSync(packet.slice(1))
           break
         case 255:
           buffer = packet.slice(1)
