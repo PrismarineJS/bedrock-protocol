@@ -12,17 +12,14 @@ const LoginVerify = require('./handshake/loginVerify')
 const debugging = false
 
 class Client extends Connection {
-  // The RakNet connection
   connection
 
-  /** @param {{ version: number, host: string, port: number }} options */
   constructor (options) {
     super()
     this.options = { ...Options.defaultOptions, ...options }
 
     this.startGameData = {}
     this.clientRuntimeId = null
-    // Start off without compression on 1.19.30, zlib on below
     this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
@@ -71,7 +68,7 @@ class Client extends Connection {
   }
 
   connect () {
-    if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
+    if (!this.connection) throw new Error('Connect not currently allowed')
     this.on('session', this._connect)
 
     if (this.options.offline) {
@@ -90,7 +87,7 @@ class Client extends Connection {
   }
 
   get entityId () {
-    return this.startGameData.runtime_entity_id
+    return this.startGameData?.runtime_entity_id ?? null
   }
 
   onEncapsulated = (encapsulated, inetAddr) => {
@@ -133,8 +130,8 @@ class Client extends Connection {
   }
 
   updateCompressorSettings (packet) {
-    this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
-    this.compressionThreshold = packet.compression_threshold
+    this.compressionAlgorithm = packet?.compression_algorithm || 'deflate'
+    this.compressionThreshold = packet?.compression_threshold ?? 512
     this.compressionReady = true
   }
 
@@ -143,15 +140,14 @@ class Client extends Connection {
     this.createClientChain(null, this.options.offline)
 
     const chain = [
-      this.clientIdentityChain, // JWT we generated for auth
-      ...this.accessToken // Mojang + Xbox JWT from auth
+      this.clientIdentityChain,
+      ...(this.accessToken || [])
     ]
 
     let encodedChain
-    if (this.features.newLoginIdentityFields) { // 1.21.90+
+    if (this.features?.newLoginIdentityFields) {
       encodedChain = JSON.stringify({
         Certificate: JSON.stringify({ chain }),
-        // 0 = normal, 1 = ss, 2 = offline
         AuthenticationType: this.options.offline ? 2 : 0,
         Token: ''
       })
@@ -171,18 +167,22 @@ class Client extends Connection {
   }
 
   onDisconnectRequest (packet) {
-    this.conLog?.(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
+    const message = packet?.message ?? ''
+    this.conLog?.(`Server requested ${packet?.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${message}`)
     this.emit('kick', packet)
     this.close()
   }
 
   onPlayStatus (statusPacket) {
     if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
-      if (statusPacket.status === 'player_spawn') {
+      if (statusPacket?.status === 'player_spawn') {
         this.status = ClientStatus.Initialized
         if (!this.entityId) {
-          // We need to wait for start_game in the rare event we get a player_spawn before start_game race condition
-          this.on('start_game', () => this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId }))
+          this.on('start_game', () => {
+            if (this.entityId != null) {
+              this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
+            }
+          })
         } else {
           this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
         }
@@ -203,7 +203,7 @@ class Client extends Connection {
 
   close () {
     if (this.status !== ClientStatus.Disconnected) {
-      this.emit('close') // Emit close once
+      this.emit('close')
       debug('Client closed!')
     }
     clearInterval(this.loop)
@@ -217,47 +217,48 @@ class Client extends Connection {
 
   readPacket (packet) {
     try {
-      var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
+      var des = this.deserializer?.parsePacketBuffer(packet)
     } catch (e) {
-      // Dump information about the packet only if user is not handling error event.
-      if (this.listenerCount('error') === 0) this.deserializer.dumpFailedBuffer(packet)
+      if (this.listenerCount('error') === 0) this.deserializer?.dumpFailedBuffer(packet)
       this.emit('error', e)
       return
     }
-    const pakData = { name: des.data.name, params: des.data.params }
+
+    const pakData = {
+      name: des?.data?.name ?? 'unknown',
+      params: des?.data?.params ?? {}
+    }
+
     this.inLog?.('-> C', pakData.name, this.options.logging ? serialize(pakData.params) : '')
     this.emit('packet', des)
 
     if (debugging) {
-      // Packet verifying (decode + re-encode + match test)
       if (pakData.name) {
-        this.deserializer.verify(packet, this.serializer)
+        this.deserializer?.verify(packet, this.serializer)
       }
     }
 
-    // Abstract some boilerplate before sending to listeners
-    switch (des.data.name) {
+    switch (pakData.name) {
       case 'server_to_client_handshake':
-        this.emit('client.server_handshake', des.data.params)
+        this.emit('client.server_handshake', pakData.params)
         break
       case 'network_settings':
-        this.updateCompressorSettings(des.data.params)
+        this.updateCompressorSettings(pakData.params)
         if (this.status === ClientStatus.Connecting) {
           this.sendLogin()
         }
         break
-      case 'disconnect': // Client kicked
-        this.emit(des.data.name, des.data.params) // Emit before we kill all listeners.
-        this.onDisconnectRequest(des.data.params)
+      case 'disconnect':
+        this.emit(pakData.name, pakData.params)
+        this.onDisconnectRequest(pakData.params)
         break
       case 'start_game':
         this.startGameData = pakData.params
-        // fallsthrough
-      case 'item_registry': // 1.21.60+ send itemstates in item_registry packet
+      case 'item_registry':
         pakData.params.itemstates?.forEach(state => {
           if (state.name === 'minecraft:shield') {
-            this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
-            this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
+            this.serializer?.proto.setVariable('ShieldItemID', state.runtime_id)
+            this.deserializer?.proto.setVariable('ShieldItemID', state.runtime_id)
           }
         })
         break
@@ -270,14 +271,13 @@ class Client extends Connection {
         this.onPlayStatus(pakData.params)
         break
       default:
-        if (this.status !== ClientStatus.Initializing && this.status !== ClientStatus.Initialized) {
-          this.inLog?.(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
+        if (![ClientStatus.Initializing, ClientStatus.Initialized].includes(this.status)) {
+          this.inLog?.(`Can't accept ${pakData.name}, client not yet authenticated : ${this.status}`)
           return
         }
     }
 
-    // Emit packet
-    this.emit(des.data.name, des.data.params)
+    this.emit(pakData.name, pakData.params)
   }
 }
 
