@@ -153,7 +153,7 @@ class Client extends Connection {
         Certificate: JSON.stringify({ chain }),
         // 0 = normal, 1 = ss, 2 = offline
         AuthenticationType: this.options.offline ? 2 : 0,
-        Token: ''
+        Token: this.multiplayerToken || ''
       })
     } else {
       encodedChain = JSON.stringify({ chain })
