@@ -16,7 +16,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@master
       with:
-        node-version: 14.0.0
+        node-version: 24
         registry-url: 'https://registry.npmjs.org'
     - run: npm install
     - id: publish
