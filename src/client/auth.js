@@ -65,12 +65,13 @@ async function authenticate (client, options) {
   validateOptions(options)
   try {
     const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
+    const loginData = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
       if (options.password) console.warn('Sign in failed, try removing the password field')
       throw e
     })
+    const chains = loginData.chain
 
-    debug('chains', chains)
+    debug('loginData', { chainLength: chains.length, hasToken: Boolean(loginData.token) })
 
     // First chain is Mojang stuff, second is Xbox profile data used by mc
     const jwt = chains[1]
@@ -85,7 +86,7 @@ async function authenticate (client, options) {
       xuid: xboxProfile?.extraData?.XUID || 0
     }
 
-    return postAuthenticate(client, profile, chains)
+    return postAuthenticate(client, profile, loginData)
   } catch (err) {
     console.error(err)
     client.emit('error', err)
@@ -102,13 +103,14 @@ function createOfflineSession (client, options) {
     uuid: uuidFrom(options.username), // random
     xuid: 0
   }
-  return postAuthenticate(client, profile, []) // No extra JWTs, only send 1 client signed chain with all the data
+  return postAuthenticate(client, profile, { chain: [], token: '' }) // No extra JWTs, only send our own login data
 }
 
-function postAuthenticate (client, profile, chains) {
+function postAuthenticate (client, profile, auth = {}) {
   client.profile = profile
   client.username = profile.name
-  client.accessToken = chains
+  client.accessToken = auth.chain || []
+  client.multiplayerToken = auth.token || ''
   client.emit('session', profile)
 }
 

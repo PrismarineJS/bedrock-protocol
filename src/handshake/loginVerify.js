@@ -9,7 +9,40 @@ module.exports = (client, server, options) => {
 
   const getDER = b64 => crypto.createPublicKey({ key: Buffer.from(b64, 'base64'), format: 'der', type: 'spki' })
 
-  function verifyAuth (chain) {
+  // 26.10, March 2026+
+  function parseTokenData (token) {
+    function normalizeToken (token) {
+      return token.replace(/^MCToken\s+/i, '')
+    }
+
+    const normalized = normalizeToken(token)
+    const x5u = getX5U(normalized)
+    const decoded = JWT.verify(normalized, getDER(x5u), { algorithms: ['ES384', 'RS256'] })
+    if (!decoded || typeof decoded !== 'object') throw new Error('Invalid login token')
+
+    const payload = decoded || {}
+    const key = payload.cpk || payload.clientPublicKey || x5u
+    return {
+      key,
+      data: {
+        extraData: {
+          XUID: payload.xid || payload.XUID || payload.xuid || '0',
+          displayName: payload.xname || payload.displayName || 'Player',
+          identity: payload.identity,
+          PlayFabID: payload.pfbid || payload.playFabId || payload.PlayFabID,
+          PlayFabTitleID: payload.pfbtid || payload.playFabTitleId || payload.PlayFabTitleID
+        }
+      }
+    }
+  }
+
+  function verifyAuth (chain, token) {
+    // In offline mode 26.10+, we do not generate a chain and only a self-signed token.
+    if ((!chain || chain.length === 0 || chain.every(entry => !entry)) && token) {
+      if (!options.offline) throw new Error('Missing certificate chain for authenticated login')
+      return parseTokenData(token)
+    }
+
     let data = {}
 
     // There are three JWT tokens sent to us, one signed by the client
@@ -50,8 +83,8 @@ module.exports = (client, server, options) => {
     return decoded
   }
 
-  client.decodeLoginJWT = (authTokens, skinTokens) => {
-    const { key, data } = verifyAuth(authTokens)
+  client.decodeLoginJWT = (authTokens, skinTokens, authToken = '') => {
+    const { key, data } = verifyAuth(authTokens, authToken)
     const skinData = verifySkin(key, skinTokens)
     return { key, userData: data, skinData }
   }

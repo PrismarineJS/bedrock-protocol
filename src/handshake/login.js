@@ -5,23 +5,36 @@ const algorithm = 'ES384'
 
 module.exports = (client, server, options) => {
   const skinData = require('minecraft-data')('bedrock_' + options.version).defaultSkin
+  // TODO: Use feature or ver compare functions
+  const protocolVersion = options.protocolVersion || 0
+  const useOidcOfflineLogin = protocolVersion >= 944
 
   client.createClientChain = (mojangKey, offline) => {
     const privateKey = client.ecdhKeyPair.privateKey
 
     let token
     if (offline) {
-      const payload = {
-        extraData: {
-          displayName: client.username,
-          identity: client.profile.uuid,
-          titleId: '89692877',
-          XUID: '0'
-        },
-        certificateAuthority: true,
-        identityPublicKey: client.clientX509
+      if (useOidcOfflineLogin) {
+        token = ''
+        client.multiplayerToken = JWT.sign({
+          cpk: client.clientX509,
+          xid: String(client.profile.xuid || '0'),
+          xname: client.username,
+          identity: client.profile.uuid
+        }, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509, typ: undefined } })
+      } else {
+        const payload = {
+          extraData: {
+            displayName: client.username,
+            identity: client.profile.uuid,
+            titleId: '89692877',
+            XUID: '0'
+          },
+          certificateAuthority: true,
+          identityPublicKey: client.clientX509
+        }
+        token = JWT.sign(payload, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509, typ: undefined } })
       }
-      token = JWT.sign(payload, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509, typ: undefined } })
     } else {
       token = JWT.sign({
         identityPublicKey: mojangKey || PUBLIC_KEY,
