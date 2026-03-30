@@ -1,3 +1,6 @@
+## 3.55.0
+* [26.10 support (#710)](https://github.com/PrismarineJS/bedrock-protocol/commit/ee353573bf9076581edc622a0d0462dc0a715d0e) (thanks @extremeheat)
+
 ## 3.54.0
 * [Update CI to Node 24 (#708)](https://github.com/PrismarineJS/bedrock-protocol/commit/4bd94b7b00c695297eb0a099fa632c8c22786c51) (thanks @rom1504)
 * [Fix publish workflow for trusted publishing (#707)](https://github.com/PrismarineJS/bedrock-protocol/commit/6690769632d0c13013f6bce424c95e5abaa9ebb1) (thanks @rom1504)
