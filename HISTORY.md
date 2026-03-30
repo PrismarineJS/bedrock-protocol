@@ -1,3 +1,10 @@
+## 3.54.0
+* [Update CI to Node 24 (#708)](https://github.com/PrismarineJS/bedrock-protocol/commit/4bd94b7b00c695297eb0a099fa632c8c22786c51) (thanks @rom1504)
+* [Fix publish workflow for trusted publishing (#707)](https://github.com/PrismarineJS/bedrock-protocol/commit/6690769632d0c13013f6bce424c95e5abaa9ebb1) (thanks @rom1504)
+* [Prepare for 26.10 new token-based auth (#706)](https://github.com/PrismarineJS/bedrock-protocol/commit/53e499173f7a8079cc41c809df369c5002308000) (thanks @extremeheat)
+* [Fix publish condition for npm-publish v4 (#705)](https://github.com/PrismarineJS/bedrock-protocol/commit/48124d4e611bb70501ec91ea6e956c26edc8cdb8) (thanks @rom1504)
+* [Switch to trusted publishing via OIDC (#704)](https://github.com/PrismarineJS/bedrock-protocol/commit/399ab1217d0ed4cd974a31705864f8d18bc8fbcd) (thanks @rom1504)
+
 ## 3.53.0
 * [1.26.0 (#689)](https://github.com/PrismarineJS/bedrock-protocol/commit/8c1939c92b72b1d62c57f3ecafe7e9ed6a6e6094) (thanks @extremeheat)
 
