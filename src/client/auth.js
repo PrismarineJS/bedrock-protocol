@@ -21,7 +21,7 @@ async function realmAuthenticate (options) {
 
   options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
-  const api = RealmAPI.from(options.authflow, 'bedrock')
+  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: options.version })
 
   const getRealms = async () => {
     const realms = await api.getRealms()
