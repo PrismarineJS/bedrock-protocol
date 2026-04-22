@@ -3,7 +3,7 @@ process.env.DEBUG = 'minecraft-protocol'
 const { Client } = require('node-nethernet')
 const { createClient } = require('bedrock-protocol')
 
-const c = new Client()
+const c = new Client(0n)
 
 c.once('pong', (pong) => {
   c.close()
