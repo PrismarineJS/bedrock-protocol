@@ -1,6 +1,6 @@
 {
   "name": "bedrock-protocol",
-  "version": "3.53.0",
+  "version": "3.55.0",
   "description": "Minecraft Bedrock Edition protocol library",
   "main": "index.js",
   "types": "index.d.ts",
@@ -28,7 +28,7 @@
     "minecraft-data": "^3.0.0",
     "minecraft-folder-path": "^1.2.0",
     "node-nethernet": "github:LucienHH/node-nethernet#protocol",
-    "prismarine-auth": "github:LucienHH/prismarine-auth#playfab",
+    "prismarine-auth": "^3.0.0",
     "prismarine-nbt": "^2.0.0",
     "prismarine-realms": "^1.1.0",
     "protodef": "^1.14.0",
