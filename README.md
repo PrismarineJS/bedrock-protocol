@@ -20,7 +20,7 @@ Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication
    - Encryption
    - [Ping a server for status](docs/API.md#beping-host-port---serveradvertisement)
  - Server
-   - Autheticate clients with Xbox Live 
+   - Authenticate clients with Xbox Live 
    - Ping status
 
  * Robust test coverage.
@@ -28,13 +28,13 @@ Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication
  * Optimized for rapidly staying up to date with Minecraft protocol updates.
 
 
-Want to contribute on something important for PrismarineJS ? go to https://github.com/PrismarineJS/mineflayer/wiki/Big-Prismarine-projects
+Want to contribute to something important for PrismarineJS? Go to https://github.com/PrismarineJS/mineflayer/wiki/Big-Prismarine-projects
 
 ## Installation
 
 `npm install bedrock-protocol`
 
-To update bedrock-protocol (or any Node.js package) and its dependencies after a previous install, you must run `npm update --depth 9999`
+To update bedrock-protocol (or any Node.js package) and its dependencies after a previous install, you must run `npm update`
 
 ## Usage
 
@@ -48,7 +48,7 @@ const client = bedrock.createClient({
   host: 'localhost',   // optional
   port: 19132,         // optional, default 19132
   username: 'Notch',   // the username you want to join as, optional if online mode
-  offline: true       // optional, default false. if true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
+  offline: true       // optional, default false. If true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
 })
 
 client.on('text', (packet) => { // Listen for chat messages from the server and echo them back.
@@ -63,13 +63,13 @@ client.on('text', (packet) => { // Listen for chat messages from the server and 
 
 ### Client example joining a Realm
 
-Example to connect to a Realm that the authenticating account is owner of or has been invited to:
+Example to connect to a Realm that the authenticating account is the owner of or has been invited to:
 
 ```js
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
   realms: {
-    pickRealm: (realms) => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+    pickRealm: (realms) => realms[0] // Function which receives an array of joined/owned Realms and must return a single Realm. Can be async
   }
 })
 ```
