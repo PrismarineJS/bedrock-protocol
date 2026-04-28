@@ -28,7 +28,7 @@
     "minecraft-folder-path": "^1.2.0",
     "prismarine-auth": "^3.0.0",
     "prismarine-nbt": "^2.0.0",
-    "prismarine-realms": "^1.1.0",
+    "prismarine-realms": "^1.6.0",
     "protodef": "^1.14.0",
     "raknet-native": "^1.0.3",
     "uuid-1345": "^1.0.2"

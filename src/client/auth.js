@@ -21,7 +21,9 @@ async function realmAuthenticate (options) {
 
   options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
-  const api = RealmAPI.from(options.authflow, 'bedrock')
+  // TODO: Correct minecraft-data which incorrectly dropped 1. prefix from version
+  const ver = options.version.startsWith('1.') ? options.version : `1.${options.version}`
+  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: ver })
 
   const getRealms = async () => {
     const realms = await api.getRealms()
