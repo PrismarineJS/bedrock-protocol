@@ -5,9 +5,11 @@ const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
 const initRaknet = require('./rak')
+const { NethernetClient } = require('./nethernet')
 const { KeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
+const { NethernetSignal } = require('./websocket/signal')
 
 const debugging = false
 
@@ -20,13 +22,16 @@ class Client extends Connection {
     super()
     this.options = { ...Options.defaultOptions, ...options }
 
+    if (this.options.transport === 'nethernet') {
+      this.nethernet = {}
+    }
+
     this.startGameData = {}
     this.clientRuntimeId = null
     // Start off without compression on 1.19.30, zlib on below
     this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
-    this.batchHeader = 0xfe
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -49,10 +54,21 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    const { RakClient } = initRaknet(this.options.raknetBackend)
     const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
+
+    const networkId = this.options.networkId
+
+    if (this.options.transport === 'nethernet') {
+      this.connection = new NethernetClient({ networkId })
+      this.batchHeader = null
+      this.disableEncryption = true
+    } else if (this.options.transport === 'raknet') {
+      const { RakClient } = initRaknet(this.options.raknetBackend)
+      this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
+      this.batchHeader = 0xfe
+      this.disableEncryption = false
+    }
 
     this.emit('connect_allowed')
   }
@@ -72,7 +88,23 @@ class Client extends Connection {
 
   connect () {
     if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
-    this.on('session', this._connect)
+    this.on('session', (sessionData) => {
+      if (this.options.transport === 'nethernet' && this.options.useSignalling) {
+        this.nethernet.signalling = new NethernetSignal(this.connection.nethernet.networkId, this.options.authflow, this.options.version)
+
+        this.nethernet.signalling.connect()
+
+        this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
+
+        this.nethernet.signalling.on('signal', signal => this.connection.nethernet.handleSignal(signal))
+        this.nethernet.signalling.on('credentials', (credentials) => {
+          this.connection.nethernet.credentials = credentials
+          this._connect(sessionData)
+        })
+      } else {
+        this._connect(sessionData)
+      }
+    })
 
     if (this.options.offline) {
       debug('offline mode, not authenticating', this.options)
@@ -85,7 +117,16 @@ class Client extends Connection {
   }
 
   validateOptions () {
-    if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
+    switch (this.options.transport) {
+      case 'nethernet':
+        if (!this.options.networkId) throw Error('Invalid networkId')
+        break
+      case 'raknet':
+        if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
+        break
+      default:
+        throw Error(`Unsupported transport: ${this.options.transport} (nethernet, raknet)`)
+    }
     Options.validateOptions(this.options)
   }
 
@@ -252,7 +293,7 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
-        // fallsthrough
+      // fallsthrough
       case 'item_registry': // 1.21.60+ send itemstates in item_registry packet
         pakData.params.itemstates?.forEach(state => {
           if (state.name === 'minecraft:shield') {
