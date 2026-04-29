@@ -1,3 +1,7 @@
+## 3.55.1
+* [Pass minecraftVersion to prismarine-realm construction (#723)](https://github.com/PrismarineJS/bedrock-protocol/commit/96aaf4ec8ab14ab8fa0abc3be67a44fa020e5948) (thanks @Copilot)
+* [Update README (#725)](https://github.com/PrismarineJS/bedrock-protocol/commit/7ae370a360542e52d6a31366eacfdc8574738121) (thanks @MikaTech-dev)
+
 ## 3.55.0
 * [26.10 support (#710)](https://github.com/PrismarineJS/bedrock-protocol/commit/ee353573bf9076581edc622a0d0462dc0a715d0e) (thanks @extremeheat)
 
