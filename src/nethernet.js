@@ -7,7 +7,14 @@ class NethernetClient {
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
 
-    this.nethernet = new Client(options.networkId)
+    this.nethernet = new Client(
+      options.networkId,
+      '255.255.255.255',
+      {
+        gatherIceBeforeOffer: true,
+        signalTrickleCandidates: false,
+      }
+    )
 
     this.nethernet.on('connected', (client) => {
       this.onConnected(client)
