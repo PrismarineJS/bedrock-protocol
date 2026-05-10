@@ -60,6 +60,7 @@ class Client extends Connection {
     const networkId = this.options.networkId
 
     if (this.options.transport === 'nethernet') {
+      this.nethernet ??= {}
       this.connection = new NethernetClient({ networkId })
       this.batchHeader = null
       this.disableEncryption = true
@@ -94,7 +95,7 @@ class Client extends Connection {
           this.connection.nethernet.networkId,
           this.options.authflow,
           this.options.version,
-          { host: this.options._signallingHost }
+          { protocol: this.options._signallingProtocol, host: this.options._signallingHost }
         )
 
         this.nethernet.signalling.connect()
