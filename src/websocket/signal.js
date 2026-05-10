@@ -2,6 +2,7 @@ const { WebSocket } = require('ws')
 const { stringify } = require('json-bigint')
 const { once, EventEmitter } = require('node:events')
 const { SignalStructure } = require('node-nethernet')
+const { parse } = require('uuid-1345')
 
 const debug = require('debug')('minecraft-protocol')
 
@@ -12,7 +13,7 @@ const MessageType = {
 }
 
 class NethernetSignal extends EventEmitter {
-  constructor (networkId, authflow, version) {
+  constructor (networkId, authflow, version, options = {}) {
     super()
 
     this.networkId = networkId
@@ -20,6 +21,10 @@ class NethernetSignal extends EventEmitter {
     this.authflow = authflow
 
     this.version = version
+
+    this.protocol = options.protocol || 'legacy'
+
+    this.host = options.host || 'signal.franchise.minecraft-services.net'
 
     this.ws = null
 
@@ -78,12 +83,12 @@ class NethernetSignal extends EventEmitter {
 
     debug('Fetched XBL Token', xbl)
 
-    const address = `wss://signal.franchise.minecraft-services.net/ws/v1.0/signaling/${this.networkId}`
+    const address = `wss://${this.host}/ws/v1.0/messaging/connect`
 
     debug('Connecting to Signal', address)
 
     const ws = new WebSocket(address, {
-      headers: { Authorization: xbl.mcToken, 'session-id': this.networkId, 'request-id': Date.now().toString() }
+      headers: { Authorization: xbl.mcToken, 'session-id': randomUUID(), 'request-id': randomUUID() }
     })
 
     this.pingInterval = setInterval(() => {
@@ -156,7 +161,7 @@ class NethernetSignal extends EventEmitter {
         break
       }
       case MessageType.Signal: {
-        const signal = SignalStructure.fromString(message.Message)
+        const signal = parseSignalMessage(message.Message)
 
         signal.networkId = message.From
 
@@ -166,18 +171,56 @@ class NethernetSignal extends EventEmitter {
       case MessageType.RequestPing: {
         debug('Signal Pinged')
       }
+      default: {
+        if (message.jsonrpc) this.onJsonRpcMessage(message)
+      }
     }
   }
 
   write (signal) {
     if (!this.ws) throw new Error('WebSocket not connected')
 
-    const message = stringify({ Type: MessageType.Signal, To: signal.networkId, Message: signal.toString() })
+    const message = this.protocol === 'jsonrpc'
+      ? stringify({
+        jsonrpc: '2.0',
+        method: 'NetherNetMessage',
+        params: { netherNetId: String(signal.networkId), message: signal.toString() }
+      })
+      : stringify({ Type: MessageType.Signal, To: signal.networkId, Message: signal.toString() })
 
     debug('Sending Signal', message)
 
     this.ws.send(message)
   }
+
+  onJsonRpcMessage (message) {
+    const signal = parseJsonRpcSignal(message)
+    if (!signal) return debug('Got non-signal JSONRPC message', message)
+    this.emit('signal', signal)
+  }
+}
+
+function parseSignalMessage (message) {
+  if (typeof message === 'string') return null
+  try {
+    const parsed = JSON.parse(message)
+    const signal = parseJsonRpcSignal(parsed)
+    if (signal) return signal
+  } catch {}
+  return SignalStructure.fromString(message)
+}
+
+function parseJsonRpcSignal(message) {
+  const params = message?.params
+  if (!params || typeof params !== 'object') return null
+
+  const signalText = params.message
+  if (!signalText) return null
+
+  const signal = SignalStructure.fromString(signalText)
+  if (params.netherNetId) signal.networkId = String(params.netherNetId)
+
+  return signal
 }
 
 module.exports = { NethernetSignal }
