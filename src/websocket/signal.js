@@ -1,4 +1,5 @@
 const { WebSocket } = require('ws')
+const { randomUUID } = require('crypto')
 const { stringify } = require('json-bigint')
 const { once, EventEmitter } = require('node:events')
 const { SignalStructure } = require('node-nethernet')
@@ -22,9 +23,11 @@ class NethernetSignal extends EventEmitter {
 
     this.version = version
 
-    this.protocol = options.protocol || 'legacy'
+    this.host = options.host || null
 
-    this.host = options.host || 'signal.franchise.minecraft-services.net'
+    this._protocol = 'legacy'
+
+    this._triedJsonRpc = false
 
     this.ws = null
 
@@ -83,12 +86,17 @@ class NethernetSignal extends EventEmitter {
 
     debug('Fetched XBL Token', xbl)
 
-    const address = `wss://${this.host}/ws/v1.0/messaging/connect`
+    const address = this._protocol === 'jsonrpc'
+      ? `wss://${this.host}/ws/v1.0/messaging/connect`
+      : `wss://signal.franchise.minecraft-services.net/ws/v1.0/signaling/${this.networkId}`
 
     debug('Connecting to Signal', address)
 
+    const headers = this._protocol === 'jsonrpc'
+      ? { Authorization: xbl.mcToken, 'session-id': randomUUID(), 'request-id': randomUUID() }
+      : { Authorization: xbl.mcToken, 'session-id': String(this.networkId), 'request-id': Date.now().toString() }
     const ws = new WebSocket(address, {
-      headers: { Authorization: xbl.mcToken, 'session-id': randomUUID(), 'request-id': randomUUID() }
+      headers: headers
     })
 
     this.pingInterval = setInterval(() => {
@@ -126,6 +134,15 @@ class NethernetSignal extends EventEmitter {
 
   onClose (code, reason) {
     debug(`Signal Disconnected with code ${code} and reason ${reason}`)
+
+    if (!this.credentials && this.host && !this._triedJsonRpc) {
+      debug('Failed legacy connection, trying JSONRPC protocol')
+      this._triedJsonRpc = true
+      this._protocol = 'jsonrpc'
+      this.destroy(true)
+
+      return
+    }
 
     if (code === 1006) {
       debug('Signal Connection Closed Unexpectedly')
@@ -170,6 +187,7 @@ class NethernetSignal extends EventEmitter {
       }
       case MessageType.RequestPing: {
         debug('Signal Pinged')
+        break
       }
       default: {
         if (message.jsonrpc) this.onJsonRpcMessage(message)
@@ -180,7 +198,7 @@ class NethernetSignal extends EventEmitter {
   write (signal) {
     if (!this.ws) throw new Error('WebSocket not connected')
 
-    const message = this.protocol === 'jsonrpc'
+    const message = this._protocol === 'jsonrpc'
       ? stringify({
         jsonrpc: '2.0',
         method: 'NetherNetMessage',
