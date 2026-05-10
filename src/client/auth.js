@@ -100,12 +100,20 @@ async function realmAuthenticate (options) {
 
   if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
 
-  const { host, port } = await realm.getAddress()
+  const join = await realm.getAddress()
 
-  debug('realms connection', { host, port })
-
-  options.host = host
-  options.port = port
+  debug('realms connection', join)
+  
+  if (join.networkProtocol === 'NETHERNET_JSONRPC') {
+    options.transport = 'nethernet'
+    options.networkId = join.address
+    options.useSignalling = true
+    const region = join.sessionRegionData?.regionName
+    if (region) options._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
+  } else {
+    options.host = join.host
+    options.port = join.port
+  }
 }
 
 /**
