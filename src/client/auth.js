@@ -76,7 +76,7 @@ async function realmAuthenticate (options) {
 
   options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
-  const api = RealmAPI.from(options.authflow, 'bedrock')
+  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: options.version })
 
   const getRealms = async () => {
     const realms = await api.getRealms()
@@ -100,14 +100,16 @@ async function realmAuthenticate (options) {
 
   if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
 
-  const join = await realm.getAddress()
+  const join = await api.rest.get(`/worlds/${realm.id}/join`)
 
   debug('realms connection', join)
-  
+
   if (join.networkProtocol === 'NETHERNET_JSONRPC') {
     options.transport = 'nethernet'
     options.networkId = join.address
     options.useSignalling = true
+    options.skipPing = true
+    options._signallingProtocol = 'jsonrpc'
     const region = join.sessionRegionData?.regionName
     if (region) options._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
   } else {
