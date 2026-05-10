@@ -90,7 +90,12 @@ class Client extends Connection {
     if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
     this.on('session', (sessionData) => {
       if (this.options.transport === 'nethernet' && this.options.useSignalling) {
-        this.nethernet.signalling = new NethernetSignal(this.connection.nethernet.networkId, this.options.authflow, this.options.version)
+        this.nethernet.signalling = new NethernetSignal(
+          this.connection.nethernet.networkId,
+          this.options.authflow,
+          this.options.version,
+          { host: this.options._signallingHost }
+        )
 
         this.nethernet.signalling.connect()
 
