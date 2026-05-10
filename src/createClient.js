@@ -14,7 +14,7 @@ function createClient (options) {
 
   function onServerInfo () {
     client.on('connect_allowed', () => connect(client))
-    if (options.skipPing) {
+    if (client.options.skipPing) {
       client.init()
     } else {
       ping(client.options).then(ad => {
