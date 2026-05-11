@@ -42,12 +42,18 @@ SizeOf.restBuffer = ['native', (value) => {
 Read.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
   return compiler.wrapCode(`
   const payloadSize = ${compiler.callType(lengthType, 'offset')}
+  if (payloadSize.value === 0) {
+    return { value: undefined, size: payloadSize.size }
+  }
   const { value, size } = ctx.${type}(buffer, offset + payloadSize.size)
   return { value, size: size + payloadSize.size }
 `.trim())
 }]
 Write.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
   return compiler.wrapCode(`
+  if (value === undefined) {
+    return (ctx.${lengthType})(0, buffer, offset)
+  }
   const buf = Buffer.allocUnsafe(buffer.length - offset)
   const payloadSize = (ctx.${type})(value, buf, 0)
   let size = (ctx.${lengthType})(payloadSize, buffer, offset)
@@ -57,6 +63,9 @@ Write.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
 }]
 SizeOf.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
   return compiler.wrapCode(`
+    if (value === undefined) {
+      return (ctx.${lengthType})(0)
+    }
     const payloadSize = (ctx.${type})(value)
     return (ctx.${lengthType})(payloadSize) + payloadSize
 `.trim())
