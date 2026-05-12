@@ -1,9 +1,53 @@
 const { Server } = require('./server')
+const { NethernetSignal } = require('./websocket/signal')
+const assert = require('assert')
 
+const { getRandomUint64 } = require('./datatypes/util')
+const { serverAuthenticate } = require('./client/auth')
+const { SignalType } = require('node-nethernet')
+
+/** @param {{ port?: number, version?: number, networkId?: string, transport?: string, delayedInit?: boolean }} options */
 function createServer (options) {
+  assert(options)
+  if (!options.networkId) options.networkId = getRandomUint64()
   if (!options.port) options.port = 19132
   const server = new Server(options)
-  server.listen()
+
+  function startSignalling () {
+    if (server.options.transport === 'nethernet') {
+      server.nethernet.signalling = new NethernetSignal(server.options.networkId, server.options.authflow)
+
+      server.nethernet.signalling.connect(server.options.version)
+        .then(() => {
+          server.nethernet.signalling.on('signal', (signal) => {
+            switch (signal.type) {
+              case SignalType.ConnectRequest:
+                server.transport.nethernet.handleOffer(signal, server.nethernet.signalling.write.bind(server.nethernet.signalling), server.nethernet.signalling.credentials)
+                break
+              case SignalType.CandidateAdd:
+                server.transport.nethernet.handleCandidate(signal)
+                break
+            }
+          })
+        })
+        .catch(e => server.emit('error', e))
+    }
+  }
+
+  if (server.options.useSignalling) {
+    serverAuthenticate(server, server.options)
+      .then(startSignalling)
+      .then(() => server.listen())
+      .catch(e => server.emit('error', e))
+  } else {
+    server.listen()
+  }
+
+  server.once('close', () => {
+    if (server.nethernet.session) server.nethernet.session.end()
+    if (server.nethernet.signalling) server.nethernet.signalling.destroy()
+  })
+
   return server
 }
 
