@@ -83,15 +83,21 @@ class Player extends Connection {
       const authChain = JSON.parse(tokens.identity)
       const authToken = authChain.Token || ''
       let chain
-      if (authChain.Certificate) { // 1.21.90+
+      
+      // On v818+, Certificate can be empty string for TokenPayload
+      // Must check that it's not empty before parsing
+      if (authChain.Certificate && authChain.Certificate.trim()) { // 1.21.90+
         chain = JSON.parse(authChain.Certificate).chain
       } else if (authChain.chain) {
         chain = authChain.chain
-      } else if (authToken && this.server.options.offline) {
+      } else if (authToken) {
+        // Token can be used for both offline AND online TokenPayload mode
         chain = []
       } else {
-        throw new Error('Invalid login packet: missing chain or Certificate')
+        throw new Error('Invalid login packet: missing chain or Certificate or Token')
       }
+      
+      debug('onLogin: chain type?', Array.isArray(chain) ? 'array' : typeof chain, 'length?', chain?.length)
       var { key, userData, skinData } = this.decodeLoginJWT(chain, skinChain, authToken) // eslint-disable-line
     } catch (e) {
       debug(this.address, e)

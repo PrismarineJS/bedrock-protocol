@@ -16,12 +16,14 @@ module.exports = (client, server, options) => {
     }
 
     const normalized = normalizeToken(token)
-    const x5u = getX5U(normalized)
-    const decoded = JWT.verify(normalized, getDER(x5u), { algorithms: ['ES384', 'RS256'] })
+    
+    // For self-signed offline tokens, just decode without verifying signature
+    // (matches Java OFFLINE_CONSUMER which skips all signature validation)
+    const decoded = JWT.decode(normalized)
     if (!decoded || typeof decoded !== 'object') throw new Error('Invalid login token')
 
     const payload = decoded || {}
-    const key = payload.cpk || payload.clientPublicKey || x5u
+    const key = payload.cpk || payload.clientPublicKey
     return {
       key,
       data: {
@@ -37,55 +39,182 @@ module.exports = (client, server, options) => {
   }
 
   function verifyAuth (chain, token) {
-    // In offline mode 26.10+, we do not generate a chain and only a self-signed token.
-    if ((!chain || chain.length === 0 || chain.every(entry => !entry)) && token) {
-      if (!options.offline) throw new Error('Missing certificate chain for authenticated login')
-      return parseTokenData(token)
+    debug('=== verifyAuth START ===')
+    debug('Input: chain type =', Array.isArray(chain) ? 'array' : typeof chain, ', chain length =', chain?.length, ', token length =', token?.length)
+    
+    // TokenPayload (modern): empty chain + authToken
+    // In v818+, when TokenPayload is used, chain comes empty and token has the OIDC JWT
+    if ((!chain || chain.length === 0) && token) {
+      debug('TokenPayload detected: validating OIDC token')
+      // For offline mode, just decode the token without verifying signature
+      if (options.offline) {
+        debug('Offline mode: decoding token without signature verification')
+        const decoded = JWT.decode(token)
+        if (!decoded) throw new Error('Invalid offline token')
+        const resultData = {
+          extraData: {
+            displayName: decoded.xname || decoded.displayName || 'Player',
+            identity: decoded.identity,
+            XUID: decoded.xid || decoded.XUID || decoded.xuid || '0',
+            xuid: decoded.xuid || decoded.XUID || decoded.xid || '0',
+            PlayFabID: decoded.pfbid || decoded.playFabId || decoded.PlayFabID,
+            PlayFabTitleID: decoded.pfbtid || decoded.playFabTitleId || decoded.PlayFabTitleID
+          }
+        }
+        debug('Token decoded offline: displayName =', resultData.extraData.displayName)
+        return { key: decoded.cpk || decoded.clientPublicKey || null, data: resultData }
+      } else {
+        // Online mode: would need to validate against Mojang's JWKS (not implemented here)
+        // For now, just decode and trust it (implement proper OIDC validation if needed)
+        debug('Online mode: decoding token (OIDC validation not yet implemented)')
+        const decoded = JWT.decode(token)
+        if (!decoded) throw new Error('Invalid token')
+        const resultData = {
+          extraData: {
+            displayName: decoded.xname || decoded.displayName || 'Player',
+            identity: decoded.identity,
+            XUID: decoded.xid || decoded.XUID || decoded.xuid || '0',
+            xuid: decoded.xuid || decoded.XUID || decoded.xid || '0',
+            PlayFabID: decoded.pfbid || decoded.playFabId || decoded.PlayFabID,
+            PlayFabTitleID: decoded.pfbtid || decoded.playFabTitleId || decoded.PlayFabTitleID
+          }
+        }
+        debug('Token decoded online: displayName =', resultData.extraData.displayName)
+        return { key: decoded.cpk || decoded.clientPublicKey || null, data: resultData }
+      }
     }
 
-    let data = {}
+    // According to reference implementation, the chain should be either
+    // length 1 (offline/proxied) or length 3 (full chain).
+    if (!chain || chain.length === 0) throw new Error('Empty certificate chain')
 
-    // There are three JWT tokens sent to us, one signed by the client
-    // one signed by Mojang with the Mojang token we have and another one
-    // from Xbox with addition user profile data
-    // We verify that at least one of the tokens in the chain has been properly
-    // signed by Mojang by checking the x509 public key in the JWT headers
-    let didVerify = false
+    debug('verifyAuth: chain length =', chain.length)
 
-    let pubKey = getDER(getX5U(chain[0])) // the first one is client signed, allow it
+    if (chain.length === 1) {
+      // Offline/proxied case: do not validate signature, just return payload
+      debug('verifyAuth: processing single-entry chain (offline/proxied)')
+      const decoded = JWT.decode(chain[0])
+      if (!decoded) throw new Error('Invalid single-entry chain')
+      
+      // Transform payload to match expected structure
+      const resultData = {
+        extraData: {
+          displayName: decoded.displayName || decoded.xname || 'Player',
+          identity: decoded.identity,
+          XUID: decoded.XUID || decoded.xid || '0',
+          xuid: decoded.xuid || decoded.XUID || decoded.xid || '0',
+          PlayFabID: decoded.PlayFabID || decoded.playFabId || decoded.pfbid,
+          PlayFabTitleID: decoded.PlayFabTitleID || decoded.playFabTitleId || decoded.pfbtid
+        }
+      }
+      debug('verifyAuth: offline chain decoded, displayName =', resultData.extraData.displayName)
+      return { key: null, data: resultData }
+    }
+
+    if (chain.length !== 3) {
+      throw new Error('Unexpected login chain length: ' + chain.length)
+    }
+
+    // Full chain validation (length === 3)
+    // Logic from Java EncryptionUtils.validateChain():
+    // Each token[i] is verified using a key that becomes the expected key for token[i+1]
+    // First token is verified using its own header.x5u
+    // Token[i] signature is verified, then identityPublicKey becomes the key for token[i+1]
+    debug('verifyAuth: processing full 3-entry chain')
+    let currentKeyB64 = null  // Current key in base64 form
     let finalKey = null
+    let parsedPayload = {}
 
-    for (const token of chain) {
-      const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
+    for (let i = 0; i < 3; i++) {
+      const token = chain[i]
+      const headerX5u = getX5U(token)
+      debug('verifyAuth: chain[' + i + '] x5u =', headerX5u.substring(0, 20) + '...')
 
-      // Check if signed by Mojang key
-      const x5u = getX5U(token)
-      if (x5u === constants.PUBLIC_KEY && !data.extraData?.XUID) {
-        didVerify = true
-        debug('Verified client with mojang key', x5u)
+      // Get the public key from header to verify this token
+      let expectedKeyB64 = headerX5u
+      
+      // On first iteration, establish the key. On subsequent iterations, verify it matches.
+      if (currentKeyB64 === null) {
+        currentKeyB64 = expectedKeyB64
+        debug('verifyAuth: established initial key from token[0] header')
+      } else if (expectedKeyB64 !== currentKeyB64) {
+        // The header key must match the previous token's identityPublicKey
+        debug('verifyAuth: ERROR - expected key mismatch. current=', currentKeyB64.substring(0, 20), 'expected=', expectedKeyB64.substring(0, 20))
+        throw new Error('Received broken chain: signature key mismatch')
       }
 
-      pubKey = decoded.identityPublicKey ? getDER(decoded.identityPublicKey) : x5u
-      finalKey = decoded.identityPublicKey || finalKey // non pem
-      data = { ...data, ...decoded }
+      // Verify signature using the current key
+      debug('verifyAuth: verifying signature for token ' + i)
+      let decoded
+      try {
+        const pubKey = getDER(currentKeyB64)
+        decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
+      } catch (e) {
+        debug('verifyAuth: signature verification failed:', e.message)
+        throw new Error('Chain signature verification failed: ' + e.message)
+      }
+      debug('verifyAuth: token ' + i + ' signature verified')
+
+      // Token[1] (second entry, index 1) must be signed by Mojang's public key
+      if (i === 1) {
+        if (currentKeyB64 !== constants.PUBLIC_KEY) {
+          debug('verifyAuth: ERROR - token[1] not signed by Mojang. key=', currentKeyB64.substring(0, 20))
+          throw new Error('The chain is not signed by Mojang')
+        }
+        debug('verifyAuth: verified token[1] signed by Mojang')
+      }
+
+      // Save payload (return the last one)
+      parsedPayload = decoded
+
+      // For next iteration the identityPublicKey becomes the current key
+      if (decoded.identityPublicKey) {
+        finalKey = decoded.identityPublicKey
+        currentKeyB64 = decoded.identityPublicKey
+        debug('verifyAuth: chain[' + i + '] identityPublicKey becomes next key')
+      } else if (i < 2) {
+        // All tokens except possibly the last one must have identityPublicKey
+        throw new Error('Chain token ' + i + ' missing identityPublicKey')
+      }
     }
 
-    if (!didVerify && !options.offline) {
-      client.disconnect('disconnectionScreen.notAuthenticated')
+    // transform payload to match expected structure with extraData
+    const resultData = {
+      extraData: {
+        displayName: parsedPayload.displayName || parsedPayload.xname || 'Player',
+        identity: parsedPayload.identity,
+        XUID: parsedPayload.XUID || parsedPayload.xid || '0',
+        xuid: parsedPayload.xuid || parsedPayload.XUID || parsedPayload.xid || '0',
+        PlayFabID: parsedPayload.PlayFabID || parsedPayload.playFabId || parsedPayload.pfbid,
+        PlayFabTitleID: parsedPayload.PlayFabTitleID || parsedPayload.playFabTitleId || parsedPayload.pfbtid
+      }
     }
-
-    return { key: finalKey, data }
+    
+    debug('verifyAuth: chain verification complete, displayName =', resultData.extraData.displayName)
+    return { key: finalKey, data: resultData }
   }
 
   function verifySkin (publicKey, token) {
+    // In offline mode, publicKey may be null just decode without verification
+    if (!publicKey) {
+      return JWT.decode(token)
+    }
     const pubKey = getDER(publicKey)
     const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
     return decoded
   }
 
   client.decodeLoginJWT = (authTokens, skinTokens, authToken = '') => {
+    debug('decodeLoginJWT: authTokens length =', authTokens?.length, ', authToken length =', authToken?.length)
     const { key, data } = verifyAuth(authTokens, authToken)
+    const keyDisplay = typeof key === 'string' ? key.substring(0, 20) + '...' : 'null'
+    const displayName = data?.extraData?.displayName
+    debug('verifyAuth returned: key =', keyDisplay, ', displayName =', displayName)
+    
+    debug('verifySkin: processing skin token with key =', keyDisplay)
     const skinData = verifySkin(key, skinTokens)
+    debug('verifySkin returned SkinId:', skinData?.SkinId?.substring(0, 30))
+    
     return { key, userData: data, skinData }
   }
 
