@@ -62,7 +62,8 @@ module.exports = (client, server, options) => {
           }
         }
         debug('Token decoded offline: displayName =', resultData.extraData.displayName)
-        return { key: decoded.cpk || decoded.clientPublicKey || null, data: resultData }
+        const finalKey = decoded.cpk || decoded.clientPublicKey
+        return { key: finalKey, data: resultData }
       } else {
         // Online mode: would need to validate against Mojang's JWKS (not implemented here)
         // For now, just decode and trust it (implement proper OIDC validation if needed)
@@ -80,7 +81,8 @@ module.exports = (client, server, options) => {
           }
         }
         debug('Token decoded online: displayName =', resultData.extraData.displayName)
-        return { key: decoded.cpk || decoded.clientPublicKey || null, data: resultData }
+        const finalKey = decoded.cpk || decoded.clientPublicKey
+        return { key: finalKey, data: resultData }
       }
     }
 
@@ -107,8 +109,9 @@ module.exports = (client, server, options) => {
           PlayFabTitleID: decoded.PlayFabTitleID || decoded.playFabTitleId || decoded.pfbtid
         }
       }
-      debug('verifyAuth: offline chain decoded, displayName =', resultData.extraData.displayName)
-      return { key: null, data: resultData }
+      const key = decoded.identityPublicKey || decoded.clientPublicKey
+      debug('verifyAuth: offline chain decoded, displayName =', resultData.extraData.displayName, ', key present =', !!key)
+      return { key, data: resultData }
     }
 
     if (chain.length !== 3) {
@@ -190,7 +193,12 @@ module.exports = (client, server, options) => {
       }
     }
     
-    debug('verifyAuth: chain verification complete, displayName =', resultData.extraData.displayName)
+    // If finalKey wasn't set from loop, try to get it from parsed payload
+    if (!finalKey && parsedPayload.identityPublicKey) {
+      finalKey = parsedPayload.identityPublicKey
+    }
+    
+    debug('verifyAuth: chain verification complete, displayName =', resultData.extraData.displayName, ', key present =', !!finalKey)
     return { key: finalKey, data: resultData }
   }
 
@@ -199,6 +207,7 @@ module.exports = (client, server, options) => {
     if (!publicKey) {
       return JWT.decode(token)
     }
+    // publicKey is a base64 string
     const pubKey = getDER(publicKey)
     const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
     return decoded
