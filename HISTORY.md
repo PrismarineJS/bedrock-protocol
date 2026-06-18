@@ -1,8 +1,5 @@
 ## 3.57.0
 * [1.26.30 (#746)](https://github.com/PrismarineJS/bedrock-protocol/commit/d236008ea956f163f0b5c1434ad2d8925d6d3ddc) (thanks @extremeheat)
-* [Update package.json](https://github.com/PrismarineJS/bedrock-protocol/commit/bd230e26f1c47516eda521ebe447dd131770a62c) (thanks @extremeheat)
-* [Update package.json](https://github.com/PrismarineJS/bedrock-protocol/commit/a43ec5755c744d38e51b18da295fe6ecd64678e4) (thanks @extremeheat)
-* [Update package.json](https://github.com/PrismarineJS/bedrock-protocol/commit/9de85b66cc610a32f2fac7973c1129f5f8b35729) (thanks @extremeheat)
 
 ## 3.56.1
 * [feat: accept 0 lengthed encapsulated type as undefined (#734)](https://github.com/PrismarineJS/bedrock-protocol/commit/747dc574a01e33c09c1cd21b81a32ca80e8f95b4) (thanks @hax0r31337)
