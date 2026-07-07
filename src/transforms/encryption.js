@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 const Zlib = require('zlib')
-const snappy=require('snappy')
+const snappy = require('snappy')
 
 function createCipher (secret, initialValue, cipherAlgorithm) {
   if (crypto.getCiphers().includes(cipherAlgorithm)) {
