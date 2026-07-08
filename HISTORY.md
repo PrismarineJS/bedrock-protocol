@@ -1,3 +1,6 @@
+## 3.57.0
+* [1.26.30 (#746)](https://github.com/PrismarineJS/bedrock-protocol/commit/d236008ea956f163f0b5c1434ad2d8925d6d3ddc) (thanks @extremeheat)
+
 ## 3.56.1
 * [feat: accept 0 lengthed encapsulated type as undefined (#734)](https://github.com/PrismarineJS/bedrock-protocol/commit/747dc574a01e33c09c1cd21b81a32ca80e8f95b4) (thanks @hax0r31337)
 
