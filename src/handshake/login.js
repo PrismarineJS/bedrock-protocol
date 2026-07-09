@@ -21,7 +21,7 @@ module.exports = (client, server, options) => {
           xid: String(client.profile.xuid || '0'),
           xname: client.username,
           identity: client.profile.uuid
-        }, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509, typ: undefined } })
+        }, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, audience: 'api://auth-minecraft-services/multiplayer', header: { x5u: client.clientX509, typ: undefined } })
       } else {
         const payload = {
           extraData: {
