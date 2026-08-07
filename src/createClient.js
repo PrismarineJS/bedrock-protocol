@@ -42,6 +42,13 @@ function connect (client) {
   // Actually connect
   client.connect()
 
+  // Echo network_stack_latency back so latency-tracking servers see the client as responsive (#643).
+  client.on('network_stack_latency', (packet) => {
+    if (packet.needs_response) {
+      client.queue('network_stack_latency', { timestamp: packet.timestamp, needs_response: false })
+    }
+  })
+
   client.once('resource_packs_info', (packet) => {
     client.write('resource_pack_client_response', {
       response_status: 'completed',
