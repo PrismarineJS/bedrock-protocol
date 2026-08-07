@@ -45,12 +45,14 @@ async function dump (version, force = true) {
     client.once('resource_packs_info', (packet) => {
       client.write('resource_pack_client_response', {
         response_status: 'completed',
+        response_status_name: 'resourcepackstackfinished',
         resourcepackids: []
       })
 
       client.once('resource_pack_stack', (stack) => {
         client.write('resource_pack_client_response', {
           response_status: 'completed',
+          response_status_name: 'resourcepackstackfinished',
           resourcepackids: []
         })
       })

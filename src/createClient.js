@@ -50,14 +50,18 @@ function connect (client) {
   })
 
   client.once('resource_packs_info', (packet) => {
+    // As of 1.26.40 the status is a varint followed by the same status as a lowercase string.
+    // Older protocol versions have no such field and simply ignore it.
     client.write('resource_pack_client_response', {
       response_status: 'completed',
+      response_status_name: 'resourcepackstackfinished',
       resourcepackids: []
     })
 
     client.once('resource_pack_stack', (stack) => {
       client.write('resource_pack_client_response', {
         response_status: 'completed',
+        response_status_name: 'resourcepackstackfinished',
         resourcepackids: []
       })
     })
