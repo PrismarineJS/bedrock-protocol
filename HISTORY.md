@@ -1,3 +1,9 @@
+## 3.58.0
+* [1.26.40 (#761)](https://github.com/PrismarineJS/bedrock-protocol/commit/d5810977f77b4d0aef4c70e1027542d99e93e1cc) (thanks @extremeheat)
+* [Support 1.26.40 resource_pack_client_response (#760)](https://github.com/PrismarineJS/bedrock-protocol/commit/32b82aa2f12b157c274bb5a0792f9a72b5fa908f) (thanks @hax0r31337)
+* [client: respond to network_stack_latency packets (#750)](https://github.com/PrismarineJS/bedrock-protocol/commit/95ff7a10d9873c214f0df8a7bfb65b89fd55081c) (thanks @VasilisDragon)
+* [Add audience to JWT token (#743)](https://github.com/PrismarineJS/bedrock-protocol/commit/c94bedee951a7c6e3f7bd4b85e0a6a27929c4501) (thanks @Zwuiix-cmd)
+
 ## 3.57.0
 * [1.26.30 (#746)](https://github.com/PrismarineJS/bedrock-protocol/commit/d236008ea956f163f0b5c1434ad2d8925d6d3ddc) (thanks @extremeheat)
 
