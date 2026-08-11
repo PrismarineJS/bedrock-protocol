@@ -1,5 +1,5 @@
 ## 3.58.1
-* [Add EOF-tolerant protocol datatypes (#766)](https://github.com/PrismarineJS/bedrock-protocol/commit/32b8e72a299c2aa250af6dc5b7e3455a90ed1b00) (thanks @extremeheat)
+* [Add EOF-tolerant protocol datatypes to prepare for 1.26.40 (#766)](https://github.com/PrismarineJS/bedrock-protocol/commit/32b8e72a299c2aa250af6dc5b7e3455a90ed1b00) (thanks @extremeheat)
 
 ## 3.58.0
 * [1.26.40 (#761)](https://github.com/PrismarineJS/bedrock-protocol/commit/d5810977f77b4d0aef4c70e1027542d99e93e1cc) (thanks @extremeheat)
