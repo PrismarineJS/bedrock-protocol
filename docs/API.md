@@ -162,6 +162,38 @@ Both Client and ServerPlayer classes have `write(name, params)` and `queue(name,
 
 You can use `.close()` to terminate a connection, and `.disconnect(reason)` to gracefully kick a connected client.
 
+### Running commands
+
+Send a `command_request` and correlate the server's `command_output` back to it with `origin.uuid`, which the server echoes:
+
+```js
+const { randomUUID } = require('crypto')
+
+const uuid = randomUUID()
+client.on('command_output', (packet) => {
+  if (packet.origin.uuid === uuid) console.log(packet.output)
+})
+
+client.queue('command_request', {
+  command: '/list',
+  origin: {
+    type: 'player',
+    uuid,
+    request_id: '',
+    player_entity_id: 0n // 1.26.x and above only, see below
+  },
+  internal: false,
+  version: 'latest' // see below
+})
+```
+
+Two fields are version dependent, and getting either wrong on 1.26.x produces a **terminating** `packet_violation_warning` whose reason reads `Command exceeds maximum size of 512 characters.` regardless of the actual cause — it is boilerplate, so don't read it as being about the command length:
+
+* `version` is a varint on 1.21.x and below, and a string from 1.21.130 onwards. On 1.26.x pass the string `'latest'`; numeric-looking values such as `'52'` are rejected.
+* `origin.player_entity_id` is behind a switch on 1.21.x and below (so a `player` origin omits it), but is an unconditional `li64` from 1.21.130 onwards. Omitting it there throws while serializing, before anything is sent.
+
+Note that `command_output.output_type` is a string from 1.21.130 onwards rather than the older enum, and on 1.26.x the complete-output value is spelled `'alloutput'` where the old enum called it `'all'`. Some commands, such as `/say`, produce no `command_output` for the sender at all, so don't await one.
+
 ### Protocol docs
 
 For documentation on the protocol, and packets/fields see the [the protocol doc](https://prismarinejs.github.io/minecraft-data/?v=bedrock_1.18.0&d=protocol) (the emitted event names are the Packet types in lower case without the "packet_" prefix). More information on syntax can be found in CONTRIBUTING.md. When sending a packet, you must fill out all of the required fields.
