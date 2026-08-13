@@ -30,12 +30,13 @@ module.exports = ({ Client, Server, PacketPriority, PacketReliability, RakTimeou
     }
 
     async ping (timeout = 1000) {
-      this.raknet.ping()
+      let onPong
       return waitFor((done) => {
-        this.raknet.on('pong', (ret) => {
-          done(ret.extra?.toString() ?? '')
-        })
+        onPong = (ret) => done(ret.extra?.toString() ?? '')
+        this.raknet.once('pong', onPong)
+        this.raknet.ping()
       }, timeout, () => {
+        if (onPong) this.raknet.off('pong', onPong)
         if ('REPLIT_ENVIRONMENT' in process.env) {
           console.warn('A Replit environment was detected. Replit may not support the necessary outbound UDP connections required to connect to a Minecraft server. Please see https://github.com/PrismarineJS/bedrock-protocol/blob/master/docs/FAQ.md for more information.')
         }
