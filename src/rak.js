@@ -64,9 +64,7 @@ class RakNativeClient extends EventEmitter {
     this.raknet.ping()
     return waitFor((done) => {
       this.raknet.on('pong', (ret) => {
-        if (ret.extra) {
-          done(ret.extra.toString())
-        }
+        done(ret.extra?.toString() ?? '')
       })
     }, timeout, () => {
       if ('REPLIT_ENVIRONMENT' in process.env) {
