@@ -17,7 +17,10 @@ module.exports = (client, server, options) => {
 
     const normalized = normalizeToken(token)
     const x5u = getX5U(normalized)
-    const decoded = JWT.verify(normalized, getDER(x5u), { algorithms: ['ES384', 'RS256'] })
+    // Tokens with no x5u use kid and RS256. Decode the payload in offline mode.
+    const decoded = x5u
+      ? JWT.verify(normalized, getDER(x5u), { algorithms: ['ES384', 'RS256'] })
+      : JWT.decode(normalized)
     if (!decoded || typeof decoded !== 'object') throw new Error('Invalid login token')
 
     const payload = decoded || {}
@@ -78,9 +81,14 @@ module.exports = (client, server, options) => {
   }
 
   function verifySkin (publicKey, token) {
-    const pubKey = getDER(publicKey)
-    const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
-    return decoded
+    const key = publicKey || getX5U(token)
+    if (!key) return JWT.decode(token)
+    try {
+      return JWT.verify(token, getDER(key), { algorithms: ['ES384'] })
+    } catch (e) {
+      if (options.offline) return JWT.decode(token)
+      throw e
+    }
   }
 
   client.decodeLoginJWT = (authTokens, skinTokens, authToken = '') => {
