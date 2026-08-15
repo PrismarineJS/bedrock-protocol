@@ -1,3 +1,7 @@
+## 3.58.2
+* [Fix modern 1.26.10+ auth and relay compat, add 1.26.44 support (#772)](https://github.com/PrismarineJS/bedrock-protocol/commit/42e63a9fc7e76336cd1daf1a4834ce8217efae77) (thanks @extremeheat)
+* [Update API doc to add section on command_requests (#759)](https://github.com/PrismarineJS/bedrock-protocol/commit/b197d0b7d41fbcd1c26e40cb5733efdb93a95394) (thanks @c-house)
+
 ## 3.58.1
 * [Add EOF-tolerant protocol datatypes to prepare for 1.26.40 (#766)](https://github.com/PrismarineJS/bedrock-protocol/commit/32b8e72a299c2aa250af6dc5b7e3455a90ed1b00) (thanks @extremeheat)
 
