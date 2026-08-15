@@ -18,17 +18,13 @@ function validateOptions (options) {
   if (!options.profilesFolder) {
     options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
   }
-  if (options.offline) {
-    options.deviceOS ??= options.skinData?.DeviceOS ?? 7
-    return
-  }
   if (options.authTitle === undefined) {
     options.authTitle = Titles.MinecraftNintendoSwitch
     options.deviceType = 'Nintendo'
     options.flow = 'live'
   }
   if (options.deviceOS === undefined) {
-    options.deviceOS = options.skinData?.DeviceOS ?? deviceOSByAuthTitle[options.authTitle]
+    options.deviceOS = deviceOSByAuthTitle[options.authTitle]
   }
   if (options.deviceOS === undefined) {
     throw new Error('deviceOS is required when authTitle does not identify a known Minecraft platform')

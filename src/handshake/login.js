@@ -86,6 +86,7 @@ module.exports = (client, server, options) => {
     }
     const customPayload = options.skinData || {}
     payload = { ...payload, ...customPayload }
+    payload.DeviceOS = options.deviceOS
     payload.ServerAddress = `${options.host}:${options.port}`
 
     client.clientUserChain = JWT.sign(payload, privateKey, { algorithm, header: { x5u: client.clientX509, typ: undefined }, noTimestamp: true /* pocketmine.. */ })
