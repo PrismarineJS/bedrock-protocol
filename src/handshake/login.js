@@ -21,7 +21,7 @@ module.exports = (client, server, options) => {
           xid: String(client.profile.xuid || '0'),
           xname: client.username,
           identity: client.profile.uuid
-        }, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, header: { x5u: client.clientX509, typ: undefined } })
+        }, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, audience: 'api://auth-minecraft-services/multiplayer', header: { x5u: client.clientX509, typ: undefined } })
       } else {
         const payload = {
           extraData: {
@@ -55,7 +55,7 @@ module.exports = (client, server, options) => {
       DefaultInputMode: 1,
       DeviceId: nextUUID(),
       DeviceModel: 'PrismarineJS',
-      DeviceOS: client.session?.deviceOS || 7,
+      DeviceOS: options.deviceOS,
       GameVersion: options.version || '1.16.201',
       GuiScale: -1,
       LanguageCode: 'en_GB', // TODO locale
@@ -86,6 +86,7 @@ module.exports = (client, server, options) => {
     }
     const customPayload = options.skinData || {}
     payload = { ...payload, ...customPayload }
+    payload.DeviceOS = options.deviceOS
     payload.ServerAddress = `${options.host}:${options.port}`
 
     client.clientUserChain = JWT.sign(payload, privateKey, { algorithm, header: { x5u: client.clientX509, typ: undefined }, noTimestamp: true /* pocketmine.. */ })

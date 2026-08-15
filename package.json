@@ -1,6 +1,6 @@
 {
   "name": "bedrock-protocol",
-  "version": "3.55.0",
+  "version": "3.58.2",
   "description": "Minecraft Bedrock Edition protocol library",
   "main": "index.js",
   "types": "index.d.ts",
@@ -30,7 +30,7 @@
     "node-nethernet": "github:LucienHH/node-nethernet#protocol",
     "prismarine-auth": "^3.0.0",
     "prismarine-nbt": "^2.0.0",
-    "prismarine-realms": "^1.1.0",
+    "prismarine-realms": "^1.6.0",
     "protodef": "^1.14.0",
     "raknet-native": "^1.0.3",
     "uuid-1345": "^1.0.2",
@@ -44,7 +44,7 @@
     "bedrock-protocol": "file:.",
     "bedrock-provider": "^2.0.0",
     "leveldb-zlib": "^1.0.1",
-    "minecraft-bedrock-server": "^1.4.2",
+    "minecraft-bedrock-server": "^1.5.2",
     "mocha": "^11.0.1",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"

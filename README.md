@@ -11,7 +11,7 @@ Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication
 
 ## Features
 
- - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0, 1.17.10, 1.17.30, 1.17.40, 1.18.0, 1.18.11, 1.18.30, 1.19.1, 1.19.10, 1.19.20, 1.19.21, 1.19.30, 1.19.40, 1.19.41, 1.19.50, 1.19.60, 1.19.62, 1.19.63, 1.19.70, 1.19.80, 1.20.0, 1.20.10, 1.20.30, 1.20.40, 1.20.50, 1.20.61, 1.20.71, 1.20.80, 1.21.0, 1.21.2, 1.21.21, 1.21.30, 1.21.42, 1.21.50, 1.21.60, 1.21.70, 1.21.80, 1.21.90, 1.21.93, 1.21.100, 1.21.111, 1.21.120, 1.21.124, 1.21.130, 1.26.0, 1.26.10, 26.10
+ - Supports Minecraft Bedrock version 1.16.201, 1.16.210, 1.16.220, 1.17.0, 1.17.10, 1.17.30, 1.17.40, 1.18.0, 1.18.11, 1.18.30, 1.19.1, 1.19.10, 1.19.20, 1.19.21, 1.19.30, 1.19.40, 1.19.41, 1.19.50, 1.19.60, 1.19.62, 1.19.63, 1.19.70, 1.19.80, 1.20.0, 1.20.10, 1.20.30, 1.20.40, 1.20.50, 1.20.61, 1.20.71, 1.20.80, 1.21.0, 1.21.2, 1.21.21, 1.21.30, 1.21.42, 1.21.50, 1.21.60, 1.21.70, 1.21.80, 1.21.90, 1.21.93, 1.21.100, 1.21.111, 1.21.120, 1.21.124, 1.21.130, 1.26.0, 1.26.10, 1.26.20, 1.26.30, 1.26.40
  - Parse and serialize packets as JavaScript objects
  - Automatically respond to keep-alive packets
  - [Proxy and mitm connections](docs/API.md#proxy-docs)
@@ -20,7 +20,7 @@ Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication
    - Encryption
    - [Ping a server for status](docs/API.md#beping-host-port---serveradvertisement)
  - Server
-   - Autheticate clients with Xbox Live 
+   - Authenticate clients with Xbox Live 
    - Ping status
 
  * Robust test coverage.
@@ -28,13 +28,13 @@ Minecraft Bedrock Edition (aka MCPE) protocol library, supporting authentication
  * Optimized for rapidly staying up to date with Minecraft protocol updates.
 
 
-Want to contribute on something important for PrismarineJS ? go to https://github.com/PrismarineJS/mineflayer/wiki/Big-Prismarine-projects
+Want to contribute to something important for PrismarineJS? Go to https://github.com/PrismarineJS/mineflayer/wiki/Big-Prismarine-projects
 
 ## Installation
 
 `npm install bedrock-protocol`
 
-To update bedrock-protocol (or any Node.js package) and its dependencies after a previous install, you must run `npm update --depth 9999`
+To update bedrock-protocol (or any Node.js package) and its dependencies after a previous install, you must run `npm update`
 
 ## Usage
 
@@ -48,7 +48,7 @@ const client = bedrock.createClient({
   host: 'localhost',   // optional
   port: 19132,         // optional, default 19132
   username: 'Notch',   // the username you want to join as, optional if online mode
-  offline: true       // optional, default false. if true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
+  offline: true       // optional, default false. If true, do not login with Xbox Live. You will not be asked to sign-in if set to true.
 })
 
 client.on('text', (packet) => { // Listen for chat messages from the server and echo them back.
@@ -63,13 +63,13 @@ client.on('text', (packet) => { // Listen for chat messages from the server and 
 
 ### Client example joining a Realm
 
-Example to connect to a Realm that the authenticating account is owner of or has been invited to:
+Example to connect to a Realm that the authenticating account is the owner of or has been invited to:
 
 ```js
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
   realms: {
-    pickRealm: (realms) => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+    pickRealm: (realms) => realms[0] // Function which receives an array of joined/owned Realms and must return a single Realm. Can be async
   }
 })
 ```

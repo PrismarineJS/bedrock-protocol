@@ -37,17 +37,90 @@ SizeOf.restBuffer = ['native', (value) => {
 }]
 
 /**
+ * A length-prefixed array that treats the declared count as an upper bound
+ * while reading. This is useful for packets that are already bounded by the
+ * transport but whose producer may over-report the element count.
+ *
+ * Writing and sizing remain identical to an ordinary ProtoDef array.
+ */
+Read.maybeIncompleteArray = ['parametrizable', (compiler, { countType, type }) => {
+  return compiler.wrapCode(`
+  const { value: count, size: countSize } = ${compiler.callType(countType)}
+  if (count > 0xffffff && !ctx.noArraySizeCheck) throw new Error("array size is abnormally large, not reading: " + count)
+  const data = []
+  let size = countSize
+  for (let i = 0; i < count && offset + size < buffer.length; i++) {
+    try {
+      const elem = ${compiler.callType(type, 'offset + size')}
+      data.push(elem.value)
+      size += elem.size
+    } catch (error) {
+      if (error.name !== "PartialReadError") throw error
+      break
+    }
+  }
+  return { value: data, size }
+`.trim())
+}]
+Write.maybeIncompleteArray = ['parametrizable', (compiler, { countType, type }) => {
+  return compiler.wrapCode(`
+  offset = ${compiler.callType('value.length', countType)}
+  for (let i = 0; i < value.length; i++) {
+    offset = ${compiler.callType('value[i]', type)}
+  }
+  return offset
+`.trim())
+}]
+SizeOf.maybeIncompleteArray = ['parametrizable', (compiler, { countType, type }) => {
+  return compiler.wrapCode(`
+  let size = ${compiler.callType('value.length', countType)}
+  for (let i = 0; i < value.length; i++) {
+    size += ${compiler.callType('value[i]', type)}
+  }
+  return size
+`.trim())
+}]
+
+/**
+ * A terminal field that is present only when unread packet bytes remain.
+ */
+Read.optionalOnRemaining = ['parametrizable', (compiler, { type }) => {
+  return compiler.wrapCode(`
+  if (offset >= buffer.length) return { value: undefined, size: 0 }
+  return ${compiler.callType(type)}
+`.trim())
+}]
+Write.optionalOnRemaining = ['parametrizable', (compiler, { type }) => {
+  return compiler.wrapCode(`
+  if (value === undefined) return offset
+  return ${compiler.callType('value', type)}
+`.trim())
+}]
+SizeOf.optionalOnRemaining = ['parametrizable', (compiler, { type }) => {
+  return compiler.wrapCode(`
+  if (value === undefined) return 0
+  return ${compiler.callType('value', type)}
+`.trim())
+}]
+
+/**
  * Encapsulated data with length prefix
  */
 Read.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
   return compiler.wrapCode(`
   const payloadSize = ${compiler.callType(lengthType, 'offset')}
+  if (payloadSize.value === 0) {
+    return { value: undefined, size: payloadSize.size }
+  }
   const { value, size } = ctx.${type}(buffer, offset + payloadSize.size)
   return { value, size: size + payloadSize.size }
 `.trim())
 }]
 Write.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
   return compiler.wrapCode(`
+  if (value === undefined) {
+    return (ctx.${lengthType})(0, buffer, offset)
+  }
   const buf = Buffer.allocUnsafe(buffer.length - offset)
   const payloadSize = (ctx.${type})(value, buf, 0)
   let size = (ctx.${lengthType})(payloadSize, buffer, offset)
@@ -57,6 +130,9 @@ Write.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
 }]
 SizeOf.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
   return compiler.wrapCode(`
+    if (value === undefined) {
+      return (ctx.${lengthType})(0)
+    }
     const payloadSize = (ctx.${type})(value)
     return (ctx.${lengthType})(payloadSize) + payloadSize
 `.trim())

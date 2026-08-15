@@ -150,11 +150,66 @@ function sizeOfEndOfArray (value, typeArgs) {
   return size
 }
 
+function readMaybeIncompleteArray (buffer, offset, typeArgs) {
+  const { countType, type } = typeArgs
+  const count = this.read(buffer, offset, countType, {})
+  const elements = []
+  let cursor = offset + count.size
+
+  for (let i = 0; i < count.value && cursor < buffer.length; i++) {
+    try {
+      const result = this.read(buffer, cursor, type, {})
+      elements.push(result.value)
+      cursor += result.size
+    } catch (error) {
+      if (error.name !== 'PartialReadError') throw error
+      break
+    }
+  }
+
+  return { value: elements, size: cursor - offset }
+}
+
+function writeMaybeIncompleteArray (value, buffer, offset, typeArgs) {
+  const { countType, type } = typeArgs
+  offset = this.write(value.length, buffer, offset, countType, {})
+  for (const element of value) {
+    offset = this.write(element, buffer, offset, type, {})
+  }
+  return offset
+}
+
+function sizeOfMaybeIncompleteArray (value, typeArgs) {
+  const { countType, type } = typeArgs
+  let size = this.sizeOf(value.length, countType, {})
+  for (const element of value) {
+    size += this.sizeOf(element, type, {})
+  }
+  return size
+}
+
+function readOptionalOnRemaining (buffer, offset, typeArgs) {
+  if (offset >= buffer.length) return { value: undefined, size: 0 }
+  return this.read(buffer, offset, typeArgs.type, {})
+}
+
+function writeOptionalOnRemaining (value, buffer, offset, typeArgs) {
+  if (value === undefined) return offset
+  return this.write(value, buffer, offset, typeArgs.type, {})
+}
+
+function sizeOfOptionalOnRemaining (value, typeArgs) {
+  if (value === undefined) return 0
+  return this.sizeOf(value, typeArgs.type, {})
+}
+
 module.exports = {
   uuid: [readUUID, writeUUID, 16],
   nbt: [readNbt, writeNbt, sizeOfNbt],
   lnbt: [readNbtLE, writeNbtLE, sizeOfNbtLE],
   entityMetadataLoop: [readEntityMetadata, writeEntityMetadata, sizeOfEntityMetadata],
   ipAddress: [readIpAddress, writeIpAddress, 4],
-  endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray]
+  endOfArray: [readEndOfArray, writeEndOfArray, sizeOfEndOfArray],
+  maybeIncompleteArray: [readMaybeIncompleteArray, writeMaybeIncompleteArray, sizeOfMaybeIncompleteArray],
+  optionalOnRemaining: [readOptionalOnRemaining, writeOptionalOnRemaining, sizeOfOptionalOnRemaining]
 }
