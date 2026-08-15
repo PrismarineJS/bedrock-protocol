@@ -2,44 +2,53 @@ const JWT = require('jsonwebtoken')
 const constants = require('./constants')
 const debug = require('debug')('minecraft-protocol')
 const crypto = require('crypto')
+const { verifyOidcToken } = require('./oidc')
+const UUID = require('uuid-1345')
 
-module.exports = (client, server, options) => {
+module.exports = (client, server, options, dependencies = {}) => {
   // Refer to the docs:
   // https://web.archive.org/web/20180917171505if_/https://confluence.yawk.at/display/PEPROTOCOL/Game+Packets#GamePackets-Login
 
   const getDER = b64 => crypto.createPublicKey({ key: Buffer.from(b64, 'base64'), format: 'der', type: 'spki' })
 
   // 26.10, March 2026+
-  function parseTokenData (token) {
+  async function parseTokenData (token) {
     function normalizeToken (token) {
       return token.replace(/^MCToken\s+/i, '')
     }
 
     const normalized = normalizeToken(token)
     const x5u = getX5U(normalized)
-    const decoded = JWT.verify(normalized, getDER(x5u), { algorithms: ['ES384', 'RS256'] })
+    if (x5u && !options.offline) throw new Error('Self-signed multiplayer token is not allowed with authentication enabled')
+    const decoded = x5u
+      ? JWT.verify(normalized, getDER(x5u), { algorithms: ['ES384'] })
+      : await (dependencies.verifyOidcToken || verifyOidcToken)(normalized, options.version)
     if (!decoded || typeof decoded !== 'object') throw new Error('Invalid login token')
 
     const payload = decoded || {}
     const key = payload.cpk || payload.clientPublicKey || x5u
+    if (!key) throw new Error('Login token is missing the client public key')
+    getDER(key)
+
+    const xuid = payload.xid || payload.XUID || payload.xuid || '0'
+    const identity = payload.leguuid || payload.identity || identityFromXuid(xuid)
     return {
       key,
       data: {
         extraData: {
-          XUID: payload.xid || payload.XUID || payload.xuid || '0',
+          XUID: xuid,
           displayName: payload.xname || payload.displayName || 'Player',
-          identity: payload.identity,
-          PlayFabID: payload.pfbid || payload.playFabId || payload.PlayFabID,
-          PlayFabTitleID: payload.pfbtid || payload.playFabTitleId || payload.PlayFabTitleID
+          identity,
+          PlayFabID: payload.mid || payload.pfbid || payload.playFabId || payload.PlayFabID,
+          PlayFabTitleID: payload.tid || payload.pfbtid || payload.playFabTitleId || payload.PlayFabTitleID
         }
       }
     }
   }
 
-  function verifyAuth (chain, token) {
-    // In offline mode 26.10+, we do not generate a chain and only a self-signed token.
+  async function verifyAuth (chain, token) {
+    // In 26.10+, identity may be carried by the multiplayer token with no certificate chain.
     if ((!chain || chain.length === 0 || chain.every(entry => !entry)) && token) {
-      if (!options.offline) throw new Error('Missing certificate chain for authenticated login')
       return parseTokenData(token)
     }
 
@@ -83,8 +92,8 @@ module.exports = (client, server, options) => {
     return decoded
   }
 
-  client.decodeLoginJWT = (authTokens, skinTokens, authToken = '') => {
-    const { key, data } = verifyAuth(authTokens, authToken)
+  client.decodeLoginJWT = async (authTokens, skinTokens, authToken = '') => {
+    const { key, data } = await verifyAuth(authTokens, authToken)
     const skinData = verifySkin(key, skinTokens)
     return { key, userData: data, skinData }
   }
@@ -97,6 +106,13 @@ module.exports = (client, server, options) => {
     }
     return chains
   }
+}
+
+function identityFromXuid (xuid) {
+  const hash = crypto.createHash('md5').update('pocket-auth-1-xuid:').update(xuid).digest()
+  hash[6] = (hash[6] & 0x0f) | 0x30
+  hash[8] = (hash[8] & 0x3f) | 0x80
+  return UUID.stringify(hash)
 }
 
 function getX5U (token) {

@@ -67,7 +67,7 @@ class Player extends Connection {
     return true
   }
 
-  onLogin (packet) {
+  async onLogin (packet) {
     const body = packet.data
     this.emit('loggingIn', body)
 
@@ -82,17 +82,18 @@ class Player extends Connection {
       const skinChain = tokens.client
       const authChain = JSON.parse(tokens.identity)
       const authToken = authChain.Token || ''
+      if (authChain.AuthenticationType === 1) throw new Error('Guest authentication is not supported')
       let chain
       if (authChain.Certificate) { // 1.21.90+
         chain = JSON.parse(authChain.Certificate).chain
       } else if (authChain.chain) {
         chain = authChain.chain
-      } else if (authToken && this.server.options.offline) {
+      } else if (authToken) {
         chain = []
       } else {
         throw new Error('Invalid login packet: missing chain or Certificate')
       }
-      var { key, userData, skinData } = this.decodeLoginJWT(chain, skinChain, authToken) // eslint-disable-line
+      var { key, userData, skinData } = await this.decodeLoginJWT(chain, skinChain, authToken) // eslint-disable-line
     } catch (e) {
       debug(this.address, e)
       this.disconnect('Server authentication error')
