@@ -5,6 +5,15 @@ const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
 
+// BDS validates that the login DeviceOS agrees with the platform used to
+// authenticate. Values are from the protocol DeviceOS enum.
+const deviceOSByAuthTitle = {
+  [Titles.MinecraftAndroid]: 1,
+  [Titles.MinecraftIOS]: 2,
+  [Titles.MinecraftPlaystation]: 11,
+  [Titles.MinecraftNintendoSwitch]: 12
+}
+
 function validateOptions (options) {
   if (!options.profilesFolder) {
     options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
@@ -13,6 +22,12 @@ function validateOptions (options) {
     options.authTitle = Titles.MinecraftNintendoSwitch
     options.deviceType = 'Nintendo'
     options.flow = 'live'
+  }
+  if (options.deviceOS === undefined) {
+    options.deviceOS = deviceOSByAuthTitle[options.authTitle]
+  }
+  if (options.deviceOS === undefined) {
+    throw new Error('deviceOS is required when authTitle does not identify a known Minecraft platform')
   }
 }
 
@@ -99,6 +114,7 @@ async function authenticate (client, options) {
  * Creates an offline session for the client
  */
 function createOfflineSession (client, options) {
+  validateOptions(options)
   if (!options.username) throw Error('Must specify a valid username')
   const profile = {
     name: options.username,
