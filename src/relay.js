@@ -214,11 +214,6 @@ class Relay extends Server {
     const client = new Client(options)
     // Set the login payload unless `noLoginForward` option
     if (!client.noLoginForward) client.options.skinData = ds.skinData
-    client.ping().then(pongData => {
-      client.connect()
-    }).catch(err => {
-      this.emit('error', err)
-    })
     this.conLog('Connecting to', options.host, options.port)
     client.outLog = ds.upOutLog
     client.inLog = ds.upInLog
@@ -245,6 +240,7 @@ class Relay extends Server {
     })
 
     this.upstreams.set(clientAddr.hash, client)
+    client.connect()
   }
 
   // Close a connection to a remote backend server.

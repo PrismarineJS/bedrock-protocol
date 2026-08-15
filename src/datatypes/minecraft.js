@@ -157,9 +157,14 @@ function readMaybeIncompleteArray (buffer, offset, typeArgs) {
   let cursor = offset + count.size
 
   for (let i = 0; i < count.value && cursor < buffer.length; i++) {
-    const result = this.read(buffer, cursor, type, {})
-    elements.push(result.value)
-    cursor += result.size
+    try {
+      const result = this.read(buffer, cursor, type, {})
+      elements.push(result.value)
+      cursor += result.size
+    } catch (error) {
+      if (error.name !== 'PartialReadError') throw error
+      break
+    }
   }
 
   return { value: elements, size: cursor - offset }

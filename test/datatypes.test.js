@@ -8,6 +8,11 @@ const compiledMinecraftTypes = require('../src/datatypes/compiler-minecraft')
 
 const testTypes = {
   MaybeIncompleteBytes: ['maybeIncompleteArray', { countType: 'varint', type: 'u8' }],
+  TwoByteEntry: ['container', [
+    { name: 'first', type: 'u8' },
+    { name: 'second', type: 'u8' }
+  ]],
+  MaybeIncompleteTwoByteEntries: ['maybeIncompleteArray', { countType: 'varint', type: 'TwoByteEntry' }],
   OptionalByteOnRemaining: ['optionalOnRemaining', { type: 'u8' }]
 }
 
@@ -45,6 +50,11 @@ for (const [implementation, createProtocol] of [
     it('writes the actual array count', () => {
       const buffer = protocol.createPacketBuffer('MaybeIncompleteBytes', [7, 8])
       assert.deepStrictEqual(buffer, Buffer.from([2, 7, 8]))
+    })
+
+    it('accepts EOF inside the final maybe-incomplete array element', () => {
+      const result = protocol.read(Buffer.from([2, 1, 2, 3]), 0, 'MaybeIncompleteTwoByteEntries')
+      assert.deepStrictEqual(result, { value: [{ first: 1, second: 2 }], size: 3 })
     })
 
     it('omits a terminal optional field when no bytes remain', () => {

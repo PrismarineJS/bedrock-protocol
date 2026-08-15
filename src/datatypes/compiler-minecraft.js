@@ -50,9 +50,14 @@ Read.maybeIncompleteArray = ['parametrizable', (compiler, { countType, type }) =
   const data = []
   let size = countSize
   for (let i = 0; i < count && offset + size < buffer.length; i++) {
-    const elem = ${compiler.callType(type, 'offset + size')}
-    data.push(elem.value)
-    size += elem.size
+    try {
+      const elem = ${compiler.callType(type, 'offset + size')}
+      data.push(elem.value)
+      size += elem.size
+    } catch (error) {
+      if (error.name !== "PartialReadError") throw error
+      break
+    }
   }
   return { value: data, size }
 `.trim())
