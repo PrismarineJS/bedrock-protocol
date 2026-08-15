@@ -55,7 +55,7 @@ module.exports = (client, server, options) => {
       DefaultInputMode: 1,
       DeviceId: nextUUID(),
       DeviceModel: 'PrismarineJS',
-      DeviceOS: client.session?.deviceOS || 7,
+      DeviceOS: options.deviceOS,
       GameVersion: options.version || '1.16.201',
       GuiScale: -1,
       LanguageCode: 'en_GB', // TODO locale

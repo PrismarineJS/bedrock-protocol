@@ -34,6 +34,8 @@ declare module 'bedrock-protocol' {
     viewDistance?: number
     // Specifies which game edition to sign in as. Optional, but some servers verify this.
     authTitle?: string
+    // Bedrock DeviceOS enum value. Derived from known authTitle values; required for custom titles.
+    deviceOS?: number
     // How long to wait in milliseconds while trying to connect to the server.
     connectTimeout?: number
     // whether to skip initial ping and immediately connect
