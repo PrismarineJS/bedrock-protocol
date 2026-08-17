@@ -198,24 +198,24 @@ SizeOf.lnbt = ['native', minecraft.lnbt[2]]
  */
 Read.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   return compiler.wrapCode(js(() => {
-    if (values_len <= 0xff) return { value: 'byte', size: 0 }
-    if (values_len <= 0xffff) return { value: 'short', size: 0 }
-    if (values_len <= 0xffffff) return { value: 'int', size: 0 }
+    if (values_len <= 0x100) return { value: 'byte', size: 0 }
+    if (values_len <= 0x10000) return { value: 'short', size: 0 }
+    if (values_len <= 0x1000000) return { value: 'int', size: 0 }
   }))
 }]
 Write.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   return str(() => {
-    if (value.values_len <= 0xff) _enum_type = 'byte'
-    else if (value.values_len <= 0xffff) _enum_type = 'short'
-    else if (value.values_len <= 0xffffff) _enum_type = 'int'
+    if (value.values_len <= 0x100) _enum_type = 'byte'
+    else if (value.values_len <= 0x10000) _enum_type = 'short'
+    else if (value.values_len <= 0x1000000) _enum_type = 'int'
     return offset
   })
 }]
 SizeOf.enum_size_based_on_values_len = ['parametrizable', (compiler) => {
   return str(() => {
-    if (value.values_len <= 0xff) _enum_type = 'byte'
-    else if (value.values_len <= 0xffff) _enum_type = 'short'
-    else if (value.values_len <= 0xffffff) _enum_type = 'int'
+    if (value.values_len <= 0x100) _enum_type = 'byte'
+    else if (value.values_len <= 0x10000) _enum_type = 'short'
+    else if (value.values_len <= 0x1000000) _enum_type = 'int'
     return 0
   })
 }]
