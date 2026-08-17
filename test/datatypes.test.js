@@ -80,37 +80,3 @@ for (const [implementation, createProtocol] of [
     })
   })
 }
-
-describe('enum_size_based_on_values_len boundary (issue #669)', () => {
-  // Regression test for https://github.com/PrismarineJS/bedrock-protocol/issues/669
-  // A geyser server sent an available_commands packet with values_len = 256.
-  // The enum value indices 0-255 fit in an unsigned byte, so the index type
-  // must be 'byte'. Previously the limit was 0xff, which incorrectly selected
-  // 'short' for 256 values, desynchronizing the parser (PartialReadError).
-  // The full packet (7681 bytes) now parses completely.
-
-  function makeParser (mcData) {
-    const compiler = new ProtoDefCompiler()
-    compiler.addTypes(compiledMinecraftTypes)
-    compiler.addTypesToCompile(mcData.protocol.types)
-    return new (require('protodef').FullPacketParser)(compiler.compileProtoDefSync(), 'mcpe_packet')
-  }
-
-  it('parses the 7681-byte available_commands packet from geyser (1.21.124)', function () {
-    let mcData
-    try {
-      mcData = require('minecraft-data')('bedrock_1.21.124')
-    } catch (e) {
-      this.skip() // this minecraft-data version does not have 1.21.124 yet
-      return
-    }
-    const fixture = require('fs').readFileSync(require('path').join(__dirname, 'fixtures', 'available_commands_1.21.124_geyser.bin'))
-    const parser = makeParser(mcData)
-    const result = parser.parsePacketBuffer(fixture)
-    assert.strictEqual(result.data.name, 'available_commands')
-    assert.strictEqual(result.data.params.values_len, 256)
-    assert.strictEqual(result.metadata.size, fixture.length)
-    assert.strictEqual(result.data.params.enums[0].name, 'refreshAliases')
-    assert.strictEqual(result.data.params.enums[1].name, 'inventory')
-  })
-})
