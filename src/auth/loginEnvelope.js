@@ -37,7 +37,6 @@ function parseLoginEnvelope (packet) {
   if (!Array.isArray(chain)) throw new AuthenticationError('Login certificate chain must be an array')
   return {
     protocolVersion: params.protocol_version,
-    authenticationType: identityEnvelope.AuthenticationType,
     chain,
     multiplayerToken,
     clientDataToken: tokens.client

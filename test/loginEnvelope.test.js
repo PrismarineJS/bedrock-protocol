@@ -22,7 +22,6 @@ describe('login envelope parsing', () => {
     const legacy = parseLoginEnvelope(packet({ chain: ['one'] }))
     assert.deepStrictEqual(legacy, {
       protocolVersion: 123,
-      authenticationType: undefined,
       chain: ['one'],
       multiplayerToken: '',
       clientDataToken: 'client-data'
@@ -35,7 +34,6 @@ describe('login envelope parsing', () => {
     }))
     assert.deepStrictEqual(modern, {
       protocolVersion: 123,
-      authenticationType: 0,
       chain: ['one', 'two', 'three'],
       multiplayerToken: 'oidc-token',
       clientDataToken: 'client-data'
