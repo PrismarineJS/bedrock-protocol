@@ -72,6 +72,11 @@ describe('modern login verification', () => {
     assert.strictEqual(result.userData.extraData.PlayFabTitleID, '20CA2')
     assert.match(result.userData.extraData.identity, /^[0-9a-f-]{36}$/)
     assert.strictEqual(result.skinData.ThirdPartyName, 'VerifiedPlayer')
+    assert.deepStrictEqual(result.authentication, {
+      authenticated: true,
+      method: 'oidc',
+      issuer: ISSUER
+    })
   })
 
   it('rejects an identity token with an invalid Microsoft signature', async () => {
@@ -122,5 +127,41 @@ describe('modern login verification', () => {
     })
 
     await assert.rejects(verifier.verify(token, VERSION), /jwt expired/)
+  })
+
+  it('rejects verified OIDC payloads missing required identity claims', async () => {
+    const { authToken, skinToken } = createLoginTokens()
+    const client = {}
+    const validPayload = JWT.decode(authToken)
+    LoginVerify(client, null, { offline: false, version: VERSION }, {
+      verifyOidcToken: async () => ({ ...validPayload, xid: undefined })
+    })
+    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /XUID is invalid/)
+
+    LoginVerify(client, null, { offline: false, version: VERSION }, {
+      verifyOidcToken: async () => ({ ...validPayload, xname: undefined })
+    })
+    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /display name/)
+
+    LoginVerify(client, null, { offline: false, version: VERSION }, {
+      verifyOidcToken: async () => ({ ...validPayload, exp: undefined })
+    })
+    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /missing its expiry/)
+
+    LoginVerify(client, null, { offline: false, version: VERSION }, {
+      verifyOidcToken: async () => ({ ...validPayload, iss: undefined })
+    })
+    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /missing its issuer/)
+  })
+
+  it('rejects a non-P-384 client key in an otherwise verified OIDC payload', async () => {
+    const { authToken, skinToken } = createLoginTokens()
+    const rsa = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 })
+    const client = {}
+    LoginVerify(client, null, { offline: false, version: VERSION }, {
+      verifyOidcToken: async () => ({ ...JWT.decode(authToken), cpk: publicKeyBase64(rsa.publicKey) })
+    })
+
+    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /must be an EC P-384 key/)
   })
 })

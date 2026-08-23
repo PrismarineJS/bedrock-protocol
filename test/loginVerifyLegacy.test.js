@@ -65,6 +65,11 @@ describe('legacy login verification', () => {
     assert.strictEqual(result.key, login.clientPublicKey)
     assert.deepStrictEqual(result.userData.extraData, login.extraData)
     assert.strictEqual(result.skinData.ThirdPartyName, login.extraData.displayName)
+    assert.deepStrictEqual(result.authentication, {
+      authenticated: true,
+      method: 'legacy',
+      issuer: 'Mojang'
+    })
   })
 
   it('rejects a chain whose x5u text names Mojang but whose signatures are attacker-rooted', async () => {
@@ -159,6 +164,30 @@ describe('legacy login verification', () => {
 
     const result = await client.decodeLoginJWT([chain], skin)
     assert.deepStrictEqual(result.userData.extraData, extraData)
+    assert.deepStrictEqual(result.authentication, {
+      authenticated: false,
+      method: 'offline',
+      issuer: null
+    })
+  })
+
+  it('normalizes self-asserted offline XUIDs and rejects unanchored three-token chains', async () => {
+    const attacker = createKeys()
+    const attackerPublicKey = publicKeyBase64(attacker.publicKey)
+    const extraData = { displayName: 'OfflinePlayer', identity: crypto.randomUUID(), XUID: '9000000000000001' }
+    const oneToken = sign({ identityPublicKey: attackerPublicKey, extraData }, attacker.privateKey, attackerPublicKey)
+    const threeTokens = [
+      sign({ identityPublicKey: attackerPublicKey }, attacker.privateKey, attackerPublicKey),
+      sign({ identityPublicKey: attackerPublicKey }, attacker.privateKey, attackerPublicKey, 'Mojang'),
+      sign({ identityPublicKey: attackerPublicKey, extraData }, attacker.privateKey, attackerPublicKey, 'Mojang')
+    ]
+    const skin = sign({ ThirdPartyName: extraData.displayName }, attacker.privateKey, attackerPublicKey)
+    const client = {}
+    LoginVerify(client, null, { offline: true, version: VERSION })
+
+    const result = await client.decodeLoginJWT([oneToken], skin)
+    assert.strictEqual(result.userData.extraData.XUID, '0')
+    await assert.rejects(client.decodeLoginJWT(threeTokens, skin), /not anchored by Mojang/)
   })
 
   it('uses a verified multiplayer token instead of an accompanying legacy chain', async () => {
@@ -167,6 +196,7 @@ describe('legacy login verification', () => {
     const token = JWT.sign({ cpk: login.clientPublicKey, xid: login.extraData.XUID, xname: 'OidcPlayer' }, service.privateKey, {
       algorithm: 'RS256',
       expiresIn: '5m',
+      issuer: 'https://test.minecraft.invalid/',
       header: { kid: 'test-key', typ: undefined }
     })
     const client = {}

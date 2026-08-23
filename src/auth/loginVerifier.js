@@ -140,6 +140,9 @@ function createLoginVerifier (options, dependencies = {}) {
     if (!selfSigned && (!Number.isInteger(decoded.exp) || decoded.exp <= 0)) {
       throw new AuthenticationError('OIDC multiplayer token is missing its expiry')
     }
+    if (!selfSigned && (typeof decoded.iss !== 'string' || decoded.iss.length === 0)) {
+      throw new AuthenticationError('OIDC multiplayer token is missing its issuer')
+    }
 
     const authenticated = !selfSigned
     const clientPublicKeyBase64 = decoded.cpk || decoded.clientPublicKey || header.x5u
