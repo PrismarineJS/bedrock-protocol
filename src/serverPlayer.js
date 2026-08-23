@@ -1,7 +1,7 @@
 const { ClientStatus, Connection } = require('./connection')
 const Options = require('./options')
 const { serialize, isDebug } = require('./datatypes/util')
-const { KeyExchange } = require('./handshake/keyExchange')
+const { createKeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
 const debug = require('debug')('minecraft-protocol')
@@ -16,7 +16,11 @@ class Player extends Connection {
     this.connection = connection
     this.options = server.options
 
-    KeyExchange(this, server, server.options)
+    this.keyExchange = createKeyExchange()
+    this.ecdhKeyPair = this.keyExchange.keyPair
+    this.publicKeyDER = this.keyExchange.publicKeyDER
+    this.privateKeyPEM = this.keyExchange.privateKeyPEM
+    this.clientX509 = this.keyExchange.clientX509
     Login(this, server, server.options)
     LoginVerify(this, server, server.options)
 
@@ -116,8 +120,10 @@ class Player extends Connection {
       xuid: userData.extraData?.xuid || userData.extraData?.XUID
     }
     this.version = clientVer
+    const handshake = this.keyExchange.createServerHandshake(key)
+    this.write('server_to_client_handshake', { token: handshake.token })
+    this.enableEncryption(handshake)
     this.awaitingClientHandshake = true
-    this.emit('server.client_handshake', { key }) // internal so we start encryption
     this.emit('login', { user: userData.extraData }) // emit events for user
   }
 

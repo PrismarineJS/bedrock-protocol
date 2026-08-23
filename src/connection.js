@@ -54,6 +54,12 @@ class Connection extends EventEmitter {
     this.encrypt = cipher.createEncryptor(this, iv)
   }
 
+  enableEncryption (material) {
+    this.sharedSecret = material.sharedSecret
+    this.secretKeyBytes = material.secretKeyBytes
+    this.startEncryption(material.iv)
+  }
+
   updateItemPalette (palette) {
     // In the future, we can send down the whole item palette if we need
     // but since it's only one item, we can just make a single variable.

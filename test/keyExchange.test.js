@@ -2,74 +2,61 @@
 
 const assert = require('assert')
 const crypto = require('crypto')
-const { EventEmitter } = require('events')
 const JWT = require('jsonwebtoken')
-const { KeyExchange } = require('../src/handshake/keyExchange')
+const { createKeyExchange } = require('../src/handshake/keyExchange')
 
 function publicKeyBase64 (key) {
   return key.export({ format: 'der', type: 'spki' }).toString('base64')
 }
 
-function createConnection () {
-  const client = new EventEmitter()
-  client.write = (name, params) => client.writes.push([name, params])
-  client.startEncryption = iv => {
-    client.encryptionIv = iv
-    client.encryptionEnabled = true
-  }
-  client.writes = []
-  KeyExchange(client)
-  return client
-}
-
 describe('key exchange', () => {
   it('generates a fresh server salt for every handshake', () => {
     const remote = crypto.generateKeyPairSync('ec', { namedCurve: 'P-384' })
-    const client = createConnection()
+    const exchange = createKeyExchange()
 
-    client.emit('server.client_handshake', { key: publicKeyBase64(remote.publicKey) })
-    client.emit('server.client_handshake', { key: publicKeyBase64(remote.publicKey) })
+    const first = exchange.createServerHandshake(remote.publicKey)
+    const second = exchange.createServerHandshake(remote.publicKey)
 
-    const salts = client.writes.map(([, packet]) => JWT.decode(packet.token).salt)
-    assert.strictEqual(salts.length, 2)
+    const salts = [first, second].map(handshake => JWT.decode(handshake.token).salt)
     assert.notStrictEqual(salts[0], salts[1])
     assert.strictEqual(Buffer.from(salts[0], 'base64').length, 16)
     assert.strictEqual(Buffer.from(salts[1], 'base64').length, 16)
   })
 
-  it('verifies the server handshake signature before enabling encryption', () => {
+  it('verifies the server handshake signature before deriving encryption', () => {
     const server = crypto.generateKeyPairSync('ec', { namedCurve: 'P-384' })
     const attacker = crypto.generateKeyPairSync('ec', { namedCurve: 'P-384' })
     const serverPublicKey = publicKeyBase64(server.publicKey)
-    const salt = crypto.randomBytes(16).toString('base64')
-    const forged = JWT.sign({ salt }, attacker.privateKey, {
+    const forged = JWT.sign({ salt: crypto.randomBytes(16).toString('base64') }, attacker.privateKey, {
       algorithm: 'ES384',
       header: { x5u: serverPublicKey, typ: undefined }
     })
-    const client = createConnection()
-    let joined = false
-    client.on('join', () => { joined = true })
+    const exchange = createKeyExchange()
 
-    assert.throws(() => client.emit('client.server_handshake', { token: forged }), /invalid signature/)
-    assert.strictEqual(client.encryptionEnabled, undefined)
-    assert.strictEqual(joined, false)
+    assert.throws(() => exchange.verifyServerHandshake({ token: forged }), /invalid signature/)
   })
 
-  it('accepts a correctly self-signed server handshake', () => {
+  it('derives matching encryption material from a valid handshake', () => {
+    const server = createKeyExchange()
+    const client = createKeyExchange()
+
+    const outbound = server.createServerHandshake(client.keyPair.publicKey)
+    const inbound = client.verifyServerHandshake({ token: outbound.token })
+
+    assert.deepStrictEqual(inbound.secretKeyBytes, outbound.secretKeyBytes)
+    assert.deepStrictEqual(inbound.iv, outbound.iv)
+    assert.deepStrictEqual(inbound.sharedSecret, outbound.sharedSecret)
+  })
+
+  it('rejects oversized handshake salts', () => {
     const server = crypto.generateKeyPairSync('ec', { namedCurve: 'P-384' })
     const serverPublicKey = publicKeyBase64(server.publicKey)
-    const token = JWT.sign({ salt: crypto.randomBytes(16).toString('base64') }, server.privateKey, {
+    const token = JWT.sign({ salt: crypto.randomBytes(65).toString('base64') }, server.privateKey, {
       algorithm: 'ES384',
       header: { x5u: serverPublicKey, typ: undefined }
     })
-    const client = createConnection()
-    let joined = false
-    client.on('join', () => { joined = true })
+    const exchange = createKeyExchange()
 
-    client.emit('client.server_handshake', { token })
-
-    assert.strictEqual(client.encryptionEnabled, true)
-    assert.strictEqual(client.writes.at(-1)[0], 'client_to_server_handshake')
-    assert.strictEqual(joined, true)
+    assert.throws(() => exchange.verifyServerHandshake({ token }), /invalid length/)
   })
 })

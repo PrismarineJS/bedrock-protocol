@@ -5,7 +5,7 @@ const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
 const initRaknet = require('./rak')
-const { KeyExchange } = require('./handshake/keyExchange')
+const { createKeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
 
@@ -45,7 +45,11 @@ class Client extends Connection {
     this.deserializer = createDeserializer(this.options.version)
     this._loadFeatures()
 
-    KeyExchange(this, null, this.options)
+    this.keyExchange = createKeyExchange()
+    this.ecdhKeyPair = this.keyExchange.keyPair
+    this.publicKeyDER = this.keyExchange.publicKeyDER
+    this.privateKeyPEM = this.keyExchange.privateKeyPEM
+    this.clientX509 = this.keyExchange.clientX509
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
@@ -238,7 +242,17 @@ class Client extends Connection {
     // Abstract some boilerplate before sending to listeners
     switch (des.data.name) {
       case 'server_to_client_handshake':
-        this.emit('client.server_handshake', des.data.params)
+        try {
+          const encryption = this.keyExchange.verifyServerHandshake(des.data.params)
+          this.enableEncryption(encryption)
+          this.write('client_to_server_handshake', {})
+          this.status = ClientStatus.Initializing
+          this.emit('join')
+        } catch (error) {
+          this.emit('error', error)
+          this.close()
+          return
+        }
         break
       case 'network_settings':
         this.updateCompressorSettings(des.data.params)
