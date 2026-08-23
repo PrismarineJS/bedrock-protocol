@@ -36,6 +36,8 @@ class Player extends Connection {
     this.compressionHeader = this.server.compressionHeader
 
     this._sentNetworkSettings = false // 1.19.30+
+    this.loginStarted = false
+    this.awaitingClientHandshake = false
   }
 
   getUserData () {
@@ -68,6 +70,12 @@ class Player extends Connection {
   }
 
   async onLogin (packet) {
+    if (this.loginStarted) {
+      this.disconnect('Server authentication error')
+      return
+    }
+    this.loginStarted = true
+
     const body = packet.data
     this.emit('loggingIn', body)
 
@@ -100,8 +108,6 @@ class Player extends Connection {
       return
     }
 
-    this.emit('server.client_handshake', { key }) // internal so we start encryption
-
     this.userData = userData.extraData
     this.skinData = skinData
     this.profile = {
@@ -110,6 +116,8 @@ class Player extends Connection {
       xuid: userData.extraData?.xuid || userData.extraData?.XUID
     }
     this.version = clientVer
+    this.awaitingClientHandshake = true
+    this.emit('server.client_handshake', { key }) // internal so we start encryption
     this.emit('login', { user: userData.extraData }) // emit events for user
   }
 
@@ -140,10 +148,17 @@ class Player extends Connection {
   // After sending Server to Client Handshake, this handles the client's
   // Client to Server handshake response. This indicates successful encryption
   onHandshake () {
+    if (this.status !== ClientStatus.Authenticating || !this.awaitingClientHandshake || !this.encryptionEnabled) {
+      this.disconnect('Server authentication error')
+      return false
+    }
+    this.awaitingClientHandshake = false
+
     // https://wiki.vg/Bedrock_Protocol#Play_Status
     this.write('play_status', { status: 'login_success' })
     this.status = ClientStatus.Initializing
     this.emit('join')
+    return true
   }
 
   close (reason) {
@@ -185,9 +200,13 @@ class Player extends Connection {
         return
       case 'client_to_server_handshake':
         // Emit the 'join' event
-        this.onHandshake()
+        if (!this.onHandshake()) return
         break
       case 'set_local_player_as_initialized':
+        if (this.status !== ClientStatus.Initializing) {
+          this.disconnect('Server authentication error')
+          return
+        }
         this.status = ClientStatus.Initialized
         this.inLog?.('Server client spawned')
         // Emit the 'spawn' event

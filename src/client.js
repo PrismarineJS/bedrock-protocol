@@ -158,7 +158,7 @@ class Client extends Connection {
     } else {
       encodedChain = JSON.stringify({ chain })
     }
-    debug('Auth chain', encodedChain)
+    debug('Prepared login identity', { certificateTokens: chain.length, hasMultiplayerToken: Boolean(this.multiplayerToken) })
 
     this.write('login', {
       protocol_version: this.options.protocolVersion,

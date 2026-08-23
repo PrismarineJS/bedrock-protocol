@@ -10,6 +10,7 @@ module.exports = (client, server, options, dependencies = {}) => {
   // https://web.archive.org/web/20180917171505if_/https://confluence.yawk.at/display/PEPROTOCOL/Game+Packets#GamePackets-Login
 
   const getDER = b64 => crypto.createPublicKey({ key: Buffer.from(b64, 'base64'), format: 'der', type: 'spki' })
+  const samePublicKey = (left, right) => left.export({ format: 'der', type: 'spki' }).equals(right.export({ format: 'der', type: 'spki' }))
 
   // 26.10, March 2026+
   async function parseTokenData (token) {
@@ -47,42 +48,50 @@ module.exports = (client, server, options, dependencies = {}) => {
   }
 
   async function verifyAuth (chain, token) {
-    // In 26.10+, identity may be carried by the multiplayer token with no certificate chain.
-    if ((!chain || chain.length === 0 || chain.every(entry => !entry)) && token) {
-      return parseTokenData(token)
+    // In 1.26.10+, the verified multiplayer token is authoritative even if a
+    // legacy certificate chain is also present.
+    if (token) return parseTokenData(token)
+
+    if (!Array.isArray(chain) || (chain.length !== 1 && chain.length !== 3)) {
+      throw new Error(`Unexpected login chain length ${chain?.length ?? 0}`)
+    }
+    if (!options.offline && chain.length !== 3) {
+      throw new Error('Authenticated legacy login requires a three-token chain')
     }
 
-    let data = {}
+    // The first token is self-signed by the client key carried in its x5u.
+    // Its verified payload must advance the chain to Mojang's pinned key.
+    let publicKey = getDER(getX5U(chain[0]))
+    const mojangKey = getDER(dependencies.mojangPublicKey || constants.PUBLIC_KEY)
+    let authenticated = false
+    let finalKey
+    let data
 
-    // There are three JWT tokens sent to us, one signed by the client
-    // one signed by Mojang with the Mojang token we have and another one
-    // from Xbox with addition user profile data
-    // We verify that at least one of the tokens in the chain has been properly
-    // signed by Mojang by checking the x509 public key in the JWT headers
-    let didVerify = false
+    for (let index = 0; index < chain.length; index++) {
+      const verifyOptions = { algorithms: ['ES384'] }
+      if (index > 0) verifyOptions.issuer = 'Mojang'
+      data = JWT.verify(chain[index], publicKey, verifyOptions)
 
-    let pubKey = getDER(getX5U(chain[0])) // the first one is client signed, allow it
-    let finalKey = null
-
-    for (const token of chain) {
-      const decoded = JWT.verify(token, pubKey, { algorithms: ['ES384'] })
-
-      // Check if signed by Mojang key
-      const x5u = getX5U(token)
-      if (x5u === constants.PUBLIC_KEY && !data.extraData?.XUID) {
-        didVerify = true
-        debug('Verified client with mojang key', x5u)
+      if (!data.identityPublicKey) {
+        throw new Error(`Login chain token ${index} is missing identityPublicKey`)
       }
+      finalKey = data.identityPublicKey
+      publicKey = getDER(finalKey)
 
-      pubKey = decoded.identityPublicKey ? getDER(decoded.identityPublicKey) : x5u
-      finalKey = decoded.identityPublicKey || finalKey // non pem
-      data = { ...data, ...decoded }
+      if (index === 0) {
+        authenticated = samePublicKey(publicKey, mojangKey)
+        if (!options.offline && !authenticated) {
+          throw new Error('Legacy login chain is not anchored by Mojang')
+        }
+      }
     }
 
-    if (!didVerify && !options.offline) {
-      client.disconnect('disconnectionScreen.notAuthenticated')
+    if (!data?.extraData) throw new Error('Legacy login chain is missing identity data')
+    if (authenticated && !data.extraData.XUID) {
+      throw new Error('Authenticated legacy identity is missing XUID')
     }
 
+    debug('Verified legacy login chain', { authenticated })
     return { key: finalKey, data }
   }
 
