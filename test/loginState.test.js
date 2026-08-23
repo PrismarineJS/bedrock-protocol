@@ -2,7 +2,7 @@
 
 const assert = require('assert')
 const crypto = require('crypto')
-const { ClientStatus } = require('../src/connection')
+const { ClientStatus, Connection } = require('../src/connection')
 const { Player } = require('../src/serverPlayer')
 const { LoginPhase, LoginState, ProtocolStateError } = require('../src/auth/loginState')
 
@@ -62,6 +62,19 @@ function fakePlayer (verifyLogin) {
 }
 
 describe('login state', () => {
+  it('publishes status only after committing the new value', () => {
+    const connection = new Connection()
+    let observed
+    connection.on('status', value => {
+      observed = { value, current: connection.status }
+    })
+    connection.status = ClientStatus.Authenticating
+    assert.deepStrictEqual(observed, {
+      value: ClientStatus.Authenticating,
+      current: ClientStatus.Authenticating
+    })
+  })
+
   it('permits only the defined phase sequence', () => {
     const state = new LoginState()
     assert.strictEqual(state.phase, LoginPhase.AwaitingLogin)
@@ -110,5 +123,20 @@ describe('login state', () => {
     assert.strictEqual(player.loginState.phase, LoginPhase.Rejected)
     assert.deepStrictEqual(writes, [])
     assert.deepStrictEqual(emitted.map(([name]) => name), ['loggingIn'])
+  })
+
+  it('does not parse or dispatch packets after terminal rejection', () => {
+    let parsed = false
+    const state = new LoginState()
+    state.reject()
+    const player = {
+      loginState: state,
+      server: { deserializer: { parsePacketBuffer: () => { parsed = true } } }
+    }
+
+    Player.prototype.readPacket.call(player, Buffer.alloc(0))
+
+    assert.strictEqual(parsed, false)
+    assert.strictEqual(state.phase, LoginPhase.Rejected)
   })
 })

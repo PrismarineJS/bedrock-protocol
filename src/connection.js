@@ -23,8 +23,8 @@ class Connection extends EventEmitter {
 
   set status (val) {
     debug('* new status', val)
-    this.emit('status', val)
     this.#status = val
+    this.emit('status', val)
   }
 
   versionLessThan (version) {

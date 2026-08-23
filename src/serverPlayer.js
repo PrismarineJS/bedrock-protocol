@@ -79,9 +79,10 @@ class Player extends Connection {
   async onLogin (packet) {
     try {
       this.loginState.transition(LoginPhase.VerifyingLogin)
-      this.emit('loggingIn', packet.data)
-
       const envelope = parseLoginEnvelope(packet)
+      // Compatibility notification containing raw, unverified input. Parsing
+      // happens first so listeners cannot alter what the verifier consumes.
+      this.emit('loggingIn', packet.data)
       if (!this.handleClientProtocolVersion(envelope.protocolVersion)) {
         this.loginState.reject()
         return
@@ -201,7 +202,7 @@ class Player extends Connection {
         return
       // Below 1.19.30, this is the first packet.
       case 'login':
-        void this.onLogin(des)
+        this.onLogin(des).catch(error => this.rejectLogin(error))
         if (!this._sentNetworkSettings) this.sendNetworkSettings()
         return
       case 'client_to_server_handshake':
