@@ -141,7 +141,7 @@ describe('legacy login verification', () => {
     const client = {}
     LoginVerify(client, null, { offline: false, version: VERSION })
 
-    await assert.rejects(client.decodeLoginJWT([selfSigned], skin), /three-token chain/)
+    await assert.rejects(client.decodeLoginJWT([selfSigned], skin), /Offline login is not allowed/)
     await assert.rejects(client.decodeLoginJWT([selfSigned, selfSigned], skin), /Unexpected login chain length/)
   })
 
@@ -163,6 +163,7 @@ describe('legacy login verification', () => {
     const service = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 })
     const token = JWT.sign({ cpk: login.clientPublicKey, xid: login.extraData.XUID, xname: 'OidcPlayer' }, service.privateKey, {
       algorithm: 'RS256',
+      expiresIn: '5m',
       header: { kid: 'test-key', typ: undefined }
     })
     const client = {}
