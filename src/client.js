@@ -5,7 +5,7 @@ const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
 const initRaknet = require('./rak')
-const { createKeyExchange } = require('./handshake/keyExchange')
+const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
 
@@ -45,7 +45,7 @@ class Client extends Connection {
     this.deserializer = createDeserializer(this.options.version)
     this._loadFeatures()
 
-    createKeyExchange(this)
+    KeyExchange(this)
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 

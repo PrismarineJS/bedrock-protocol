@@ -3,7 +3,7 @@
 const assert = require('assert')
 const crypto = require('crypto')
 const JWT = require('jsonwebtoken')
-const { createKeyExchange } = require('../src/handshake/keyExchange')
+const KeyExchange = require('../src/handshake/keyExchange')
 
 function publicKeyBase64 (key) {
   return key.export({ format: 'der', type: 'spki' }).toString('base64')
@@ -11,7 +11,7 @@ function publicKeyBase64 (key) {
 
 function exchange () {
   const client = {}
-  createKeyExchange(client)
+  KeyExchange(client)
   return client
 }
 

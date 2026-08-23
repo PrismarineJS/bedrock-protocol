@@ -5,7 +5,7 @@ const curve = 'secp384r1'
 const pem = { format: 'pem', type: 'sec1' }
 const der = { format: 'der', type: 'spki' }
 
-function createKeyExchange (client) {
+function KeyExchange (client) {
   const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
   const publicKeyDER = keyPair.publicKey.export(der)
   const privateKeyPEM = keyPair.privateKey.export(pem)
@@ -78,4 +78,4 @@ function createKeyExchange (client) {
   client.verifyServerHandshake = verifyServerHandshake
 }
 
-module.exports = { createKeyExchange }
+module.exports = KeyExchange

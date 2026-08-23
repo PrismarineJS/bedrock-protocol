@@ -1,7 +1,7 @@
 const { ClientStatus, Connection } = require('./connection')
 const Options = require('./options')
 const { serialize, isDebug } = require('./datatypes/util')
-const { createKeyExchange } = require('./handshake/keyExchange')
+const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
 const { parseLoginEnvelope } = require('./auth/loginEnvelope')
@@ -18,7 +18,7 @@ class Player extends Connection {
     this.connection = connection
     this.options = server.options
 
-    createKeyExchange(this)
+    KeyExchange(this)
     Login(this, server, server.options)
     LoginVerify(this, server, server.options)
 
