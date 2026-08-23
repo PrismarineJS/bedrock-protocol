@@ -51,6 +51,10 @@ class Player extends Connection {
     return this.userData
   }
 
+  getAuthentication () {
+    return this.authentication
+  }
+
   sendNetworkSettings () {
     this.write('network_settings', {
       compression_threshold: this.server.compressionThreshold,
