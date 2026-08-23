@@ -55,16 +55,20 @@ function createValidLegacyLogin () {
   }
 }
 
+function verifyLogin (client, chain, clientDataToken, multiplayerToken = '') {
+  return client.verifyLogin({ chain, clientDataToken, multiplayerToken })
+}
+
 describe('legacy login verification', () => {
   it('accepts a complete chain rooted through the pinned Mojang key', async () => {
     const login = createValidLegacyLogin()
     const client = {}
     LoginVerify(client, null, { offline: false, version: VERSION }, { mojangPublicKey: login.mojangPublicKey })
 
-    const result = await client.decodeLoginJWT(login.chain, login.skin)
-    assert.strictEqual(result.key, login.clientPublicKey)
-    assert.deepStrictEqual(result.userData.extraData, login.extraData)
-    assert.strictEqual(result.skinData.ThirdPartyName, login.extraData.displayName)
+    const result = await verifyLogin(client, login.chain, login.skin)
+    assert.strictEqual(result.clientPublicKeyBase64, login.clientPublicKey)
+    assert.deepStrictEqual(result.identity, login.extraData)
+    assert.strictEqual(result.clientData.ThirdPartyName, login.extraData.displayName)
     assert.deepStrictEqual(result.authentication, {
       authenticated: true,
       method: 'legacy',
@@ -93,7 +97,7 @@ describe('legacy login verification', () => {
 
     assert.doesNotThrow(() => JWT.verify(forgedChain[1], attacker.publicKey, { algorithms: ['ES384'] }))
     assert.throws(() => JWT.verify(forgedChain[1], trusted.publicKey, { algorithms: ['ES384'] }), /invalid signature/)
-    await assert.rejects(client.decodeLoginJWT(forgedChain, forgedSkin), /not anchored by Mojang/)
+    await assert.rejects(verifyLogin(client, forgedChain, forgedSkin), /not anchored by Mojang/)
   })
 
   it('stops a forged login before the server handshake and login events', async () => {
@@ -149,8 +153,8 @@ describe('legacy login verification', () => {
     const client = {}
     LoginVerify(client, null, { offline: false, version: VERSION })
 
-    await assert.rejects(client.decodeLoginJWT([selfSigned], skin), /Offline login is not allowed/)
-    await assert.rejects(client.decodeLoginJWT([selfSigned, selfSigned], skin), /Unexpected login chain length/)
+    await assert.rejects(verifyLogin(client, [selfSigned], skin), /Offline login is not allowed/)
+    await assert.rejects(verifyLogin(client, [selfSigned, selfSigned], skin), /Unexpected login chain length/)
   })
 
   it('continues to accept a self-signed one-token chain in offline mode', async () => {
@@ -162,8 +166,8 @@ describe('legacy login verification', () => {
     const client = {}
     LoginVerify(client, null, { offline: true, version: VERSION })
 
-    const result = await client.decodeLoginJWT([chain], skin)
-    assert.deepStrictEqual(result.userData.extraData, extraData)
+    const result = await verifyLogin(client, [chain], skin)
+    assert.deepStrictEqual(result.identity, extraData)
     assert.deepStrictEqual(result.authentication, {
       authenticated: false,
       method: 'offline',
@@ -185,9 +189,9 @@ describe('legacy login verification', () => {
     const client = {}
     LoginVerify(client, null, { offline: true, version: VERSION })
 
-    const result = await client.decodeLoginJWT([oneToken], skin)
-    assert.strictEqual(result.userData.extraData.XUID, '0')
-    await assert.rejects(client.decodeLoginJWT(threeTokens, skin), /not anchored by Mojang/)
+    const result = await verifyLogin(client, [oneToken], skin)
+    assert.strictEqual(result.identity.XUID, '0')
+    await assert.rejects(verifyLogin(client, threeTokens, skin), /not anchored by Mojang/)
   })
 
   it('uses a verified multiplayer token instead of an accompanying legacy chain', async () => {
@@ -204,8 +208,8 @@ describe('legacy login verification', () => {
       verifyOidcToken: value => JWT.verify(value, service.publicKey, { algorithms: ['RS256'] })
     })
 
-    const result = await client.decodeLoginJWT(['deliberately-invalid-legacy-chain'], login.skin, token)
-    assert.strictEqual(result.userData.extraData.displayName, 'OidcPlayer')
+    const result = await verifyLogin(client, ['deliberately-invalid-legacy-chain'], login.skin, token)
+    assert.strictEqual(result.identity.displayName, 'OidcPlayer')
   })
 
   it('rejects handshake and initialization packets before login verification', () => {

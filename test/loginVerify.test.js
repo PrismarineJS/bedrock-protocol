@@ -58,6 +58,10 @@ function createLoginTokens () {
   return { authToken, clientKeys, serviceKeys, skinToken }
 }
 
+function verifyLogin (client, skinToken, multiplayerToken) {
+  return client.verifyLogin({ chain: [], clientDataToken: skinToken, multiplayerToken })
+}
+
 describe('modern login verification', () => {
   it('verifies the OIDC identity token and its bound client-data token', async () => {
     const { authToken, serviceKeys, skinToken } = createLoginTokens()
@@ -65,13 +69,13 @@ describe('modern login verification', () => {
     const client = {}
     LoginVerify(client, null, { offline: false, version: VERSION }, { verifyOidcToken: verifier.verify })
 
-    const result = await client.decodeLoginJWT([], skinToken, authToken)
-    assert.strictEqual(result.userData.extraData.XUID, '2535427801234567')
-    assert.strictEqual(result.userData.extraData.displayName, 'VerifiedPlayer')
-    assert.strictEqual(result.userData.extraData.PlayFabID, 'playfab-player-id')
-    assert.strictEqual(result.userData.extraData.PlayFabTitleID, '20CA2')
-    assert.match(result.userData.extraData.identity, /^[0-9a-f-]{36}$/)
-    assert.strictEqual(result.skinData.ThirdPartyName, 'VerifiedPlayer')
+    const result = await verifyLogin(client, skinToken, authToken)
+    assert.strictEqual(result.identity.XUID, '2535427801234567')
+    assert.strictEqual(result.identity.displayName, 'VerifiedPlayer')
+    assert.strictEqual(result.identity.PlayFabID, 'playfab-player-id')
+    assert.strictEqual(result.identity.PlayFabTitleID, '20CA2')
+    assert.match(result.identity.identity, /^[0-9a-f-]{36}$/)
+    assert.strictEqual(result.clientData.ThirdPartyName, 'VerifiedPlayer')
     assert.deepStrictEqual(result.authentication, {
       authenticated: true,
       method: 'oidc',
@@ -87,7 +91,7 @@ describe('modern login verification', () => {
 
     const parts = authToken.split('.')
     parts[1] = Buffer.from(JSON.stringify({ ...JWT.decode(authToken), xname: 'Impostor' })).toString('base64url')
-    await assert.rejects(client.decodeLoginJWT([], skinToken, parts.join('.')), /invalid signature/)
+    await assert.rejects(verifyLogin(client, skinToken, parts.join('.')), /invalid signature/)
   })
 
   it('rejects client data not signed by the key in the verified identity token', async () => {
@@ -98,7 +102,7 @@ describe('modern login verification', () => {
     const client = {}
     LoginVerify(client, null, { offline: false, version: VERSION }, { verifyOidcToken: verifier.verify })
 
-    await assert.rejects(client.decodeLoginJWT([], forgedSkinToken, authToken), /invalid signature/)
+    await assert.rejects(verifyLogin(client, forgedSkinToken, authToken), /invalid signature/)
   })
 
   it('rejects tokens for a different audience', async () => {
@@ -136,22 +140,22 @@ describe('modern login verification', () => {
     LoginVerify(client, null, { offline: false, version: VERSION }, {
       verifyOidcToken: async () => ({ ...validPayload, xid: undefined })
     })
-    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /XUID is invalid/)
+    await assert.rejects(verifyLogin(client, skinToken, authToken), /XUID is invalid/)
 
     LoginVerify(client, null, { offline: false, version: VERSION }, {
       verifyOidcToken: async () => ({ ...validPayload, xname: undefined })
     })
-    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /display name/)
+    await assert.rejects(verifyLogin(client, skinToken, authToken), /display name/)
 
     LoginVerify(client, null, { offline: false, version: VERSION }, {
       verifyOidcToken: async () => ({ ...validPayload, exp: undefined })
     })
-    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /missing its expiry/)
+    await assert.rejects(verifyLogin(client, skinToken, authToken), /missing its expiry/)
 
     LoginVerify(client, null, { offline: false, version: VERSION }, {
       verifyOidcToken: async () => ({ ...validPayload, iss: undefined })
     })
-    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /missing its issuer/)
+    await assert.rejects(verifyLogin(client, skinToken, authToken), /missing its issuer/)
   })
 
   it('rejects a non-P-384 client key in an otherwise verified OIDC payload', async () => {
@@ -162,6 +166,6 @@ describe('modern login verification', () => {
       verifyOidcToken: async () => ({ ...JWT.decode(authToken), cpk: publicKeyBase64(rsa.publicKey) })
     })
 
-    await assert.rejects(client.decodeLoginJWT([], skinToken, authToken), /must be an EC P-384 key/)
+    await assert.rejects(verifyLogin(client, skinToken, authToken), /must be an EC P-384 key/)
   })
 })
