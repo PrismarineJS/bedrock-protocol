@@ -130,6 +130,7 @@ declare module 'bedrock-protocol' {
       name: string
     }
     version: string
+    authentication?: AuthenticationResult
 
     getUserData(): object
 
@@ -151,11 +152,17 @@ declare module 'bedrock-protocol' {
      */
     close(): void
 
-    on(event: 'login', cb: () => void): any
+    on(event: 'login', cb: (result: { user: object, authentication: AuthenticationResult }) => void): any
     on(event: 'join', cb: () => void): any
     on(event: 'close', cb: (reason: string) => void): any
     on(event: 'packet', cb: (packet: object) => void): any
     on(event: 'spawn', cb: (reason: string) => void): any
+  }
+
+  export interface AuthenticationResult {
+    authenticated: boolean
+    method: 'oidc' | 'legacy' | 'offline'
+    issuer: string | null
   }
 
   export class Server extends EventEmitter {

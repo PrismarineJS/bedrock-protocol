@@ -1,93 +1,81 @@
-const { ClientStatus } = require('../connection')
 const JWT = require('jsonwebtoken')
 const crypto = require('crypto')
-const debug = require('debug')('minecraft-protocol')
 
-const SALT = '🧂'
 const curve = 'secp384r1'
 const pem = { format: 'pem', type: 'sec1' }
 const der = { format: 'der', type: 'spki' }
 
-function KeyExchange (client, server, options) {
-  // Generate a key pair at program start up
-  client.ecdhKeyPair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
-  client.publicKeyDER = client.ecdhKeyPair.publicKey.export(der)
-  client.privateKeyPEM = client.ecdhKeyPair.privateKey.export(pem)
-  client.clientX509 = client.publicKeyDER.toString('base64')
+function KeyExchange (client) {
+  const keyPair = crypto.generateKeyPairSync('ec', { namedCurve: curve })
+  const publicKeyDER = keyPair.publicKey.export(der)
+  const privateKeyPEM = keyPair.privateKey.export(pem)
+  const clientX509 = publicKeyDER.toString('base64')
 
-  function startClientboundEncryption (publicKey) {
-    debug('[encrypt] Client pub key base64: ', publicKey)
-
-    const pubKeyDer = crypto.createPublicKey({ key: Buffer.from(publicKey.key, 'base64'), ...der })
-    // Shared secret from the client's public key + our private key
-    client.sharedSecret = crypto.diffieHellman({ privateKey: client.ecdhKeyPair.privateKey, publicKey: pubKeyDer })
-
-    // Secret hash we use for packet encryption:
-    // From the public key of the remote and the private key
-    // of the local, a shared secret is generated using ECDH.
-    // The secret key bytes are then computed as
-    // sha256(server_token + shared_secret). These secret key
-    //  bytes are 32 bytes long.
-    const secretHash = crypto.createHash('sha256')
-    secretHash.update(SALT)
-    secretHash.update(client.sharedSecret)
-
-    client.secretKeyBytes = secretHash.digest()
-
-    const token = JWT.sign({
-      salt: toBase64(SALT),
-      signedToken: client.clientX509
-    }, client.ecdhKeyPair.privateKey, { algorithm: 'ES384', header: { x5u: client.clientX509 } })
-
-    client.write('server_to_client_handshake', { token })
-
-    // The encryption scheme is AES/CFB8/NoPadding with the
-    // secret key being the result of the sha256 above and
-    // the IV being the first 16 bytes of this secret key.
-    const initial = client.secretKeyBytes.slice(0, 16)
-    client.startEncryption(initial)
-  }
-
-  function startServerboundEncryption (token) {
-    debug('[encrypt] Starting serverbound encryption', token)
-    const jwt = token?.token
-    if (!jwt) {
-      throw Error('Server did not return a valid JWT, cannot start encryption')
+  function parseRemoteKey (value) {
+    const key = value instanceof crypto.KeyObject
+      ? value
+      : crypto.createPublicKey({ key: Buffer.from(value, 'base64'), ...der })
+    if (key.asymmetricKeyType !== 'ec' || key.asymmetricKeyDetails?.namedCurve !== curve) {
+      throw new Error('Handshake public key must be an EC P-384 key')
     }
-
-    // No verification here, not needed
-
-    const [header, payload] = jwt.split('.').map(k => Buffer.from(k, 'base64'))
-    const head = JSON.parse(String(header))
-    const body = JSON.parse(String(payload))
-
-    const pubKeyDer = crypto.createPublicKey({ key: Buffer.from(head.x5u, 'base64'), ...der })
-
-    // Shared secret from the client's public key + our private key
-    client.sharedSecret = crypto.diffieHellman({ privateKey: client.ecdhKeyPair.privateKey, publicKey: pubKeyDer })
-
-    const salt = Buffer.from(body.salt, 'base64')
-    const secretHash = crypto.createHash('sha256')
-    secretHash.update(salt)
-    secretHash.update(client.sharedSecret)
-
-    client.secretKeyBytes = secretHash.digest()
-    const iv = client.secretKeyBytes.slice(0, 16)
-    client.startEncryption(iv)
-
-    // It works! First encrypted packet :)
-
-    client.write('client_to_server_handshake', {})
-    this.emit('join')
-    client.status = ClientStatus.Initializing
+    return key
   }
 
-  client.on('server.client_handshake', startClientboundEncryption)
-  client.on('client.server_handshake', startServerboundEncryption)
+  function deriveEncryption (remotePublicKey, salt) {
+    const sharedSecret = crypto.diffieHellman({
+      privateKey: keyPair.privateKey,
+      publicKey: remotePublicKey
+    })
+    const secretKeyBytes = crypto.createHash('sha256')
+      .update(salt)
+      .update(sharedSecret)
+      .digest()
+    return {
+      sharedSecret,
+      secretKeyBytes,
+      iv: secretKeyBytes.subarray(0, 16)
+    }
+  }
+
+  function createServerHandshake (clientPublicKey) {
+    const remotePublicKey = parseRemoteKey(clientPublicKey)
+    const salt = crypto.randomBytes(16)
+    const encryption = deriveEncryption(remotePublicKey, salt)
+    const token = JWT.sign({
+      salt: salt.toString('base64'),
+      signedToken: clientX509
+    }, keyPair.privateKey, {
+      algorithm: 'ES384',
+      header: { x5u: clientX509 }
+    })
+    return { token, ...encryption }
+  }
+
+  function verifyServerHandshake (packet) {
+    const token = packet?.token
+    if (!token) throw new Error('Server did not return a valid JWT, cannot start encryption')
+
+    const decoded = JWT.decode(token, { complete: true })
+    const x5u = decoded?.header?.x5u
+    if (!x5u) throw new Error('Server handshake JWT is missing its public key')
+    const remotePublicKey = parseRemoteKey(x5u)
+    // The key is self-declared, so this does not authenticate the server's
+    // identity. It does ensure that the key used for ECDH signed the payload.
+    const claims = JWT.verify(token, remotePublicKey, { algorithms: ['ES384'] })
+    if (!claims?.salt || typeof claims.salt !== 'string') {
+      throw new Error('Server handshake JWT is missing its salt')
+    }
+    const salt = Buffer.from(claims.salt, 'base64')
+    if (salt.length === 0 || salt.length > 64) throw new Error('Server handshake salt has an invalid length')
+    return deriveEncryption(remotePublicKey, salt)
+  }
+
+  client.ecdhKeyPair = keyPair
+  client.publicKeyDER = publicKeyDER
+  client.privateKeyPEM = privateKeyPEM
+  client.clientX509 = clientX509
+  client.createServerHandshake = createServerHandshake
+  client.verifyServerHandshake = verifyServerHandshake
 }
 
-function toBase64 (string) {
-  return Buffer.from(string).toString('base64')
-}
-
-module.exports = { KeyExchange }
+module.exports = KeyExchange

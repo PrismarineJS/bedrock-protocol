@@ -1,9 +1,11 @@
 const { ClientStatus, Connection } = require('./connection')
 const Options = require('./options')
 const { serialize, isDebug } = require('./datatypes/util')
-const { KeyExchange } = require('./handshake/keyExchange')
+const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
+const { parseLoginEnvelope } = require('./auth/loginEnvelope')
+const { LoginPhase, LoginState } = require('./auth/loginState')
 const debug = require('debug')('minecraft-protocol')
 
 class Player extends Connection {
@@ -16,7 +18,7 @@ class Player extends Connection {
     this.connection = connection
     this.options = server.options
 
-    KeyExchange(this, server, server.options)
+    KeyExchange(this)
     Login(this, server, server.options)
     LoginVerify(this, server, server.options)
 
@@ -36,6 +38,7 @@ class Player extends Connection {
     this.compressionHeader = this.server.compressionHeader
 
     this._sentNetworkSettings = false // 1.19.30+
+    this.loginState = new LoginState()
   }
 
   getUserData () {
@@ -68,49 +71,41 @@ class Player extends Connection {
   }
 
   async onLogin (packet) {
-    const body = packet.data
-    this.emit('loggingIn', body)
-
-    const clientVer = body.params.protocol_version
-    if (!this.handleClientProtocolVersion(clientVer)) {
-      return
-    }
-
-    // Parse login data
-    const tokens = body.params.tokens
     try {
-      const skinChain = tokens.client
-      const authChain = JSON.parse(tokens.identity)
-      const authToken = authChain.Token || ''
-      if (authChain.AuthenticationType === 1) throw new Error('Guest authentication is not supported')
-      let chain
-      if (authChain.Certificate) { // 1.21.90+
-        chain = JSON.parse(authChain.Certificate).chain
-      } else if (authChain.chain) {
-        chain = authChain.chain
-      } else if (authToken) {
-        chain = []
-      } else {
-        throw new Error('Invalid login packet: missing chain or Certificate')
+      this.loginState.transition(LoginPhase.VerifyingLogin)
+      const envelope = parseLoginEnvelope(packet)
+      this.emit('loggingIn', packet.data)
+      if (!this.handleClientProtocolVersion(envelope.protocolVersion)) {
+        this.loginState.reject()
+        return
       }
-      var { key, userData, skinData } = await this.decodeLoginJWT(chain, skinChain, authToken) // eslint-disable-line
+
+      const verified = await this.verifyLogin(envelope)
+      this.loginState.require(LoginPhase.VerifyingLogin)
+      this.authentication = verified.authentication
+      this.userData = verified.identity
+      this.skinData = verified.clientData
+      this.profile = {
+        name: verified.identity.displayName,
+        uuid: verified.identity.identity,
+        xuid: verified.identity.XUID
+      }
+      this.version = envelope.protocolVersion
+
+      const handshake = this.createServerHandshake(verified.clientPublicKey)
+      this.write('server_to_client_handshake', { token: handshake.token })
+      this.enableEncryption(handshake)
+      this.loginState.transition(LoginPhase.AwaitingClientHandshake)
+      this.emit('login', { user: verified.identity, authentication: verified.authentication })
     } catch (e) {
-      debug(this.address, e)
-      this.disconnect('Server authentication error')
-      return
+      this.rejectLogin(e)
     }
+  }
 
-    this.emit('server.client_handshake', { key }) // internal so we start encryption
-
-    this.userData = userData.extraData
-    this.skinData = skinData
-    this.profile = {
-      name: userData.extraData?.displayName,
-      uuid: userData.extraData?.identity,
-      xuid: userData.extraData?.xuid || userData.extraData?.XUID
-    }
-    this.version = clientVer
-    this.emit('login', { user: userData.extraData }) // emit events for user
+  rejectLogin (error) {
+    if (!this.loginState.reject()) return
+    debug(this.address, error)
+    this.disconnect('Server authentication error')
   }
 
   /**
@@ -140,10 +135,22 @@ class Player extends Connection {
   // After sending Server to Client Handshake, this handles the client's
   // Client to Server handshake response. This indicates successful encryption
   onHandshake () {
+    try {
+      this.loginState.require(LoginPhase.AwaitingClientHandshake)
+      if (this.status !== ClientStatus.Authenticating || !this.encryptionEnabled) {
+        throw new Error('Client handshake arrived before encryption was enabled')
+      }
+      this.loginState.transition(LoginPhase.Complete)
+    } catch (error) {
+      this.rejectLogin(error)
+      return false
+    }
+
     // https://wiki.vg/Bedrock_Protocol#Play_Status
-    this.write('play_status', { status: 'login_success' })
     this.status = ClientStatus.Initializing
+    this.write('play_status', { status: 'login_success' })
     this.emit('join')
+    return true
   }
 
   close (reason) {
@@ -157,9 +164,12 @@ class Player extends Connection {
     this.connection?.close()
     this.removeAllListeners()
     this.status = ClientStatus.Disconnected
+    this.loginState?.close()
   }
 
   readPacket (packet) {
+    if (this.loginState.is(LoginPhase.Rejected) || this.loginState.is(LoginPhase.Closed)) return
+
     try {
       var des = this.server.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
@@ -173,6 +183,10 @@ class Player extends Connection {
     switch (des.data.name) {
       // This is the first packet on 1.19.30 & above
       case 'request_network_settings':
+        if (!this.loginState.is(LoginPhase.AwaitingLogin)) {
+          this.rejectLogin(new Error('Network settings request arrived after login started'))
+          return
+        }
         if (this.handleClientProtocolVersion(des.data.params.client_protocol)) {
           this.sendNetworkSettings()
           this.compressionLevel = this.server.compressionLevel
@@ -180,21 +194,25 @@ class Player extends Connection {
         return
       // Below 1.19.30, this is the first packet.
       case 'login':
-        this.onLogin(des)
+        this.onLogin(des).catch(error => this.rejectLogin(error))
         if (!this._sentNetworkSettings) this.sendNetworkSettings()
         return
       case 'client_to_server_handshake':
         // Emit the 'join' event
-        this.onHandshake()
+        if (!this.onHandshake()) return
         break
       case 'set_local_player_as_initialized':
+        if (!this.loginState.is(LoginPhase.Complete) || this.status !== ClientStatus.Initializing) {
+          this.rejectLogin(new Error('Player initialization arrived before login completed'))
+          return
+        }
         this.status = ClientStatus.Initialized
         this.inLog?.('Server client spawned')
         // Emit the 'spawn' event
         this.emit('spawn')
         break
       default:
-        if (this.status === ClientStatus.Disconnected || this.status === ClientStatus.Authenticating) {
+        if (!this.loginState.is(LoginPhase.Complete) || this.status === ClientStatus.Disconnected || this.status === ClientStatus.Authenticating) {
           this.inLog?.('ignoring', des.data.name)
           return
         }

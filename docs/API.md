@@ -108,9 +108,11 @@ Server event emissions:
 A ServerPlayer instance also emits the following special events:
 * 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
 * 'close' - emitted when client quit the server
-* 'login' - emitted by client after the client has been authenticated by the server
+* 'login' - emitted after identity and client-data verification. The event value is `{ user, authentication }`, where `authentication` contains `authenticated`, `method` (`oidc`, `legacy`, or `offline`), and the verified issuer. Check `authenticated` rather than inferring trust from an XUID.
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned
 * 'packet' - Emitted for all packets received by client
+
+Offline identities are explicitly marked `authenticated: false`, and their self-asserted XUID is normalized to `0`.
 
 ## Client usage
 
