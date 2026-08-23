@@ -45,11 +45,7 @@ class Client extends Connection {
     this.deserializer = createDeserializer(this.options.version)
     this._loadFeatures()
 
-    this.keyExchange = createKeyExchange()
-    this.ecdhKeyPair = this.keyExchange.keyPair
-    this.publicKeyDER = this.keyExchange.publicKeyDER
-    this.privateKeyPEM = this.keyExchange.privateKeyPEM
-    this.clientX509 = this.keyExchange.clientX509
+    createKeyExchange(this)
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
@@ -243,7 +239,7 @@ class Client extends Connection {
     switch (des.data.name) {
       case 'server_to_client_handshake':
         try {
-          const encryption = this.keyExchange.verifyServerHandshake(des.data.params)
+          const encryption = this.verifyServerHandshake(des.data.params)
           this.enableEncryption(encryption)
           this.write('client_to_server_handshake', {})
           this.status = ClientStatus.Initializing

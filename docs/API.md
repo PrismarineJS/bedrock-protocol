@@ -112,7 +112,7 @@ A ServerPlayer instance also emits the following special events:
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned
 * 'packet' - Emitted for all packets received by client
 
-`ServerPlayer#getAuthentication()` returns the same authentication result. Offline identities are explicitly marked `authenticated: false`, and their self-asserted XUID is normalized to `0`.
+Offline identities are explicitly marked `authenticated: false`, and their self-asserted XUID is normalized to `0`.
 
 ## Client usage
 

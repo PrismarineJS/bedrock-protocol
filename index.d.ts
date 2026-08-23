@@ -133,7 +133,6 @@ declare module 'bedrock-protocol' {
     authentication?: AuthenticationResult
 
     getUserData(): object
-    getAuthentication(): AuthenticationResult | undefined
 
     /**
      * Disconnects a client before it has logged in via a PlayStatus packet.

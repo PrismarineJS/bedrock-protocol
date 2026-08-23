@@ -42,15 +42,13 @@ function fakePlayer (verifyLogin) {
     address: 'local-state-test',
     status: ClientStatus.Authenticating,
     loginState: new LoginState(),
-    loginVerifier: { verifyLogin },
-    keyExchange: {
-      createServerHandshake: () => ({
-        token: 'server-handshake',
-        sharedSecret: Buffer.alloc(48),
-        secretKeyBytes: Buffer.alloc(32),
-        iv: Buffer.alloc(16)
-      })
-    },
+    verifyLogin,
+    createServerHandshake: () => ({
+      token: 'server-handshake',
+      sharedSecret: Buffer.alloc(48),
+      secretKeyBytes: Buffer.alloc(32),
+      iv: Buffer.alloc(16)
+    }),
     handleClientProtocolVersion: () => true,
     write: (name, params) => writes.push([name, params]),
     enableEncryption: () => { player.encryptionEnabled = true },

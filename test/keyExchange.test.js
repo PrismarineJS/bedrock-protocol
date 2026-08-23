@@ -9,13 +9,19 @@ function publicKeyBase64 (key) {
   return key.export({ format: 'der', type: 'spki' }).toString('base64')
 }
 
+function exchange () {
+  const client = {}
+  createKeyExchange(client)
+  return client
+}
+
 describe('key exchange', () => {
   it('generates a fresh server salt for every handshake', () => {
     const remote = crypto.generateKeyPairSync('ec', { namedCurve: 'P-384' })
-    const exchange = createKeyExchange()
+    const keyExchange = exchange()
 
-    const first = exchange.createServerHandshake(remote.publicKey)
-    const second = exchange.createServerHandshake(remote.publicKey)
+    const first = keyExchange.createServerHandshake(remote.publicKey)
+    const second = keyExchange.createServerHandshake(remote.publicKey)
 
     const salts = [first, second].map(handshake => JWT.decode(handshake.token).salt)
     assert.notStrictEqual(salts[0], salts[1])
@@ -31,16 +37,16 @@ describe('key exchange', () => {
       algorithm: 'ES384',
       header: { x5u: serverPublicKey, typ: undefined }
     })
-    const exchange = createKeyExchange()
+    const keyExchange = exchange()
 
-    assert.throws(() => exchange.verifyServerHandshake({ token: forged }), /invalid signature/)
+    assert.throws(() => keyExchange.verifyServerHandshake({ token: forged }), /invalid signature/)
   })
 
   it('derives matching encryption material from a valid handshake', () => {
-    const server = createKeyExchange()
-    const client = createKeyExchange()
+    const server = exchange()
+    const client = exchange()
 
-    const outbound = server.createServerHandshake(client.keyPair.publicKey)
+    const outbound = server.createServerHandshake(client.ecdhKeyPair.publicKey)
     const inbound = client.verifyServerHandshake({ token: outbound.token })
 
     assert.deepStrictEqual(inbound.secretKeyBytes, outbound.secretKeyBytes)
@@ -55,8 +61,8 @@ describe('key exchange', () => {
       algorithm: 'ES384',
       header: { x5u: serverPublicKey, typ: undefined }
     })
-    const exchange = createKeyExchange()
+    const keyExchange = exchange()
 
-    assert.throws(() => exchange.verifyServerHandshake({ token }), /invalid length/)
+    assert.throws(() => keyExchange.verifyServerHandshake({ token }), /invalid length/)
   })
 })

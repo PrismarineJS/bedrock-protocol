@@ -4,7 +4,6 @@ const { serialize, isDebug } = require('./datatypes/util')
 const { createKeyExchange } = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
-const { createLoginVerifier } = require('./auth/loginVerifier')
 const { parseLoginEnvelope } = require('./auth/loginEnvelope')
 const { LoginPhase, LoginState } = require('./auth/loginState')
 const debug = require('debug')('minecraft-protocol')
@@ -19,14 +18,9 @@ class Player extends Connection {
     this.connection = connection
     this.options = server.options
 
-    this.keyExchange = createKeyExchange()
-    this.ecdhKeyPair = this.keyExchange.keyPair
-    this.publicKeyDER = this.keyExchange.publicKeyDER
-    this.privateKeyPEM = this.keyExchange.privateKeyPEM
-    this.clientX509 = this.keyExchange.clientX509
+    createKeyExchange(this)
     Login(this, server, server.options)
-    this.loginVerifier = createLoginVerifier(server.options)
-    LoginVerify(this, server, server.options, { loginVerifier: this.loginVerifier })
+    LoginVerify(this, server, server.options)
 
     this.startQueue()
     this.status = ClientStatus.Authenticating
@@ -49,10 +43,6 @@ class Player extends Connection {
 
   getUserData () {
     return this.userData
-  }
-
-  getAuthentication () {
-    return this.authentication
   }
 
   sendNetworkSettings () {
@@ -84,15 +74,13 @@ class Player extends Connection {
     try {
       this.loginState.transition(LoginPhase.VerifyingLogin)
       const envelope = parseLoginEnvelope(packet)
-      // Compatibility notification containing raw, unverified input. Parsing
-      // happens first so listeners cannot alter what the verifier consumes.
       this.emit('loggingIn', packet.data)
       if (!this.handleClientProtocolVersion(envelope.protocolVersion)) {
         this.loginState.reject()
         return
       }
 
-      const verified = await this.loginVerifier.verifyLogin(envelope)
+      const verified = await this.verifyLogin(envelope)
       this.loginState.require(LoginPhase.VerifyingLogin)
       this.authentication = verified.authentication
       this.userData = verified.identity
@@ -104,7 +92,7 @@ class Player extends Connection {
       }
       this.version = envelope.protocolVersion
 
-      const handshake = this.keyExchange.createServerHandshake(verified.clientPublicKey)
+      const handshake = this.createServerHandshake(verified.clientPublicKey)
       this.write('server_to_client_handshake', { token: handshake.token })
       this.enableEncryption(handshake)
       this.loginState.transition(LoginPhase.AwaitingClientHandshake)
