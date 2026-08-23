@@ -6,6 +6,7 @@ const JWT = require('jsonwebtoken')
 const LoginVerify = require('../src/handshake/loginVerify')
 const { Player } = require('../src/serverPlayer')
 const { ClientStatus } = require('../src/connection')
+const { LoginState } = require('../src/auth/loginState')
 
 const VERSION = '1.26.40'
 
@@ -108,9 +109,11 @@ describe('legacy login verification', () => {
     const disconnects = []
     const player = {
       address: 'local-regression-test',
+      loginState: new LoginState(),
       emit: (name, value) => emitted.push([name, value]),
       handleClientProtocolVersion: () => true,
-      disconnect: reason => disconnects.push(reason)
+      disconnect: reason => disconnects.push(reason),
+      rejectLogin: Player.prototype.rejectLogin
     }
     LoginVerify(player, null, { offline: false, version: VERSION })
 
@@ -182,7 +185,7 @@ describe('legacy login verification', () => {
       const disconnects = []
       const player = {
         status: ClientStatus.Authenticating,
-        awaitingClientHandshake: false,
+        loginState: new LoginState(),
         encryptionEnabled: false,
         server: {
           deserializer: {
@@ -193,7 +196,8 @@ describe('legacy login verification', () => {
         write: name => writes.push(name),
         emit: name => emitted.push(name),
         disconnect: reason => disconnects.push(reason),
-        onHandshake: Player.prototype.onHandshake
+        onHandshake: Player.prototype.onHandshake,
+        rejectLogin: Player.prototype.rejectLogin
       }
 
       Player.prototype.readPacket.call(player, Buffer.alloc(0))

@@ -3,7 +3,8 @@ const { createLoginVerifier } = require('../auth/loginVerifier')
 // Compatibility adapter for callers that use decodeLoginJWT directly. New
 // server code should call createLoginVerifier().verifyLogin() instead.
 module.exports = (client, server, options, dependencies = {}) => {
-  const verifier = createLoginVerifier(options, dependencies)
+  const verifier = dependencies.loginVerifier || createLoginVerifier(options, dependencies)
+  client.loginVerifier = verifier
 
   client.decodeLoginJWT = async (authTokens, skinToken, authToken = '') => {
     const result = await verifier.verifyLogin({
