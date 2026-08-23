@@ -1,5 +1,5 @@
 ## 3.58.3
-* [Fix authorization and login flow issues with server join process (#779)](https://github.com/PrismarineJS/bedrock-protocol/commit/2fe34f33bd624f3b1b09e34198f53e88628de1ee) (thanks @extremeheat)
+* [Fix authorization and login flow issues with server join process (#779)](https://github.com/PrismarineJS/bedrock-protocol/commit/2fe34f33bd624f3b1b09e34198f53e88628de1ee) (thanks vasilis)
 * [Fix legacy `enum_size_based_on_values_len` type limits (#776)](https://github.com/PrismarineJS/bedrock-protocol/commit/35ff23b66643e964af87a0685a3690cad774ee55) (thanks @AnonymoDGH)
 * [Revert "Add snappy support (#755)" (#775)](https://github.com/PrismarineJS/bedrock-protocol/commit/34b0cb12ef22300aa6c0116f06cb403af888ef19) (thanks @extremeheat)
 * [Add snappy support (#755)](https://github.com/PrismarineJS/bedrock-protocol/commit/b485041b852b25d4cbb3e3b700ff03e95b4a222d) (thanks @FishCMD)
