@@ -1,0 +1,129 @@
+{
+  "types": {
+    "string": [
+      "pstring",
+      {
+        "countType": "varint"
+      }
+    ],
+    "encapsulated": "native",
+    "nethernet_packet": [
+      "encapsulated",
+      {
+        "lengthType": "lu16",
+        "type": "nethernet_packet_inner"
+      }
+    ],
+    "nethernet_packet_inner": [
+      "container",
+      [
+        {
+          "name": "name",
+          "type": [
+            "mapper",
+            {
+              "type": "lu16",
+              "mappings": {
+                "0": "discovery_request",
+                "1": "discovery_response",
+                "2": "discovery_message"
+              }
+            }
+          ]
+        },
+        {
+          "name": "params",
+          "type": [
+            "switch",
+            {
+              "compareTo": "name",
+              "fields": {
+                "discovery_request": "DiscoveryRequest",
+                "discovery_response": "DiscoveryResponse",
+                "discovery_message": "DiscoveryMessage"
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    "DiscoveryRequest": [
+      "container",
+      [
+        {
+          "name": "sender_id",
+          "type": "lu64"
+        },
+        {
+          "name": "reserved",
+          "type": [
+            "buffer",
+            {
+              "count": 8
+            }
+          ]
+        }
+      ]
+    ],
+    "DiscoveryResponse": [
+      "container",
+      [
+        {
+          "name": "sender_id",
+          "type": "lu64"
+        },
+        {
+          "name": "reserved",
+          "type": [
+            "buffer",
+            {
+              "count": 8
+            }
+          ]
+        },
+        {
+          "name": "data",
+          "type": [
+            "pstring",
+            {
+              "countType": "lu32",
+              "encoding": "utf-8"
+            }
+          ]
+        }
+      ]
+    ],
+    "DiscoveryMessage": [
+      "container",
+      [
+        {
+          "name": "sender_id",
+          "type": "lu64"
+        },
+        {
+          "name": "reserved",
+          "type": [
+            "buffer",
+            {
+              "count": 8
+            }
+          ]
+        },
+        {
+          "name": "recipient_id",
+          "type": "lu64"
+        },
+        {
+          "name": "data",
+          "type": [
+            "pstring",
+            {
+              "countType": "lu32",
+              "encoding": "utf-8"
+            }
+          ]
+        }
+      ]
+    ]
+  }
+}
