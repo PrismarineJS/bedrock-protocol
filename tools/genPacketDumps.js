@@ -18,16 +18,21 @@ function hasDumps (version) {
   return true
 }
 
-let loop
-
-async function dump (version, force = true) {
+// Pass an existingPort to dump from an already running server instead of
+// booting (and killing) one here.
+async function dump (version, force = true, existingPort = null) {
   const random = (Math.random() * 1000) | 0
-  const [port, v6] = [await getPort(), await getPort()]
+  let loop
+  let handle
+  let port = existingPort
 
-  console.log('Starting dump server', version, 'on port', port, v6)
-  const handle = await vanillaServer.startServerAndWait2(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port, 'server-portv6': v6 })
-
-  console.log('Started dump server', version)
+  if (!existingPort) {
+    let v6
+    ;[port, v6] = [await getPort(), await getPort()]
+    console.log('Starting dump server', version, 'on port', port, v6)
+    handle = await vanillaServer.startServerAndWait2(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port, 'server-portv6': v6 })
+    console.log('Started dump server', version)
+  }
   const client = new Client({
     host: '127.0.0.1',
     port,
@@ -91,12 +96,12 @@ async function dump (version, force = true) {
 
       clearInterval(loop)
       client.close()
-      handle.kill()
+      handle?.kill()
       res()
     })
   }, 1000 * 60, () => {
     clearInterval(loop)
-    handle.kill()
+    handle?.kill()
     throw Error('Timed out')
   })
 }
