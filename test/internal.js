@@ -1,5 +1,5 @@
 const { Server, Client } = require('../')
-const { dumpPackets } = require('../tools/genPacketDumps')
+const { dumpPackets, hasDumps } = require('../tools/genPacketDumps')
 const { ping } = require('../src/createClient')
 const { CURRENT_VERSION } = require('../src/options')
 const { join } = require('path')
@@ -7,8 +7,10 @@ const { waitFor } = require('../src/datatypes/util')
 const { getPort } = require('./util')
 
 // First we need to dump some packets that a vanilla server would send a vanilla
-// client. Then we can replay those back in our custom server.
+// client. Then we can replay those back in our custom server. The vanilla
+// spawn test already dumps them, so only boot a vanilla server if it hasn't.
 function prepare (version) {
+  if (hasDumps(version)) return
   return dumpPackets(version)
 }
 
