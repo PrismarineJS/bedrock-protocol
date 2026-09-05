@@ -2,6 +2,7 @@
 const fs = require('fs')
 const cp = require('child_process')
 const helper = require('gh-helpers')()
+const bedrockServer = require('minecraft-bedrock-server')
 const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
 const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
 
@@ -10,9 +11,8 @@ const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186
 // "currentVersionReleaseDate": "2021-07-13T15:35:49Z",
 // "releaseNotes": "What's new in 1.17.10:\nVarious bug fixes",
 
-function buildFirstIssue (title, result, externalPatches) {
+function buildFirstIssue (title, result, externalPatches, protocolVersion) {
   let commitData = ''
-  let protocolVersion = '?'
   const date = new Date(result.currentVersionReleaseDate).toUTCString()
 
   for (const name in externalPatches) {
@@ -24,8 +24,6 @@ function buildFirstIssue (title, result, externalPatches) {
     if (diff) commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
     else commitData += '\n(No changes so far)\n'
   }
-  try { protocolVersion = getProtocolVersion() } catch (e) { console.log(e) }
-
   return {
     title,
     body: `
@@ -100,6 +98,8 @@ async function fetchLatest () {
 
   let { version, currentVersionReleaseDate, releaseNotes } = result
   console.log(version, currentVersionReleaseDate, releaseNotes)
+  const { protocolVersion } = await bedrockServer.getPongDetails(version)
+  console.log('Detected protocol version', protocolVersion)
 
   const title = `Support Minecraft ${result.version}`
   const issueStatus = await helper.findIssue({ titleIncludes: title }) || {}
@@ -124,13 +124,30 @@ async function fetchLatest () {
     PocketMine: getCommitsInRepo('pmmp/PocketMine-MP', version, currentVersionReleaseDate),
     gophertunnel: getCommitsInRepo('Sandertv/gophertunnel', version, currentVersionReleaseDate),
     CloudburstMC: getCommitsInRepo('CloudburstMC/Protocol', version, currentVersionReleaseDate)
-  })
+  }, protocolVersion)
 
+  let issueUrl = issueStatus.url
   if (issueStatus.isOpen) {
     helper.updateIssue(issueStatus.id, issuePayload)
   } else {
-    helper.createIssue(issuePayload)
+    const issue = await helper.createIssue(issuePayload)
+    issueUrl = issue.url
   }
+
+  const dispatchPayload = {
+    owner: 'PrismarineJS',
+    repo: 'minecraft-data',
+    workflow: 'bedrock-version-bump.yml',
+    branch: 'master',
+    inputs: {
+      version,
+      protocolVersion: String(protocolVersion),
+      issueUrl,
+      createPr: 'true'
+    }
+  }
+  console.log('Sending workflow dispatch', dispatchPayload)
+  await helper.sendWorkflowDispatch(dispatchPayload)
 
   fs.writeFileSync('./issue.md', issuePayload.body)
   console.log('OK, wrote to ./issue.md', issuePayload)

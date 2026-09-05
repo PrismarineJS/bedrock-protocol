@@ -40,7 +40,7 @@
     "bedrock-protocol": "file:.",
     "bedrock-provider": "^2.0.0",
     "leveldb-zlib": "^1.0.1",
-    "minecraft-bedrock-server": "^1.5.2",
+    "minecraft-bedrock-server": "^1.7.0",
     "mocha": "^11.0.1",
     "protodef-yaml": "^1.1.0",
     "standard": "^17.0.0-2"
