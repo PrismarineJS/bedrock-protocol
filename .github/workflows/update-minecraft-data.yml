@@ -1,0 +1,102 @@
+name: Update minecraft-data version
+
+on:
+  repository_dispatch:
+    types: [minecraft-data-release]
+  workflow_dispatch:
+    inputs:
+      minecraft-data-version:
+        description: Released minecraft-data version (defaults to latest)
+        required: false
+        type: string
+      bedrock-version:
+        description: Latest Bedrock version (determined automatically when omitted)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      MINECRAFT_DATA_VERSION: ${{ github.event.client_payload.minecraftDataVersion || inputs['minecraft-data-version'] }}
+      REQUESTED_BEDROCK_VERSION: ${{ github.event.client_payload.bedrockVersion || inputs['bedrock-version'] }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install released minecraft-data
+        run: |
+          if [ -n "$MINECRAFT_DATA_VERSION" ]; then
+            npm install --no-save "minecraft-data@$MINECRAFT_DATA_VERSION"
+          else
+            npm install --no-save minecraft-data@latest
+          fi
+
+      - name: Update latest Bedrock version
+        id: update
+        run: |
+          node <<'NODE'
+          const fs = require('fs')
+          const mcData = require('minecraft-data')
+
+          const requested = process.env.REQUESTED_BEDROCK_VERSION
+          const releases = mcData.versions.bedrock
+            .filter(version => version.releaseType === 'release')
+            .map(version => version.minecraftVersion)
+          const latest = requested || releases.at(-1)
+
+          if (!latest || !releases.includes(latest)) {
+            throw new Error(`Bedrock version is not available in minecraft-data: ${latest || '<none>'}`)
+          }
+
+          const path = 'src/options.js'
+          const source = fs.readFileSync(path, 'utf8')
+          const current = source.match(/^const CURRENT_VERSION = '([^']+)'$/m)?.[1]
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `bedrock-version=${latest}\n`)
+          if (current === latest) {
+            console.log(`Bedrock version ${latest} is already current`)
+            process.exit(0)
+          }
+
+          const updated = source.replace(
+            /^const CURRENT_VERSION = '.*'$/m,
+            `const CURRENT_VERSION = '${latest}'`
+          )
+          if (updated === source) throw new Error(`Could not update CURRENT_VERSION in ${path}`)
+          fs.writeFileSync(path, updated)
+
+          const readmePath = 'README.md'
+          const readme = fs.readFileSync(readmePath, 'utf8')
+          const updatedReadme = readme.replace(
+            '\n<!-- NEXT BEDROCK -->',
+            `, ${latest}\n<!-- NEXT BEDROCK -->`
+          )
+          if (updatedReadme === readme) throw new Error(`Could not update Bedrock versions in ${readmePath}`)
+          fs.writeFileSync(readmePath, updatedReadme)
+          NODE
+
+      - name: Validate changes
+        run: npm test
+
+      - name: Open or update pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/update-minecraft-data
+          delete-branch: true
+          commit-message: ${{ steps.update.outputs.bedrock-version }} support
+          title: ${{ steps.update.outputs.bedrock-version }} support
+          body: |
+            Adds support for the latest Bedrock release available in the released `minecraft-data` package.
+
+            - minecraft-data: `${{ env.MINECRAFT_DATA_VERSION || 'latest' }}`
+            - Latest Minecraft Bedrock version: `${{ steps.update.outputs.bedrock-version }}`
