@@ -91,8 +91,9 @@ async function fetchLatest () {
 
   let { version, currentVersionReleaseDate, releaseNotes } = result
   console.log(version, currentVersionReleaseDate, releaseNotes)
+  version = version.startsWith('1.') ? version : `1.${version}`
 
-  const title = `Support Minecraft ${result.version}`
+  const title = `Support Minecraft ${version}`
   const issueStatus = await helper.findIssue({ titleIncludes: title }) || {}
 
   if (supportedVersions.includes(version)) {
