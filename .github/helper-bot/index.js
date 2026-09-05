@@ -2,6 +2,7 @@
 const fs = require('fs')
 const cp = require('child_process')
 const helper = require('gh-helpers')()
+const bedrockServer = require('minecraft-bedrock-server')
 const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
 const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
 
@@ -10,9 +11,8 @@ const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186
 // "currentVersionReleaseDate": "2021-07-13T15:35:49Z",
 // "releaseNotes": "What's new in 1.17.10:\nVarious bug fixes",
 
-function buildFirstIssue (title, result, externalPatches) {
+function buildFirstIssue (title, result, externalPatches, protocolVersion) {
   let commitData = ''
-  let protocolVersion = '?'
   const date = new Date(result.currentVersionReleaseDate).toUTCString()
 
   for (const name in externalPatches) {
@@ -24,8 +24,6 @@ function buildFirstIssue (title, result, externalPatches) {
     if (diff) commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
     else commitData += '\n(No changes so far)\n'
   }
-  try { protocolVersion = getProtocolVersion() } catch (e) { console.log(e) }
-
   return {
     title,
     body: `
@@ -80,13 +78,6 @@ function getCommitsInRepo (repo, containing, since) {
   return [relevant]
 }
 
-function getProtocolVersion () {
-  if (!fs.existsSync('./ProtocolInfo.php')) cp.execSync('curl -LO https://raw.githubusercontent.com/pmmp/PocketMine-MP/stable/src/pocketmine/network/mcpe/protocol/ProtocolInfo.php', { stdio: 'inherit', shell: true })
-  const currentApi = fs.readFileSync('./ProtocolInfo.php', 'utf-8')
-  const [, latestProtocolVersion] = currentApi.match(/public const CURRENT_PROTOCOL = (\d+);/)
-  return latestProtocolVersion
-}
-
 async function fetchLatest () {
   if (!fs.existsSync('./results.json')) cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
   const json = require('./results.json')
@@ -119,17 +110,59 @@ async function fetchLatest () {
     return
   }
 
+  let protocolVersion = '?'
+  let protocolError
+  try {
+    const pong = await bedrockServer.getPongDetails(version)
+    console.log('Server pong', pong)
+    protocolVersion = pong.protocolVersion
+    if (!protocolVersion) throw new Error('The server PONG did not include a protocol version')
+    console.log('Detected protocol version', protocolVersion)
+  } catch (error) {
+    protocolError = error
+    console.error('Failed to detect protocol version', error)
+  }
+
   version = version.replace('.0', '')
   const issuePayload = buildFirstIssue(title, result, {
     PocketMine: getCommitsInRepo('pmmp/PocketMine-MP', version, currentVersionReleaseDate),
     gophertunnel: getCommitsInRepo('Sandertv/gophertunnel', version, currentVersionReleaseDate),
     CloudburstMC: getCommitsInRepo('CloudburstMC/Protocol', version, currentVersionReleaseDate)
-  })
+  }, protocolVersion)
 
+  let issueUrl = issueStatus.url
+  let issueId = issueStatus.id
   if (issueStatus.isOpen) {
-    helper.updateIssue(issueStatus.id, issuePayload)
+    await helper.updateIssue(issueStatus.id, issuePayload)
   } else {
-    helper.createIssue(issuePayload)
+    const issue = await helper.createIssue(issuePayload)
+    issueUrl = issue.url
+    issueId = issue.number
+  }
+
+  if (protocolError) {
+    await helper.comment(issueId, `I could not determine the protocol version automatically, so I wasn't able to create a PrismarineJS/minecraft-data PR. The minecraft-data bump workflow must be triggered manually.\n\nError: ${protocolError.message}`)
+    return
+  }
+
+  const dispatchPayload = {
+    owner: 'PrismarineJS',
+    repo: 'minecraft-data',
+    workflow: 'bedrock-version-bump.yml',
+    branch: 'master',
+    inputs: {
+      version,
+      protocolVersion: String(protocolVersion),
+      issueUrl,
+      createPr: 'true'
+    }
+  }
+  console.log('Sending workflow dispatch', dispatchPayload)
+  try {
+    await helper.sendWorkflowDispatch(dispatchPayload)
+  } catch (error) {
+    await helper.comment(issueId, `I opened the update issue, but failed to open the minecraft-data scaffolding PR automatically. Please retry the workflow dispatch manually.\n\nError: ${error.message}`)
+    throw error
   }
 
   fs.writeFileSync('./issue.md', issuePayload.body)
