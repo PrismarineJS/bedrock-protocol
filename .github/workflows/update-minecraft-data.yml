@@ -66,6 +66,16 @@ jobs:
           )
           if (updated === source) throw new Error(`Could not update CURRENT_VERSION in ${path}`)
           fs.writeFileSync(path, updated)
+          
+          const readmePath = 'README.md'
+          const readme = fs.readFileSync(readmePath, 'utf8')
+          const supportLine = ` - Supports Minecraft Bedrock version ${releases.join(', ')}`
+          const updatedReadme = readme.replace(
+            /^ - Supports Minecraft Bedrock version .*$(?=\n<!-- NEXT BEDROCK -->)/m,
+            supportLine
+          )
+          if (updatedReadme === readme) throw new Error(`Could not update Bedrock versions in ${readmePath}`)
+          fs.writeFileSync(readmePath, updatedReadme)
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `bedrock-version=${latest}\n`)
           NODE
 
@@ -78,10 +88,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: automation/update-minecraft-data
           delete-branch: true
-          commit-message: Update supported Bedrock version
-          title: Update supported Bedrock version to ${{ steps.update.outputs.bedrock-version }}
+          commit-message: ${{ steps.update.outputs.bedrock-version }} support
+          title: ${{ steps.update.outputs.bedrock-version }} support
           body: |
-            Updates `src/options.js` to the latest Bedrock release available in the released `minecraft-data` package.
+            Adds support for the latest Bedrock release available in the released `minecraft-data` package.
 
             - minecraft-data: `${{ env.MINECRAFT_DATA_VERSION || 'latest' }}`
             - Bedrock version: `${{ steps.update.outputs.bedrock-version }}`
+            - Updated `src/options.js` and the README support list.
