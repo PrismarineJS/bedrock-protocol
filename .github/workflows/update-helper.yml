@@ -21,4 +21,4 @@ jobs:
     - name: Runs helper
       run: cd .github/helper-bot && node index.js
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT_PASSWORD }}
