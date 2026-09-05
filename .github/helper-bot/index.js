@@ -141,7 +141,7 @@ async function fetchLatest () {
   }
 
   if (protocolError) {
-    await helper.comment(issueId, `I could not determine the protocol version automatically, so I did not open the minecraft-data PR. Please retry after fixing the server startup issue.\n\nError: ${protocolError.message}`)
+    await helper.comment(issueId, `I could not determine the protocol version automatically, so I wasn't able to create a PrismarineJS/minecraft-data PR. The minecraft-data bump workflow must be triggered manually.\n\nError: ${protocolError.message}`)
     return
   }
 
