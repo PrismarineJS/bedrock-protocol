@@ -110,8 +110,16 @@ async function fetchLatest () {
     return
   }
 
-  const { protocolVersion } = await bedrockServer.getPongDetails(version)
-  console.log('Detected protocol version', protocolVersion)
+  let protocolVersion = '?'
+  let protocolError
+  try {
+    protocolVersion = (await bedrockServer.getPongDetails(version)).protocolVersion
+    if (!protocolVersion) throw new Error('The server PONG did not include a protocol version')
+    console.log('Detected protocol version', protocolVersion)
+  } catch (error) {
+    protocolError = error
+    console.error('Failed to detect protocol version', error)
+  }
 
   version = version.replace('.0', '')
   const issuePayload = buildFirstIssue(title, result, {
@@ -121,11 +129,18 @@ async function fetchLatest () {
   }, protocolVersion)
 
   let issueUrl = issueStatus.url
+  let issueId = issueStatus.id
   if (issueStatus.isOpen) {
     await helper.updateIssue(issueStatus.id, issuePayload)
   } else {
     const issue = await helper.createIssue(issuePayload)
     issueUrl = issue.url
+    issueId = issue.number
+  }
+
+  if (protocolError) {
+    await helper.comment(issueId, `I could not determine the protocol version automatically, so I did not open the minecraft-data PR. Please retry after fixing the server startup issue.\n\nError: ${protocolError.message}`)
+    return
   }
 
   const dispatchPayload = {
@@ -141,7 +156,12 @@ async function fetchLatest () {
     }
   }
   console.log('Sending workflow dispatch', dispatchPayload)
-  await helper.sendWorkflowDispatch(dispatchPayload)
+  try {
+    await helper.sendWorkflowDispatch(dispatchPayload)
+  } catch (error) {
+    await helper.comment(issueId, `I opened the update issue, but failed to open the minecraft-data scaffolding PR automatically. Please retry the workflow dispatch manually.\n\nError: ${error.message}`)
+    throw error
+  }
 
   fs.writeFileSync('./issue.md', issuePayload.body)
   console.log('OK, wrote to ./issue.md', issuePayload)
