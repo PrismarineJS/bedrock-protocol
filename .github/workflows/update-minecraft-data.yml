@@ -93,5 +93,4 @@ jobs:
             Adds support for the latest Bedrock release available in the released `minecraft-data` package.
 
             - minecraft-data: `${{ env.MINECRAFT_DATA_VERSION || 'latest' }}`
-            - Bedrock version: `${{ steps.update.outputs.bedrock-version }}`
-            - Updated `src/options.js` and the README support list.
+            - Latest Minecraft Bedrock version: `${{ steps.update.outputs.bedrock-version }}`
