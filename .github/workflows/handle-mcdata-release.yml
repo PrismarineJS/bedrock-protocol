@@ -1,4 +1,4 @@
-name: Update minecraft-data version
+name: Handle minecraft-data release
 
 on:
   repository_dispatch:
@@ -52,7 +52,7 @@ jobs:
           const releases = mcData.versions.bedrock
             .filter(version => version.releaseType === 'release')
             .map(version => version.minecraftVersion)
-          const latest = requested || releases.at(-1)
+          const latest = requested || releases.at(0)
 
           if (!latest || !releases.includes(latest)) {
             throw new Error(`Bedrock version is not available in minecraft-data: ${latest || '<none>'}`)
@@ -88,12 +88,10 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: automation/update-minecraft-data
+          branch: bump-version
           delete-branch: true
           commit-message: ${{ steps.update.outputs.bedrock-version }} support
           title: ${{ steps.update.outputs.bedrock-version }} support
           body: |
-            Adds support for the latest Bedrock release available in the released `minecraft-data` package.
-
-            - minecraft-data: `${{ env.MINECRAFT_DATA_VERSION || 'latest' }}`
-            - Latest Minecraft Bedrock version: `${{ steps.update.outputs.bedrock-version }}`
+            This automated PR bumps the supported version to based on the latest version data in PrismarineJS/minecraft-data, version **${{ steps.update.outputs.bedrock-version }}**.
+            <br/><hr/>
