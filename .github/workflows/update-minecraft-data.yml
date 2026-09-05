@@ -69,10 +69,9 @@ jobs:
           
           const readmePath = 'README.md'
           const readme = fs.readFileSync(readmePath, 'utf8')
-          const supportLine = ` - Supports Minecraft Bedrock version ${releases.join(', ')}`
           const updatedReadme = readme.replace(
-            /^ - Supports Minecraft Bedrock version .*$(?=\n<!-- NEXT BEDROCK -->)/m,
-            supportLine
+            '\n<!-- NEXT BEDROCK -->',
+            `, ${latest}\n<!-- NEXT BEDROCK -->`
           )
           if (updatedReadme === readme) throw new Error(`Could not update Bedrock versions in ${readmePath}`)
           fs.writeFileSync(readmePath, updatedReadme)
