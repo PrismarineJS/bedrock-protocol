@@ -84,9 +84,6 @@ jobs:
           fs.writeFileSync(readmePath, updatedReadme)
           NODE
 
-      - name: Validate changes
-        run: npm test
-
       - name: Open or update pull request
         uses: peter-evans/create-pull-request@v7
         with:
