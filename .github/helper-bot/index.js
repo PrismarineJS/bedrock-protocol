@@ -78,13 +78,6 @@ function getCommitsInRepo (repo, containing, since) {
   return [relevant]
 }
 
-function getProtocolVersion () {
-  if (!fs.existsSync('./ProtocolInfo.php')) cp.execSync('curl -LO https://raw.githubusercontent.com/pmmp/PocketMine-MP/stable/src/pocketmine/network/mcpe/protocol/ProtocolInfo.php', { stdio: 'inherit', shell: true })
-  const currentApi = fs.readFileSync('./ProtocolInfo.php', 'utf-8')
-  const [, latestProtocolVersion] = currentApi.match(/public const CURRENT_PROTOCOL = (\d+);/)
-  return latestProtocolVersion
-}
-
 async function fetchLatest () {
   if (!fs.existsSync('./results.json')) cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
   const json = require('./results.json')
@@ -98,8 +91,6 @@ async function fetchLatest () {
 
   let { version, currentVersionReleaseDate, releaseNotes } = result
   console.log(version, currentVersionReleaseDate, releaseNotes)
-  const { protocolVersion } = await bedrockServer.getPongDetails(version)
-  console.log('Detected protocol version', protocolVersion)
 
   const title = `Support Minecraft ${result.version}`
   const issueStatus = await helper.findIssue({ titleIncludes: title }) || {}
@@ -119,6 +110,9 @@ async function fetchLatest () {
     return
   }
 
+  const { protocolVersion } = await bedrockServer.getPongDetails(version)
+  console.log('Detected protocol version', protocolVersion)
+
   version = version.replace('.0', '')
   const issuePayload = buildFirstIssue(title, result, {
     PocketMine: getCommitsInRepo('pmmp/PocketMine-MP', version, currentVersionReleaseDate),
@@ -128,7 +122,7 @@ async function fetchLatest () {
 
   let issueUrl = issueStatus.url
   if (issueStatus.isOpen) {
-    helper.updateIssue(issueStatus.id, issuePayload)
+    await helper.updateIssue(issueStatus.id, issuePayload)
   } else {
     const issue = await helper.createIssue(issuePayload)
     issueUrl = issue.url
