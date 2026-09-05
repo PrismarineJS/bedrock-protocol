@@ -18,6 +18,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: handle-mcdata-release-${{ github.event.client_payload.bedrockVersion || inputs['bedrock-version'] || 'latest' }}
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -48,11 +52,14 @@ jobs:
           const fs = require('fs')
           const mcData = require('minecraft-data')
 
+          const normalizeVersion = version => version.startsWith('1.') ? version : `1.${version}`
           const requested = process.env.REQUESTED_BEDROCK_VERSION
           const releases = mcData.versions.bedrock
             .filter(version => version.releaseType === 'release')
-            .map(version => version.minecraftVersion)
-          const latest = requested || releases.at(0)
+            .map(version => normalizeVersion(version.minecraftVersion))
+          const rawLatest = requested || releases.at(0)
+          if (!rawLatest) throw new Error('No released Bedrock version is available in minecraft-data')
+          const latest = normalizeVersion(rawLatest)
 
           if (!latest || !releases.includes(latest)) {
             throw new Error(`Bedrock version is not available in minecraft-data: ${latest || '<none>'}`)
@@ -62,25 +69,26 @@ jobs:
           const source = fs.readFileSync(path, 'utf8')
           const current = source.match(/^const CURRENT_VERSION = '([^']+)'$/m)?.[1]
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `bedrock-version=${latest}\n`)
+
           if (current === latest) {
             console.log(`Bedrock version ${latest} is already current`)
-            process.exit(0)
+          } else {
+            const updated = source.replace(
+              /^const CURRENT_VERSION = '.*'$/m,
+              `const CURRENT_VERSION = '${latest}'`
+            )
+            if (updated === source) throw new Error(`Could not update CURRENT_VERSION in ${path}`)
+            fs.writeFileSync(path, updated)
           }
-
-          const updated = source.replace(
-            /^const CURRENT_VERSION = '.*'$/m,
-            `const CURRENT_VERSION = '${latest}'`
-          )
-          if (updated === source) throw new Error(`Could not update CURRENT_VERSION in ${path}`)
-          fs.writeFileSync(path, updated)
 
           const readmePath = 'README.md'
           const readme = fs.readFileSync(readmePath, 'utf8')
-          const updatedReadme = readme.replace(
-            '\n<!-- NEXT BEDROCK -->',
-            `, ${latest}\n<!-- NEXT BEDROCK -->`
-          )
-          if (updatedReadme === readme) throw new Error(`Could not update Bedrock versions in ${readmePath}`)
+          const updatedReadme = readme.includes(latest)
+            ? readme
+            : readme.replace('\n<!-- NEXT BEDROCK -->', `, ${latest}\n<!-- NEXT BEDROCK -->`)
+          if (updatedReadme === readme && !readme.includes(latest)) {
+            throw new Error(`Could not update Bedrock versions in ${readmePath}`)
+          }
           fs.writeFileSync(readmePath, updatedReadme)
           NODE
 
