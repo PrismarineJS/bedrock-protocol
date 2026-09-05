@@ -1,3 +1,9 @@
+## 3.59.0
+* [1.26.45 support (#791)](https://github.com/PrismarineJS/bedrock-protocol/commit/217d6005798342c7f35e4bd309f0de629ba5607a) (thanks @github-actions[bot])
+* [test: boot the vanilla server once per version (#785)](https://github.com/PrismarineJS/bedrock-protocol/commit/462e80ed5cd93a95ef497af7781e1788436d3929) (thanks @u9g)
+* [test: fix port-bind race in proxy tests (#786)](https://github.com/PrismarineJS/bedrock-protocol/commit/5f6c57e693c904d0e8cd874a85aa787983aed129) (thanks @u9g)
+* [relay: wait for downstream join before opening upstream (#782)](https://github.com/PrismarineJS/bedrock-protocol/commit/6011e261c1b028f92d732348dc91339fb12275dd) (thanks @VasilisDragon)
+
 ## 3.58.3
 * [Fix authorization and login flow issues with server join process (#779)](https://github.com/PrismarineJS/bedrock-protocol/commit/2fe34f33bd624f3b1b09e34198f53e88628de1ee) (thanks vasilis)
 * [Fix legacy `enum_size_based_on_values_len` type limits (#776)](https://github.com/PrismarineJS/bedrock-protocol/commit/35ff23b66643e964af87a0685a3690cad774ee55) (thanks @AnonymoDGH)
