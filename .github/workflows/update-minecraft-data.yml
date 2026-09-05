@@ -60,13 +60,20 @@ jobs:
 
           const path = 'src/options.js'
           const source = fs.readFileSync(path, 'utf8')
+          const current = source.match(/^const CURRENT_VERSION = '([^']+)'$/m)?.[1]
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `bedrock-version=${latest}\n`)
+          if (current === latest) {
+            console.log(`Bedrock version ${latest} is already current`)
+            process.exit(0)
+          }
+
           const updated = source.replace(
             /^const CURRENT_VERSION = '.*'$/m,
             `const CURRENT_VERSION = '${latest}'`
           )
           if (updated === source) throw new Error(`Could not update CURRENT_VERSION in ${path}`)
           fs.writeFileSync(path, updated)
-          
+
           const readmePath = 'README.md'
           const readme = fs.readFileSync(readmePath, 'utf8')
           const updatedReadme = readme.replace(
@@ -75,7 +82,6 @@ jobs:
           )
           if (updatedReadme === readme) throw new Error(`Could not update Bedrock versions in ${readmePath}`)
           fs.writeFileSync(readmePath, updatedReadme)
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `bedrock-version=${latest}\n`)
           NODE
 
       - name: Validate changes
