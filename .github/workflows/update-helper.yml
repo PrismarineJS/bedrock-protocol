@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: "0 */2 * * *"
 
+concurrency:
+  group: update-helper
+  cancel-in-progress: false
+
 jobs:
   helper:
     name: update-checker
@@ -16,7 +20,7 @@ jobs:
       with:
         node-version: 22.0.0
     - name: Install Github Actions helper
-      run: npm i gh-helpers
+      run: npm i --no-save gh-helpers minecraft-bedrock-server@^1.7.0 minecraft-data
     # The env vars contain the relevant trigger information, so we don't need to pass it
     - name: Runs helper
       run: cd .github/helper-bot && node index.js
