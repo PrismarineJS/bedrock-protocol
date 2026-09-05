@@ -113,7 +113,9 @@ async function fetchLatest () {
   let protocolVersion = '?'
   let protocolError
   try {
-    protocolVersion = (await bedrockServer.getPongDetails(version)).protocolVersion
+    const pong = await bedrockServer.getPongDetails(version)
+    console.log('Server pong', pong)
+    protocolVersion = pong.protocolVersion
     if (!protocolVersion) throw new Error('The server PONG did not include a protocol version')
     console.log('Detected protocol version', protocolVersion)
   } catch (error) {
