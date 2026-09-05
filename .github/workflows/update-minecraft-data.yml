@@ -52,14 +52,7 @@ jobs:
           const releases = mcData.versions.bedrock
             .filter(version => version.releaseType === 'release')
             .map(version => version.minecraftVersion)
-          const latest = requested || releases.sort((a, b) => {
-            const left = a.split('.').map(Number)
-            const right = b.split('.').map(Number)
-            for (let i = 0; i < Math.max(left.length, right.length); i++) {
-              if ((left[i] || 0) !== (right[i] || 0)) return (left[i] || 0) - (right[i] || 0)
-            }
-            return 0
-          }).at(-1)
+          const latest = requested || releases.at(-1)
 
           if (!latest || !releases.includes(latest)) {
             throw new Error(`Bedrock version is not available in minecraft-data: ${latest || '<none>'}`)
