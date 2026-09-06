@@ -20,7 +20,11 @@ module.exports = (client, server, options) => {
           cpk: client.clientX509,
           xid: String(client.profile.xuid || '0'),
           xname: client.username,
-          identity: client.profile.uuid
+          identity: client.profile.uuid,
+          // Self-signed OpenID login uses the legacy UUID and an empty
+          // Minecraft/PlayFab identity when no service authenticated it.
+          leguuid: client.profile.uuid,
+          mid: ''
         }, privateKey, { algorithm, notBefore: 0, issuer: 'self', expiresIn: 60 * 60, audience: 'api://auth-minecraft-services/multiplayer', header: { x5u: client.clientX509, typ: undefined } })
       } else {
         const payload = {
@@ -56,6 +60,7 @@ module.exports = (client, server, options) => {
       DeviceId: nextUUID(),
       DeviceModel: 'PrismarineJS',
       DeviceOS: options.deviceOS,
+      FilterProfanity: client.versionGreaterThanOrEqualTo('1.26.30') ? false : undefined,
       GameVersion: options.version || '1.16.201',
       GuiScale: -1,
       LanguageCode: 'en_GB', // TODO locale
@@ -76,6 +81,8 @@ module.exports = (client, server, options) => {
       UIProfile: 0,
 
       IsEditorMode: false,
+      ClientIsEditorCapable: client.versionGreaterThanOrEqualTo('1.26.30') ? false : undefined,
+      ClientEditorConnectionIntent: client.versionGreaterThanOrEqualTo('1.26.30') ? 0 : undefined,
       TrustedSkin: client.versionGreaterThanOrEqualTo('1.19.20') ? false : undefined,
       OverrideSkin: client.versionGreaterThanOrEqualTo('1.19.62') ? false : undefined,
       CompatibleWithClientSideChunkGen: client.versionGreaterThanOrEqualTo('1.19.80') ? false : undefined,
