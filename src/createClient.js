@@ -70,7 +70,12 @@ function connect (client) {
 
     if (client.versionLessThanOrEqualTo('1.20.80')) client.queue('tick_sync', { request_time: BigInt(Date.now()), response_time: 0n })
 
-    sleep(500).then(() => client.queue('request_chunk_radius', { chunk_radius: client.viewDistance || 10 }))
+    if (client.options.version === '1.16.201') {
+      client.queue('request_chunk_radius', { chunk_radius: 1 })
+      client.once('spawn', () => client.queue('request_chunk_radius', { chunk_radius: client.viewDistance || 10 }))
+    } else {
+      sleep(500).then(() => client.queue('request_chunk_radius', { chunk_radius: client.viewDistance || 10 }))
+    }
   })
 
   if (client.versionLessThanOrEqualTo('1.20.80')) {
