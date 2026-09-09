@@ -1,294 +1,220 @@
 const { ClientStatus, Connection } = require('./connection')
-const { createDeserializer, createSerializer } = require('./transforms/serializer')
-const { serialize, isDebug } = require('./datatypes/util')
-const debug = require('debug')('minecraft-protocol')
-const Options = require('./options')
-const auth = require('./client/auth')
-const initRaknet = require('./rak')
-const KeyExchange = require('./handshake/keyExchange')
-const Login = require('./handshake/login')
-const LoginVerify = require('./handshake/loginVerify')
+const { createDeserializer, createSerializer, PROTOCOL_VERSION, GAME_VERSION } = require('./transforms/serializer')
+const { NethernetClient } = require('./nethernet')
+const { RakClient } = require('./rak')
+const { authenticate } = require('./client/auth')
+const { NethernetSignal } = require('./websocket/signal')
+const { NethernetJSONRPC } = require('./websocket/signal-jsonrpc')
 
-const debugging = false
+const JWT = require('jsonwebtoken')
+const crypto = require('crypto')
+
+const steve = require("./skins/steve.json");
+
+const { v3, v4, NIL } = require('uuid')
+
+const pem = { format: 'pem', type: 'sec1' }
+const der = { format: 'der', type: 'spki' }
 
 class Client extends Connection {
-  // The RakNet connection
-  connection
+    connection
 
-  /** @param {{ version: number, host: string, port: number }} options */
-  constructor (options) {
-    super()
-    this.options = { ...Options.defaultOptions, ...options }
+    constructor(options) {
+        super()
+        this.options = { ...options }
+        this.compressionAlgorithm = 'none'
+        this.compressionThreshold = 512
+        this.compressionLevel = options.compressionLevel
 
-    this.startGameData = {}
-    this.clientRuntimeId = null
-    // Start off without compression on 1.19.30, zlib on below
-    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
-    this.compressionThreshold = 512
-    this.compressionLevel = this.options.compressionLevel
-    this.batchHeader = 0xfe
+        if (this.options.transport.includes('NETHERNET')) this.nethernet = {}
 
-    if (isDebug) {
-      this.inLog = (...args) => debug('C ->', ...args)
-      this.outLog = (...args) => debug('C <-', ...args)
-    }
-    this.conLog = this.options.conLog === undefined ? console.log : this.options.conLog
-
-    if (!options.delayedInit) {
-      this.init()
-    }
-  }
-
-  init () {
-    this.validateOptions()
-    this.serializer = createSerializer(this.options.version)
-    this.deserializer = createDeserializer(this.options.version)
-    this._loadFeatures()
-
-    KeyExchange(this)
-    Login(this, null, this.options)
-    LoginVerify(this, null, this.options)
-
-    const { RakClient } = initRaknet(this.options.raknetBackend)
-    const host = this.options.host
-    const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
-
-    this.emit('connect_allowed')
-  }
-
-  _loadFeatures () {
-    try {
-      const mcData = require('minecraft-data')('bedrock_' + this.options.version)
-      this.features = {
-        compressorInHeader: mcData.supportFeature('compressorInPacketHeader'),
-        itemRegistryPacket: mcData.supportFeature('itemRegistryPacket'),
-        newLoginIdentityFields: mcData.supportFeature('newLoginIdentityFields')
-      }
-    } catch (e) {
-      throw new Error(`Unsupported version: '${this.options.version}', no data available`)
-    }
-  }
-
-  connect () {
-    if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
-    this.on('session', this._connect)
-
-    if (this.options.offline) {
-      debug('offline mode, not authenticating', this.options)
-      auth.createOfflineSession(this, this.options)
-    } else {
-      auth.authenticate(this, this.options)
+        if (!options.delayedInit) this.init()
     }
 
-    this.startQueue()
-  }
+    async init() {
+        this.serializer = createSerializer()
+        this.deserializer = createDeserializer()
+        this.features = { compressorInHeader: true }
 
-  validateOptions () {
-    if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
-    Options.validateOptions(this.options)
-  }
-
-  get entityId () {
-    return this.startGameData.runtime_entity_id
-  }
-
-  onEncapsulated = (encapsulated, inetAddr) => {
-    const buffer = Buffer.from(encapsulated.buffer)
-    process.nextTick(() => this.handle(buffer))
-  }
-
-  async ping () {
-    try {
-      return await this.connection.ping(this.options.connectTimeout)
-    } catch (e) {
-      this.conLog?.(`Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`)
-      throw e
-    }
-  }
-
-  _connect = async (sessionData) => {
-    debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
-    this.connection.onConnected = () => {
-      this.status = ClientStatus.Connecting
-      if (this.versionGreaterThanOrEqualTo('1.19.30')) {
-        this.queue('request_network_settings', { client_protocol: this.options.protocolVersion })
-      } else {
-        this.sendLogin()
-      }
-    }
-    this.connection.onCloseConnection = (reason) => {
-      if (this.status === ClientStatus.Disconnected) this.conLog?.(`Server closed connection: ${reason}`)
-      this.close()
-    }
-    this.connection.onEncapsulated = this.onEncapsulated
-    this.connection.connect()
-
-    this.connectTimeout = setTimeout(() => {
-      if (this.status === ClientStatus.Disconnected) {
-        this.connection.close()
-        this.emit('error', Error('Connect timed out'))
-      }
-    }, this.options.connectTimeout || 9000)
-  }
-
-  updateCompressorSettings (packet) {
-    this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
-    this.compressionThreshold = packet.compression_threshold
-    this.compressionReady = true
-  }
-
-  sendLogin () {
-    this.status = ClientStatus.Authenticating
-    this.createClientChain(null, this.options.offline)
-
-    const chain = [
-      this.clientIdentityChain, // JWT we generated for auth
-      ...this.accessToken // Mojang + Xbox JWT from auth
-    ]
-
-    let encodedChain
-    if (this.features.newLoginIdentityFields) { // 1.21.90+
-      encodedChain = JSON.stringify({
-        Certificate: JSON.stringify({ chain }),
-        // 0 = normal, 1 = ss, 2 = offline
-        AuthenticationType: this.options.offline ? 2 : 0,
-        Token: this.multiplayerToken || ''
-      })
-    } else {
-      encodedChain = JSON.stringify({ chain })
-    }
-    debug('Prepared login identity', { certificateTokens: chain.length, hasMultiplayerToken: Boolean(this.multiplayerToken) })
-
-    this.write('login', {
-      protocol_version: this.options.protocolVersion,
-      tokens: {
-        identity: encodedChain,
-        client: this.clientUserChain
-      }
-    })
-    this.emit('loggingIn')
-  }
-
-  onDisconnectRequest (packet) {
-    this.conLog?.(`Server requested ${packet.hide_disconnect_reason ? 'silent disconnect' : 'disconnect'}: ${packet.message}`)
-    this.emit('kick', packet)
-    this.close()
-  }
-
-  onPlayStatus (statusPacket) {
-    if (this.status === ClientStatus.Initializing && this.options.autoInitPlayer === true) {
-      if (statusPacket.status === 'player_spawn') {
-        this.status = ClientStatus.Initialized
-        if (!this.entityId) {
-          // We need to wait for start_game in the rare event we get a player_spawn before start_game race condition
-          this.on('start_game', () => this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId }))
-        } else {
-          this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId })
+        // There is exactly one bundled schema (see transforms/serializer.js), so the
+        // protocol/game version we declare to the server MUST match what we actually
+        // encode with, or packets get decoded with the wrong shape and the server
+        // kicks us as malformed (e.g. packet id 144, player_auth_input). Warn and
+        // override rather than silently trusting a possibly-stale config value.
+        if (this.options.protocolVersion != null && this.options.protocolVersion !== PROTOCOL_VERSION) {
+            console.warn(`[bedrockx] options.protocolVersion (${this.options.protocolVersion}) does not match the bundled schema's protocol (${PROTOCOL_VERSION}, game version ${GAME_VERSION}); overriding to ${PROTOCOL_VERSION} so encoded packets match what's declared to the server.`)
         }
-        this.emit('spawn')
-      }
-    }
-  }
+        this.options.protocolVersion = PROTOCOL_VERSION
+        if (this.options.version == null) this.options.version = GAME_VERSION
 
-  disconnect (reason = 'Client leaving', hide = false) {
-    if (this.status === ClientStatus.Disconnected) return
-    this.write('disconnect', {
-      hide_disconnect_screen: hide,
-      message: reason,
-      filtered_message: ''
-    })
-    this.close(reason)
-  }
+        this.ecdhKeyPair = crypto.generateKeyPairSync('ec', { namedCurve: "secp384r1" })
+        this.clientX509 = this.ecdhKeyPair.publicKey.export(der).toString('base64')
+        this.privateKeyPEM = this.ecdhKeyPair.privateKey.export(pem)
 
-  close () {
-    if (this.status !== ClientStatus.Disconnected) {
-      this.emit('close') // Emit close once
-      debug('Client closed!')
-    }
-    clearInterval(this.loop)
-    clearTimeout(this.connectTimeout)
-    this.q = []
-    this.q2 = []
-    this.connection?.close()
-    this.removeAllListeners()
-    this.status = ClientStatus.Disconnected
-  }
+        await authenticate(this, this.options)
 
-  readPacket (packet) {
-    try {
-      var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
-    } catch (e) {
-      // Dump information about the packet only if user is not handling error event.
-      if (this.listenerCount('error') === 0) this.deserializer.dumpFailedBuffer(packet)
-      this.emit('error', e)
-      return
-    }
-    const pakData = { name: des.data.name, params: des.data.params }
-    this.inLog?.('-> C', pakData.name, this.options.logging ? serialize(pakData.params) : '')
-    this.emit('packet', des)
+        switch (this.options.transport) {
+            case "NETHERNET":
+            case "NETHERNET_JSONRPC":
+                this.connection = new NethernetClient({ networkId: this.options.networkId, token: this.token, privateKey: this.ecdhKeyPair.privateKey })
 
-    if (debugging) {
-      // Packet verifying (decode + re-encode + match test)
-      if (pakData.name) {
-        this.deserializer.verify(packet, this.serializer)
-      }
-    }
+                this.batchHeader = null
+                this.disableEncryption = true
 
-    // Abstract some boilerplate before sending to listeners
-    switch (des.data.name) {
-      case 'server_to_client_handshake':
-        try {
-          const encryption = this.verifyServerHandshake(des.data.params)
-          this.enableEncryption(encryption)
-          this.write('client_to_server_handshake', {})
-          this.status = ClientStatus.Initializing
-          this.emit('join')
-        } catch (error) {
-          this.emit('error', error)
-          this.close()
-          return
+                this.nethernet.signalling = this.options.transport === "NETHERNET_JSONRPC" ? new NethernetJSONRPC(this.connection.nethernet.networkId, this.options.authflow, this.options.version, this.options.networkId) : new NethernetSignal(this.connection.nethernet.networkId, this.options.authflow, this.options.version, this.options.networkId)
+
+                await this.nethernet.signalling.connect()
+
+                this.connection.nethernet.credentials = this.nethernet.signalling.credentials
+                this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
+
+                this.nethernet.signalling.on('signal', signal => this.connection.nethernet.handleSignal(signal))
+                break;
+            case "DEFAULT":
+                this.connection = new RakClient({ host: this.options.host, port: this.options.port })
+
+                this.batchHeader = 0xfe
+                this.disableEncryption = false
+                break;
         }
-        break
-      case 'network_settings':
-        this.updateCompressorSettings(des.data.params)
-        if (this.status === ClientStatus.Connecting) {
-          this.sendLogin()
+
+        this.batch.updateCompressionSettings(this)
+
+        this.emit('connect_allowed')
+    }
+
+    connect() {
+        if (!this.connection) throw new Error('Connect not currently allowed')
+        this._connect()
+    }
+
+    onEncapsulated = (encapsulated) => {
+        this.handle(Buffer.from(encapsulated.buffer))
+    }
+
+    _connect = async () => {
+        this.connection.onConnected = () => {
+            this.status = ClientStatus.Connecting
+            this.write('request_network_settings', { client_protocol: this.options.protocolVersion })
         }
-        break
-      case 'disconnect': // Client kicked
-        this.emit(des.data.name, des.data.params) // Emit before we kill all listeners.
-        this.onDisconnectRequest(des.data.params)
-        break
-      case 'start_game':
-        this.startGameData = pakData.params
-        // fallsthrough
-      case 'item_registry': // 1.21.60+ send itemstates in item_registry packet
-        pakData.params.itemstates?.forEach(state => {
-          if (state.name === 'minecraft:shield') {
-            this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
-            this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
-          }
+
+        this.connection.onCloseConnection = (reason) => {
+            this.close(reason)
+        }
+
+        this.connection.onEncapsulated = this.onEncapsulated
+        this.connection.connect()
+    }
+
+    sendLogin() {
+        this.status = ClientStatus.Authenticating
+
+        let payload = {
+            GameVersion: this.options.version,
+            PersonaSkin: true,
+            DeviceOS: 2,
+            DeviceId: v3(v4(), NIL).replace(/-/g, '').toUpperCase(),
+            DeviceModel: 'iPhone14,3',
+            CurrentInputMode: 2,
+            DefaultInputMode: 2,
+            SelfSignedId: v3(v4(), NIL),
+            GUIScale: 0,
+            UIProfile: 1,
+            LanguageCode: 'en_US',
+            MaxViewDistance: 12,
+            MemoryTier: 4,
+            PlatformType: 1,
+            GraphicsMode: 1,
+            TrustedSkin: true,
+            OverrideSkin: false,
+            ...steve,
+            ...this.options.skinData
+        }
+
+        const PlayFabId = this.tokenData.mid.toLowerCase() || "";
+
+        const updPFID = (data) => btoa(atob(data).replaceAll(`aed7e8a4d485a49a-5`, `${PlayFabId}-5`));
+        payload.SkinId = `persona-${PlayFabId || ""}-5`;
+        payload.SkinGeometryData = updPFID(payload.SkinGeometryData);
+        payload.SkinResourcePatch = updPFID(payload.SkinResourcePatch);
+
+        this.write('login', {
+            protocol_version: this.options.protocolVersion,
+            tokens: {
+                identity: JSON.stringify({ AuthenticationType: 0, Certificate: JSON.stringify({ chain: [] }), Token: this.token }),
+                client: JWT.sign(payload, this.ecdhKeyPair.privateKey, { algorithm: 'ES384', header: { x5u: this.clientX509 } })
+            }
         })
-        break
-      case 'play_status':
-        if (this.status === ClientStatus.Authenticating) {
-          this.inLog?.('Server wants to skip encryption')
-          this.emit('join')
-          this.status = ClientStatus.Initializing
-        }
-        this.onPlayStatus(pakData.params)
-        break
-      default:
-        if (this.status !== ClientStatus.Initializing && this.status !== ClientStatus.Initialized) {
-          this.inLog?.(`Can't accept ${des.data.name}, client not yet authenticated : ${this.status}`)
-          return
-        }
     }
 
-    // Emit packet
-    this.emit(des.data.name, des.data.params)
-  }
+    disconnect(reason = 'Client leaving') {
+        if (this.status === ClientStatus.Disconnected) return
+
+        this.close(reason)
+    }
+
+    close(reason) {
+        if (this.status === ClientStatus.Disconnected) return // Already closed, ignore duplicate close (e.g. a queued disconnect packet arriving after the connection already dropped)
+        this.emit('close', reason) // Emit close once
+        this.batch = null;
+        this.connection?.close()
+        this.removeAllListeners()
+        this.status = ClientStatus.Disconnected
+        if (!this.options.transport.includes("NETHERNET")) return
+        if (this.nethernet?.signalling) this.nethernet.signalling.destroy()
+        this.nethernet = null
+    }
+
+    readPacket(packet) {
+        try {
+            var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
+        } catch (e) {
+            this.emit('error', e)
+            return
+        }
+
+        // Abstract some boilerplate before sending to listeners
+        switch (des.data.name) {
+            case 'network_settings':
+                this.compressionAlgorithm = des.data.params.compression_algorithm || 'deflate'
+                this.compressionThreshold = des.data.params.compression_threshold
+                this.compressionReady = true
+                this.batch.updateCompressionSettings(this)
+
+                this.sendLogin()
+                break
+            case 'server_to_client_handshake':
+                const [header, payload] = des.data.params.token.split('.', 2).map(part => JSON.parse(Buffer.from(part, 'base64url').toString()))
+
+                if (!this.disableEncryption) {
+                    this.secretKeyBytes = crypto.createHash('sha256').update(Buffer.from(payload.salt, 'base64')).update(crypto.diffieHellman({ privateKey: this.ecdhKeyPair.privateKey, publicKey: crypto.createPublicKey({ key: Buffer.from(header.x5u, 'base64'), ...der }) })).digest()
+                    this.startEncryption(this.secretKeyBytes.slice(0, 16))
+                }
+
+                this.write('client_to_server_handshake', {})
+                this.status = ClientStatus.Initializing
+                break
+            case 'disconnect': // Client kicked
+                this.emit('kick', des.data.params)
+                this.close()
+                break
+            case 'item_registry':
+                des.data.params.itemstates?.forEach(state => {
+                    if (state.name === 'minecraft:shield') {
+                        this.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
+                        this.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
+                    }
+                })
+                break
+            case 'play_status':
+                if (this.status === ClientStatus.Authenticating) this.status = ClientStatus.Initializing
+                break
+            default:
+                break
+        }
+
+        this.emit(des.data.name, des.data.params)
+    }
 }
 
 module.exports = { Client }

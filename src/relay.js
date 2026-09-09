@@ -1,288 +1,265 @@
 const { Client } = require('./client')
 const { Server } = require('./server')
 const { Player } = require('./serverPlayer')
-const { realmAuthenticate } = require('./client/auth')
-const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
-
-const debugging = false // Do re-encoding tests
 
 class RelayPlayer extends Player {
-  constructor (server, conn) {
-    super(server, conn)
+    constructor(server, conn) {
+        super(server, conn)
 
-    this.startRelaying = false
-    this.once('join', () => { // The client has joined our proxy
-      this.flushDownQueue() // Send queued packets from the upstream backend
-      this.startRelaying = true
-    })
-    this.downQ = []
-    this.upQ = []
-    this.upInLog = (...msg) => console.debug('* Backend -> Proxy', ...msg)
-    this.upOutLog = (...msg) => console.debug('* Proxy -> Backend', ...msg)
-    this.downInLog = (...msg) => console.debug('* Client -> Proxy', ...msg)
-    this.downOutLog = (...msg) => console.debug('* Proxy -> Client', ...msg)
+        this.startRelaying = false
+        this.once('join', () => {
+            this.startRelaying = true
+            this.flushChunks();
+        })
 
-    if (!server.options.logging) {
-      this.upInLog = () => { }
-      this.upOutLog = () => { }
-      this.downInLog = () => { }
-      this.downOutLog = () => { }
+        this.upInLog = this.upOutLog = this.downInLog = this.downOutLog = (...msg) => { }
+
+        this.chunkSendCache = []
+        this.sentStartGame = false
+        this.pendingUpstreamPackets = []
+        this.player_unique_id = -1;
+
+        this.serializer = this.server.serializer;
+        this.deserializer = this.server.deserializer;
     }
 
-    this.outLog = this.downOutLog
-    this.inLog = this.downInLog
-    this.chunkSendCache = []
-    this.sentStartGame = false
-    this.respawnPacket = []
-  }
+    forwardToUpstream(data, packet, modified) {
+        switch (data.name) {
+            case 'client_cache_status':
+                this.upstream.write('client_cache_status', { enabled: this.enableChunkCaching })
+                return
+            case 'set_local_player_as_initialized':
+                this.status = 3
+                break;
+        }
 
-  // Called when we get a packet from backend server (Backend -> PROXY -> Client)
-  readUpstream (packet) {
-    if (!this.startRelaying) {
-      this.upInLog('Client not ready, queueing packet until join')
-      this.downQ.push(packet)
-      return
-    }
-    let des
-    try {
-      des = this.server.deserializer.parsePacketBuffer(packet)
-    } catch (e) {
-      this.server.deserializer.dumpFailedBuffer(packet, this.connection.address)
-      console.error(this.connection.address, e)
-
-      if (!this.options.omitParseErrors) {
-        this.disconnect('Server packet parse error')
-      }
-
-      return
-    }
-    const name = des.data.name
-    const params = des.data.params
-    this.upInLog('->', name, params)
-
-    if (name === 'play_status' && params.status === 'login_success') return // Already sent this, this needs to be sent ASAP or client will disconnect
-
-    if (debugging) { // some packet encode/decode testing stuff
-      this.server.deserializer.verify(des, this.server.serializer)
+        !modified && packet ? this.upstream.sendBuffer(packet) : this.upstream.write(data.name, data.params)
     }
 
-    this.emit('clientbound', des.data, des)
-
-    if (!des.canceled) {
-      if (name === 'start_game') {
-        setTimeout(() => {
-          this.sentStartGame = true
-        }, 500)
-      } else if (name === 'level_chunk' && !this.sentStartGame) {
-        this.chunkSendCache.push(params)
-        return
-      }
-
-      this.queue(name, params)
+    flushChunks() {
+        if (this.chunkSendCache.length === 0) return;
+        while (this.chunkSendCache.length > 0) {
+            this.sendBuffer(this.chunkSendCache.shift());
+        }
     }
 
-    if (this.chunkSendCache.length > 0 && this.sentStartGame) {
-      for (const entry of this.chunkSendCache) {
-        this.queue('level_chunk', entry)
-      }
-      this.chunkSendCache = []
+    readUpstream(packet) {
+        const packetId = packet[0];
+
+        let des
+        try {
+            des = this.deserializer.parsePacketBuffer(packet)
+        } catch (e) {
+            if (packetId === 0x1f) return;
+            this.sendBuffer(packet)
+            return
+        }
+
+        const { name, params } = des.data
+
+        if (name === 'play_status' && params.status === 'login_success') return
+
+        this.emit('clientbound', des.data, des)
+
+        if (!des.canceled) {
+            switch (name) {
+                case 'start_game':
+                    this.player_unique_id = params.entity_id;
+                    this.sentStartGame = true
+                    this.flushChunks();
+                    break;
+                case 'level_chunk':
+                    if (!this.sentStartGame) {
+                        this.chunkSendCache.push(packet);
+                        return;
+                    }
+                    break;
+                case 'item_registry':
+                    const states = params.itemstates;
+                    if (states) {
+                        for (let i = 0; i < states.length; i++) {
+                            if (states[i].name === 'minecraft:shield') {
+                                const rid = states[i].runtime_id;
+                                this.serializer.proto.setVariable('ShieldItemID', rid);
+                                this.deserializer.proto.setVariable('ShieldItemID', rid);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case 'update_player_game_type':
+                    if (this.player_unique_id === params.player_unique_id) {
+                        this.write("set_player_game_type", { gamemode: params.gamemode });
+                    }
+                    break
+            }
+
+            des.modified ? this.write(name, params) : this.sendBuffer(packet);
+        }
     }
-  }
 
-  // Send queued packets to the connected client
-  flushDownQueue () {
-    this.downOutLog('Flushing downstream queue')
-    for (const packet of this.downQ) {
-      const des = this.server.deserializer.parsePacketBuffer(packet)
-      this.write(des.data.name, des.data.params)
+    readPacket(packet) {
+        if (!this.startRelaying) {
+            super.readPacket(packet);
+            return;
+        }
+
+        let des
+        try {
+            des = this.deserializer.parsePacketBuffer(packet)
+        } catch (e) {
+            if (this.upstream) this.upstream.sendBuffer(packet)
+            return;
+        }
+
+        this.emit('serverbound', des.data, des)
+        if (des.canceled) return
+
+        if (!this.upstream) {
+            this.pendingUpstreamPackets.push({ data: des.data, packet, modified: des.modified })
+            return
+        }
+
+        this.forwardToUpstream(des.data, packet, des.modified)
     }
-    this.downQ = []
-  }
 
-  // Send queued packets to the backend upstream server from the client
-  flushUpQueue () {
-    this.upOutLog('Flushing upstream queue')
-    for (const e of this.upQ) { // Send the queue
-      const des = this.server.deserializer.parsePacketBuffer(e)
-      if (des.data.name === 'client_cache_status') {
-        // Currently not working, force off the chunk cache
-      } else {
-        this.upstream.write(des.data.name, des.data.params)
-      }
+    close(reason) {
+        super.close(reason)
+        this.upstream?.close(reason)
+        this.chunkSendCache = []
     }
-    this.upQ = []
-  }
-
-  // Called when the server gets a packet from the downstream player (Client -> PROXY -> Backend)
-  readPacket (packet) {
-    // The downstream client conn is established & we got a packet to send to upstream server
-    if (this.startRelaying) {
-      // Upstream is still connecting/handshaking
-      if (!this.upstream) {
-        const des = this.server.deserializer.parsePacketBuffer(packet)
-        this.downInLog('Got downstream connected packet but upstream is not connected yet, added to q', des)
-        this.upQ.push(packet) // Put into a queue
-        return
-      }
-
-      // Send queued packets
-      this.flushUpQueue()
-      this.downInLog('recv', packet)
-
-      // TODO: If we fail to parse a packet, proxy it raw and log an error
-      const des = this.server.deserializer.parsePacketBuffer(packet)
-
-      if (debugging) { // some packet encode/decode testing stuff
-        this.server.deserializer.verify(des, this.server.serializer)
-      }
-
-      this.emit('serverbound', des.data, des)
-      if (des.canceled) return
-
-      switch (des.data.name) {
-        case 'client_cache_status':
-          // Force the chunk cache off.
-          this.upstream.queue('client_cache_status', { enabled: this.enableChunkCaching })
-          break
-        case 'set_local_player_as_initialized':
-          this.status = 3
-        // falls through
-        default:
-          // Emit the packet as-is back to the upstream server
-          this.downInLog('Relaying', des.data)
-          this.upstream.queue(des.data.name, des.data.params)
-      }
-    } else {
-      super.readPacket(packet)
-    }
-  }
-
-  close (reason) {
-    this.upstream?.close(reason)
-    super.close(reason)
-  }
 }
 
 class Relay extends Server {
-  /**
-   * Creates a new non-transparent proxy connection to a destination server
-   * @param {Options} options
-   */
-  constructor (options) {
-    super(options)
-    this.RelayPlayer = options.relayPlayer || RelayPlayer
-    this.forceSingle = options.forceSingle
-    this.upstreams = new Map()
-    this.conLog = debug
-    this.enableChunkCaching = options.enableChunkCaching
-  }
+    /**
+     * Creates a new non-transparent proxy connection to a destination server
+     * @param {Options} options
+     */
+    constructor(options) {
+        super(options)
+        this.RelayPlayer = options.relayPlayer || RelayPlayer
+        this.forceSingle = options.forceSingle
+        this.upstreams = new Map()
+        this.conLog = console.log
+        this.enableChunkCaching = options.enableChunkCaching
+    }
 
-  // Called after a new player joins our proxy. We first create a new Client to connect to
-  // the remote server. Then we listen to some events and proxy them over. The queue and
-  // flushing logic is more of an accessory to make sure the server or client recieves
-  // a packet, no matter what state it's in. For example, if the client wants to send a
-  // packet to the server but it's not connected, it will add to the queue and send as soon
-  // as a connection with the server is established.
-  async openUpstreamConnection (ds, clientAddr) {
-    const options = {
-      authTitle: this.options.authTitle,
-      flow: this.options.flow,
-      deviceType: this.options.deviceType,
-      offline: this.options.destination.offline ?? this.options.offline,
-      username: this.options.offline ? ds.profile.name : ds.profile.xuid,
-      version: this.options.version,
-      realms: this.options.destination.realms,
-      host: this.options.destination.host,
-      port: this.options.destination.port,
-      batchingInterval: this.options.batchingInterval,
-      onMsaCode: (code) => {
-        if (this.options.onMsaCode) {
-          this.options.onMsaCode(code, ds)
-        } else {
-          ds.disconnect("It's your first time joining. Please sign in and reconnect to join this server:\n\n" + code.message)
+    async openUpstreamConnection(ds, clientAddr) {
+        const options = {
+            authTitle: this.options.authTitle,
+            flow: this.options.flow,
+            deviceType: this.options.deviceType,
+            username: ds.profile?.name || undefined,
+            version: this.options.version,
+            host: this.options.destination.host,
+            port: this.options.destination.port,
+            transport: this.options.destination.transport,
+            networkId: this.options.destination.networkId,
+            authflow: this.options.authflow,
+            protocolVersion: this.options.protocolVersion,
+            onMsaCode: (code) => {
+                if (this.options.onMsaCode) {
+                    this.options.onMsaCode(code, ds)
+                } else {
+                    ds.disconnect("It's your first time joining. Please sign in and reconnect to join this server:\n\n" + code.message)
+                }
+            },
+            profilesFolder: this.options.profilesFolder,
+            autoInitPlayer: false,
+            delayedInit: true,
+            skinData: {
+                ...ds.skinData,
+                ...this.options.skinData
+            }
         }
-      },
-      profilesFolder: this.options.profilesFolder,
-      backend: this.options.backend,
-      autoInitPlayer: false
+
+        const client = new Client(options)
+
+        await client.init();
+        client.connect()
+
+        client.once('resource_packs_info', (params) => {
+            client.write('client_cache_status', { enabled: false })
+
+            ds.upstream = client
+
+            console.log('Connected to upstream server')
+
+            const data = { name: 'resource_packs_info', params }
+            ds.emit('clientbound', data, { canceled: false })
+            ds.write('resource_packs_info', params)
+
+            const len = ds.pendingUpstreamPackets.length
+            if (len > 0) {
+                for (let i = 0; i < len; i++) {
+                    const pending = ds.pendingUpstreamPackets[i]
+                    ds.forwardToUpstream(pending.data, pending.packet, pending.modified)
+                }
+
+                ds.pendingUpstreamPackets = [];
+            }
+
+            client.readPacket = (packet) => ds.readUpstream(packet)
+
+            this.emit('join', ds, client)
+        })
+
+        client.on('error', (err) => {
+            console.log(err, "upstream client")
+
+            ds.disconnect('Server error: ' + err.message)
+
+            this.upstreams.delete(clientAddr.hash)
+        })
+
+        client.on('close', (reason) => {
+            const cascading = ds.status === undefined || ds.status === 0 /* Disconnected */
+
+            console.log('>>> upstream Client emitted CLOSE for', clientAddr, '— reason:', reason, cascading ? '(cascading from local close — ds.disconnect will no-op)' : '(upstream-initiated)')
+
+            ds.disconnect(reason ? `Backend server closed connection (${reason})` : 'Backend server closed connection')
+
+            this.upstreams.delete(clientAddr.hash)
+        })
+
+        this.upstreams.set(clientAddr.hash, client)
     }
 
-    if (this.options.destination.realms) {
-      await realmAuthenticate(options)
+    closeUpstreamConnection(clientAddr) {
+        const up = this.upstreams.get(clientAddr.hash)
+        if (!up) throw Error(`unable to close non-open connection ${clientAddr.hash}`)
+        up.close()
+
+        this.upstreams.delete(clientAddr.hash)
     }
 
-    const client = new Client(options)
-    // Set the login payload unless `noLoginForward` option
-    if (!client.noLoginForward) client.options.skinData = ds.skinData
-    this.conLog('Connecting to', options.host, options.port)
-    client.outLog = ds.upOutLog
-    client.inLog = ds.upInLog
-    client.once('join', () => {
-      // Tell the server to disable chunk cache for this connection as a client.
-      // Wait a bit for the server to ack and process, the continue with proxying
-      // otherwise the player can get stuck in an empty world.
-      client.write('client_cache_status', { enabled: this.enableChunkCaching })
-      ds.upstream = client
-      ds.flushUpQueue()
-      this.conLog('Connected to upstream server')
-      client.readPacket = (packet) => ds.readUpstream(packet)
+    onOpenConnection = (conn) => {
+        this.clientCount++
 
-      this.emit('join', /* client connected to proxy */ ds, /* backend server */ client)
-    })
-    client.on('error', (err) => {
-      ds.disconnect('Server error: ' + err.message)
-      debug(clientAddr, 'was disconnected because of error', err)
-      this.upstreams.delete(clientAddr.hash)
-    })
-    client.on('close', (reason) => {
-      ds.disconnect('Backend server closed connection')
-      this.upstreams.delete(clientAddr.hash)
-    })
+        const player = new this.RelayPlayer(this, conn)
+        this.clients[conn.address] = player
 
-    this.upstreams.set(clientAddr.hash, client)
-    client.connect()
-  }
+        this.emit('connect', player)
 
-  // Close a connection to a remote backend server.
-  closeUpstreamConnection (clientAddr) {
-    const up = this.upstreams.get(clientAddr.hash)
-    if (!up) throw Error(`unable to close non-open connection ${clientAddr.hash}`)
-    up.close()
-    this.upstreams.delete(clientAddr.hash)
-    this.conLog('closed upstream connection', clientAddr)
-  }
+        player.on('login', () => {
+            console.log('Received login from', conn.address)
+            this.openUpstreamConnection(player, conn.address)
+        })
 
-  // Called when a new player connects to our proxy server. Once the player has joined,
-  // we can open an upstream connection to the backend server.
-  onOpenConnection = (conn) => {
-    if (this.forceSingle && this.clientCount > 0) {
-      this.conLog('dropping connection as single client relay', conn)
-      conn.close()
-    } else {
-      this.clientCount++
-      const player = new this.RelayPlayer(this, conn)
-      this.conLog('New connection from', conn.address)
-      this.clients[conn.address] = player
-      this.emit('connect', player)
-      player.once('join', () => {
-        this.openUpstreamConnection(player, conn.address)
-      })
-      player.on('close', (reason) => {
-        this.conLog('player disconnected', conn.address, reason)
-        this.clientCount--
-        delete this.clients[conn.address]
-      })
+        player.on('close', (reason) => {
+            console.log('player disconnected', conn.address, reason)
+            this.clientCount--
+            delete this.clients[conn.address]
+        })
     }
-  }
 
-  // When our server is closed, make sure to kick all of the connected clients and run emitters.
-  close (...a) {
-    for (const [, v] of this.upstreams) {
-      v.close(...a)
+    close(...a) {
+        for (const [, v] of this.upstreams) {
+            v.close(...a)
+        }
+
+        super.close(...a)
     }
-    super.close(...a)
-  }
 }
 
-// Too many things called 'Proxy' ;)
 module.exports = { Relay }

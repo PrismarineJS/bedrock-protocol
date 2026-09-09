@@ -1,48 +1,38 @@
 const crypto = require('crypto')
 const Zlib = require('zlib')
 
-function createCipher (secret, initialValue, cipherAlgorithm) {
-  if (crypto.getCiphers().includes(cipherAlgorithm)) {
-    return crypto.createCipheriv(cipherAlgorithm, secret, initialValue)
-  }
+function createCipher(secret, initialValue, cipherAlgorithm) {
+  if (crypto.getCiphers().includes(cipherAlgorithm)) return crypto.createCipheriv(cipherAlgorithm, secret, initialValue)
 }
 
-function createDecipher (secret, initialValue, cipherAlgorithm) {
-  if (crypto.getCiphers().includes(cipherAlgorithm)) {
-    return crypto.createDecipheriv(cipherAlgorithm, secret, initialValue)
-  }
+function createDecipher(secret, initialValue, cipherAlgorithm) {
+  if (crypto.getCiphers().includes(cipherAlgorithm)) return crypto.createDecipheriv(cipherAlgorithm, secret, initialValue)
 }
 
-function computeCheckSum (packetPlaintext, sendCounter, secretKeyBytes) {
-  const digest = crypto.createHash('sha256')
-  const counter = Buffer.alloc(8)
-  counter.writeBigInt64LE(sendCounter, 0)
-  digest.update(counter)
-  digest.update(packetPlaintext)
-  digest.update(secretKeyBytes)
-  const hash = digest.digest()
-  return hash.slice(0, 8)
+function computeCheckSum(packetPlaintext, sendCounter, secretKeyBytes) {
+  const counterBuffer = Buffer.allocUnsafe(8)
+  counterBuffer.writeBigInt64LE(sendCounter, 0)
+
+  const hash = crypto.createHash('sha256').update(counterBuffer).update(packetPlaintext).update(secretKeyBytes).digest();
+
+  return hash.slice(0, 8);
 }
 
-function createEncryptor (client, iv) {
-  if (client.versionLessThan('1.16.220')) {
-    client.cipher = createCipher(client.secretKeyBytes, iv, 'aes-256-cfb8')
-  } else {
-    client.cipher = createCipher(client.secretKeyBytes, iv.slice(0, 12), 'aes-256-gcm')
-  }
+function createEncryptor(client, iv) {
+  client.cipher = createCipher(client.secretKeyBytes, iv.slice(0, 12), 'aes-256-gcm')
   client.sendCounter = client.sendCounter || 0n
+  
+  function process(chunk) {
+    const compressedData = Zlib.deflateRawSync(chunk, { level: client.compressionLevel })
+    const buffer = Buffer.allocUnsafe(compressedData.length + 1)
 
-  // A packet is encrypted via AES256(plaintext + SHA256(send_counter + plaintext + secret_key)[0:8]).
-  // The send counter is represented as a little-endian 64-bit long and incremented after each packet.
+    buffer[0] = 0
+    compressedData.copy(buffer, 1)
 
-  function process (chunk) {
-    const compressed = Zlib.deflateRawSync(chunk, { level: client.compressionLevel })
-    const buffer = client.features.compressorInHeader
-      ? Buffer.concat([Buffer.from([0]), compressed])
-      : compressed
-    const packet = Buffer.concat([buffer, computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)])
+    const checksum = computeCheckSum(buffer, client.sendCounter, client.secretKeyBytes)
+
     client.sendCounter++
-    client.cipher.write(packet)
+    client.cipher.write(Buffer.concat([buffer, checksum]))
   }
 
   client.cipher.on('data', client.onEncryptedPacket)
@@ -52,16 +42,11 @@ function createEncryptor (client, iv) {
   }
 }
 
-function createDecryptor (client, iv) {
-  if (client.versionLessThan('1.16.220')) {
-    client.decipher = createDecipher(client.secretKeyBytes, iv, 'aes-256-cfb8')
-  } else {
-    client.decipher = createDecipher(client.secretKeyBytes, iv.slice(0, 12), 'aes-256-gcm')
-  }
-
+function createDecryptor(client, iv) {
+  client.decipher = createDecipher(client.secretKeyBytes, iv.slice(0, 12), 'aes-256-gcm')
   client.receiveCounter = client.receiveCounter || 0n
 
-  function verify (chunk) {
+  function verify(chunk) {
     const packet = chunk.slice(0, chunk.length - 8)
     const checksum = chunk.slice(chunk.length - 8, chunk.length)
     const computedCheckSum = computeCheckSum(packet, client.receiveCounter, client.secretKeyBytes)
@@ -74,19 +59,16 @@ function createDecryptor (client, iv) {
     }
 
     let buffer
-    if (client.features.compressorInHeader) {
-      switch (packet[0]) {
-        case 0:
-          buffer = Zlib.inflateRawSync(packet.slice(1), { chunkSize: 512000 })
-          break
-        case 255:
-          buffer = packet.slice(1)
-          break
-        default:
-          client.emit('error', Error(`Unsupported compressor: ${packet[0]}`))
-      }
-    } else {
-      buffer = Zlib.inflateRawSync(packet, { chunkSize: 512000 })
+    
+    switch (packet[0]) {
+      case 0:
+        buffer = Zlib.inflateRawSync(packet.slice(1), { chunkSize: 512000 })
+        break
+      case 255:
+        buffer = packet.slice(1)
+        break
+      default:
+        buffer = Zlib.inflateRawSync(packet.slice(1), { chunkSize: 512000 })
     }
 
     client.onDecryptedPacket(buffer)
@@ -99,6 +81,4 @@ function createDecryptor (client, iv) {
   }
 }
 
-module.exports = {
-  createCipher, createDecipher, createEncryptor, createDecryptor
-}
+module.exports = { createCipher, createDecipher, createEncryptor, createDecryptor }

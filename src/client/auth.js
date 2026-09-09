@@ -1,139 +1,46 @@
-const path = require('path')
-const { Authflow: PrismarineAuth, Titles } = require('prismarine-auth')
-const minecraftFolderPath = require('minecraft-folder-path')
-const debug = require('debug')('minecraft-protocol')
-const { uuidFrom } = require('../datatypes/util')
-const { RealmAPI } = require('prismarine-realms')
+const { Authflow } = require('prismarine-auth')
 
-// BDS validates that the login DeviceOS agrees with the platform used to
-// authenticate. Values are from the protocol DeviceOS enum.
-const deviceOSByAuthTitle = {
-  [Titles.MinecraftAndroid]: 1,
-  [Titles.MinecraftIOS]: 2,
-  [Titles.MinecraftPlaystation]: 11,
-  [Titles.MinecraftNintendoSwitch]: 12
-}
-
-function validateOptions (options) {
-  if (!options.profilesFolder) {
-    options.profilesFolder = path.join(minecraftFolderPath, 'nmp-cache')
-  }
-  if (options.authTitle === undefined) {
-    options.authTitle = Titles.MinecraftNintendoSwitch
-    options.deviceType = 'Nintendo'
-    options.flow = 'live'
-  }
-  if (options.deviceOS === undefined) {
-    options.deviceOS = deviceOSByAuthTitle[options.authTitle]
-  }
-  if (options.deviceOS === undefined) {
-    throw new Error('deviceOS is required when authTitle does not identify a known Minecraft platform')
-  }
-}
-
-async function realmAuthenticate (options) {
-  validateOptions(options)
-
-  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-
-  // TODO: Correct minecraft-data which incorrectly dropped 1. prefix from version
-  const ver = options.version.startsWith('1.') ? options.version : `1.${options.version}`
-  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: ver })
-
-  const getRealms = async () => {
-    const realms = await api.getRealms()
-    debug('realms', realms)
-    if (!realms.length) throw Error('Couldn\'t find any Realms for the authenticated account')
-    return realms
-  }
-
-  let realm
-
-  if (options.realms.realmId) {
-    const realms = await getRealms()
-    realm = realms.find(e => e.id === Number(options.realms.realmId))
-  } else if (options.realms.realmInvite) {
-    realm = await api.getRealmFromInvite(options.realms.realmInvite)
-  } else if (options.realms.pickRealm) {
-    if (typeof options.realms.pickRealm !== 'function') throw Error('realms.pickRealm must be a function')
-    const realms = await getRealms()
-    realm = await options.realms.pickRealm(realms)
-  }
-
-  if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
-
-  const { host, port } = await realm.getAddress()
-
-  debug('realms connection', { host, port })
-
-  options.host = host
-  options.port = port
-}
-
-/**
- * Authenticates to Minecraft via device code based Microsoft auth,
- * then connects to the specified server in Client Options
- *
- * @function
- * @param {object} client - The client passed to protocol
- * @param {object} options - Client Options
- */
-async function authenticate (client, options) {
-  validateOptions(options)
+async function authenticate(client, options) {
   try {
-    const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const loginData = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
-      if (options.password) console.warn('Sign in failed, try removing the password field')
-      throw e
+    options.authflow ??= new Authflow(options.username, options.profilesFolder, options, options.onMsaCode)
+
+    const MCTOKEN = (await options.authflow.getMinecraftBedrockServicesToken({ version: client.options.version })).mcToken
+    const body = JSON.stringify({ publicKey: client.clientX509 })
+
+    const response = await fetch("https://authorization.franchise.minecraft-services.net/api/v1.0/multiplayer/session/start", {
+      method: "POST",
+      headers: {
+        "accept": "*/*",
+        "authorization": MCTOKEN,
+        "content-type": "application/json",
+        "User-Agent": "libhttpclient/1.0.0.0",
+        "Accept-Language": "en-US",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Content-Length": body.length
+      },
+      body
     })
-    const chains = loginData.chain
 
-    debug('loginData', { chainLength: chains.length, hasToken: Boolean(loginData.token) })
+    const result = await response.json()
 
-    // First chain is Mojang stuff, second is Xbox profile data used by mc
-    const jwt = chains[1]
-    const [header, payload, signature] = jwt.split('.').map(k => Buffer.from(k, 'base64')) // eslint-disable-line
-    const xboxProfile = JSON.parse(String(payload))
-
-    debug('got xbox profile', xboxProfile)
-
-    const profile = {
-      name: xboxProfile?.extraData?.displayName || 'Player',
-      uuid: xboxProfile?.extraData?.identity || 'adfcf5ca-206c-404a-aec4-f59fff264c9b', // random
-      xuid: xboxProfile?.extraData?.XUID || 0
+    if (result.code === "PlayerBanned") {
+      throw new Error(JSON.stringify({
+        "path": "/multiplayer/bedrock/authentication",
+        "error": "FORBIDDEN"
+      }))
     }
 
-    return postAuthenticate(client, profile, loginData)
+    const signedToken = result.result.signedToken
+
+    const [h, payload] = signedToken.split('.').map(k => Buffer.from(k, 'base64'))
+    
+    client.tokenData = JSON.parse(String(payload))
+    client.token = signedToken
+    client.emit('session')
   } catch (err) {
     console.error(err)
     client.emit('error', err)
   }
 }
 
-/**
- * Creates an offline session for the client
- */
-function createOfflineSession (client, options) {
-  validateOptions(options)
-  if (!options.username) throw Error('Must specify a valid username')
-  const profile = {
-    name: options.username,
-    uuid: uuidFrom(options.username), // random
-    xuid: 0
-  }
-  return postAuthenticate(client, profile, { chain: [], token: '' }) // No extra JWTs, only send our own login data
-}
-
-function postAuthenticate (client, profile, auth = {}) {
-  client.profile = profile
-  client.username = profile.name
-  client.accessToken = auth.chain || []
-  client.multiplayerToken = auth.token || ''
-  client.emit('session', profile)
-}
-
-module.exports = {
-  createOfflineSession,
-  authenticate,
-  realmAuthenticate
-}
+module.exports = { authenticate }
