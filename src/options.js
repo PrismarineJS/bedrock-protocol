@@ -3,7 +3,7 @@ const mcData = require('minecraft-data')
 // Minimum supported version (< will be kicked)
 const MIN_VERSION = '1.16.201'
 // Currently supported verson. Note, clients with newer versions can still connect as long as data is in minecraft-data
-const CURRENT_VERSION = '1.26.50'
+const CURRENT_VERSION = '1.26.51'
 
 const Versions = Object.fromEntries(mcData.versions.bedrock.filter(e => e.releaseType === 'release').map(e => [e.minecraftVersion, e.version]))
 
@@ -23,7 +23,7 @@ const defaultOptions = {
   // Milliseconds to wait before aborting connection attempt
   connectTimeout: 9000,
   // Specifies the raknet implementation to use
-  raknetBackend: 'jsp-raknet',
+  raknetBackend: 'raknet-native',
   // If using JS implementation of RakNet, should we use workers? (This only affects the client)
   useRaknetWorkers: true,
 

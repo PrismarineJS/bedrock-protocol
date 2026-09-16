@@ -219,27 +219,6 @@ class Client extends Connection {
     try {
       var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
     } catch (e) {
-      // Bedrock 1.26.51 camera_presets (0xC6) currently differs from
-      // the older minecraft-data schema. ThirdEye does not use this
-      // packet, so safely skip it instead of crashing the client.
-      let header = 0
-      let shift = 0
-
-      for (let i = 0; i < packet.length && i < 5; i++) {
-        const byte = packet[i]
-        header |= (byte & 0x7f) << shift
-
-        if ((byte & 0x80) === 0) break
-        shift += 7
-      }
-
-      const packetId = header & 0x3ff
-
-      if (packetId === 0xc6 && e?.partialReadError) {
-        this.conLog?.('[BEDROCK] Ignoring unsupported 1.26.51 camera_presets packet (0xC6)')
-        return
-      }
-
       // Dump information about the packet only if user is not handling error event.
       if (this.listenerCount('error') === 0) this.deserializer.dumpFailedBuffer(packet)
       this.emit('error', e)
