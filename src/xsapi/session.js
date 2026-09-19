@@ -132,6 +132,7 @@ class SessionDirectory extends EventEmitter {
   end () {
     if (this._endPromise) return this._endPromise
     this._ended = true
+    this.host.rest.abortPending()
     this._endPromise = this.closeSession()
     return this._endPromise
   }

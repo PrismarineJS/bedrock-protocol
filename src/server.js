@@ -4,7 +4,7 @@ const { Player } = require('./serverPlayer')
 const { sleep } = require('./datatypes/util')
 const { ServerAdvertisement, NethernetServerAdvertisement } = require('./server/advertisement')
 const Options = require('./options')
-const { closeNethernet } = require('./nethernetCleanup')
+const { closeNethernet } = require('./nethernet/cleanup')
 
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
@@ -19,6 +19,10 @@ class Server extends EventEmitter {
     if (this.options.transport === 'nethernet') {
       this.transportServer = require('./nethernet').NethernetServer
       this.advertisement = new NethernetServerAdvertisement(this.options.motd, this.options.version)
+      // Online credentials remain valid in offline mode; self-signed logins
+      // are only accepted when verification is disabled.
+      this.advertisement.acceptsOnlineAuth = true
+      this.advertisement.acceptsSelfSignedAuth = this.options.offline === true
       this.batchHeader = null
       this.disableEncryption = true
       this.nethernet = {}

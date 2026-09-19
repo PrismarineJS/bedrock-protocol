@@ -16,3 +16,5 @@ ping({ host: 'localhost', port: 19132 }).then(ad => ad.portV4)
 createClient({ transport: 'tcp' })
 // @ts-expect-error Network IDs must retain 64-bit precision.
 createClient({ transport: 'nethernet', networkId: 123 })
+
+ping({ networkId: 123n, timeout: 1000, signal: new AbortController().signal })

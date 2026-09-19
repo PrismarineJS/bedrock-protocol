@@ -42,4 +42,36 @@ describe('nethernet advertisement', () => {
     assert.strictEqual(ad.protocol, 2169)
     assert.strictEqual(NethernetServerAdvertisement.fromBuffer(ad.toBuffer()).motd, 'motd')
   })
+  it('rejects unknown layouts instead of assuming they match an existing version', () => {
+    for (const version of [0, 5, 6, 8, 255]) {
+      const bytes = Buffer.from(bds12651, 'hex')
+      bytes[0] = version
+      assert.throws(() => NethernetServerAdvertisement.fromBuffer(bytes))
+      assert.throws(() => new NethernetServerAdvertisement({ version }).toBuffer())
+    }
+  })
+
+  it('preserves optional version 4 trailer defaults', () => {
+    const bytes = new NethernetServerAdvertisement({ version: 4 }).toBuffer()
+    for (let missing = 1; missing <= 4; missing++) {
+      const ad = NethernetServerAdvertisement.fromBuffer(bytes.subarray(0, bytes.length - missing))
+      assert.strictEqual(ad.unknown2, 8)
+      assert.strictEqual(ad.isEditorWorld, false)
+    }
+  })
+
+  it('rejects truncated version 7 packets', () => {
+    const bytes = Buffer.from(bds12651, 'hex')
+    for (let length = 0; length < bytes.length; length++) {
+      assert.throws(() => NethernetServerAdvertisement.fromBuffer(bytes.subarray(0, length)))
+    }
+  })
+
+  it('ignores extra data after known fields in both layouts', () => {
+    for (const version of [4, 7]) {
+      const bytes = new NethernetServerAdvertisement({ version }).toBuffer()
+      const extended = Buffer.concat([bytes, Buffer.from([1, 2, 3, 4, 5])])
+      assert.deepStrictEqual(NethernetServerAdvertisement.fromBuffer(extended).toBuffer(), bytes)
+    }
+  })
 })

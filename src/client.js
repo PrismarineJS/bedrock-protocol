@@ -9,8 +9,8 @@ const { NethernetClient } = require('./nethernet')
 const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
-const { NethernetSignal } = require('./websocket/signal')
-const { closeNethernet } = require('./nethernetCleanup')
+const { NethernetSignal } = require('./nethernet/signalling')
+const { closeNethernet } = require('./nethernet/cleanup')
 
 const debugging = false
 
@@ -277,6 +277,7 @@ class Client extends Connection {
   close () {
     if (this._closed) return
     this._closed = true
+    this._discoveryAbort?.abort(new Error('Client closed during discovery'))
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []

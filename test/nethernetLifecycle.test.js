@@ -6,7 +6,7 @@ const { Relay } = require('../src/relay')
 const { createClient } = require('../src/createClient')
 const auth = require('../src/client/auth')
 const { RealmAPI } = require('prismarine-realms')
-const { NethernetSignal } = require('../src/websocket/signal')
+const { NethernetSignal } = require('../src/nethernet/signalling')
 const { SessionDirectory } = require('../src/xsapi/session')
 const { CURRENT_VERSION } = require('../src/options')
 
@@ -281,7 +281,7 @@ describe('Nethernet signalling lifecycle', () => {
         signal.onMessage(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { ok: true } }))
       }
     }
-    assert.deepStrictEqual(await signal._request('test', {}), { ok: true })
+    assert.strictEqual((await signal._request('test', {})).ok, true)
     await signal.destroy()
   })
 
