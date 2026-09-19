@@ -5,6 +5,7 @@ const assert = require('assert')
 const { getRandomUint64 } = require('./datatypes/util')
 const { serverAuthenticate } = require('./client/auth')
 const { SignalType } = require('node-nethernet')
+const { cleanupNethernet } = require('./nethernet')
 
 /** @param {{ port?: number, version?: number, networkId?: string, transport?: string, delayedInit?: boolean }} options */
 function createServer (options) {
@@ -43,10 +44,7 @@ function createServer (options) {
     server.listen()
   }
 
-  server.once('close', () => {
-    if (server.nethernet.session) server.nethernet.session.end()
-    if (server.nethernet.signalling) server.nethernet.signalling.destroy()
-  })
+  server.once('close', () => cleanupNethernet(server))
 
   return server
 }

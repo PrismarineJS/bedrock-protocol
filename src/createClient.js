@@ -5,7 +5,7 @@ const assert = require('assert')
 const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
-const { NethernetClient } = require('./nethernet')
+const { NethernetClient, cleanupNethernet } = require('./nethernet')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
@@ -114,10 +114,7 @@ async function connect (client) {
     })
   }
 
-  client.once('close', () => {
-    if (client.nethernet.session) client.nethernet.session.end()
-    if (client.nethernet.signalling) client.nethernet.signalling.destroy()
-  })
+  client.once('close', () => cleanupNethernet(client))
 }
 
 async function ping ({ host, port, networkId }) {

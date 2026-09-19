@@ -88,4 +88,12 @@ class NethernetServer {
   }
 }
 
-module.exports = { NethernetClient, NethernetServer }
+// Best-effort teardown of a peer's NetherNet transport. RakNet peers have no `nethernet` object, so this is a no-op for
+// them; each step runs even if the other throws, so a close always completes and never leaves sockets or timers open.
+function cleanupNethernet (peer) {
+  if (!peer || !peer.nethernet) return
+  try { peer.nethernet.session?.end() } catch { /* already torn down */ }
+  try { peer.nethernet.signalling?.destroy() } catch { /* already torn down */ }
+}
+
+module.exports = { NethernetClient, NethernetServer, cleanupNethernet }
