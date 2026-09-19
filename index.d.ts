@@ -3,7 +3,7 @@ import { Realm } from 'prismarine-realms'
 import { ServerDeviceCodeResponse } from 'prismarine-auth'
 
 declare module 'bedrock-protocol' {
-  type Version = '26.10' | '1.26.0' | '1.21.93' | '1.21.90' | '1.21.80' | '1.21.70' | '1.21.60' | '1.21.50' | '1.21.42' | '1.21.30' | '1.21.2' | '1.21.0' | '1.20.80' | '1.20.71' | '1.20.61' | '1.20.50' | '1.20.40' | '1.20.30' | '1.20.10' | '1.20.0' | '1.19.80' | '1.19.70' | '1.19.63' | '1.19.62' | '1.19.60' | '1.19.51' | '1.19.50' | '1.19.41' | '1.19.40' | '1.19.31' | '1.19.30' | '1.19.22' | '1.19.21' | '1.19.20' | '1.19.11' | '1.19.10' | '1.19.2' | '1.19.1' | '1.18.31' | '1.18.30' | '1.18.12' | '1.18.11' | '1.18.10' | '1.18.2' | '1.18.1' | '1.18.0' | '1.17.41' | '1.17.40' | '1.17.34' | '1.17.30' | '1.17.11' | '1.17.10' | '1.17.0' | '1.16.220' | '1.16.210' | '1.16.201'
+  type Version = string
 
   export interface Options {
     // The string version to start the client or server as
@@ -130,6 +130,7 @@ declare module 'bedrock-protocol' {
       name: string
     }
     version: string
+    authentication?: AuthenticationResult
 
     getUserData(): object
 
@@ -151,11 +152,17 @@ declare module 'bedrock-protocol' {
      */
     close(): void
 
-    on(event: 'login', cb: () => void): any
+    on(event: 'login', cb: (result: { user: object, authentication: AuthenticationResult }) => void): any
     on(event: 'join', cb: () => void): any
     on(event: 'close', cb: (reason: string) => void): any
     on(event: 'packet', cb: (packet: object) => void): any
     on(event: 'spawn', cb: (reason: string) => void): any
+  }
+
+  export interface AuthenticationResult {
+    authenticated: boolean
+    method: 'oidc' | 'legacy' | 'offline'
+    issuer: string | null
   }
 
   export class Server extends EventEmitter {

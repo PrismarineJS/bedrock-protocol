@@ -23,8 +23,8 @@ class Connection extends EventEmitter {
 
   set status (val) {
     debug('* new status', val)
-    this.emit('status', val)
     this.#status = val
+    this.emit('status', val)
   }
 
   versionLessThan (version) {
@@ -50,9 +50,15 @@ class Connection extends EventEmitter {
   startEncryption (iv) {
     if (this.disableEncryption) return
     this.encryptionEnabled = true
-    this.inLog?.('Started encryption', this.sharedSecret, iv)
+    this.inLog?.('Started encryption')
     this.decrypt = cipher.createDecryptor(this, iv)
     this.encrypt = cipher.createEncryptor(this, iv)
+  }
+
+  enableEncryption (material) {
+    this.sharedSecret = material.sharedSecret
+    this.secretKeyBytes = material.secretKeyBytes
+    this.startEncryption(material.iv)
   }
 
   updateItemPalette (palette) {

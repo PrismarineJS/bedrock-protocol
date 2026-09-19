@@ -1,139 +1,176 @@
-// Automatic version update checker for Minecraft bedrock edition.
-const fs = require('fs')
-const cp = require('child_process')
+// Automatic version update checker for Minecraft Bedrock Edition.
 const helper = require('gh-helpers')()
-const latestVesionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
+const bedrockServer = require('minecraft-bedrock-server')
+const { CURRENT_VERSION, Versions } = require('../../src/options')
+
+const latestVersionEndpoint = 'https://itunes.apple.com/lookup?bundleId=com.mojang.minecraftpe&time=' + Date.now()
 const changelogURL = 'https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs'
 
-// Relevant infomation for us is:
-// "version": "1.17.10",
-// "currentVersionReleaseDate": "2021-07-13T15:35:49Z",
-// "releaseNotes": "What's new in 1.17.10:\nVarious bug fixes",
+async function fetchJson (url) {
+  const response = await fetch(url, { signal: AbortSignal.timeout(30_000) })
+  if (!response.ok) throw new Error(`GET ${url} failed: ${response.status} ${response.statusText}`)
+  return response.json()
+}
 
-function buildFirstIssue (title, result, externalPatches) {
+async function readLatestRelease () {
+  const { results: releases } = await fetchJson(latestVersionEndpoint)
+  if (!releases?.length) throw new Error('The App Store response did not contain a release')
+  return releases[0]
+}
+
+async function getCommitsInRepo (repo, containing, since) {
+  const endpoint = `https://api.github.com/repos/${repo}/commits`
+  console.log('Getting', endpoint)
+  const commits = await fetchJson(endpoint)
+  const relevant = commits
+    .filter(commit => commit.commit.message.includes(containing))
+    .map(commit => [commit.commit.message, commit.html_url])
+
+  if (!since) return [relevant]
+
+  const url = new URL(endpoint)
+  url.searchParams.set('since', since)
+  const recentCommits = await fetchJson(url)
+  if (!recentCommits.length) return [relevant]
+
+  const head = recentCommits[0].sha
+  const tail = recentCommits[recentCommits.length - 1].parents[0]?.sha
+  if (!tail) return [relevant]
+  return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`]
+}
+
+async function getProtocolPatches (version, releaseDate) {
+  // Match both 26.10 and 1.26.10, including releases with a patch suffix.
+  const [, major, minor] = version.split('.')
+  const query = `${major}.${minor}`
+  const [gophertunnel, CloudburstMC] = await Promise.all([
+    getCommitsInRepo('Sandertv/gophertunnel', query, releaseDate),
+    getCommitsInRepo('CloudburstMC/Protocol', query, releaseDate)
+  ])
+  return { gophertunnel, CloudburstMC }
+}
+
+function buildIssue (title, release, externalPatches, protocolVersion) {
   let commitData = ''
-  let protocolVersion = '?'
-  const date = new Date(result.currentVersionReleaseDate).toUTCString()
+  const date = new Date(release.currentVersionReleaseDate).toUTCString()
 
   for (const name in externalPatches) {
     const [patches, diff] = externalPatches[name]
-    commitData += '### ' + name + '\n'
-    for (const [name, url] of patches) {
-      commitData += `<a href="${url}">${name}</a>\n`
-    }
-    if (diff) commitData += `\n**[See the diff between *${result.currentVersionReleaseDate}* and now](${diff})**\n`
-    else commitData += '\n(No changes so far)\n'
+    commitData += `### ${name}\n`
+    for (const [message, url] of patches) commitData += `<a href="${url}">${message}</a>\n`
+    commitData += diff ? `\n**[See the diff between *${release.currentVersionReleaseDate}* and now](${diff})**\n` : '\n(No changes so far)\n'
   }
-  try { protocolVersion = getProtocolVersion() } catch (e) { console.log(e) }
 
   return {
     title,
     body: `
-A new Minecraft Bedrock version is available (as of ${date}), version **${result.version}**
+A new Minecraft Bedrock version is available (as of ${date}), version **${release.version}**
 
 ## Official Changelog
-* ${result.releaseNotes} *(via App Store)*
+* ${release.releaseNotes} *(via App Store)*
 * ${changelogURL}
 
 ## 3rd party protocol patches
 ${commitData}
 
 ## Protocol Details
-(I will close this issue automatically if "${result.version}" is added to index.d.ts on "master" and there are no X's below)
+The latest server PONG reports protocol **${protocolVersion}**.
 <table>
-  <tr><td><b>Name</b></td><td>${result.version}</td>
+  <tr><td><b>Name</b></td><td>${release.version}</td>
   <tr><td><b>Protocol ID</b></td><td>${protocolVersion}</td>
-  <!-- TODO ... automatically fetch server, test and grab relevant information and dump
-  <tr><td><b>Partly Already Compatible</b></td><td></td>
-  <tr><td><b>Protocol Dumpers Work</b></td><td></td>
-  -->
 </table>
 
 -----
 
-🤖 I am a bot, I check for updates every 2 hours without a trigger. You can close this issue to prevent any further updates.
+🤖 I am a bot, I check for updates every 2 hours without a trigger. You can close this issue to prevent further updates.
     `
   }
 }
 
-function getCommitsInRepo (repo, containing, since) {
-  const endpoint = `https://api.github.com/repos/${repo}/commits`
-  console.log('Getting', endpoint)
-  cp.execSync(`curl -L ${endpoint} -o commits.json`, { stdio: 'inherit', shell: true })
-  const commits = JSON.parse(fs.readFileSync('./commits.json', 'utf-8'))
-  const relevant = []
-  for (const commit of commits) {
-    if (commit.commit.message.includes(containing)) {
-      console.log('commit url', commit.html_url)
-      relevant.push([commit.commit.message, commit.html_url])
+async function getServerPong (version) {
+  try {
+    const pong = await bedrockServer.getPongDetails(version)
+    console.log('Server pong', pong)
+    if (pong.protocolVersion === undefined || pong.protocolVersion === null || pong.protocolVersion === '') {
+      throw new Error('The server PONG did not include a protocol version')
     }
+    console.log('Detected protocol version', pong.protocolVersion)
+    return { pong }
+  } catch (error) {
+    console.error('Failed to detect protocol version', error)
+    return { error }
   }
-  if (since) {
-    cp.execSync(`curl -L ${endpoint}?since=${since} -o commits.json`, { stdio: 'inherit', shell: true })
-    const commits = JSON.parse(fs.readFileSync('./commits.json', 'utf-8'))
-    if (commits.length) {
-      const head = commits[0].sha
-      const tail = commits[commits.length - 1].sha
-      return [relevant, `https://github.com/${repo}/compare/${tail}..${head}`] 
-    }
-  }
-  return [relevant]
 }
 
-function getProtocolVersion () {
-  if (!fs.existsSync('./ProtocolInfo.php')) cp.execSync('curl -LO https://raw.githubusercontent.com/pmmp/PocketMine-MP/stable/src/pocketmine/network/mcpe/protocol/ProtocolInfo.php', { stdio: 'inherit', shell: true })
-  const currentApi = fs.readFileSync('./ProtocolInfo.php', 'utf-8')
-  const [, latestProtocolVersion] = currentApi.match(/public const CURRENT_PROTOCOL = (\d+);/)
-  return latestProtocolVersion
+async function dispatchMinecraftDataUpdate (version, protocolVersion, issueUrl) {
+  const payload = {
+    owner: 'PrismarineJS',
+    repo: 'minecraft-data',
+    workflow: 'bedrock-version-bump.yml',
+    branch: 'master',
+    inputs: {
+      version,
+      protocolVersion: String(protocolVersion),
+      issueUrl,
+      createPr: 'true'
+    }
+  }
+  console.log('Sending workflow dispatch', payload)
+  await helper.sendWorkflowDispatch(payload)
 }
 
-async function fetchLatest () {
-  if (!fs.existsSync('./results.json')) cp.execSync(`curl -L "${latestVesionEndpoint}" -o results.json`, { stdio: 'inherit', shell: true })
-  const json = require('./results.json')
-  const result = json.results[0]
-  // console.log(json)
+async function main () {
+  const release = await readLatestRelease()
+  const version = release.version.startsWith('1.') ? release.version : `1.${release.version}`
+  const normalizedRelease = { ...release, version }
+  const title = `Support Minecraft ${version}`
+  const supportedProtocolVersion = Versions[CURRENT_VERSION]
 
-  if (!fs.existsSync('./index.d.ts')) cp.execSync('curl -LO https://raw.githubusercontent.com/PrismarineJS/bedrock-protocol/master/index.d.ts', { stdio: 'inherit', shell: true })
-  const currentApi = fs.readFileSync('./index.d.ts', 'utf-8')
-  const supportedVersions = currentApi.match(/type Version = ([^\n]+)/)[1].replace(/\||'/g, ' ').split(' ').map(k => k.trim()).filter(k => k.length)
-  console.log(supportedVersions)
+  if (supportedProtocolVersion === undefined) {
+    throw new Error(`Could not find protocol data for CURRENT_VERSION ${CURRENT_VERSION}`)
+  }
+  console.log('Current supported version', CURRENT_VERSION, 'protocol', supportedProtocolVersion)
+  console.log('Latest App Store release', version, release.currentVersionReleaseDate)
 
-  let { version, currentVersionReleaseDate, releaseNotes } = result
-  console.log(version, currentVersionReleaseDate, releaseNotes)
-
-  const title = `Support Minecraft ${result.version}`
-  const issueStatus = await helper.findIssue({ titleIncludes: title }) || {}
-
-  if (supportedVersions.includes(version)) {
-    if (issueStatus.isOpen) {
-      helper.close(issueStatus.id, `Closing as ${version} is now supported`)
-    }
-    console.log('Latest version is supported.')
+  // Exact matches, including closed issues, are already handled.
+  const issues = await helper.findIssues({ titleIncludes: title, author: '' })
+  if (issues.some(issue => issue.title === title)) {
+    console.log(`An issue titled "${title}" already exists.`)
     return
   }
 
-
-  if (issueStatus.isClosed) {
-    // We already made an issue, but someone else already closed it, don't do anything else
-    console.log('I already made an issue, but it was closed')
+  const { pong, error } = await getServerPong(version)
+  if (!error && String(pong.protocolVersion) === String(supportedProtocolVersion)) {
+    console.log(`Protocol ${pong.protocolVersion} is already supported.`)
     return
   }
 
-  version = version.replace('.0', '')
-  const issuePayload = buildFirstIssue(title, result, {
-    PocketMine: getCommitsInRepo('pmmp/PocketMine-MP', version, currentVersionReleaseDate),
-    gophertunnel: getCommitsInRepo('Sandertv/gophertunnel', version, currentVersionReleaseDate),
-    CloudburstMC: getCommitsInRepo('CloudburstMC/Protocol', version, currentVersionReleaseDate)
+  const protocolVersion = pong?.protocolVersion || '?'
+  const issue = await helper.createIssue(buildIssue(
+    title,
+    normalizedRelease,
+    await getProtocolPatches(version, release.currentVersionReleaseDate),
+    protocolVersion
+  ))
+
+  if (error) {
+    await helper.comment(issue.number, `I could not determine the protocol version automatically, so I wasn't able to create a PrismarineJS/minecraft-data PR. The minecraft-data bump workflow must be triggered manually.\n\nError: ${error.message}`)
+    return
+  }
+
+  try {
+    await dispatchMinecraftDataUpdate(version, pong.protocolVersion, issue.url)
+  } catch (dispatchError) {
+    await helper.comment(issue.number, `I opened the update issue, but failed to open the minecraft-data scaffolding PR automatically. Please retry the workflow dispatch manually.\n\nError: ${dispatchError.message}`)
+    throw dispatchError
+  }
+}
+
+if (require.main === module) {
+  main().catch(error => {
+    console.error(error)
+    process.exitCode = 1
   })
-
-  if (issueStatus.isOpen) {
-    helper.updateIssue(issueStatus.id, issuePayload)
-  } else {
-    helper.createIssue(issuePayload)
-  }
-
-  fs.writeFileSync('./issue.md', issuePayload.body)
-  console.log('OK, wrote to ./issue.md', issuePayload)
 }
 
-fetchLatest()
+module.exports = { main, getProtocolPatches, buildIssue }
