@@ -2,7 +2,7 @@ const { WebSocket } = require('ws')
 const { randomUUID } = require('crypto')
 const { stringify } = require('json-bigint')
 const { EventEmitter } = require('node:events')
-const { parseTurnServers, parseTurnAuth, parseSignalMessage, parseJsonRpcReceiveItem } = require('./signallingCodec')
+const { parseJson, encodeSignal, parseTurnServers, parseTurnAuth, parseSignalMessage, parseJsonRpcReceiveItem } = require('./signallingCodec')
 
 const debug = require('debug')('minecraft-protocol')
 
@@ -217,7 +217,7 @@ class NethernetSignal extends EventEmitter {
   onMessage (res) {
     if (typeof res !== 'string') return debug('Received non-string message', res)
 
-    const message = JSON.parse(res)
+    const message = parseJson(res)
 
     debug('Received signalling message', message.method || message.Type)
 
@@ -242,7 +242,7 @@ class NethernetSignal extends EventEmitter {
           debug('Could not parse signal', message.Message)
           return
         }
-        signal.networkId = message.From
+        signal.networkId = String(message.From)
         this.emit('signal', signal)
         break
       }
@@ -299,26 +299,7 @@ class NethernetSignal extends EventEmitter {
   write (signal) {
     if (this.ws?.readyState !== WebSocket.OPEN) throw new Error('WebSocket not connected')
 
-    let message
-    if (this._protocol === 'jsonrpc') {
-      const innerMessage = JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'Signaling_WebRtc_v1_0',
-        params: { netherNetId: String(this.networkId), message: signal.toString() }
-      })
-      message = stringify({
-        jsonrpc: '2.0',
-        id: randomUUID(),
-        method: 'Signaling_SendClientMessage_v1_0',
-        params: {
-          toPlayerId: String(signal.networkId),
-          messageId: randomUUID(),
-          message: innerMessage
-        }
-      })
-    } else {
-      message = stringify({ Type: LegacyMessageType.Signal, To: signal.networkId, Message: signal.toString() })
-    }
+    const message = encodeSignal(signal, this.networkId, this._protocol, randomUUID(), randomUUID())
 
     debug('Sending Signal', message)
 
@@ -327,4 +308,3 @@ class NethernetSignal extends EventEmitter {
 }
 
 module.exports = { NethernetSignal }
-

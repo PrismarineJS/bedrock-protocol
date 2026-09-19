@@ -18,11 +18,16 @@ function createClient (options) {
     if (client.options.skipPing) {
       client.init()
     } else {
-      ping(client.options).then(ad => {
+      client._discoveryAbort = new AbortController()
+      ping({ ...client.options, signal: client._discoveryAbort.signal }).then(ad => {
+        if (client._closed) return
+        const gameVersion = client.options.transport === 'nethernet' ? ad.gameVersion : ad.version
+        // Version 4 advertisements do not carry a game version.
+        const advertisedVersion = (client.options.transport !== 'nethernet' || ad.version === 7)
+          ? gameVersion?.split('.').slice(0, 3).join('.')
+          : undefined
+        client.options.version = options.version ?? (Options.Versions[advertisedVersion] ? advertisedVersion : Options.CURRENT_VERSION)
         if (client.options.transport === 'raknet') {
-          const adVersion = (ad.gameVersion ?? ad.version)?.split('.').slice(0, 3).join('.') // Only 3 version units
-          client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
-
           if (ad.portV4 && client.options.followPort) {
             client.options.port = ad.portV4
           }
@@ -34,6 +39,7 @@ function createClient (options) {
 
         if (!client._closed) client.init()
       }).catch(e => {
+        if (client._closed) return
         if (!client.options.useSignalling) {
           client.onConnectionError(e)
         } else {
@@ -116,21 +122,22 @@ function connect (client) {
   }
 }
 
-async function ping ({ host, port, networkId }) {
-  if (networkId) {
-    const con = new NethernetClient({ networkId, host })
-    try {
-      return advertisement.NethernetServerAdvertisement.fromBuffer(Buffer.from(await con.ping(), 'hex'))
-    } finally {
-      con.close()
-    }
-  } else {
-    const con = new RakClient({ host, port })
-    try {
-      return advertisement.fromServerName(await con.ping())
-    } finally {
-      con.close()
-    }
+async function ping ({ host, port, networkId, signal, timeout }) {
+  signal?.throwIfAborted()
+  const con = networkId ? new NethernetClient({ networkId, host }) : new RakClient({ host, port })
+  let onAbort
+  const aborted = new Promise((resolve, reject) => {
+    onAbort = () => reject(signal.reason)
+    signal?.addEventListener('abort', onAbort, { once: true })
+  })
+  try {
+    const result = await Promise.race([con.ping(timeout, { signal }), aborted])
+    return networkId
+      ? advertisement.NethernetServerAdvertisement.fromBuffer(Buffer.from(result, 'hex'))
+      : advertisement.fromServerName(result)
+  } finally {
+    signal?.removeEventListener('abort', onAbort)
+    con.close()
   }
 }
 

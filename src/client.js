@@ -277,6 +277,7 @@ class Client extends Connection {
   close () {
     if (this._closed) return
     this._closed = true
+    this._discoveryAbort?.abort(new Error('Client closed during discovery'))
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []

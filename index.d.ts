@@ -296,6 +296,6 @@ declare module 'bedrock-protocol' {
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
-  export function ping(options: { networkId: string | bigint, host?: string }): Promise<NethernetServerAdvertisement>
-  export function ping(options: { host: string, port: number }): Promise<ServerAdvertisement>
+  export function ping(options: { networkId: string | bigint, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement>
+  export function ping(options: { host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement>
 }

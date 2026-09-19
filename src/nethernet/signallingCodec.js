@@ -1,7 +1,8 @@
+const { parse: parseJson, stringify } = require('json-bigint')({ storeAsString: true })
 const { SignalStructure } = require('node-nethernet')
 
 function parseTurnServers (dataString) {
-  const data = JSON.parse(dataString)
+  const data = parseJson(dataString)
   return parseTurnAuth(data)
 }
 
@@ -17,7 +18,7 @@ function parseSignalMessage (message) {
   if (typeof message !== 'string') return null
 
   try {
-    const parsed = JSON.parse(message)
+    const parsed = parseJson(message)
     const signal = parseJsonRpcSignal(parsed)
     if (signal) return signal
   } catch {}
@@ -61,4 +62,28 @@ function parseJsonRpcReceiveItem (item) {
   return signal
 }
 
-module.exports = { parseTurnServers, parseTurnAuth, parseSignalMessage, parseJsonRpcReceiveItem }
+function encodeSignal (signal, networkId, protocol, id, messageId) {
+  if (protocol === 'jsonrpc') {
+    return stringify({
+      jsonrpc: '2.0',
+      id,
+      method: 'Signaling_SendClientMessage_v1_0',
+      params: {
+        toPlayerId: String(signal.networkId),
+        messageId,
+        message: stringify({
+          jsonrpc: '2.0',
+          method: 'Signaling_WebRtc_v1_0',
+          params: { netherNetId: String(networkId), message: signal.toString() }
+        })
+      }
+    })
+  }
+  // Legacy numeric network IDs are JSON integers on the wire, but strings
+  // internally so they never pass through an imprecise JavaScript Number.
+  const destination = String(signal.networkId)
+  const to = /^\d+$/.test(destination) ? BigInt(destination) : destination
+  return stringify({ Type: 1, To: to, Message: signal.toString() })
+}
+
+module.exports = { parseJson, encodeSignal, parseTurnServers, parseTurnAuth, parseSignalMessage, parseJsonRpcReceiveItem }

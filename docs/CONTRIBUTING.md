@@ -170,3 +170,40 @@ Custom ProtoDef types can be inlined as JSON:
 ```yml
 string: ["pstring",{"countType":"varint"}]
 ```
+
+### Nethernet modules and transport adapters
+
+`src/nethernet/` groups the WebRTC transport adapter (`index.js`), advertisement
+schemas (`advertisement.json`) and public wrapper (`advertisement.js`), signalling
+connection (`signalling.js`), pure signalling message conversions (`signallingCodec.js`),
+and lifecycle cleanup (`cleanup.js`). `src/xsapi/` owns Xbox session APIs and HTTP requests.
+The public advertisement export also remains available from `src/server/advertisement.js`.
+
+Use ProtoDef for advertisement serialization. The small validation wrappers constrain its
+varints to the advertisement's 32-bit wire format. Keep captured packets as fixtures and test
+malformed input as well as round trips. Version 4 permits missing trailing flag bytes; this is
+handled separately from its required schema fields. Do not treat future layout versions as v7.
+
+Transport adapters bridge backend events to the following shared interface:
+
+| Interface | Contract |
+| --- | --- |
+| Client `connect()` | Start immediately when called; may return a promise. Callers handle both synchronous errors and promise rejections. |
+| `sendReliable(buffer, immediate?)` | Send one Minecraft batch reliably and in order. `immediate` is a RakNet scheduling hint. |
+| Client `onConnected()` | Report an established transport before delivering application packets. |
+| Client `onEncapsulated({ buffer }, address)` | Deliver a complete batch; preserve its bytes. |
+| Client `onCloseConnection(reason)` | Report a closed peer connection. |
+| Server `listen()` | Resolve once the transport is bound. |
+| Server `onOpenConnection(connection)` | Provide `address`, `sendReliable()`, and `close()` on the connection. |
+| Server `onCloseConnection({ address }, reason)` | Identify the same connection key used by `onOpenConnection`. |
+| Server `onEncapsulated(buffer, address)` | Deliver a batch keyed to that connection. |
+| Server `updateAdvertisement()` | Refresh discovery data from `server.getAdvertisement()`. |
+| `onError(error)` | Forward backend failures to the owner; do not throw from backend event callbacks. |
+| `close()` | Release resources and cancel pending work. The owning client/server coordinates idempotent shutdown. |
+
+Discovery requests must register listeners before sending, match the requested network ID,
+and remove listeners on success, failure, timeout, or cancellation. Signalling JSON uses
+lossless parsing: network IDs are strings internally and retain the appropriate numeric/string
+wire representation for each signalling protocol. Xbox HTTP requests have a 15-second default
+deadline covering authentication, fetch, and response-body reading; session shutdown cancels
+outstanding requests before attempting to leave the session with its own bounded request.

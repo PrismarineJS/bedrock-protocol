@@ -19,6 +19,10 @@ class Server extends EventEmitter {
     if (this.options.transport === 'nethernet') {
       this.transportServer = require('./nethernet').NethernetServer
       this.advertisement = new NethernetServerAdvertisement(this.options.motd, this.options.version)
+      // Online credentials remain valid in offline mode; self-signed logins
+      // are only accepted when verification is disabled.
+      this.advertisement.acceptsOnlineAuth = true
+      this.advertisement.acceptsSelfSignedAuth = this.options.offline === true
       this.batchHeader = null
       this.disableEncryption = true
       this.nethernet = {}

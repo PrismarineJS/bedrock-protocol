@@ -290,10 +290,15 @@ const client = bedrock.createClient({
 client.on('error', console.error)
 ```
 
-Provide the target game version for Nethernet connections. Use `ping({ networkId, host })`
-for LAN discovery; it returns a `NethernetServerAdvertisement`. Its `version` is the discovery
+Version 7 LAN advertisements select a supported game version automatically, unless `version`
+is explicitly supplied. Version 4 advertisements have no game version; connections without
+an explicit version use the library default. Use `ping({ networkId, host, timeout, signal })`
+for LAN discovery (`timeout` in milliseconds and `signal` as an optional AbortSignal); it returns a `NethernetServerAdvertisement`. Its `version` is the discovery
 layout number (4 or 7), and `gameVersion` is the Minecraft version. The exported class supports
-`fromBuffer(buffer)` and `toBuffer()` for binary advertisements.
+`fromBuffer(buffer)` and `toBuffer()` for binary advertisements. Only layouts 4 and 7 are
+supported; malformed lengths, overflowing integers, and trailing data are rejected. Version 4
+MOTD and world names must each fit in 255 UTF-8 bytes. Server advertisements reflect whether
+self-signed logins are permitted by the `offline` option.
 
 For Realms, use the existing `realms` options. The join response automatically selects the
 transport, network ID, and regional signalling endpoint:

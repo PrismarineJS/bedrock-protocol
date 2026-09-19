@@ -281,7 +281,7 @@ describe('Nethernet signalling lifecycle', () => {
         signal.onMessage(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { ok: true } }))
       }
     }
-    assert.deepStrictEqual(await signal._request('test', {}), { ok: true })
+    assert.strictEqual((await signal._request('test', {})).ok, true)
     await signal.destroy()
   })
 

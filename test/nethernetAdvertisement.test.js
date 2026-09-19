@@ -83,5 +83,4 @@ describe('nethernet advertisement', () => {
       assert.throws(() => new NethernetServerAdvertisement({ playerCount }).toBuffer(), /32-bit/)
     }
   })
-
 })

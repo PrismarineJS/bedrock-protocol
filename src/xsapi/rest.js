@@ -1,5 +1,4 @@
-const { stringify } = require('json-bigint')
-const { checkStatus } = require('../datatypes/util')
+const { requestJson } = require('./http')
 
 const SessionConfig = {
   MinecraftTitleID: '896928775',
@@ -47,6 +46,7 @@ class Rest {
   constructor (authflow, options = {}) {
     this.authflow = authflow
     this.options = options
+    this.requests = new Set()
   }
 
   async get (url, config = {}) {
@@ -66,23 +66,17 @@ class Rest {
   }
 
   async _request (method, config) {
-    const auth = await this.authflow.getXboxToken('http://xboxlive.com')
-
-    const payload = {
-      method,
-      url: config.url,
-      headers: {
-        authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
-        'accept-language': 'en-US',
-        ...config.headers
-      },
-      data: undefined
+    const controller = new AbortController()
+    this.requests.add(controller)
+    try {
+      return await requestJson(this.authflow, method, config, controller, this.options.timeout)
+    } finally {
+      this.requests.delete(controller)
     }
+  }
 
-    if (config.contractVersion) payload.headers['x-xbl-contract-version'] = config.contractVersion
-    if (config.data) payload.body = stringify(config.data)
-
-    return fetch(payload.url, payload).then(checkStatus)
+  abortPending () {
+    for (const controller of this.requests) controller.abort(new Error('Xbox request cancelled'))
   }
 
   async getProfile (input) {
