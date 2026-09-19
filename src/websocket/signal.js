@@ -1,7 +1,7 @@
 const { WebSocket } = require('ws')
 const { randomUUID } = require('crypto')
 const { stringify } = require('json-bigint')
-const { once, EventEmitter } = require('node:events')
+const { EventEmitter } = require('node:events')
 const { SignalStructure } = require('node-nethernet')
 
 const debug = require('debug')('minecraft-protocol')
@@ -20,6 +20,9 @@ class NethernetSignal extends EventEmitter {
     this.authflow = authflow
     this.version = version
     this.host = options.host || null
+    this.timeout = options.timeout ?? 15000
+    this._closed = false
+    this._generation = 0
 
     this._protocol = options.protocol || 'legacy'
     this._triedJsonRpc = this._protocol === 'jsonrpc'
@@ -29,43 +32,76 @@ class NethernetSignal extends EventEmitter {
     this.pingInterval = null
     this.retryCount = 0
     this._pendingRequests = new Map()
+    this.on('credentials', () => clearTimeout(this._reconnectTimer))
   }
 
-  async connect () {
-    if (this.ws?.readyState === WebSocket.OPEN) throw new Error('Already connected signaling server')
-    await this.init()
-    await once(this, 'credentials')
-  }
-
-  async destroy (resume = false) {
-    debug('Disconnecting from Signal')
-
-    if (this.pingInterval) {
-      clearInterval(this.pingInterval)
-      this.pingInterval = null
-    }
-
-    if (this.ws) {
-      this.ws.onmessage = null
-      this.ws.onclose = null
-
-      if (this.ws.readyState === WebSocket.OPEN) {
-        await new Promise(resolve => {
-          this.ws.onclose = resolve
-          this.ws.close(1000, 'Normal Closure')
-        })
+  connect () {
+    if (this._closed) return Promise.reject(new Error('Signalling is closed'))
+    if (this._connecting || this.ws) return Promise.reject(new Error('Already connecting to signalling server'))
+    this._connecting = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => this.fail(new Error('Signalling connection timed out')), this.timeout)
+      const onCredentials = () => {
+        finish()
+        resolve()
       }
+      const finish = () => {
+        clearTimeout(timer)
+        this.removeListener('credentials', onCredentials)
+        this._rejectConnect = null
+      }
+      this._rejectConnect = error => { finish(); reject(error) }
+      this.once('credentials', onCredentials)
+    })
+    this.init().catch(error => this.fail(error))
+    return this._connecting
+  }
 
-      this.ws.onerror = null
+  disposeSocket () {
+    ++this._generation
+    clearTimeout(this._reconnectTimer)
+    clearInterval(this.pingInterval)
+    this.pingInterval = null
+    const ws = this.ws
+    this.ws = null
+    if (ws) {
+      ws.onopen = null
+      ws.onmessage = null
+      ws.onclose = null
+      // terminate() on a connecting ws emits an error before closing.
+      ws.onerror = () => {}
+      if (ws.readyState !== WebSocket.CLOSED) ws.terminate()
     }
+    for (const pending of this._pendingRequests.values()) pending.reject(new Error('Signalling connection closed'))
+    this._pendingRequests.clear()
+  }
 
-    if (resume) return this.init()
+  async destroy () {
+    if (this._closed) return
+    this._closed = true
+    this._rejectConnect?.(new Error('Signalling connection cancelled'))
+    this.disposeSocket()
+  }
+
+  fail (error) {
+    if (this._closed) return
+    const connecting = Boolean(this._rejectConnect)
+    this._rejectConnect?.(error)
+    this.destroy()
+    if (!connecting) this.emit('error', error)
+  }
+
+  restart () {
+    this.disposeSocket()
+    this.credentials = null
+    this._reconnectTimer = setTimeout(() => this.fail(new Error('Signalling reconnect timed out')), this.timeout)
+    this.init().catch(error => this.fail(error))
   }
 
   async init () {
+    const generation = this._generation
     const xbl = await this.authflow.getMinecraftBedrockServicesToken({ version: this.version })
 
-    debug('Fetched XBL Token', xbl)
+    if (this._closed || generation !== this._generation) return
 
     const signalHost = this.host || 'signal.franchise.minecraft-services.net'
 
@@ -84,7 +120,13 @@ class NethernetSignal extends EventEmitter {
     ws.onopen = () => this.onOpen()
     ws.onclose = (event) => this.onClose(event.code, event.reason)
     ws.onerror = (event) => this.onError(event)
-    ws.onmessage = (event) => this.onMessage(event.data)
+    ws.onmessage = (event) => {
+      try {
+        this.onMessage(event.data)
+      } catch (error) {
+        this.fail(error)
+      }
+    }
     this.ws = ws
   }
 
@@ -92,9 +134,9 @@ class NethernetSignal extends EventEmitter {
     debug('Connected to Signal')
 
     if (this._protocol === 'jsonrpc') {
-      this._requestTurnAuth().catch(err => {
-        debug('TURN auth request failed', err)
-        this.emit('error', err)
+      const generation = this._generation
+      this._requestTurnAuth().catch(error => {
+        if (generation === this._generation) this.fail(error)
       })
 
       this.pingInterval = setInterval(() => {
@@ -112,15 +154,15 @@ class NethernetSignal extends EventEmitter {
   }
 
   async _requestTurnAuth () {
+    const generation = this._generation
     const result = await this._request('Signaling_TurnAuth_v1_0', {})
+    if (this._closed || generation !== this._generation) return
     this.credentials = parseTurnAuth(result)
     this.emit('credentials', this.credentials)
   }
 
   _request (method, params) {
     const id = randomUUID()
-    this.ws.send(stringify({ jsonrpc: '2.0', id, method, params }))
-
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         this._pendingRequests.delete(id)
@@ -131,21 +173,30 @@ class NethernetSignal extends EventEmitter {
         resolve (value) { clearTimeout(timeout); resolve(value) },
         reject (error) { clearTimeout(timeout); reject(error) }
       })
+      try {
+        if (this.ws?.readyState !== WebSocket.OPEN) throw new Error('WebSocket not connected')
+        this.ws.send(stringify({ jsonrpc: '2.0', id, method, params }))
+      } catch (error) {
+        this._pendingRequests.get(id).reject(error)
+        this._pendingRequests.delete(id)
+      }
     })
   }
 
   onError (err) {
-    debug('Signal Error', err)
+    // ws follows errors with a close event, where fallback/retry is handled.
+    debug('Signal Error', err.message)
   }
 
   onClose (code, reason) {
+    if (this._closed) return
     debug(`Signal Disconnected with code ${code} and reason ${reason}`)
 
     if (!this.credentials && !this._triedJsonRpc) {
       debug('Failed legacy connection, trying JSONRPC protocol')
       this._triedJsonRpc = true
       this._protocol = 'jsonrpc'
-      this.destroy(true)
+      this.restart()
       return
     }
 
@@ -154,11 +205,12 @@ class NethernetSignal extends EventEmitter {
 
       if (this.retryCount < 5) {
         this.retryCount++
-        this.destroy(true)
+        this.restart()
       } else {
-        this.destroy()
-        throw new Error('Signal Connection Closed Unexpectedly')
+        this.fail(new Error('Signal connection closed unexpectedly'))
       }
+    } else {
+      this.fail(new Error(`Signal connection closed (${code}): ${reason}`))
     }
   }
 
@@ -167,7 +219,7 @@ class NethernetSignal extends EventEmitter {
 
     const message = JSON.parse(res)
 
-    debug('Recieved message', message)
+    debug('Received signalling message', message.method || message.Type)
 
     if (message.jsonrpc) {
       this._onJsonRpcMessage(message)
@@ -245,7 +297,7 @@ class NethernetSignal extends EventEmitter {
   }
 
   write (signal) {
-    if (!this.ws) throw new Error('WebSocket not connected')
+    if (this.ws?.readyState !== WebSocket.OPEN) throw new Error('WebSocket not connected')
 
     let message
     if (this._protocol === 'jsonrpc') {

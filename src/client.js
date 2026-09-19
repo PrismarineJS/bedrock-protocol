@@ -10,6 +10,7 @@ const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
 const { NethernetSignal } = require('./websocket/signal')
+const { closeNethernet } = require('./nethernetCleanup')
 
 const debugging = false
 
@@ -20,6 +21,7 @@ class Client extends Connection {
   /** @param {{ version: number, host: string, port: number }} options */
   constructor (options) {
     super()
+    this._closed = false
     this.options = { ...Options.defaultOptions, ...options }
 
     if (this.options.transport === 'nethernet') {
@@ -45,6 +47,7 @@ class Client extends Connection {
   }
 
   init () {
+    if (this._closed) return
     this.validateOptions()
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
@@ -71,6 +74,7 @@ class Client extends Connection {
       this.disableEncryption = false
     }
 
+    this.connection.onError = error => this.onConnectionError(error)
     this.emit('connect_allowed')
   }
 
@@ -89,24 +93,31 @@ class Client extends Connection {
 
   connect () {
     if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
-    this.on('session', (sessionData) => {
+    if (this._closed) throw new Error('Client is closed')
+    this.once('session', (sessionData) => {
+      if (this._closed) return
       if (this.options.transport === 'nethernet' && this.options.useSignalling) {
         this.nethernet.signalling = new NethernetSignal(
           this.connection.nethernet.networkId,
           this.options.authflow,
           this.options.version,
-          { protocol: this.options._signallingProtocol, host: this.options._signallingHost }
+          { protocol: this.options._signallingProtocol, host: this.options._signallingHost, timeout: this.options.signallingTimeout }
         )
-
-        this.nethernet.signalling.connect()
 
         this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
 
-        this.nethernet.signalling.on('signal', signal => this.connection.nethernet.handleSignal(signal))
+        this.nethernet.signalling.on('signal', signal => {
+          Promise.resolve().then(() => {
+            if (!this._closed) return this.connection.nethernet.handleSignal(signal)
+          }).catch(error => this.onConnectionError(error))
+        })
         this.nethernet.signalling.on('credentials', (credentials) => {
           this.connection.nethernet.credentials = credentials
-          this._connect(sessionData)
         })
+        this.nethernet.signalling.on('error', error => this.onConnectionError(error))
+        this.nethernet.signalling.connect()
+          .then(() => { if (!this._closed) this._connect(sessionData) })
+          .catch(error => this.onConnectionError(error))
       } else {
         this._connect(sessionData)
       }
@@ -154,7 +165,8 @@ class Client extends Connection {
     }
   }
 
-  _connect = async (sessionData) => {
+  _connect = (sessionData) => {
+    if (this._closed) return
     debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
     this.connection.onConnected = () => {
       this.status = ClientStatus.Connecting
@@ -169,12 +181,13 @@ class Client extends Connection {
       this.close()
     }
     this.connection.onEncapsulated = this.onEncapsulated
-    this.connection.connect()
+    Promise.resolve().then(() => {
+      if (!this._closed) return this.connection.connect()
+    }).catch(error => this.onConnectionError(error))
 
     this.connectTimeout = setTimeout(() => {
       if (this.status === ClientStatus.Disconnected) {
-        this.connection.close()
-        this.emit('error', Error('Connect timed out'))
+        this.onConnectionError(Error('Connect timed out'))
       }
     }, this.options.connectTimeout || 9000)
   }
@@ -248,18 +261,31 @@ class Client extends Connection {
     this.close(reason)
   }
 
-  close () {
-    if (this.status !== ClientStatus.Disconnected) {
-      this.emit('close') // Emit close once
-      debug('Client closed!')
+  onConnectionError (error) {
+    if (this._closed) return
+    try {
+      this.emit('error', error)
+    } finally {
+      this.close()
     }
+  }
+
+  close () {
+    if (this._closed) return
+    this._closed = true
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []
     this.q2 = []
-    this.connection?.close()
-    this.removeAllListeners()
     this.status = ClientStatus.Disconnected
+    this._nethernetCleanup = closeNethernet(this.nethernet)
+    try {
+      this.connection?.close()
+      this.emit('close')
+      debug('Client closed!')
+    } finally {
+      this.removeAllListeners()
+    }
   }
 
   readPacket (packet) {

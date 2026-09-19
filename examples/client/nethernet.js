@@ -23,7 +23,7 @@ async function pickSession (availableSessions) {
         resolve(selectedSession)
       } else {
         console.log('Invalid selection. Please try again.')
-        resolve(pickSession())
+        resolve(pickSession(availableSessions))
       }
 
       rl.close()
@@ -33,6 +33,7 @@ async function pickSession (availableSessions) {
 
 const client = createClient({
   transport: 'nethernet', // Use the Nethernet transport
+  useSignalling: true,
   world: {
     pickSession
   }
@@ -40,6 +41,6 @@ const client = createClient({
 
 let ix = 0
 client.on('packet', (args) => {
-  console.log(`Packet ${ix} recieved`)
+  console.log(`Packet ${ix} received`)
   ix++
 })

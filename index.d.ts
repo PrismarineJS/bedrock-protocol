@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import { Realm } from 'prismarine-realms'
-import { ServerDeviceCodeResponse } from 'prismarine-auth'
+import { Authflow, ServerDeviceCodeResponse } from 'prismarine-auth'
 
 declare module 'bedrock-protocol' {
   type Version = string
@@ -10,12 +10,21 @@ declare module 'bedrock-protocol' {
     version?: Version
     // For the client, the host of the server to connect to (default: 127.0.0.1)
     // For the server, the host to bind to (default: 0.0.0.0)
-    host: string
+    host?: string
     // The port to connect or bind to, default: 19132
-    port: number
+    port?: number
     // For the client, if we should login with Microsoft/Xbox Live.
     // For the server, if we should verify client's authentication with Xbox Live.
     offline?: boolean
+
+    // RakNet is the default; Nethernet uses WebRTC and a network ID.
+    transport?: 'raknet' | 'nethernet'
+    networkId?: string | bigint
+    useSignalling?: boolean
+    // Maximum time to wait for signalling credentials, in milliseconds (default: 15000).
+    signallingTimeout?: number
+    // An existing prismarine-auth flow can be shared with signalling and Realms.
+    authflow?: Authflow
 
     // Which raknet backend to use
     raknetBackend?: 'jsp-raknet' | 'raknet-native' | 'raknet-node'
@@ -29,7 +38,7 @@ declare module 'bedrock-protocol' {
 
   export interface ClientOptions extends Options {
     // The username to connect to the server as
-    username: string
+    username?: string
     // The view distance in chunks
     viewDistance?: number
     // Specifies which game edition to sign in as. Optional, but some servers verify this.
@@ -46,6 +55,7 @@ declare module 'bedrock-protocol' {
     conLog?: any
     // used to join a Realm instead of supplying a host/port
     realms?: RealmsOptions
+    world?: WorldOptions
     // the path to store authentication caches, defaults to .minecraft
     profilesFolder?: string | false
     // Called when microsoft authorization is needed when not provided it will the information log to the console instead
@@ -53,6 +63,14 @@ declare module 'bedrock-protocol' {
   }
 
   export interface ServerOptions extends Options {
+    // Account configuration for hosting a world through Xbox signalling.
+    username?: string
+    profilesFolder?: string | false
+    authTitle?: string
+    deviceOS?: number
+    deviceType?: string
+    flow?: string
+    onMsaCode?: (data: ServerDeviceCodeResponse) => void
     // The maximum number of players allowed on the server at any time.
     maxPlayers?: number
     motd?: {
@@ -61,7 +79,7 @@ declare module 'bedrock-protocol' {
       // The sub-header for the MOTD shown in the server list.
       levelName?: string
     }
-    advertisementFn?: () => ServerAdvertisement
+    advertisementFn?: () => ServerAdvertisement | NethernetServerAdvertisement
   }
 
   enum ClientStatus {
@@ -181,14 +199,18 @@ declare module 'bedrock-protocol' {
     // Toggle packet logging.
     logging?: boolean
     // Skip authentication for connecting clients?
-    offline?: false
+    offline?: boolean
     // Specifies which game edition to sign in as to the destination server. Optional, but some servers verify this.
     authTitle?: string
     // Where to proxy requests to.
     destination: {
       realms?: RealmsOptions
-      host: string
-      port: number
+      host?: string
+      port?: number
+      transport?: 'raknet' | 'nethernet'
+      networkId?: string | bigint
+      useSignalling?: boolean
+      signallingTimeout?: number
       // Skip authentication connecting to the remote server?
       offline?: boolean
     }
@@ -230,20 +252,50 @@ declare module 'bedrock-protocol' {
     constructor(obj: object, port: number, version: string)
   }
 
+  export class NethernetServerAdvertisement {
+    // Discovery layout version (4 or 7), distinct from gameVersion.
+    version: number
+    gameVersion: string
+    protocol: number
+    motd: string
+    levelName: string
+    gamemodeId: number
+    playerCount: number
+    playersOnline: number
+    playersMax: number
+    isEditorWorld: boolean
+    hardcore: boolean
+    acceptsOnlineAuth: boolean
+    acceptsSelfSignedAuth: boolean
+    nonce: string
+    connectionType: number
+    unknown1: number
+    unknown2: number
+
+    constructor(obj?: string | Partial<NethernetServerAdvertisement>, gameVersion?: string)
+    static fromBuffer(buffer: Buffer): NethernetServerAdvertisement
+    toBuffer(): Buffer
+  }
+
+  export interface WorldSession {
+    sessionRef: { name: string, scid?: string, templateName?: string }
+    customProperties: { hostName?: string, worldName?: string, version?: string, [key: string]: unknown }
+    [key: string]: unknown
+  }
+
+  export interface WorldOptions {
+    pickSession: (sessions: WorldSession[]) => WorldSession | Promise<WorldSession>
+  }
+
   export interface RealmsOptions {
     realmId?: string
     realmInvite?: string
-    pickRealm?: (realms: Realm[]) => Realm
+    pickRealm?: (realms: Realm[]) => Realm | Promise<Realm>
   }
 
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
-  export function ping({
-    host,
-    port
-  }: {
-    host: string
-    port: number
-  }): Promise<ServerAdvertisement>
+  export function ping(options: { networkId: string | bigint, host?: string }): Promise<NethernetServerAdvertisement>
+  export function ping(options: { host: string, port: number }): Promise<ServerAdvertisement>
 }

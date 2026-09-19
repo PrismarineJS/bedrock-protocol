@@ -194,8 +194,9 @@ class Relay extends Server {
       realms: this.options.destination.realms,
       host: this.options.destination.host,
       port: this.options.destination.port,
-      transport: this.options.destination.transport,
+      transport: this.options.destination.transport ?? 'raknet',
       networkId: this.options.destination.networkId,
+      signallingTimeout: this.options.destination.signallingTimeout,
       useSignalling: this.options.destination.useSignalling ?? false,
       batchingInterval: this.options.batchingInterval,
       onMsaCode: (code) => {
@@ -268,7 +269,10 @@ class Relay extends Server {
       this.clients[conn.address] = player
       this.emit('connect', player)
       player.once('join', () => {
-        this.openUpstreamConnection(player, conn.address)
+        this.openUpstreamConnection(player, conn.address).catch(error => {
+          debug('Could not open upstream connection', error)
+          player.disconnect('Could not connect to upstream server')
+        })
       })
       player.on('close', (reason) => {
         this.conLog('player disconnected', conn.address, reason)
@@ -283,7 +287,7 @@ class Relay extends Server {
     for (const [, v] of this.upstreams) {
       v.close(...a)
     }
-    super.close(...a)
+    return super.close(...a)
   }
 }
 

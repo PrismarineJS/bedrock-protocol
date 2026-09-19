@@ -6,6 +6,7 @@ class NethernetClient {
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
+    this.onError = () => { }
 
     this.nethernet = new Client(
       options.networkId,
@@ -20,8 +21,10 @@ class NethernetClient {
       this.onConnected(client)
     })
 
-    this.nethernet.on('disconnect', (reason) => {
-      this.onCloseConnection(reason)
+    this.nethernet.on('error', error => this.onError(error))
+
+    this.nethernet.on('disconnect', (address, reason) => {
+      this.onCloseConnection(reason ?? address)
     })
 
     this.nethernet.on('encapsulated', (data, address) => {
@@ -56,12 +59,14 @@ class NethernetServer {
     this.onOpenConnection = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
+    this.onError = () => { }
     this.onClose = () => { }
     this.updateAdvertisement = () => {
       this.nethernet.setAdvertisement(server.getAdvertisement().toBuffer())
     }
 
     this.nethernet = new Server({ ...options })
+    this.nethernet.on('error', error => this.onError(error))
 
     this.nethernet.on('openConnection', (client) => {
       client.sendReliable = function (buffer) {
@@ -71,7 +76,7 @@ class NethernetServer {
     })
 
     this.nethernet.on('closeConnection', (address, reason) => {
-      this.onCloseConnection(address, reason)
+      this.onCloseConnection({ address }, reason)
     })
 
     this.nethernet.on('encapsulated', (data, address) => {
