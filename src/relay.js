@@ -194,6 +194,9 @@ class Relay extends Server {
       realms: this.options.destination.realms,
       host: this.options.destination.host,
       port: this.options.destination.port,
+      transport: this.options.destination.transport,
+      networkId: this.options.destination.networkId,
+      useSignalling: this.options.destination.useSignalling ?? false,
       batchingInterval: this.options.batchingInterval,
       onMsaCode: (code) => {
         if (this.options.onMsaCode) {
