@@ -261,3 +261,58 @@ relay.on('connect', player => {
 ```
 
 'Relay' emits 'clientbound' and 'serverbound' events, along with the data for the outgoing packet that can be modified. You can send a packet to the client with `player.queue()` or to the backend server with `player.upstream.queue()`.
+
+### Nethernet transport
+
+Clients, servers, and relay destinations accept `transport: 'nethernet'`. The default remains
+`'raknet'`. Nethernet carries Minecraft packets over WebRTC; the WebRTC connection provides
+transport encryption, while Minecraft authentication still follows the `offline` option.
+
+| Option | Description |
+| --- | --- |
+| `networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createServer` generates an ID when omitted. |
+| `host` | For a Nethernet client, the address for LAN discovery (default `255.255.255.255`); for a server, the local bind address. |
+| `useSignalling` | Use authenticated Minecraft services signalling instead of LAN signalling. Defaults to false. Hosting with this enabled publishes an Xbox world session. |
+| `signallingTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
+| `authflow` | Optional existing `prismarine-auth` `Authflow`, shared by Minecraft authentication, Realms, and signalling. |
+
+LAN example:
+
+```js
+const client = bedrock.createClient({
+  transport: 'nethernet',
+  host: '192.168.1.10',
+  networkId: 123456789n,
+  version: '1.26.45',
+  username: 'Player',
+  offline: true // only when the target server permits offline authentication
+})
+client.on('error', console.error)
+```
+
+Provide the target game version for Nethernet connections. Use `ping({ networkId, host })`
+for LAN discovery; it returns a `NethernetServerAdvertisement`. Its `version` is the discovery
+layout number (4 or 7), and `gameVersion` is the Minecraft version. The exported class supports
+`fromBuffer(buffer)` and `toBuffer()` for binary advertisements.
+
+For Realms, use the existing `realms` options. The join response automatically selects the
+transport, network ID, and regional signalling endpoint:
+
+```js
+const client = bedrock.createClient({ realms: { realmId: '123456' } })
+client.on('error', console.error)
+```
+
+To select a friend's Xbox world, provide `world: { pickSession }`. The callback receives the
+available sessions and returns one, synchronously or asynchronously. This selects Nethernet
+and authenticated signalling automatically. See `examples/client/nethernet.js`.
+
+Relay destinations accept `transport`, `networkId`, `host`, `useSignalling`, and
+`signallingTimeout`, as well as the existing `realms` options. An omitted transport retains
+RakNet behavior. For a Nethernet server published to friends, see `examples/server/nethernet.js`;
+account configuration includes `username`, `profilesFolder`, `authflow`, and `onMsaCode`.
+
+Connection and signalling failures emit `error` on the owning client/server and close its
+resources. Closing a client or server also closes its signalling connection and leaves its Xbox
+session, including when closed during startup. If an Xbox session can no longer be maintained,
+the owner emits an error and closes; it does not silently create or join a different session.

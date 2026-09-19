@@ -48,17 +48,24 @@ async function serverAuthenticate (server, options) {
     }
   })
 
+  server.nethernet.session.on('error', error => server.onConnectionError(error))
   await server.nethernet.session.createSession(options.networkId)
 }
 
 async function worldAuthenticate (client, options) {
   validateOptions(options)
 
-  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+  options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  options.transport = 'nethernet'
+  options.useSignalling = true
+  client.nethernet ??= {}
 
   const xbl = await options.authflow.getXboxToken()
+  if (client._closed) return
 
   client.nethernet.session = new SessionDirectory(options.authflow, {})
+  client.nethernet.session.on('error', error => client.onConnectionError(error))
 
   const getSessions = async () => {
     const sessions = await client.nethernet.session.host.rest.getSessions(xbl.userXUID)
@@ -77,9 +84,10 @@ async function worldAuthenticate (client, options) {
 
   if (!world) throw Error('Couldn\'t find a session to connect to.')
 
+  if (client._closed) return
   const session = await client.nethernet.session.joinSession(world.sessionRef.name)
 
-  const networkId = session.properties.custom.SupportedConnections.find(e => e.ConnectionType === 3).NetherNetId
+  const networkId = session.properties?.custom?.SupportedConnections?.find(e => e.ConnectionType === 3)?.NetherNetId
 
   if (!networkId) throw Error('Couldn\'t find a Nethernet ID to connect to.')
 
@@ -89,9 +97,10 @@ async function worldAuthenticate (client, options) {
 async function realmAuthenticate (options) {
   validateOptions(options)
 
-  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+  options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
-  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: options.version })
+  const version = options.version.startsWith('1.') ? options.version : `1.${options.version}`
+  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: version })
 
   const getRealms = async () => {
     const realms = await api.getRealms()
@@ -128,8 +137,13 @@ async function realmAuthenticate (options) {
     const region = join.sessionRegionData?.regionName
     if (region) options._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
   } else {
-    options.host = join.host
-    options.port = join.port
+    const address = join.address?.match(/^(.*):(\d+)$/)
+    if (!address) throw new Error('Invalid RakNet Realm address')
+    options.transport = 'raknet'
+    options.host = address[1].replace(/^\[|\]$/g, '')
+    options.port = Number(address[2])
+    delete options.networkId
+    options.useSignalling = false
   }
 }
 
@@ -168,8 +182,7 @@ async function authenticate (client, options) {
 
     return postAuthenticate(client, profile, loginData)
   } catch (err) {
-    console.error(err)
-    client.emit('error', err)
+    client.onConnectionError(err)
   }
 }
 
@@ -188,6 +201,7 @@ function createOfflineSession (client, options) {
 }
 
 function postAuthenticate (client, profile, auth = {}) {
+  if (client._closed) return
   client.profile = profile
   client.username = profile.name
   client.accessToken = auth.chain || []

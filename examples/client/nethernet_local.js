@@ -16,7 +16,7 @@ c.once('pong', (pong) => {
 
   let ix = 0
   client.on('packet', (args) => {
-    console.log(`Packet ${ix} recieved`)
+    console.log(`Packet ${ix} received`)
     ix++
   })
 })

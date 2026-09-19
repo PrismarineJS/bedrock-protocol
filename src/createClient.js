@@ -13,6 +13,7 @@ function createClient (options) {
   const client = new Client({ port: 19132, followPort: !options.realms, ...options, delayedInit: true })
 
   function onServerInfo () {
+    if (client._closed) return
     client.on('connect_allowed', () => connect(client))
     if (client.options.skipPing) {
       client.init()
@@ -31,22 +32,22 @@ function createClient (options) {
           client.conLog?.(`Connecting to ${client.options.networkId} ${ad.motd} (${ad.levelName})`)
         }
 
-        client.init()
+        if (!client._closed) client.init()
       }).catch(e => {
         if (!client.options.useSignalling) {
-          client.emit('error', e)
+          client.onConnectionError(e)
         } else {
           client.conLog?.('Could not ping server through local signalling, trying to connect over franchise signalling instead')
-          client.init()
+          if (!client._closed) client.init()
         }
       })
     }
   }
 
   if (options.world) {
-    auth.worldAuthenticate(client, client.options).then(onServerInfo).catch(e => client.emit('error', e))
+    auth.worldAuthenticate(client, client.options).then(onServerInfo).catch(e => client.onConnectionError(e))
   } else if (options.realms) {
-    auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.emit('error', e))
+    auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.onConnectionError(e))
   } else {
     onServerInfo()
   }
@@ -54,7 +55,7 @@ function createClient (options) {
 }
 
 /** @param {Client} client */
-async function connect (client) {
+function connect (client) {
   // Actually connect
   client.connect()
 
@@ -113,11 +114,6 @@ async function connect (client) {
       clearInterval(keepalive)
     })
   }
-
-  client.once('close', () => {
-    if (client.nethernet.session) client.nethernet.session.end()
-    if (client.nethernet.signalling) client.nethernet.signalling.destroy()
-  })
 }
 
 async function ping ({ host, port, networkId }) {

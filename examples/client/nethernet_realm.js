@@ -3,10 +3,8 @@ process.env.DEBUG = 'minecraft-protocol'
 const { createClient } = require('bedrock-protocol')
 
 const client = createClient({
-  transport: 'nethernet', // Use the Nethernet transport
-  useSignalling: true,
-  networkId: '<guid>',
-  skipPing: true
+  // The join response selects RakNet or Nethernet automatically.
+  realms: { realmId: process.argv[2] } // node nethernet_realm.js <realm-id>
 })
 
 client.on('text', (packet) => { // Listen for chat messages and echo them back.

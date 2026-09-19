@@ -1,4 +1,5 @@
 const { v4 } = require('uuid-1345')
+const { EventEmitter } = require('events')
 const { XboxRTA } = require('xbox-rta')
 const { Rest, Joinability, JoinabilityConfig, isXuid } = require('./rest')
 
@@ -23,19 +24,39 @@ class Host {
 
   async connect () {
     this.rta = new XboxRTA(this.authflow)
+    try {
+      this.profile = await this.rest.getProfile('me')
+      this.session.assertActive()
+      await this.rta.connect()
+      this.session.assertActive()
 
-    this.profile = await this.rest.getProfile('me')
+      const subResponse = await this.rta.subscribe('https://sessiondirectory.xboxlive.com/connections/')
+      this.session.assertActive()
+      this.connectionId = subResponse.data.ConnectionId
 
-    await this.rta.connect()
+      this.rta.on('subscribe', event => {
+        this.onSubscribe(event).catch(error => this.session.emit('error', error))
+      })
+    } finally {
+      // Authentication can finish after end(); do not leave a late socket open.
+      if (this.session._ended) await this.close()
+    }
+  }
 
-    const subResponse = await this.rta.subscribe('https://sessiondirectory.xboxlive.com/connections/')
-
-    this.connectionId = subResponse.data.ConnectionId
-
-    this.rta.on('subscribe', (event) => this.onSubscribe(event))
+  async close () {
+    const ws = this.rta?.ws
+    // xbox-rta.destroy() only closes OPEN sockets, not CONNECTING sockets.
+    if (ws?.readyState === 0) {
+      ws.onopen = null
+      ws.onclose = null
+      ws.on('error', () => {})
+      ws.terminate()
+    }
+    await this.rta?.destroy()
   }
 
   async onSubscribe (event) {
+    if (this.session._ended) return
     const connectionId = event.data?.ConnectionId
 
     if (connectionId && typeof connectionId === 'string') {
@@ -48,14 +69,17 @@ class Host {
         await this.rest.setActivity(this.session.session.name)
       } catch (e) {
         debug('Failed to update connection, session may have been abandoned', e)
-        await this.session.end(true)
+        await this.session.end()
+        this.session.emit('error', new Error('Xbox session connection was lost', { cause: e }))
       }
     }
   }
 }
 
-class SessionDirectory {
-  constructor (authflow, options) {
+class SessionDirectory extends EventEmitter {
+  constructor (authflow, options = {}) {
+    super()
+    this._ended = false
     this.options = {
       joinability: Joinability.FriendsOfFriends,
       ...options,
@@ -76,19 +100,26 @@ class SessionDirectory {
     this.session = { name: '' }
   }
 
+  assertActive () {
+    if (this._ended) throw new Error('Xbox session is closed')
+  }
+
   async joinSession (sessionName) {
+    this.assertActive()
     this.session.name = sessionName
 
     await this.host.connect()
 
     await this.host.rest.addConnection(this.session.name, this.host.profile.id, this.host.connectionId, this.host.subscriptionId)
-
+    if (this._ended) await this.host.rest.leaveSession(this.session.name)
+    this.assertActive()
     await this.host.rest.setActivity(this.session.name)
 
     return this.getSession()
   }
 
   async createSession (networkId) {
+    this.assertActive()
     this.options.networkId = networkId
 
     this.session.name = v4()
@@ -98,19 +129,23 @@ class SessionDirectory {
     await this.createAndPublishSession()
   }
 
-  async end (resume = false) {
-    if (this.host.rta) {
-      await this.host.rta.destroy()
+  end () {
+    if (this._endPromise) return this._endPromise
+    this._ended = true
+    this._endPromise = this.closeSession()
+    return this._endPromise
+  }
+
+  async closeSession () {
+    try {
+      await this.host.close()
+    } finally {
+      if (this.session.name) {
+        await this.host.rest.leaveSession(this.session.name)
+          .catch(() => { debug(`Failed to leave session ${this.session.name}`) })
+      }
     }
-
-    await this.host.rest.leaveSession(this.session.name)
-      .catch(() => { debug(`Failed to leave session ${this.session.name}`) })
-
-    debug(`Abandoned session, name: ${this.session.name} - Resume: ${resume}`)
-
-    if (resume) {
-      return this.start()
-    }
+    debug(`Abandoned session, name: ${this.session.name}`)
   }
 
   async invitePlayer (identifier) {
@@ -132,7 +167,12 @@ class SessionDirectory {
   }
 
   async updateSession (payload) {
+    this.assertActive()
     await this.host.rest.updateSession(this.session.name, payload)
+    if (this._ended) {
+      await this.host.rest.leaveSession(this.session.name)
+      this.assertActive()
+    }
   }
 
   async createAndPublishSession () {
@@ -140,6 +180,7 @@ class SessionDirectory {
 
     debug(`Created session, name: ${this.session.name}`)
 
+    this.assertActive()
     await this.host.rest.setActivity(this.session.name)
 
     const session = await this.getSession()

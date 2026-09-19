@@ -4,12 +4,14 @@ const { Player } = require('./serverPlayer')
 const { sleep } = require('./datatypes/util')
 const { ServerAdvertisement, NethernetServerAdvertisement } = require('./server/advertisement')
 const Options = require('./options')
+const { closeNethernet } = require('./nethernetCleanup')
 
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
 class Server extends EventEmitter {
   constructor (options) {
     super()
+    this._closed = false
 
     this.options = { ...Options.defaultOptions, ...options }
     this.validateOptions()
@@ -130,16 +132,22 @@ class Server extends EventEmitter {
   }
 
   async listen () {
+    if (this._closed) return
     const { host, port, maxPlayers } = this.options
     // eslint-disable-next-line new-cap
     this.transport = new this.transportServer({ host, port, networkId: this.options.networkId, maxPlayers }, this)
 
+    this.transport.onError = error => this.onConnectionError(error)
+
     try {
-      await this.transport.listen()
+      this._listenPromise = Promise.resolve(this.transport.listen())
+      await this._listenPromise
     } catch (e) {
       console.warn(`Failed to bind server on [${this.options.host}]/${this.options.port}, is the port free?`)
       throw e
     }
+
+    if (this._closed) return
 
     this.conLog('Listening on', host, port, this.options.version)
     this.transport.onOpenConnection = this.onOpenConnection
@@ -154,20 +162,40 @@ class Server extends EventEmitter {
     return { host, port }
   }
 
-  async close (disconnectReason = 'Server closed') {
-    this.emit('close', disconnectReason)
-    for (const caddr in this.clients) {
-      const client = this.clients[caddr]
-      client.disconnect(disconnectReason)
+  onConnectionError (error) {
+    if (this._closed) return
+    try {
+      this.emit('error', error)
+    } finally {
+      this.close().catch(error => debug('Server cleanup failed', error))
     }
+  }
 
+  close (disconnectReason = 'Server closed') {
+    if (this._closePromise) return this._closePromise
+    this._closed = true
+    this._closePromise = Promise.resolve().then(() => this._close(disconnectReason))
+    return this._closePromise
+  }
+
+  async _close (disconnectReason) {
+    const cleanup = closeNethernet(this.nethernet)
     clearInterval(this.serverTimer)
-    this.clients = {}
-    this.clientCount = 0
-
-    // Allow some time for client to get disconnect before closing connection.
-    await sleep(60)
-    this.transport.close()
+    try {
+      this.emit('close', disconnectReason)
+      for (const client of Object.values(this.clients)) client.disconnect(disconnectReason)
+    } finally {
+      this.clients = {}
+      this.clientCount = 0
+      // Allow the disconnect packets to reach clients before closing transport.
+      await sleep(60)
+      await this._listenPromise?.catch(() => {})
+      try {
+        this.transport?.close()
+      } finally {
+        await cleanup
+      }
+    }
   }
 }
 
