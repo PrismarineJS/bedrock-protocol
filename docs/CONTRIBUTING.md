@@ -188,7 +188,7 @@ Do not treat future layout versions as v7. See [advertisement layouts](nethernet
 
 Keep wire encoding in ProtoDef. Zod would introduce a second schema without replacing binary
 decoding; arbitrary validation metadata in the JSON needs corresponding ProtoDef support.
-The current outbound checks validate locally supplied values before encoding, not remote peers.
+Delegate field validation to ProtoDef rather than adding checks to the advertisement wrapper.
 
 The Xbox HTTP helper in `src/xsapi/http.js` is a potential extraction into `prismarine-auth`:
 it obtains an Xbox token and makes an authenticated JSON request with cancellation and a deadline.

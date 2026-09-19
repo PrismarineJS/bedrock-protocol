@@ -299,7 +299,7 @@ layout number (4 or 7), and `gameVersion` is the Minecraft version. The exported
 supported. Unknown trailing bytes are ignored. Direct `fromBuffer` calls can throw for an
 unknown layout or an unreadable required field; LAN discovery ignores those replies and
 continues waiting until a valid reply arrives, the timeout expires, or it is cancelled.
-Encoding checks string types and signed integer ranges. Version 4
+Encoding and field validation use ProtoDef's built-in types. Version 4
 MOTD and world names must each fit in 255 UTF-8 bytes. Server advertisements reflect whether
 self-signed logins are permitted by the `offline` option. See
 [advertisement layouts](nethernet-advertisements.md) for field order and version differences.

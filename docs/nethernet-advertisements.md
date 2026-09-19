@@ -54,6 +54,6 @@ later valid response to succeed. Bad replies do not extend the original timeout.
 reply arrives, `ping()` rejects normally; callers should handle that rejection (and client
 applications should register an `error` listener).
 
-Outbound validation applies to values supplied by the application. It checks string types,
-v4 string byte limits, and signed 32-bit integer ranges before writing. ProtoDef supplies the
-binary readers/writers directly; there are no advertisement-specific varint overrides.
+Encoding and field validation are delegated to ProtoDef's built-in types. This wrapper does
+not add string-type, length, integer-range, or varint checks. Invalid application values follow
+ProtoDef's behavior, which does not guarantee rejection of every out-of-range value.

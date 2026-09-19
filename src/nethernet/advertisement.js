@@ -5,11 +5,6 @@ const schemas = require('./advertisement.json')
 const proto = new ProtoDef(false)
 proto.addTypes(schemas)
 
-function typeFor (version) {
-  if (version !== 4 && version !== 7) throw new Error(`Unsupported Nethernet advertisement version: ${version}`)
-  return `advertisement_v${version}`
-}
-
 class NethernetServerAdvertisement {
   version = 7
   motd = 'Bedrock Protocol Server'
@@ -40,7 +35,7 @@ class NethernetServerAdvertisement {
 
   static fromBuffer (buffer) {
     const version = buffer.readUInt8(0)
-    const type = typeFor(version)
+    const type = `advertisement_v${version}`
     const { value, size } = proto.read(buffer, 0, type)
     // Preserve the previous decoder's tolerance for omitted v4 trailer fields.
     if (version === 4) {
@@ -56,17 +51,7 @@ class NethernetServerAdvertisement {
   }
 
   toBuffer () {
-    const type = typeFor(this.version)
-    for (const field of ['motd', 'levelName', ...(this.version === 7 ? ['gameVersion', 'nonce'] : [])]) {
-      if (typeof this[field] !== 'string') throw new TypeError(`${field} must be a string`)
-      if (this.version === 4 && Buffer.byteLength(this[field], 'utf8') > 255) throw new RangeError(`${field} exceeds the version 4 byte limit`)
-    }
-    const fields = this.version === 7
-      ? ['protocol', 'playerCount', 'playersMax', 'gamemodeId', 'connectionType']
-      : ['playerCount', 'playersMax']
-    for (const field of fields) {
-      if (!Number.isInteger(this[field]) || this[field] < -2147483648 || this[field] > 2147483647) throw new RangeError(`${field} must be a signed 32-bit integer`)
-    }
+    const type = `advertisement_v${this.version}`
     const body = proto.createPacketBuffer(type, this)
     return this.version === 4 ? Buffer.concat([body, proto.createPacketBuffer('advertisement_v4_trailer', this)]) : body
   }

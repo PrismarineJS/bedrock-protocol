@@ -46,16 +46,8 @@ describe('nethernet advertisement', () => {
     for (const version of [0, 5, 6, 8, 255]) {
       const bytes = Buffer.from(bds12651, 'hex')
       bytes[0] = version
-      assert.throws(() => NethernetServerAdvertisement.fromBuffer(bytes), /Unsupported/)
-      assert.throws(() => new NethernetServerAdvertisement({ version }).toBuffer(), /Unsupported/)
-    }
-  })
-
-  it('enforces version 4 string limits in UTF-8 bytes', () => {
-    const ad = new NethernetServerAdvertisement({ version: 4, motd: 'x'.repeat(255) })
-    assert.strictEqual(NethernetServerAdvertisement.fromBuffer(ad.toBuffer()).motd, ad.motd)
-    for (const motd of ['x'.repeat(256), 'é'.repeat(128)]) {
-      assert.throws(() => new NethernetServerAdvertisement({ version: 4, motd }).toBuffer(), /byte limit/)
+      assert.throws(() => NethernetServerAdvertisement.fromBuffer(bytes))
+      assert.throws(() => new NethernetServerAdvertisement({ version }).toBuffer())
     }
   })
 
@@ -80,12 +72,6 @@ describe('nethernet advertisement', () => {
       const bytes = new NethernetServerAdvertisement({ version }).toBuffer()
       const extended = Buffer.concat([bytes, Buffer.from([1, 2, 3, 4, 5])])
       assert.deepStrictEqual(NethernetServerAdvertisement.fromBuffer(extended).toBuffer(), bytes)
-    }
-  })
-
-  it('rejects out-of-range integers when encoding', () => {
-    for (const playerCount of [2147483648, -2147483649, 1.5, NaN]) {
-      assert.throws(() => new NethernetServerAdvertisement({ playerCount }).toBuffer(), /32-bit/)
     }
   })
 })
