@@ -140,7 +140,7 @@ class Player extends Connection {
     try {
       this.loginState.require(LoginPhase.AwaitingClientHandshake)
       if (this.status !== ClientStatus.Authenticating || (!this.encryptionEnabled && !this.disableEncryption)) {
-        throw new Error(`Client handshake arrived before encryption was enabled `)
+        throw new Error('Client handshake arrived before encryption was enabled')
       }
       this.loginState.transition(LoginPhase.Complete)
     } catch (error) {
