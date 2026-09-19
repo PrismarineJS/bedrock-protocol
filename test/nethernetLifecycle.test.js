@@ -7,7 +7,7 @@ const { createClient } = require('../src/createClient')
 const auth = require('../src/client/auth')
 const { RealmAPI } = require('prismarine-realms')
 const { NethernetSignal } = require('../src/nethernet/signalling')
-const { SessionDirectory } = require('../src/xsapi/session')
+const { SessionDirectory } = require('../src/client/xboxSession')
 const { CURRENT_VERSION } = require('../src/options')
 
 function deferred () {
@@ -207,23 +207,6 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     publication.resolve()
     await new Promise(resolve => setImmediate(resolve))
     assert.strictEqual(signals, 0)
-  })
-
-  it('terminates a lost Xbox session and reports the failure instead of calling a nonexistent restart', async () => {
-    const session = new SessionDirectory({})
-    session.session.name = 'joined-world'
-    let destroyed = false
-    let left = false
-    session.host.rta = { destroy: async () => { destroyed = true } }
-    session.host.rest.updateConnection = async () => { throw new Error('session gone') }
-    session.host.rest.leaveSession = async () => { left = true }
-    let failure
-    session.on('error', error => { failure = error })
-    await session.host.onSubscribe({ data: { ConnectionId: 'new-connection' } })
-    assert.strictEqual(destroyed, true)
-    assert.strictEqual(left, true)
-    assert.match(failure.message, /session connection was lost/)
-    await assert.rejects(session.joinSession('another-world'), /session is closed/)
   })
 })
 

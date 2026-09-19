@@ -176,7 +176,8 @@ string: ["pstring",{"countType":"varint"}]
 `src/nethernet/` groups the WebRTC transport adapter (`index.js`), advertisement
 schemas (`advertisement.json`) and public wrapper (`advertisement.js`), signalling
 connection (`signalling.js`), pure signalling message conversions (`signallingCodec.js`),
-and lifecycle cleanup (`cleanup.js`). `src/xsapi/` owns Xbox session APIs and HTTP requests.
+and lifecycle cleanup (`cleanup.js`). `src/client/xboxSession.js` builds Minecraft lobby
+properties using the experimental Xbox services API in `prismarine-auth`.
 The public advertisement export also remains available from `src/server/advertisement.js`.
 
 Use ProtoDef's built-in types for advertisement serialization. Keep captured packets as fixtures and test
@@ -190,11 +191,12 @@ Keep wire encoding in ProtoDef. Zod would introduce a second schema without repl
 decoding; arbitrary validation metadata in the JSON needs corresponding ProtoDef support.
 Delegate field validation to ProtoDef rather than adding checks to the advertisement wrapper.
 
-The Xbox HTTP helper in `src/xsapi/http.js` is a potential extraction into `prismarine-auth`:
-it obtains an Xbox token and makes an authenticated JSON request with cancellation and a deadline.
-The session directory, Minecraft lobby payloads, invitations, and session lifecycle are consumers
-of authentication, and should remain here or move to a separate Xbox services library. Moving
-the HTTP helper requires an upstream API/release; the current code uses `Authflow.getXboxToken`.
+Xbox HTTP requests, profile/session APIs, and RTA session lifecycle live in
+`prismarine-auth.experimental.xsapi`. Minecraft title configuration, world metadata and
+Nethernet connection properties stay in `src/client/xboxSession.js`. The dependency currently
+uses `PrismarineJS/prismarine-auth#feat/xbox-http-client` while the upstream PR is reviewed;
+replace it with a published version containing that API after release. See the upstream
+[experimental documentation](https://github.com/PrismarineJS/prismarine-auth/blob/feat/xbox-http-client/docs/experimental-xsapi.md).
 
 Transport adapters bridge backend events to the following shared interface:
 

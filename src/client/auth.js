@@ -4,7 +4,7 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
-const { SessionDirectory } = require('../xsapi/session')
+const { SessionDirectory } = require('./xboxSession')
 
 // BDS validates that the login DeviceOS agrees with the platform used to
 // authenticate. Values are from the protocol DeviceOS enum.
@@ -68,7 +68,7 @@ async function worldAuthenticate (client, options) {
   client.nethernet.session.on('error', error => client.onConnectionError(error))
 
   const getSessions = async () => {
-    const sessions = await client.nethernet.session.host.rest.getSessions(xbl.userXUID)
+    const sessions = await client.nethernet.session.client.getSessions(xbl.userXUID)
     debug('sessions', sessions)
     if (!sessions.length) throw Error('Couldn\'t find any sessions for the authenticated account')
     return sessions
