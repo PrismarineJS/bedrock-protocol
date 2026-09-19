@@ -68,12 +68,19 @@ describe('nethernet advertisement', () => {
     }
   })
 
-  it('rejects truncated version 7 packets and trailing data', () => {
+  it('rejects truncated version 7 packets', () => {
     const bytes = Buffer.from(bds12651, 'hex')
     for (let length = 0; length < bytes.length; length++) {
       assert.throws(() => NethernetServerAdvertisement.fromBuffer(bytes.subarray(0, length)))
     }
-    assert.throws(() => NethernetServerAdvertisement.fromBuffer(Buffer.concat([bytes, Buffer.from([0])])), /Trailing/)
+  })
+
+  it('ignores extra data after known fields in both layouts', () => {
+    for (const version of [4, 7]) {
+      const bytes = new NethernetServerAdvertisement({ version }).toBuffer()
+      const extended = Buffer.concat([bytes, Buffer.from([1, 2, 3, 4, 5])])
+      assert.deepStrictEqual(NethernetServerAdvertisement.fromBuffer(extended).toBuffer(), bytes)
+    }
   })
 
   it('rejects out-of-range integers when encoding', () => {

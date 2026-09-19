@@ -181,7 +181,20 @@ The public advertisement export also remains available from `src/server/advertis
 
 Use ProtoDef's built-in types for advertisement serialization. Keep captured packets as fixtures and test
 malformed input as well as round trips. Version 4 permits missing trailing flag bytes; this is
-handled separately from its required schema fields. Do not treat future layout versions as v7.
+read using the trailer schema separately from its required fields. Extra bytes after known
+fields are ignored. Discovery catches decoding failures and waits for another response within
+the original timeout; direct `fromBuffer` callers must handle decoding errors themselves.
+Do not treat future layout versions as v7. See [advertisement layouts](nethernet-advertisements.md).
+
+Keep wire encoding in ProtoDef. Zod would introduce a second schema without replacing binary
+decoding; arbitrary validation metadata in the JSON needs corresponding ProtoDef support.
+The current outbound checks validate locally supplied values before encoding, not remote peers.
+
+The Xbox HTTP helper in `src/xsapi/http.js` is a potential extraction into `prismarine-auth`:
+it obtains an Xbox token and makes an authenticated JSON request with cancellation and a deadline.
+The session directory, Minecraft lobby payloads, invitations, and session lifecycle are consumers
+of authentication, and should remain here or move to a separate Xbox services library. Moving
+the HTTP helper requires an upstream API/release; the current code uses `Authflow.getXboxToken`.
 
 Transport adapters bridge backend events to the following shared interface:
 

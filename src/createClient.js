@@ -132,9 +132,7 @@ async function ping ({ host, port, networkId, signal, timeout }) {
   })
   try {
     const result = await Promise.race([con.ping(timeout, { signal }), aborted])
-    return networkId
-      ? advertisement.NethernetServerAdvertisement.fromBuffer(Buffer.from(result, 'hex'))
-      : advertisement.fromServerName(result)
+    return networkId ? result : advertisement.fromServerName(result)
   } finally {
     signal?.removeEventListener('abort', onAbort)
     con.close()

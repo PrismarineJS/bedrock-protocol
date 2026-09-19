@@ -142,9 +142,28 @@ describe('Nethernet discovery lifecycle', () => {
     const client = discoveryClient()
     client.nethernet.ping = () => {
       client.nethernet.emit('pong', { sender_id: 999n, data: 'wrong' })
-      client.nethernet.emit('pong', { sender_id: 123n, data: 'right' })
+      client.nethernet.emit('pong', { sender_id: 123n, data: new NethernetServerAdvertisement({ motd: 'right' }).toBuffer().toString('hex') })
     }
-    assert.strictEqual(await client.ping(), 'right')
+    assert.strictEqual((await client.ping()).motd, 'right')
+    assertNoDiscoveryListeners(client)
+  })
+
+  it('ignores unreadable replies and accepts a subsequent valid reply', async () => {
+    const client = discoveryClient()
+    client.nethernet.ping = () => {
+      for (const data of ['', '08', '0705ff']) {
+        assert.doesNotThrow(() => client.nethernet.emit('pong', { sender_id: 123n, data }))
+      }
+      client.nethernet.emit('pong', { sender_id: 123n, data: new NethernetServerAdvertisement().toBuffer().toString('hex') })
+    }
+    assert.strictEqual((await client.ping()).version, 7)
+    assertNoDiscoveryListeners(client)
+  })
+
+  it('times out normally if only unreadable replies arrive', async () => {
+    const client = discoveryClient()
+    client.nethernet.ping = () => client.nethernet.emit('pong', { sender_id: 123n, data: '08' })
+    await assert.rejects(client.ping(10), /Ping timed out/)
     assertNoDiscoveryListeners(client)
   })
 
@@ -179,7 +198,7 @@ describe('Nethernet advertisement integration', () => {
       const originalInit = Client.prototype.init
       let client
       try {
-        NethernetClient.prototype.ping = async () => new NethernetServerAdvertisement({ version: layout }, '1.21.0').toBuffer().toString('hex')
+        NethernetClient.prototype.ping = async () => new NethernetServerAdvertisement({ version: layout }, '1.21.0')
         const initialized = new Promise(resolve => { Client.prototype.init = function () { resolve(this.options.version) } })
         client = createClient({ transport: 'nethernet', networkId: 123n, ...(explicit ? { version: explicit } : {}), conLog: null })
         assert.strictEqual(await initialized, expected)

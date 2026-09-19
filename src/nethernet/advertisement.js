@@ -42,15 +42,15 @@ class NethernetServerAdvertisement {
     const version = buffer.readUInt8(0)
     const type = typeFor(version)
     const { value, size } = proto.read(buffer, 0, type)
-    // Older v4 senders can omit any suffix of these four one-byte fields.
+    // Preserve the previous decoder's tolerance for omitted v4 trailer fields.
     if (version === 4) {
-      const fields = ['isEditorWorld', 'hardcore', 'unknown1', 'unknown2']
-      if (buffer.length - size > fields.length) throw new Error('Trailing advertisement data')
-      for (let i = 0; i < buffer.length - size; i++) {
-        value[fields[i]] = proto.read(buffer, size + i, i < 2 ? 'bool' : 'u8').value
+      let offset = size
+      for (const { name, type } of schemas.advertisement_v4_trailer[1]) {
+        if (offset >= buffer.length) break
+        const field = proto.read(buffer, offset, type)
+        value[name] = field.value
+        offset += field.size
       }
-    } else if (size !== buffer.length) {
-      throw new Error('Trailing advertisement data')
     }
     return new NethernetServerAdvertisement(value)
   }

@@ -1,4 +1,6 @@
 const { Client, Server } = require('node-nethernet')
+const { NethernetServerAdvertisement } = require('./advertisement')
+const debug = require('debug')('bedrock-protocol:nethernet')
 
 class NethernetClient {
   constructor (options = {}) {
@@ -58,7 +60,15 @@ class NethernetClient {
         else resolve(data)
       }
       const onPong = ret => {
-        if (String(ret.sender_id) === String(this.nethernet.serverNetworkId)) finish(null, ret.data)
+        if (String(ret.sender_id) !== String(this.nethernet.serverNetworkId)) return
+        let advertisement
+        try {
+          advertisement = NethernetServerAdvertisement.fromBuffer(Buffer.from(ret.data, 'hex'))
+        } catch (error) {
+          debug('Ignoring unreadable discovery advertisement: %s', error.message)
+          return
+        }
+        finish(null, advertisement)
       }
       const onError = error => finish(error)
       const onAbort = () => finish(signal.reason)
