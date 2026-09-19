@@ -76,9 +76,7 @@ describe('nethernet advertisement', () => {
     assert.throws(() => NethernetServerAdvertisement.fromBuffer(Buffer.concat([bytes, Buffer.from([0])])), /Trailing/)
   })
 
-  it('rejects overflowing varints and out-of-range integers', () => {
-    assert.throws(() => NethernetServerAdvertisement.fromBuffer(Buffer.from([7, 0x80, 0x80, 0x80, 0x80, 0x80, 0])), /32 bits/)
-    assert.throws(() => NethernetServerAdvertisement.fromBuffer(Buffer.from([7, 0, 0xff, 0xff, 0xff, 0xff, 0x1f])), /32 bits/)
+  it('rejects out-of-range integers when encoding', () => {
     for (const playerCount of [2147483648, -2147483649, 1.5, NaN]) {
       assert.throws(() => new NethernetServerAdvertisement({ playerCount }).toBuffer(), /32-bit/)
     }

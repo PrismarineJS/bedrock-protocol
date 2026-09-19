@@ -1,18 +1,8 @@
 const { Versions, CURRENT_VERSION } = require('../options')
-const { ProtoDef, types } = require('protodef')
+const { ProtoDef } = require('protodef')
 const schemas = require('./advertisement.json')
 
 const proto = new ProtoDef(false)
-// Delegate the encoding to ProtoDef; enforce the 32-bit widths of this wire format.
-for (const name of ['varint', 'zigzag32']) {
-  const [read, write, sizeOf] = types[name]
-  proto.addType(name, [function (buffer, offset) {
-    const result = read.call(this, buffer, offset)
-    if (result.size > 5 || (result.size === 5 && (buffer[offset + 4] & 0xf0))) throw new Error('Advertisement varint exceeds 32 bits')
-    if (name === 'varint' && result.value < 0) throw new Error('Invalid advertisement string length')
-    return result
-  }, write, sizeOf])
-}
 proto.addTypes(schemas)
 
 function typeFor (version) {

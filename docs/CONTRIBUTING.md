@@ -179,8 +179,7 @@ connection (`signalling.js`), pure signalling message conversions (`signallingCo
 and lifecycle cleanup (`cleanup.js`). `src/xsapi/` owns Xbox session APIs and HTTP requests.
 The public advertisement export also remains available from `src/server/advertisement.js`.
 
-Use ProtoDef for advertisement serialization. The small validation wrappers constrain its
-varints to the advertisement's 32-bit wire format. Keep captured packets as fixtures and test
+Use ProtoDef's built-in types for advertisement serialization. Keep captured packets as fixtures and test
 malformed input as well as round trips. Version 4 permits missing trailing flag bytes; this is
 handled separately from its required schema fields. Do not treat future layout versions as v7.
 
