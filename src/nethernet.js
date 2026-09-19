@@ -9,7 +9,7 @@ class NethernetClient {
 
     this.nethernet = new Client(
       options.networkId,
-      '255.255.255.255',
+      options.host || '255.255.255.255',
       {
         gatherIceBeforeOffer: true,
         signalTrickleCandidates: false,

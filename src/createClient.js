@@ -19,14 +19,14 @@ function createClient (options) {
     } else {
       ping(client.options).then(ad => {
         if (client.options.transport === 'raknet') {
-          const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
+          const adVersion = (ad.gameVersion ?? ad.version)?.split('.').slice(0, 3).join('.') // Only 3 version units
           client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
 
           if (ad.portV4 && client.options.followPort) {
             client.options.port = ad.portV4
           }
 
-          client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${ad.version} ${client.options.version !== ad.version ? ` (as ${client.options.version})` : ''}`)
+          client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${(ad.gameVersion ?? ad.version)} ${client.options.version !== (ad.gameVersion ?? ad.version) ? ` (as ${client.options.version})` : ''}`)
         } else if (client.options.transport === 'nethernet') {
           client.conLog?.(`Connecting to ${client.options.networkId} ${ad.motd} (${ad.levelName})`)
         }
@@ -122,7 +122,7 @@ async function connect (client) {
 
 async function ping ({ host, port, networkId }) {
   if (networkId) {
-    const con = new NethernetClient({ networkId })
+    const con = new NethernetClient({ networkId, host })
     try {
       return advertisement.NethernetServerAdvertisement.fromBuffer(Buffer.from(await con.ping(), 'hex'))
     } finally {

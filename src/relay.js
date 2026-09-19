@@ -194,6 +194,9 @@ class Relay extends Server {
       realms: this.options.destination.realms,
       host: this.options.destination.host,
       port: this.options.destination.port,
+      transport: this.options.destination.transport,
+      networkId: this.options.destination.networkId,
+      useSignalling: this.options.destination.useSignalling ?? false,
       batchingInterval: this.options.batchingInterval,
       onMsaCode: (code) => {
         if (this.options.onMsaCode) {
@@ -252,7 +255,7 @@ class Relay extends Server {
     this.conLog('closed upstream connection', clientAddr)
   }
 
-  // Called when a new player connects to our proxy server. Once the player has authenticated,
+  // Called when a new player connects to our proxy server. Once the player has joined,
   // we can open an upstream connection to the backend server.
   onOpenConnection = (conn) => {
     if (this.forceSingle && this.clientCount > 0) {
@@ -264,7 +267,7 @@ class Relay extends Server {
       this.conLog('New connection from', conn.address)
       this.clients[conn.address] = player
       this.emit('connect', player)
-      player.on('login', () => {
+      player.once('join', () => {
         this.openUpstreamConnection(player, conn.address)
       })
       player.on('close', (reason) => {

@@ -6,7 +6,7 @@ const Options = require('./options')
 const auth = require('./client/auth')
 const initRaknet = require('./rak')
 const { NethernetClient } = require('./nethernet')
-const { KeyExchange } = require('./handshake/keyExchange')
+const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
 const { NethernetSignal } = require('./websocket/signal')
@@ -50,7 +50,7 @@ class Client extends Connection {
     this.deserializer = createDeserializer(this.options.version)
     this._loadFeatures()
 
-    KeyExchange(this, null, this.options)
+    KeyExchange(this)
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
@@ -61,7 +61,7 @@ class Client extends Connection {
 
     if (this.options.transport === 'nethernet') {
       this.nethernet ??= {}
-      this.connection = new NethernetClient({ networkId })
+      this.connection = new NethernetClient({ networkId, host: this.options.host })
       this.batchHeader = null
       this.disableEncryption = true
     } else if (this.options.transport === 'raknet') {
@@ -205,7 +205,7 @@ class Client extends Connection {
     } else {
       encodedChain = JSON.stringify({ chain })
     }
-    debug('Auth chain', encodedChain)
+    debug('Prepared login identity', { certificateTokens: chain.length, hasMultiplayerToken: Boolean(this.multiplayerToken) })
 
     this.write('login', {
       protocol_version: this.options.protocolVersion,
@@ -285,7 +285,17 @@ class Client extends Connection {
     // Abstract some boilerplate before sending to listeners
     switch (des.data.name) {
       case 'server_to_client_handshake':
-        this.emit('client.server_handshake', des.data.params)
+        try {
+          const encryption = this.verifyServerHandshake(des.data.params)
+          this.enableEncryption(encryption)
+          this.write('client_to_server_handshake', {})
+          this.status = ClientStatus.Initializing
+          this.emit('join')
+        } catch (error) {
+          this.emit('error', error)
+          this.close()
+          return
+        }
         break
       case 'network_settings':
         this.updateCompressorSettings(des.data.params)
