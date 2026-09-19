@@ -9,8 +9,8 @@ const { NethernetClient } = require('./nethernet')
 const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
-const { NethernetSignal } = require('./websocket/signal')
-const { closeNethernet } = require('./nethernetCleanup')
+const { NethernetSignal } = require('./nethernet/signalling')
+const { closeNethernet } = require('./nethernet/cleanup')
 
 const debugging = false
 

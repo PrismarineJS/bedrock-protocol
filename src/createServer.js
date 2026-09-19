@@ -1,5 +1,5 @@
 const { Server } = require('./server')
-const { NethernetSignal } = require('./websocket/signal')
+const { NethernetSignal } = require('./nethernet/signalling')
 const assert = require('assert')
 
 const { getRandomUint64 } = require('./datatypes/util')

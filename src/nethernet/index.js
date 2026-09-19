@@ -1,4 +1,4 @@
-const { waitFor } = require('./datatypes/util')
+const { waitFor } = require('../datatypes/util')
 const { Client, Server } = require('node-nethernet')
 
 class NethernetClient {

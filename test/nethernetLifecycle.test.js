@@ -6,7 +6,7 @@ const { Relay } = require('../src/relay')
 const { createClient } = require('../src/createClient')
 const auth = require('../src/client/auth')
 const { RealmAPI } = require('prismarine-realms')
-const { NethernetSignal } = require('../src/websocket/signal')
+const { NethernetSignal } = require('../src/nethernet/signalling')
 const { SessionDirectory } = require('../src/xsapi/session')
 const { CURRENT_VERSION } = require('../src/options')
 

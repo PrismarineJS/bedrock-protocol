@@ -4,7 +4,7 @@ const { Player } = require('./serverPlayer')
 const { sleep } = require('./datatypes/util')
 const { ServerAdvertisement, NethernetServerAdvertisement } = require('./server/advertisement')
 const Options = require('./options')
-const { closeNethernet } = require('./nethernetCleanup')
+const { closeNethernet } = require('./nethernet/cleanup')
 
 const debug = globalThis.isElectron ? console.debug : require('debug')('minecraft-protocol')
 
