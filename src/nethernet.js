@@ -12,7 +12,7 @@ class NethernetClient {
       options.host || '255.255.255.255',
       {
         gatherIceBeforeOffer: true,
-        signalTrickleCandidates: false,
+        signalTrickleCandidates: false
       }
     )
 
