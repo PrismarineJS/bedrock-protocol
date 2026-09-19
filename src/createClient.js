@@ -122,7 +122,7 @@ async function connect (client) {
 
 async function ping ({ host, port, networkId }) {
   if (networkId) {
-    const con = new NethernetClient({ networkId })
+    const con = new NethernetClient({ networkId, host })
     try {
       return advertisement.NethernetServerAdvertisement.fromBuffer(Buffer.from(await con.ping(), 'hex'))
     } finally {
