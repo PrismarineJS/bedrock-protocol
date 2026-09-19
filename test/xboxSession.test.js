@@ -13,9 +13,9 @@ describe('Minecraft Xbox session adapter', () => {
     assert.strictEqual(session.options.scid, '4fc10100-5f7a-4470-899b-280835760c07')
     assert.strictEqual(session.options.templateName, 'MinecraftLobby')
     const writes = []
-    session.host.connect = async () => {
-      session.host.profile = { id: '12345' }
-      session.host.connectionId = 'connection'
+    session.connect = async () => {
+      session.profile = { id: '12345' }
+      session.connectionId = 'connection'
     }
     session.client.updateSession = async (name, payload) => { writes.push(payload) }
     session.client.setActivity = async () => {}

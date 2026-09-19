@@ -59,11 +59,10 @@ class SessionDirectory extends XboxSessionDirectory {
   }
 
   createSession (networkId) {
-    this.options.networkId = networkId
-    return super.createSession(({ profile }) => this.createProperties(profile))
+    return super.createSession(({ profile }) => this.createProperties(profile, networkId))
   }
 
-  createProperties (profile) {
+  createProperties (profile, networkId) {
     const joinability = JoinabilityConfig[this.options.joinability]
 
     return {
@@ -96,7 +95,7 @@ class SessionDirectory extends XboxSessionDirectory {
             ConnectionType: 3,
             HostIpAddress: '',
             HostPort: 0,
-            NetherNetId: this.options.networkId
+            NetherNetId: networkId
           }
         ]
       }
