@@ -27,6 +27,32 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
   }
   afterEach(() => { while (restores.length) restores.pop()() })
 
+  it('starts the transport immediately rather than deferring independent connections', () => {
+    const client = new Client({ delayedInit: true })
+    let started = false
+    client.connection = { connect () { started = true }, close () {} }
+    client._connect({})
+    assert.strictEqual(started, true)
+    client.close()
+  })
+
+  for (const asynchronous of [false, true]) {
+    it(`closes and reports a ${asynchronous ? 'rejected' : 'thrown'} transport startup error`, async () => {
+      const client = new Client({ delayedInit: true })
+      let closed = false
+      const error = new Error('transport startup failed')
+      client.connection = {
+        connect () { if (asynchronous) return Promise.reject(error); throw error },
+        close () { closed = true }
+      }
+      const failure = new Promise(resolve => client.once('error', resolve))
+      client._connect({})
+      assert.strictEqual(await failure, error)
+      assert.strictEqual(closed, true)
+      assert.strictEqual(client._closed, true)
+    })
+  }
+
   it('closes a factory RakNet client once and releases its transport', () => {
     let closed = 0
     stub(Client.prototype, 'init', function () {

@@ -181,15 +181,19 @@ class Client extends Connection {
       this.close()
     }
     this.connection.onEncapsulated = this.onEncapsulated
-    Promise.resolve().then(() => {
-      if (!this._closed) return this.connection.connect()
-    }).catch(error => this.onConnectionError(error))
-
     this.connectTimeout = setTimeout(() => {
       if (this.status === ClientStatus.Disconnected) {
         this.onConnectionError(Error('Connect timed out'))
       }
     }, this.options.connectTimeout || 9000)
+
+    // Preserve immediate transport startup: deferring this call coalesces
+    // independently created RakNet clients into simultaneous handshakes.
+    try {
+      Promise.resolve(this.connection.connect()).catch(error => this.onConnectionError(error))
+    } catch (error) {
+      this.onConnectionError(error)
+    }
   }
 
   updateCompressorSettings (packet) {
