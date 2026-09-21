@@ -1,3 +1,4 @@
+const { Client, Server } = require('nethernet')
 const { NethernetServerAdvertisement } = require('./advertisement')
 const debug = require('debug')('bedrock-protocol:nethernet')
 
@@ -10,7 +11,6 @@ class NethernetClient {
     this.onEncapsulated = () => { }
     this.onError = () => { }
 
-    const { Client } = require('nethernet')
     this.nethernet = new Client(
       options.networkId,
       options.host || '255.255.255.255',
@@ -102,7 +102,6 @@ class NethernetServer {
       this.nethernet.setAdvertisement(server.getAdvertisement().toBuffer())
     }
 
-    const { Server } = require('nethernet')
     this.nethernet = new Server({ ...options })
     this.nethernet.on('error', error => this.onError(error))
 
