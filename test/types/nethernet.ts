@@ -2,11 +2,11 @@ import { createClient, createServer, Relay, ping, NethernetServerAdvertisement }
 import { Authflow } from 'prismarine-auth'
 
 const authflow = new Authflow()
-createClient({ transport: 'nethernet', nethernet: { networkId: 123n, signalling: 'services', signallingConnectTimeout: 10000 }, authflow })
+createClient({ transport: 'nethernet', nethernet: { networkId: 123n, webrtcBackend: 'werift', signalling: 'services', signallingConnectTimeout: 10000 }, authflow })
 createClient({ realms: { realmId: '123' } })
 createClient({ world: { pickSession: async sessions => sessions[0] } })
 createServer({ transport: 'nethernet', nethernet: { networkId: '123', signalling: 'services' }, authflow, onMsaCode: code => console.log(code.message) })
-new Relay({ offline: true, destination: { transport: 'nethernet', nethernet: { networkId: 123n, signalling: 'services' } } })
+new Relay({ offline: true, destination: { transport: 'nethernet', nethernet: { networkId: 123n, webrtcBackend: 'werift', signalling: 'services' } } })
 new Relay({ destination: { host: 'localhost', port: 19132 } })
 const advertisement = new NethernetServerAdvertisement({ motd: 'test' }, '1.26.45')
 NethernetServerAdvertisement.fromBuffer(advertisement.toBuffer())

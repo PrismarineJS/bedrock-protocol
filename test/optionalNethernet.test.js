@@ -3,7 +3,7 @@ const assert = require('assert')
 const { spawnSync } = require('child_process')
 const path = require('path')
 
-describe('RakNet without WebRTC', function () {
+describe('Transports without native WebRTC', function () {
   this.timeout(15000)
   it('imports the public API and uses RakNet when the WebRTC binding cannot load', () => {
     const probe = spawnSync(process.execPath, ['-e', `
@@ -29,8 +29,11 @@ describe('RakNet without WebRTC', function () {
         await server._listenPromise
         await server.close()
         assert.equal(attempts, 0, 'RakNet must not attempt to load WebRTC')
-        assert.throws(() => new api.Client({ transport: 'nethernet', nethernet: { networkId: 1n } }), error => {
-          assert.match(error.message, /Nethernet requires a working WebRTC native binding/)
+        const pure = new api.Client({ transport: 'nethernet', nethernet: { networkId: 1n } })
+        pure.close()
+        assert.equal(attempts, 0, 'Default Nethernet must not load native WebRTC')
+        assert.throws(() => new api.Client({ transport: 'nethernet', nethernet: { networkId: 1n, webrtcBackend: 'wrtc' } }), error => {
+          assert.match(error.message, /requires a working @roamhq/)
           assert.match(error.cause.message, /simulated unavailable/)
           return true
         })

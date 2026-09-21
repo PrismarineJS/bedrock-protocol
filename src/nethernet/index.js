@@ -1,13 +1,6 @@
+const { Client, Server } = require('nethernet')
 const { NethernetServerAdvertisement } = require('./advertisement')
 const debug = require('debug')('bedrock-protocol:nethernet')
-
-function loadTransport () {
-  try {
-    return require('nethernet')
-  } catch (cause) {
-    throw new Error('Nethernet requires a working WebRTC native binding (@roamhq/wrtc). Check its platform and system-library requirements, or use RakNet.', { cause })
-  }
-}
 
 class NethernetClient {
   constructor (options = {}) {
@@ -18,10 +11,10 @@ class NethernetClient {
     this.onEncapsulated = () => { }
     this.onError = () => { }
 
-    const { Client } = loadTransport()
     this.nethernet = new Client(
       options.networkId,
-      options.host || '255.255.255.255'
+      options.host || '255.255.255.255',
+      { webrtcBackend: options.webrtcBackend }
     )
 
     this.nethernet.on('connected', (client) => {
@@ -109,7 +102,6 @@ class NethernetServer {
       this.nethernet.setAdvertisement(server.getAdvertisement().toBuffer())
     }
 
-    const { Server } = loadTransport()
     this.nethernet = new Server({ ...options })
     this.nethernet.on('error', error => this.onError(error))
 

@@ -6,6 +6,8 @@ declare module 'bedrock-protocol' {
   type Version = string
 
   export interface NethernetOptions {
+    // Pure JS by default; auto prefers @roamhq/wrtc if installed and loadable.
+    webrtcBackend?: 'werift' | 'wrtc' | 'auto'
     // Remote ID for clients; local ID for servers (generated when omitted by createServer).
     networkId?: string | bigint
     // LAN discovery signalling or authenticated Minecraft services signalling (default: lan).

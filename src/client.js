@@ -63,7 +63,7 @@ class Client extends Connection {
 
     if (this.options.transport === 'nethernet') {
       this.nethernet ??= {}
-      this.connection = new NethernetClient({ networkId, host: this.options.host })
+      this.connection = new NethernetClient({ networkId, host: this.options.host, webrtcBackend: this.options.nethernet.webrtcBackend })
       this.batchHeader = null
       this.disableEncryption = true
     } else if (this.options.transport === 'raknet') {
