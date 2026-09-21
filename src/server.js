@@ -14,6 +14,7 @@ class Server extends EventEmitter {
     this._closed = false
 
     this.options = { ...Options.defaultOptions, ...options, nethernet: { signalling: 'lan', ...options.nethernet } }
+    this.options.maxPlayers ??= 3
     this.validateOptions()
 
     if (this.options.transport === 'nethernet') {
@@ -38,7 +39,7 @@ class Server extends EventEmitter {
     this._loadFeatures(this.options.version)
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
-    this.advertisement.playersMax = options.maxPlayers ?? 3
+    this.advertisement.playersMax = this.options.maxPlayers
     /** @type {Object<string, Player>} */
     this.clients = {}
     this.clientCount = 0
@@ -100,6 +101,11 @@ class Server extends EventEmitter {
   }
 
   onOpenConnection = (conn) => {
+    if (this.clients[conn.address]) return
+    if (this._closed || this.clientCount >= this.options.maxPlayers) {
+      conn.close()
+      return
+    }
     this.conLog('New connection: ', conn?.address)
 
     const player = new Player(this, conn)
@@ -110,9 +116,11 @@ class Server extends EventEmitter {
 
   onCloseConnection = (conn, reason) => {
     this.conLog('Connection closed: ', conn.address, reason)
-    this.clients[conn.address]?.close()
+    const player = this.clients[conn.address]
+    if (!player) return
     delete this.clients[conn.address]
     this.clientCount--
+    player.close(reason)
   }
 
   onEncapsulated = (buffer, address) => {
