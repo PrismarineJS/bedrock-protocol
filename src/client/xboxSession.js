@@ -1,3 +1,6 @@
+// NetherNetId uses type 7; the legacy type 3 advertisement used WebRTCNetworkId.
+const NETHERNET_CONNECTION_TYPE = 7
+
 const title = {
   titleId: '896928775',
   scid: '4fc10100-5f7a-4470-899b-280835760c07',
@@ -68,7 +71,7 @@ function createWorldProperties (profile, networkId, world, joinability = Joinabi
       isHardcore: false,
       SupportedConnections: [
         {
-          ConnectionType: 3,
+          ConnectionType: NETHERNET_CONNECTION_TYPE,
           HostIpAddress: '',
           HostPort: 0,
           NetherNetId: networkId

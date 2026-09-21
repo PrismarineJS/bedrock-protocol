@@ -4,6 +4,7 @@ const { Client } = require('../src/client')
 const { Server } = require('../src/server')
 const { Relay } = require('../src/relay')
 const { createClient } = require('../src/createClient')
+const { NethernetClient } = require('../src/nethernet')
 const auth = require('../src/client/auth')
 const { RealmAPI } = require('prismarine-realms')
 const { NethernetSignal } = require('../src/nethernet/signalling')
@@ -53,6 +54,56 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
       assert.strictEqual(client._closed, true)
     })
   }
+
+  for (const discovery of ['direct', 'world', 'realm']) {
+    it(`skips LAN version discovery for ${discovery} services connections`, async () => {
+      let pings = 0
+      let initialized = 0
+      stub(NethernetClient.prototype, 'ping', async () => { pings++; return {} })
+      stub(Client.prototype, 'init', function () { initialized++ })
+      const options = { transport: 'nethernet', nethernet: { networkId: 1n, signalling: 'services' } }
+      if (discovery !== 'direct') {
+        options.nethernet.signalling = 'lan'
+        options[discovery === 'realm' ? 'realms' : 'world'] = {}
+        const chooseServices = options => { options.nethernet.signalling = 'services' }
+        if (discovery === 'realm') stub(auth, 'realmAuthenticate', async options => chooseServices(options))
+        else stub(auth, 'worldAuthenticate', async (client, options) => chooseServices(options))
+      }
+      const client = createClient(options)
+      try {
+        await new Promise(resolve => setImmediate(resolve))
+        assert.strictEqual(initialized, 1)
+        assert.strictEqual(pings, 0)
+        assert.strictEqual(client._discoveryAbort, undefined)
+      } finally {
+        client.close()
+      }
+    })
+  }
+
+  it('uses pingTimeout for LAN discovery and reports failure without a services fallback', async () => {
+    const failure = new Error('discovery expired')
+    let initialized = false
+    let timeout
+    stub(NethernetClient.prototype, 'ping', async value => { timeout = value; throw failure })
+    stub(Client.prototype, 'init', () => { initialized = true })
+    const client = createClient({ transport: 'nethernet', nethernet: { networkId: 1n }, pingTimeout: 123, connectTimeout: 456 })
+    const error = await new Promise(resolve => client.once('error', resolve))
+    assert.strictEqual(error, failure)
+    assert.strictEqual(timeout, 123)
+    assert.strictEqual(initialized, false)
+    assert.strictEqual(client._closed, true)
+  })
+
+  it('keeps explicit client ping deadlines independent of connection deadlines', async () => {
+    const client = new Client({ delayedInit: true, pingTimeout: 123, connectTimeout: 456 })
+    client.connection = { ping: async timeout => timeout, close () {} }
+    try {
+      assert.strictEqual(await client.ping(), 123)
+    } finally {
+      client.close()
+    }
+  })
 
   it('closes a factory RakNet client once and releases its transport', () => {
     let closed = 0
@@ -104,7 +155,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
 
   it('forwards nested Nethernet relay options without sharing mutable settings', async () => {
     stub(Client.prototype, 'connect', function () {})
-    const nethernet = Object.freeze({ networkId: 123n, signalling: 'services', signallingTimeout: 1234 })
+    const nethernet = Object.freeze({ networkId: 123n, signalling: 'services', signallingConnectTimeout: 1234 })
     const relay = new Relay({ offline: true, destination: { transport: 'nethernet', nethernet } })
     await relay.openUpstreamConnection({ profile: { name: 'test' }, disconnect () {} }, { hash: 'test' })
     const client = relay.upstreams.get('test')
@@ -151,7 +202,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
   it('does not start a second transport connection when signalling credentials refresh', async () => {
     stub(auth, 'authenticate', client => client.emit('session', {}))
     stub(NethernetSignal.prototype, 'init', async function () { this.emit('credentials', []) })
-    const client = new Client({ delayedInit: true, transport: 'nethernet', nethernet: { signalling: 'services' } })
+    const client = new Client({ delayedInit: true, transport: 'nethernet', nethernet: { signalling: 'services', signallingConnectTimeout: 1234 } })
     client.connection = { nethernet: { networkId: 1n, handleSignal () {} }, close () {} }
     let connections = 0
     client._connect = () => { connections++ }
@@ -159,6 +210,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     await client.nethernet.signalling._connecting
     await Promise.resolve()
     client.nethernet.signalling.emit('credentials', [{ urls: 'turn:example.com' }])
+    assert.strictEqual(client.nethernet.signalling.timeout, 1234)
     assert.strictEqual(connections, 1)
     assert.deepStrictEqual(client.connection.nethernet.credentials, [{ urls: 'turn:example.com' }])
     client.close()
@@ -171,7 +223,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
         getRealms: async () => [{ id: 123 }],
         rest: { get: async () => ({ address, networkProtocol: protocol, sessionRegionData: { regionName: 'WestUS' } }) }
       }))
-      const nethernet = Object.freeze({ signalling: 'lan', signallingTimeout: 1234 })
+      const nethernet = Object.freeze({ signalling: 'lan', signallingConnectTimeout: 1234 })
       const options = { version: CURRENT_VERSION, realms: { realmId: 123 }, authflow: {}, nethernet }
       await auth.realmAuthenticate(options)
       if (protocol === 'RAKNET') {
@@ -182,9 +234,8 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
       } else {
         assert.strictEqual(options.transport, 'nethernet')
         assert.strictEqual(options.nethernet.networkId, address)
-        assert.strictEqual(options.skipPing, true)
         assert.strictEqual(options.nethernet.signalling, 'services')
-        assert.strictEqual(options.nethernet.signallingTimeout, 1234)
+        assert.strictEqual(options.nethernet.signallingConnectTimeout, 1234)
         assert.strictEqual(options.nethernet._signallingProtocol, 'jsonrpc')
         assert.strictEqual(options.nethernet._signallingHost, 'signal-westus.franchise.minecraft-services.net')
       }

@@ -11,7 +11,7 @@ declare module 'bedrock-protocol' {
     // LAN discovery signalling or authenticated Minecraft services signalling (default: lan).
     signalling?: 'lan' | 'services'
     // Maximum wait for services signalling credentials in milliseconds (default: 15000).
-    signallingTimeout?: number
+    signallingConnectTimeout?: number
   }
 
   export interface Options {
@@ -35,7 +35,7 @@ declare module 'bedrock-protocol' {
     // Which raknet backend to use
     raknetBackend?: 'jsp-raknet' | 'raknet-native' | 'raknet-node'
     // If using JS implementation of RakNet, should we use workers? (This only affects the client)
-    useRaknetWorker?: boolean
+    useRaknetWorkers?: boolean
     // Compression level for zlib, default to 7
     compressionLevel?: number
     // How frequently the packet queue should be flushed in milliseconds, defaults to 20ms
@@ -51,8 +51,10 @@ declare module 'bedrock-protocol' {
     authTitle?: string
     // Bedrock DeviceOS enum value. Derived from known authTitle values; required for custom titles.
     deviceOS?: number
-    // How long to wait in milliseconds while trying to connect to the server.
+    // Transport establishment after authentication/signalling, in milliseconds (default: 9000).
     connectTimeout?: number
+    // LAN/server advertisement lookup, in milliseconds (default: RakNet 1000, Nethernet 10000).
+    pingTimeout?: number
     // whether to skip initial ping and immediately connect
     skipPing?: boolean
     // Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified)

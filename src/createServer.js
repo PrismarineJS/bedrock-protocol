@@ -21,7 +21,7 @@ function createServer (options) {
     if (server._closed) return
 
     const signalling = new NethernetSignal(server.options.nethernet.networkId, server.options.authflow, server.options.version, {
-      timeout: server.options.nethernet.signallingTimeout
+      timeout: server.options.nethernet.signallingConnectTimeout
     })
     server.nethernet.signalling = signalling
     signalling.on('error', error => server.onConnectionError(error))

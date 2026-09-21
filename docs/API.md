@@ -13,13 +13,15 @@ Returns a `Client` instance and connects to the server.
 | version     | *optional* |  Version to connect as. If not specified, automatically match server version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Required | The profile name to connect to the server as. If `offline` set to true, the username that will appear on join, that would normally be the Xbox Gamer Tag. |
-| connectTimeout | *optional* | default to **9000ms**. How long to wait in milliseconds while trying to connect to server. |
+| connectTimeout | *optional* | Transport establishment deadline after authentication and signalling, default **9000ms**. Does not bound login or spawning. |
+| pingTimeout | *optional* | Advertisement lookup deadline: **1000ms** for RakNet, **10000ms** for Nethernet. Used by `createClient` and `client.ping()`. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
-| skipPing | *optional* | Whether pinging the server to check its version should be skipped. |
+| skipPing | *optional* | Skip the initial version-discovery ping. Nethernet `'services'` mode always skips this LAN probe; specify `version` or use the library default. |
 | followPort | *optional* | Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified) |
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |
+| useRaknetWorkers | *optional* | Use workers with the `jsp-raknet` client backend (default **true**). |
 | raknetBackend | *optional* | Specifies the raknet implementation to use. Possible options are 'raknet-native' (default, original C++ implementation), 'jsp-raknet' (JS port), and 'raknet-node' (Rust port). Please note when using the non-JS implementation you may the need approporate build tools on your system (for example a C++ or Rust compiler). |
 | compressionLevel | *optional* | What zlib compression level to use, default to **7** |
 | batchingInterval | *optional* | How frequently, in milliseconds to flush and write the packet queue (default: 20ms) |
@@ -272,9 +274,18 @@ transport encryption, while Minecraft authentication still follows the `offline`
 | --- | --- |
 | `nethernet.networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createServer` generates an ID when omitted. |
 | `host` | For a Nethernet client, the address for LAN discovery (default `255.255.255.255`); for a server, the local bind address. |
-| `nethernet.signalling` | `'lan'` (default) or `'services'` for authenticated Minecraft services signalling. Hosting with `'services'` publishes an Xbox world session. |
-| `nethernet.signallingTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
+| `nethernet.signalling` | `'lan'` (default) or `'services'` for authenticated Minecraft services signalling. Services mode skips the initial LAN advertisement lookup. Hosting with `'services'` publishes an Xbox world session. |
+| `nethernet.signallingConnectTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
 | `authflow` | Optional existing `prismarine-auth` `Authflow`, shared by Minecraft authentication, Realms, and signalling. |
+
+The deadlines apply to separate stages: `pingTimeout` bounds advertisement lookup;
+`nethernet.signallingConnectTimeout` bounds services signalling setup through receipt of ICE
+credentials (and each reconnect); `connectTimeout` bounds transport establishment after
+setup. They are not one total timeout and do not bound Minecraft login or spawning.
+Standalone `ping({ ..., timeout })` sets the lookup deadline for that individual call.
+
+Xbox session hosting advertises `ConnectionType: 7` with `NetherNetId`, matching the
+retail 1.26.51 capture. Receiving clients select the ID by field presence.
 
 LAN example:
 
@@ -316,7 +327,7 @@ To select a friend's Xbox world, provide `world: { pickSession }`. The callback 
 available sessions and returns one, synchronously or asynchronously. This selects Nethernet
 and authenticated signalling automatically. See `examples/client/nethernet.js`.
 
-Relay destinations accept the same `nethernet: { networkId, signalling, signallingTimeout }`
+Relay destinations accept the same `nethernet: { networkId, signalling, signallingConnectTimeout }`
 object, alongside `transport`, `host`, and the existing `realms` options. An omitted transport retains
 RakNet behavior. For a Nethernet server published to friends, see `examples/server/nethernet.js`;
 account configuration includes `username`, `profilesFolder`, `authflow`, and `onMsaCode`.

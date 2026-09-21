@@ -144,7 +144,6 @@ async function realmAuthenticate (options) {
   if (join.networkProtocol === 'NETHERNET_JSONRPC') {
     options.transport = 'nethernet'
     options.nethernet = { ...options.nethernet, networkId: join.address, signalling: 'services' }
-    options.skipPing = true
     options.nethernet._signallingProtocol = 'jsonrpc'
     const region = join.sessionRegionData?.regionName
     if (region) options.nethernet._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
