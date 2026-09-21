@@ -120,7 +120,7 @@ function connect (client) {
 async function ping ({ host, port, nethernet, signal, timeout }) {
   const networkId = nethernet?.networkId
   signal?.throwIfAborted()
-  const con = networkId ? new NethernetClient({ networkId, host }) : new RakClient({ host, port })
+  const con = networkId ? new NethernetClient({ networkId, host, webrtcBackend: nethernet.webrtcBackend }) : new RakClient({ host, port })
   let onAbort
   const aborted = new Promise((resolve, reject) => {
     onAbort = () => reject(signal.reason)

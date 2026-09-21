@@ -275,6 +275,7 @@ transport encryption, while Minecraft authentication still follows the `offline`
 | `nethernet.networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createServer` generates an ID when omitted. |
 | `host` | For a Nethernet client, the address for LAN discovery (default `255.255.255.255`); for a server, the local bind address. |
 | `nethernet.signalling` | `'lan'` (default) or `'services'` for authenticated Minecraft services signalling. Services mode skips the initial LAN advertisement lookup. Hosting with `'services'` publishes an Xbox world session. |
+| `nethernet.webrtcBackend` | `'werift'` (default, pure JavaScript), `'wrtc'` (requires a separately installed `@roamhq/wrtc`), or `'auto'` (native when loadable, otherwise Werift). |
 | `nethernet.signallingConnectTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
 | `authflow` | Optional existing `prismarine-auth` `Authflow`, shared by Minecraft authentication, Realms, and signalling. |
 
@@ -327,7 +328,7 @@ To select a friend's Xbox world, provide `world: { pickSession }`. The callback 
 available sessions and returns one, synchronously or asynchronously. This selects Nethernet
 and authenticated signalling automatically. See `examples/client/nethernet.js`.
 
-Relay destinations accept the same `nethernet: { networkId, signalling, signallingConnectTimeout }`
+Relay destinations accept the same `nethernet: { networkId, signalling, signallingConnectTimeout, webrtcBackend }`
 object, alongside `transport`, `host`, and the existing `realms` options. An omitted transport retains
 RakNet behavior. For a Nethernet server published to friends, see `examples/server/nethernet.js`;
 account configuration includes `username`, `profilesFolder`, `authflow`, and `onMsaCode`.

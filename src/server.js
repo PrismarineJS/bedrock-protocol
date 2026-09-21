@@ -147,7 +147,7 @@ class Server extends EventEmitter {
     if (this._closed) return
     const { host, port, maxPlayers } = this.options
     // eslint-disable-next-line new-cap
-    this.transport = new this.transportServer({ host, port, networkId: this.options.nethernet.networkId, maxPlayers }, this)
+    this.transport = new this.transportServer({ host, port, ...this.options.nethernet, maxPlayers }, this)
 
     this.transport.onError = error => this.onConnectionError(error)
 
