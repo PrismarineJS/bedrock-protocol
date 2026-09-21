@@ -167,7 +167,7 @@ class Client extends Connection {
 
   _connect = (sessionData) => {
     if (this._closed) return
-    debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
+    debug('[client] connecting to', this.options.host, this.options.port, sessionData)
     this.connection.onConnected = () => {
       this.status = ClientStatus.Connecting
       if (this.versionGreaterThanOrEqualTo('1.19.30')) {
@@ -190,6 +190,12 @@ class Client extends Connection {
     // Preserve immediate transport startup: deferring this call coalesces
     // independently created RakNet clients into simultaneous handshakes.
     try {
+      if (this.options.transport === 'nethernet' && this.multiplayerToken) {
+        this.connection.nethernet.identity = {
+          privateKey: this.ecdhKeyPair.privateKey,
+          token: this.multiplayerToken
+        }
+      }
       Promise.resolve(this.connection.connect()).catch(error => this.onConnectionError(error))
     } catch (error) {
       this.onConnectionError(error)

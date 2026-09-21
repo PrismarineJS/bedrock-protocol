@@ -13,11 +13,7 @@ class NethernetClient {
 
     this.nethernet = new Client(
       options.networkId,
-      options.host || '255.255.255.255',
-      {
-        gatherIceBeforeOffer: true,
-        signalTrickleCandidates: false
-      }
+      options.host || '255.255.255.255'
     )
 
     this.nethernet.on('connected', (client) => {

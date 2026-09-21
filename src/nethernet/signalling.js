@@ -301,7 +301,7 @@ class NethernetSignal extends EventEmitter {
 
     const message = encodeSignal(signal, this.networkId, this._protocol, randomUUID(), randomUUID())
 
-    debug('Sending Signal', message)
+    debug('Sending Signal', signal.type)
 
     this.ws.send(message)
   }
