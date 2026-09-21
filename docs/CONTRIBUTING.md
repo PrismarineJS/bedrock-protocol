@@ -177,7 +177,7 @@ string: ["pstring",{"countType":"varint"}]
 schemas (`advertisement.json`) and public wrapper (`advertisement.js`), signalling
 connection (`signalling.js`), pure signalling message conversions (`signallingCodec.js`),
 and lifecycle cleanup (`cleanup.js`). `src/client/xboxSession.js` builds Minecraft lobby
-properties using the experimental Xbox services API in `prismarine-auth`.
+properties for `prismarine-xbox-services`.
 The public advertisement export also remains available from `src/server/advertisement.js`.
 
 Use ProtoDef's built-in types for advertisement serialization. Keep captured packets as fixtures and test
@@ -192,11 +192,13 @@ decoding; arbitrary validation metadata in the JSON needs corresponding ProtoDef
 Delegate field validation to ProtoDef rather than adding checks to the advertisement wrapper.
 
 Xbox HTTP requests, profile/session APIs, and RTA session lifecycle live in
-`prismarine-auth.experimental.xsapi`. Minecraft title configuration, world metadata and
-Nethernet connection properties stay in `src/client/xboxSession.js`. The dependency currently
-uses `PrismarineJS/prismarine-auth#feat/xbox-http-client` while the upstream PR is reviewed;
-replace it with a published version containing that API after release. See the upstream
-[experimental documentation](https://github.com/PrismarineJS/prismarine-auth/blob/feat/xbox-http-client/docs/experimental-xsapi.md).
+`prismarine-xbox-services`. Minecraft title configuration, world metadata and
+Nethernet connection properties stay in `src/client/xboxSession.js`. The service dependency
+is pinned to a Git commit until a compatible npm release is available. Authentication uses
+the published `prismarine-auth` package. See the service package's
+[Xbox documentation](https://github.com/PrismarineJS/prismarine-xbox-services/blob/main/docs/xbox.md).
+Node.js 24 or newer is required.
+
 
 Transport adapters bridge backend events to the following shared interface:
 

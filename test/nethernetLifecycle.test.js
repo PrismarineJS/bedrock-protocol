@@ -7,7 +7,8 @@ const { createClient } = require('../src/createClient')
 const auth = require('../src/client/auth')
 const { RealmAPI } = require('prismarine-realms')
 const { NethernetSignal } = require('../src/nethernet/signalling')
-const { SessionDirectory } = require('../src/client/xboxSession')
+const { XboxClient } = require('prismarine-xbox-services')
+const { EventEmitter } = require('events')
 const { CURRENT_VERSION } = require('../src/options')
 
 function deferred () {
@@ -106,7 +107,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     const client = new Client({ transport: 'nethernet', delayedInit: true })
     client.nethernet = {
       signalling: { destroy: async () => { calls.push('signal') } },
-      session: { end: async () => { calls.push('session'); throw new Error('offline') } }
+      session: { close: async () => { calls.push('session'); throw new Error('offline') } }
     }
     client.close()
     client.close()
@@ -171,14 +172,45 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     })
   }
 
+  it('joins a selected world using the ready session snapshot and publishes activity', async () => {
+    const client = new Client({ transport: 'nethernet', delayedInit: true })
+    const handle = { sessionRef: { name: 'world' } }
+    let published = false
+    let closed = false
+    const session = Object.assign(new EventEmitter(), {
+      current: { properties: { custom: { SupportedConnections: [{ ConnectionType: 3, NetherNetId: '18446744073709551615' }] } } },
+      setActivity: async () => { published = true },
+      close: async () => { closed = true }
+    })
+    stub(XboxClient.prototype, 'getProfile', async () => ({ xuid: '12345' }))
+    stub(XboxClient.prototype, 'getActivityHandles', async xuid => {
+      assert.strictEqual(xuid, '12345')
+      return [handle]
+    })
+    stub(XboxClient.prototype, 'joinSession', async (name, { signal }) => {
+      assert.strictEqual(name, 'world')
+      assert.strictEqual(signal.aborted, false)
+      return session
+    })
+    const options = { authflow: {}, world: { pickSession: sessions => sessions[0] } }
+    await auth.worldAuthenticate(client, options)
+    assert.strictEqual(options.networkId, 18446744073709551615n)
+    assert.strictEqual(published, true)
+    client.close()
+    await client._nethernetCleanup
+    assert.strictEqual(closed, true)
+  })
+
   it('binds before publishing a server session, passes the version, and cleans up failed signalling', async () => {
     const calls = []
     stub(Server.prototype, 'listen', async function () {
       calls.push('listen')
       this.transport = { close: () => calls.push('close') }
     })
-    stub(SessionDirectory.prototype, 'createSession', async () => { calls.push('publish') })
-    stub(SessionDirectory.prototype, 'end', async () => { calls.push('leave') })
+    stub(XboxClient.prototype, 'createSession', async () => Object.assign(new EventEmitter(), {
+      setActivity: async () => { calls.push('publish') },
+      close: async () => { calls.push('leave') }
+    }))
     stub(NethernetSignal.prototype, 'connect', async function () {
       assert.strictEqual(this.version, CURRENT_VERSION)
       calls.push('signal')
@@ -198,8 +230,17 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     const started = deferred()
     let signals = 0
     stub(Server.prototype, 'listen', async function () { this.transport = { close () {} } })
-    stub(SessionDirectory.prototype, 'createSession', async () => { started.resolve(); await publication.promise })
-    stub(SessionDirectory.prototype, 'end', async () => {})
+    let setupSignal
+    let closed = false
+    stub(XboxClient.prototype, 'createSession', async ({ signal }) => {
+      setupSignal = signal
+      started.resolve()
+      await publication.promise
+      return Object.assign(new EventEmitter(), {
+        setActivity: async () => { throw new Error('Must not publish after close') },
+        close: async () => { closed = true }
+      })
+    })
     stub(NethernetSignal.prototype, 'connect', async () => { signals++ })
     const server = require('../src/createServer').createServer({ transport: 'nethernet', useSignalling: true, authflow: {} })
     await started.promise
@@ -207,6 +248,8 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     publication.resolve()
     await new Promise(resolve => setImmediate(resolve))
     assert.strictEqual(signals, 0)
+    assert.strictEqual(setupSignal.aborted, true)
+    assert.strictEqual(closed, true)
   })
 })
 
