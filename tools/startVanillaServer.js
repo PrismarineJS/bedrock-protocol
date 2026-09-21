@@ -1,12 +1,13 @@
 const bedrockServer = require('minecraft-bedrock-server')
+const { getTransport } = require('./vanillaClient')
 
-// The vanilla spawn and packet-dump clients use RakNet, even when BDS defaults to Nethernet.
+// Match the vanilla clients to the transport default recorded in minecraft-data.
 module.exports = {
   ...bedrockServer,
   startServerAndWait (version, withTimeout, options) {
-    return bedrockServer.startServerAndWait(version, withTimeout, { transport: 'raknet', ...options, root: __dirname })
+    return bedrockServer.startServerAndWait(version, withTimeout, { transport: getTransport(version), ...options, root: __dirname })
   },
   startServerAndWait2 (version, withTimeout, options) {
-    return bedrockServer.startServerAndWait2(version, withTimeout, { transport: 'raknet', ...options, root: __dirname })
+    return bedrockServer.startServerAndWait2(version, withTimeout, { transport: getTransport(version), ...options, root: __dirname })
   }
 }
