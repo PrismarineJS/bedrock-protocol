@@ -97,7 +97,9 @@ async function worldAuthenticate (client, options) {
   client.nethernet.session = session
   session.on('error', error => client.onConnectionError(error))
 
-  const networkId = session.current.properties?.custom?.SupportedConnections?.find(e => e.ConnectionType === 3)?.NetherNetId
+  // Select the connection that advertises a NetherNet id. The ConnectionType value for NetherNet is not stable across
+  // client versions (a live 1.26.51 host advertises 7, this code assumed 3), so match on the NetherNetId itself.
+  const networkId = session.current.properties?.custom?.SupportedConnections?.find(e => e.NetherNetId)?.NetherNetId
 
   if (!networkId) throw Error('Couldn\'t find a Nethernet ID to connect to.')
 
