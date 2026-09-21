@@ -22,7 +22,7 @@ const defaultOptions = {
   autoInitPlayer: true,
   // If true, do not authenticate with Xbox Live
   offline: false,
-  // Milliseconds to wait before aborting connection attempt
+  // Transport establishment deadline after authentication/signalling, in milliseconds
   connectTimeout: 9000,
   // Specifies the raknet implementation to use
   raknetBackend: 'raknet-native',

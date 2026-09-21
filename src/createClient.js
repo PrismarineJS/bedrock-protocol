@@ -15,11 +15,11 @@ function createClient (options) {
   function onServerInfo () {
     if (client._closed) return
     client.on('connect_allowed', () => connect(client))
-    if (client.options.skipPing) {
+    if (client.options.skipPing || (client.options.transport === 'nethernet' && client.options.nethernet.signalling === 'services')) {
       client.init()
     } else {
       client._discoveryAbort = new AbortController()
-      ping({ ...client.options, signal: client._discoveryAbort.signal }).then(ad => {
+      ping({ ...client.options, timeout: client.options.pingTimeout, signal: client._discoveryAbort.signal }).then(ad => {
         if (client._closed) return
         const gameVersion = client.options.transport === 'nethernet' ? ad.gameVersion : ad.version
         // Version 4 advertisements do not carry a game version.
@@ -40,12 +40,7 @@ function createClient (options) {
         if (!client._closed) client.init()
       }).catch(e => {
         if (client._closed) return
-        if (client.options.nethernet?.signalling !== 'services') {
-          client.onConnectionError(e)
-        } else {
-          client.conLog?.('Could not ping server through local signalling, trying to connect over franchise signalling instead')
-          if (!client._closed) client.init()
-        }
+        client.onConnectionError(e)
       })
     }
   }

@@ -101,7 +101,7 @@ class Client extends Connection {
           this.connection.nethernet.networkId,
           this.options.authflow,
           this.options.version,
-          { protocol: this.options.nethernet._signallingProtocol, host: this.options.nethernet._signallingHost, timeout: this.options.nethernet.signallingTimeout }
+          { protocol: this.options.nethernet._signallingProtocol, host: this.options.nethernet._signallingHost, timeout: this.options.nethernet.signallingConnectTimeout }
         )
 
         this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
@@ -158,7 +158,7 @@ class Client extends Connection {
 
   async ping () {
     try {
-      return await this.connection.ping(this.options.connectTimeout)
+      return await this.connection.ping(this.options.pingTimeout)
     } catch (e) {
       this.conLog?.(`Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`)
       throw e

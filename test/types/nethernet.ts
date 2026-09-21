@@ -2,7 +2,7 @@ import { createClient, createServer, Relay, ping, NethernetServerAdvertisement }
 import { Authflow } from 'prismarine-auth'
 
 const authflow = new Authflow()
-createClient({ transport: 'nethernet', nethernet: { networkId: 123n, signalling: 'services', signallingTimeout: 10000 }, authflow })
+createClient({ transport: 'nethernet', nethernet: { networkId: 123n, signalling: 'services', signallingConnectTimeout: 10000 }, authflow })
 createClient({ realms: { realmId: '123' } })
 createClient({ world: { pickSession: async sessions => sessions[0] } })
 createServer({ transport: 'nethernet', nethernet: { networkId: '123', signalling: 'services' }, authflow, onMsaCode: code => console.log(code.message) })
@@ -23,3 +23,9 @@ ping({ nethernet: { networkId: 123n }, timeout: 1000, signal: new AbortControlle
 createClient({ transport: 'nethernet', useSignalling: true })
 // @ts-expect-error Select an explicit signalling mode.
 createClient({ nethernet: { signalling: 'websocket' } })
+
+createClient({ host: 'localhost', pingTimeout: 1000, connectTimeout: 9000, useRaknetWorkers: false })
+// @ts-expect-error The public option matches the runtime plural spelling.
+createClient({ useRaknetWorker: false })
+// @ts-expect-error The signalling deadline explicitly names connection setup.
+createClient({ nethernet: { signallingTimeout: 1000 } })
