@@ -4,7 +4,7 @@ const bedrock = require('bedrock-protocol')
 
 const server = bedrock.createServer({
   transport: 'nethernet',
-  useSignalling: true, // disable for LAN connections only
+  nethernet: { signalling: 'services' }, // use 'lan' for LAN connections only
   motd: {
     motd: 'Funtime Server',
     levelName: 'Wonderland'

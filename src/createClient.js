@@ -34,13 +34,13 @@ function createClient (options) {
 
           client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${(ad.gameVersion ?? ad.version)} ${client.options.version !== (ad.gameVersion ?? ad.version) ? ` (as ${client.options.version})` : ''}`)
         } else if (client.options.transport === 'nethernet') {
-          client.conLog?.(`Connecting to ${client.options.networkId} ${ad.motd} (${ad.levelName})`)
+          client.conLog?.(`Connecting to ${client.options.nethernet.networkId} ${ad.motd} (${ad.levelName})`)
         }
 
         if (!client._closed) client.init()
       }).catch(e => {
         if (client._closed) return
-        if (!client.options.useSignalling) {
+        if (client.options.nethernet?.signalling !== 'services') {
           client.onConnectionError(e)
         } else {
           client.conLog?.('Could not ping server through local signalling, trying to connect over franchise signalling instead')
@@ -122,7 +122,8 @@ function connect (client) {
   }
 }
 
-async function ping ({ host, port, networkId, signal, timeout }) {
+async function ping ({ host, port, nethernet, signal, timeout }) {
+  const networkId = nethernet?.networkId
   signal?.throwIfAborted()
   const con = networkId ? new NethernetClient({ networkId, host }) : new RakClient({ host, port })
   let onAbort

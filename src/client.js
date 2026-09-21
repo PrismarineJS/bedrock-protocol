@@ -22,7 +22,7 @@ class Client extends Connection {
   constructor (options) {
     super()
     this._closed = false
-    this.options = { ...Options.defaultOptions, ...options }
+    this.options = { ...Options.defaultOptions, ...options, nethernet: { signalling: 'lan', ...options.nethernet } }
 
     if (this.options.transport === 'nethernet') {
       this.nethernet = {}
@@ -60,7 +60,7 @@ class Client extends Connection {
     const host = this.options.host
     const port = this.options.port
 
-    const networkId = this.options.networkId
+    const networkId = this.options.nethernet?.networkId
 
     if (this.options.transport === 'nethernet') {
       this.nethernet ??= {}
@@ -96,12 +96,12 @@ class Client extends Connection {
     if (this._closed) throw new Error('Client is closed')
     this.once('session', (sessionData) => {
       if (this._closed) return
-      if (this.options.transport === 'nethernet' && this.options.useSignalling) {
+      if (this.options.transport === 'nethernet' && this.options.nethernet.signalling === 'services') {
         this.nethernet.signalling = new NethernetSignal(
           this.connection.nethernet.networkId,
           this.options.authflow,
           this.options.version,
-          { protocol: this.options._signallingProtocol, host: this.options._signallingHost, timeout: this.options.signallingTimeout }
+          { protocol: this.options.nethernet._signallingProtocol, host: this.options.nethernet._signallingHost, timeout: this.options.nethernet.signallingTimeout }
         )
 
         this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
@@ -136,7 +136,7 @@ class Client extends Connection {
   validateOptions () {
     switch (this.options.transport) {
       case 'nethernet':
-        if (!this.options.networkId) throw Error('Invalid networkId')
+        if (!this.options.nethernet.networkId) throw Error('Invalid nethernet.networkId')
         break
       case 'raknet':
         if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')

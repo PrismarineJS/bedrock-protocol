@@ -13,7 +13,7 @@ class Server extends EventEmitter {
     super()
     this._closed = false
 
-    this.options = { ...Options.defaultOptions, ...options }
+    this.options = { ...Options.defaultOptions, ...options, nethernet: { signalling: 'lan', ...options.nethernet } }
     this.validateOptions()
 
     if (this.options.transport === 'nethernet') {
@@ -139,7 +139,7 @@ class Server extends EventEmitter {
     if (this._closed) return
     const { host, port, maxPlayers } = this.options
     // eslint-disable-next-line new-cap
-    this.transport = new this.transportServer({ host, port, networkId: this.options.networkId, maxPlayers }, this)
+    this.transport = new this.transportServer({ host, port, networkId: this.options.nethernet.networkId, maxPlayers }, this)
 
     this.transport.onError = error => this.onConnectionError(error)
 

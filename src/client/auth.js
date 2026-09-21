@@ -43,7 +43,7 @@ async function serverAuthenticate (server, options) {
   server.nethernet.sessionAbort = controller
   const session = await xbox.createSession({
     signal: controller.signal,
-    properties: ({ profile }) => createWorldProperties(profile, options.networkId, {
+    properties: ({ profile }) => createWorldProperties(profile, options.nethernet.networkId, {
       hostName: server.advertisement.motd,
       name: server.advertisement.levelName,
       version: options.version,
@@ -64,7 +64,7 @@ async function worldAuthenticate (client, options) {
   options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
   options.transport = 'nethernet'
-  options.useSignalling = true
+  options.nethernet = { ...options.nethernet, signalling: 'services' }
   client.nethernet ??= {}
 
   const xbox = new XboxClient(options.authflow, title)
@@ -104,7 +104,7 @@ async function worldAuthenticate (client, options) {
   if (!networkId) throw Error('Couldn\'t find a Nethernet ID to connect to.')
 
   await session.setActivity()
-  options.networkId = BigInt(networkId)
+  options.nethernet.networkId = BigInt(networkId)
 }
 
 async function realmAuthenticate (options) {
@@ -143,20 +143,18 @@ async function realmAuthenticate (options) {
 
   if (join.networkProtocol === 'NETHERNET_JSONRPC') {
     options.transport = 'nethernet'
-    options.networkId = join.address
-    options.useSignalling = true
+    options.nethernet = { ...options.nethernet, networkId: join.address, signalling: 'services' }
     options.skipPing = true
-    options._signallingProtocol = 'jsonrpc'
+    options.nethernet._signallingProtocol = 'jsonrpc'
     const region = join.sessionRegionData?.regionName
-    if (region) options._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
+    if (region) options.nethernet._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
   } else {
     const address = join.address?.match(/^(.*):(\d+)$/)
     if (!address) throw new Error('Invalid RakNet Realm address')
     options.transport = 'raknet'
     options.host = address[1].replace(/^\[|\]$/g, '')
     options.port = Number(address[2])
-    delete options.networkId
-    options.useSignalling = false
+    delete options.nethernet
   }
 }
 

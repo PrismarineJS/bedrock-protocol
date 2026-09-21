@@ -5,6 +5,15 @@ import { Authflow, ServerDeviceCodeResponse } from 'prismarine-auth'
 declare module 'bedrock-protocol' {
   type Version = string
 
+  export interface NethernetOptions {
+    // Remote ID for clients; local ID for servers (generated when omitted by createServer).
+    networkId?: string | bigint
+    // LAN discovery signalling or authenticated Minecraft services signalling (default: lan).
+    signalling?: 'lan' | 'services'
+    // Maximum wait for services signalling credentials in milliseconds (default: 15000).
+    signallingTimeout?: number
+  }
+
   export interface Options {
     // The string version to start the client or server as
     version?: Version
@@ -19,10 +28,7 @@ declare module 'bedrock-protocol' {
 
     // RakNet is the default; Nethernet uses WebRTC and a network ID.
     transport?: 'raknet' | 'nethernet'
-    networkId?: string | bigint
-    useSignalling?: boolean
-    // Maximum time to wait for signalling credentials, in milliseconds (default: 15000).
-    signallingTimeout?: number
+    nethernet?: NethernetOptions
     // An existing prismarine-auth flow can be shared with signalling and Realms.
     authflow?: Authflow
 
@@ -208,9 +214,7 @@ declare module 'bedrock-protocol' {
       host?: string
       port?: number
       transport?: 'raknet' | 'nethernet'
-      networkId?: string | bigint
-      useSignalling?: boolean
-      signallingTimeout?: number
+      nethernet?: NethernetOptions
       // Skip authentication connecting to the remote server?
       offline?: boolean
     }
@@ -296,6 +300,6 @@ declare module 'bedrock-protocol' {
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
-  export function ping(options: { networkId: string | bigint, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement>
+  export function ping(options: { nethernet: { networkId: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement>
   export function ping(options: { host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement>
 }

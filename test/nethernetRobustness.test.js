@@ -119,7 +119,7 @@ describe('Nethernet advertisement integration', () => {
       try {
         NethernetClient.prototype.ping = async () => new NethernetServerAdvertisement({ version: layout }, '1.21.0')
         const initialized = new Promise(resolve => { Client.prototype.init = function () { resolve(this.options.version) } })
-        client = createClient({ transport: 'nethernet', networkId: 123n, ...(explicit ? { version: explicit } : {}), conLog: null })
+        client = createClient({ transport: 'nethernet', nethernet: { networkId: 123n }, ...(explicit ? { version: explicit } : {}), conLog: null })
         assert.strictEqual(await initialized, expected)
       } finally {
         client?.close()

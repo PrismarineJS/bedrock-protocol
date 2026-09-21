@@ -8,7 +8,7 @@ function getTransport (version = CURRENT_VERSION) {
 // Local, offline BDS tests use HTTP signalling for Nethernet, without Xbox services.
 function createVanillaClient (options) {
   const transport = options.transport ?? getTransport(options.version)
-  const client = new Client({ ...options, transport, ...(transport === 'nethernet' ? { networkId: 1n } : {}) })
+  const client = new Client({ ...options, transport, ...(transport === 'nethernet' ? { nethernet: { ...options.nethernet, networkId: 1n } } : {}) })
   if (transport === 'raknet') return client
 
   if (!options.offline) {

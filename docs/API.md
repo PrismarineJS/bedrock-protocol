@@ -270,10 +270,10 @@ transport encryption, while Minecraft authentication still follows the `offline`
 
 | Option | Description |
 | --- | --- |
-| `networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createServer` generates an ID when omitted. |
+| `nethernet.networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createServer` generates an ID when omitted. |
 | `host` | For a Nethernet client, the address for LAN discovery (default `255.255.255.255`); for a server, the local bind address. |
-| `useSignalling` | Use authenticated Minecraft services signalling instead of LAN signalling. Defaults to false. Hosting with this enabled publishes an Xbox world session. |
-| `signallingTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
+| `nethernet.signalling` | `'lan'` (default) or `'services'` for authenticated Minecraft services signalling. Hosting with `'services'` publishes an Xbox world session. |
+| `nethernet.signallingTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
 | `authflow` | Optional existing `prismarine-auth` `Authflow`, shared by Minecraft authentication, Realms, and signalling. |
 
 LAN example:
@@ -282,7 +282,7 @@ LAN example:
 const client = bedrock.createClient({
   transport: 'nethernet',
   host: '192.168.1.10',
-  networkId: 123456789n,
+  nethernet: { networkId: 123456789n, signalling: 'lan' },
   version: '1.26.45',
   username: 'Player',
   offline: true // only when the target server permits offline authentication
@@ -292,7 +292,7 @@ client.on('error', console.error)
 
 Version 7 LAN advertisements select a supported game version automatically, unless `version`
 is explicitly supplied. Version 4 advertisements have no game version; connections without
-an explicit version use the library default. Use `ping({ networkId, host, timeout, signal })`
+an explicit version use the library default. Use `ping({ nethernet: { networkId }, host, timeout, signal })`
 for LAN discovery (`timeout` in milliseconds and `signal` as an optional AbortSignal); it returns a `NethernetServerAdvertisement`. Its `version` is the discovery
 layout number (4 or 7), and `gameVersion` is the Minecraft version. The exported class supports
 `fromBuffer(buffer)` and `toBuffer()` for binary advertisements. Only layouts 4 and 7 are
@@ -305,7 +305,7 @@ self-signed logins are permitted by the `offline` option. See
 [advertisement layouts](nethernet-advertisements.md) for field order and version differences.
 
 For Realms, use the existing `realms` options. The join response automatically selects the
-transport, network ID, and regional signalling endpoint:
+transport and nested Nethernet settings, including the network ID and regional signalling endpoint:
 
 ```js
 const client = bedrock.createClient({ realms: { realmId: '123456' } })
@@ -316,8 +316,8 @@ To select a friend's Xbox world, provide `world: { pickSession }`. The callback 
 available sessions and returns one, synchronously or asynchronously. This selects Nethernet
 and authenticated signalling automatically. See `examples/client/nethernet.js`.
 
-Relay destinations accept `transport`, `networkId`, `host`, `useSignalling`, and
-`signallingTimeout`, as well as the existing `realms` options. An omitted transport retains
+Relay destinations accept the same `nethernet: { networkId, signalling, signallingTimeout }`
+object, alongside `transport`, `host`, and the existing `realms` options. An omitted transport retains
 RakNet behavior. For a Nethernet server published to friends, see `examples/server/nethernet.js`;
 account configuration includes `username`, `profilesFolder`, `authflow`, and `onMsaCode`.
 

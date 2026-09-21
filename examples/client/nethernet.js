@@ -32,12 +32,11 @@ async function pickSession (availableSessions) {
 }
 
 const client = createClient({
-  transport: 'nethernet', // Use the Nethernet transport
-  useSignalling: true,
   world: {
     pickSession
   }
 })
+client.on('error', console.error)
 
 let ix = 0
 client.on('packet', (args) => {

@@ -6,22 +6,22 @@ const { getRandomUint64 } = require('./datatypes/util')
 const { serverAuthenticate } = require('./client/auth')
 const { SignalType } = require('nethernet')
 
-/** @param {{ port?: number, version?: string, networkId?: string | bigint, transport?: string }} options */
+/** @param {{ port?: number, version?: string, nethernet?: { networkId?: string | bigint, signalling?: string }, transport?: string }} options */
 function createServer (options) {
   assert(options)
-  const server = new Server({ networkId: getRandomUint64(), port: 19132, ...options })
+  const server = new Server({ port: 19132, ...options, nethernet: { networkId: getRandomUint64(), ...options.nethernet } })
 
   async function start () {
     // Bind before publishing the session or accepting signalling offers.
     await server.listen()
     if (server._closed) return
-    if (server.options.transport !== 'nethernet' || !server.options.useSignalling) return
+    if (server.options.transport !== 'nethernet' || server.options.nethernet.signalling !== 'services') return
 
     await serverAuthenticate(server, server.options)
     if (server._closed) return
 
-    const signalling = new NethernetSignal(server.options.networkId, server.options.authflow, server.options.version, {
-      timeout: server.options.signallingTimeout
+    const signalling = new NethernetSignal(server.options.nethernet.networkId, server.options.authflow, server.options.version, {
+      timeout: server.options.nethernet.signallingTimeout
     })
     server.nethernet.signalling = signalling
     signalling.on('error', error => server.onConnectionError(error))

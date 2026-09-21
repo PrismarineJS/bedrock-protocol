@@ -15,7 +15,7 @@ describe('Nethernet authenticated identity', function () {
       const profile = Buffer.from(JSON.stringify({ extraData: { displayName: 'Test', XUID: '123' } })).toString('base64url')
       const client = new Client({
         transport: 'nethernet',
-        networkId: 1n,
+        nethernet: { networkId: 1n },
         host: '127.0.0.1',
         version: CURRENT_VERSION,
         username: 'Test',

@@ -195,9 +195,7 @@ class Relay extends Server {
       host: this.options.destination.host,
       port: this.options.destination.port,
       transport: this.options.destination.transport ?? 'raknet',
-      networkId: this.options.destination.networkId,
-      signallingTimeout: this.options.destination.signallingTimeout,
-      useSignalling: this.options.destination.useSignalling ?? false,
+      nethernet: this.options.destination.nethernet,
       batchingInterval: this.options.batchingInterval,
       onMsaCode: (code) => {
         if (this.options.onMsaCode) {

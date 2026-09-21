@@ -102,6 +102,22 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     client.close()
   })
 
+  it('forwards nested Nethernet relay options without sharing mutable settings', async () => {
+    stub(Client.prototype, 'connect', function () {})
+    const nethernet = Object.freeze({ networkId: 123n, signalling: 'services', signallingTimeout: 1234 })
+    const relay = new Relay({ offline: true, destination: { transport: 'nethernet', nethernet } })
+    await relay.openUpstreamConnection({ profile: { name: 'test' }, disconnect () {} }, { hash: 'test' })
+    const client = relay.upstreams.get('test')
+    try {
+      assert.deepStrictEqual(client.options.nethernet, nethernet)
+      assert.notStrictEqual(client.options.nethernet, nethernet)
+      client.options.nethernet.networkId = 456n
+      assert.strictEqual(nethernet.networkId, 123n)
+    } finally {
+      client.close()
+    }
+  })
+
   it('cleans up direct clients even before connection, including rejected session teardown', async () => {
     const calls = []
     const client = new Client({ transport: 'nethernet', delayedInit: true })
@@ -120,7 +136,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     const client = new Client({
       delayedInit: true,
       transport: 'nethernet',
-      useSignalling: true,
+      nethernet: { signalling: 'services' },
       authflow: { getMinecraftBedrockServicesToken: async () => { throw new Error('token unavailable') } }
     })
     let closed = false
@@ -135,7 +151,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
   it('does not start a second transport connection when signalling credentials refresh', async () => {
     stub(auth, 'authenticate', client => client.emit('session', {}))
     stub(NethernetSignal.prototype, 'init', async function () { this.emit('credentials', []) })
-    const client = new Client({ delayedInit: true, transport: 'nethernet', useSignalling: true })
+    const client = new Client({ delayedInit: true, transport: 'nethernet', nethernet: { signalling: 'services' } })
     client.connection = { nethernet: { networkId: 1n, handleSignal () {} }, close () {} }
     let connections = 0
     client._connect = () => { connections++ }
@@ -155,19 +171,22 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
         getRealms: async () => [{ id: 123 }],
         rest: { get: async () => ({ address, networkProtocol: protocol, sessionRegionData: { regionName: 'WestUS' } }) }
       }))
-      const options = { version: CURRENT_VERSION, realms: { realmId: 123 }, authflow: {} }
+      const nethernet = Object.freeze({ signalling: 'lan', signallingTimeout: 1234 })
+      const options = { version: CURRENT_VERSION, realms: { realmId: 123 }, authflow: {}, nethernet }
       await auth.realmAuthenticate(options)
       if (protocol === 'RAKNET') {
         assert.strictEqual(options.transport, 'raknet')
         assert.strictEqual(options.host, 'example.com')
         assert.strictEqual(options.port, 19132)
+        assert.strictEqual(options.nethernet, undefined)
       } else {
         assert.strictEqual(options.transport, 'nethernet')
-        assert.strictEqual(options.networkId, address)
+        assert.strictEqual(options.nethernet.networkId, address)
         assert.strictEqual(options.skipPing, true)
-        assert.strictEqual(options.useSignalling, true)
-        assert.strictEqual(options._signallingProtocol, 'jsonrpc')
-        assert.strictEqual(options._signallingHost, 'signal-westus.franchise.minecraft-services.net')
+        assert.strictEqual(options.nethernet.signalling, 'services')
+        assert.strictEqual(options.nethernet.signallingTimeout, 1234)
+        assert.strictEqual(options.nethernet._signallingProtocol, 'jsonrpc')
+        assert.strictEqual(options.nethernet._signallingHost, 'signal-westus.franchise.minecraft-services.net')
       }
     })
   }
@@ -178,7 +197,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     let published = false
     let closed = false
     const session = Object.assign(new EventEmitter(), {
-      current: { properties: { custom: { SupportedConnections: [{ ConnectionType: 3, NetherNetId: '18446744073709551615' }] } } },
+      current: { properties: { custom: { SupportedConnections: [{ ConnectionType: 3 }, { ConnectionType: 7, NetherNetId: '18446744073709551615' }] } } },
       setActivity: async () => { published = true },
       close: async () => { closed = true }
     })
@@ -194,7 +213,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     })
     const options = { authflow: {}, world: { pickSession: sessions => sessions[0] } }
     await auth.worldAuthenticate(client, options)
-    assert.strictEqual(options.networkId, 18446744073709551615n)
+    assert.strictEqual(options.nethernet.networkId, 18446744073709551615n)
     assert.strictEqual(published, true)
     client.close()
     await client._nethernetCleanup
@@ -216,7 +235,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
       calls.push('signal')
       throw new Error('signalling unavailable')
     })
-    const server = require('../src/createServer').createServer({ transport: 'nethernet', useSignalling: true, authflow: {} })
+    const server = require('../src/createServer').createServer({ transport: 'nethernet', nethernet: { signalling: 'services' }, authflow: {} })
     const error = await new Promise(resolve => server.once('error', resolve))
     assert.match(error.message, /signalling unavailable/)
     await server.close()
@@ -242,7 +261,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
       })
     })
     stub(NethernetSignal.prototype, 'connect', async () => { signals++ })
-    const server = require('../src/createServer').createServer({ transport: 'nethernet', useSignalling: true, authflow: {} })
+    const server = require('../src/createServer').createServer({ transport: 'nethernet', nethernet: { signalling: 'services' }, authflow: {} })
     await started.promise
     await server.close()
     publication.resolve()

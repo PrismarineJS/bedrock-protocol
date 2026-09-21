@@ -10,14 +10,14 @@ describe('Nethernet LAN transport', function () {
   this.timeout(20000)
   it('discovers a server and completes both sides of the login handshake', async () => {
     const networkId = 123456789n
-    const server = new Server({ transport: 'nethernet', networkId, host: '127.0.0.1', offline: true, version: CURRENT_VERSION })
+    const server = new Server({ transport: 'nethernet', nethernet: { networkId }, host: '127.0.0.1', offline: true, version: CURRENT_VERSION })
     let client
     let serverPlayer
     let timer
     try {
       await server.listen()
       server.transport.updateAdvertisement()
-      const ad = await ping({ host: '127.0.0.1', networkId })
+      const ad = await ping({ host: '127.0.0.1', nethernet: { networkId } })
       assert.strictEqual(ad.gameVersion, CURRENT_VERSION)
       const joined = new Promise((resolve, reject) => {
         let joins = 0
@@ -31,7 +31,7 @@ describe('Nethernet LAN transport', function () {
         })
         client = createClient({
           transport: 'nethernet',
-          networkId,
+          nethernet: { networkId },
           host: '127.0.0.1',
           offline: true,
           username: 'NethernetTest',
