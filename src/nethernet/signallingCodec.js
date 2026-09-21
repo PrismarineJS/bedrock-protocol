@@ -1,5 +1,5 @@
 const { parse: parseJson, stringify } = require('json-bigint')({ storeAsString: true })
-const { SignalStructure } = require('node-nethernet')
+const { SignalStructure } = require('nethernet')
 
 function parseTurnServers (dataString) {
   const data = parseJson(dataString)

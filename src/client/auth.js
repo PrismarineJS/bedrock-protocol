@@ -4,7 +4,8 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
-const { SessionDirectory } = require('../xsapi/session')
+const { XboxClient } = require('prismarine-xbox-services')
+const { title, createWorldProperties } = require('./xboxSession')
 
 // BDS validates that the login DeviceOS agrees with the platform used to
 // authenticate. Values are from the protocol DeviceOS enum.
@@ -37,19 +38,24 @@ async function serverAuthenticate (server, options) {
 
   options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
-  server.nethernet.session = new SessionDirectory(options.authflow, {
-    world: {
+  const xbox = new XboxClient(options.authflow, title)
+  const controller = new AbortController()
+  server.nethernet.sessionAbort = controller
+  const session = await xbox.createSession({
+    signal: controller.signal,
+    properties: ({ profile }) => createWorldProperties(profile, options.networkId, {
       hostName: server.advertisement.motd,
       name: server.advertisement.levelName,
       version: options.version,
       protocol: options.protocolVersion,
       memberCount: server.advertisement.playerCount,
       maxMemberCount: server.advertisement.playersMax
-    }
+    })
   })
-
-  server.nethernet.session.on('error', error => server.onConnectionError(error))
-  await server.nethernet.session.createSession(options.networkId)
+  if (server._closed) { await session.close(); return }
+  server.nethernet.session = session
+  session.on('error', error => server.onConnectionError(error))
+  await session.setActivity()
 }
 
 async function worldAuthenticate (client, options) {
@@ -61,14 +67,15 @@ async function worldAuthenticate (client, options) {
   options.useSignalling = true
   client.nethernet ??= {}
 
-  const xbl = await options.authflow.getXboxToken()
+  const xbox = new XboxClient(options.authflow, title)
+  const controller = new AbortController()
+  client.nethernet.sessionAbort = controller
+  const requestOptions = { signal: controller.signal }
+  const profile = await xbox.getProfile('me', requestOptions)
   if (client._closed) return
 
-  client.nethernet.session = new SessionDirectory(options.authflow, {})
-  client.nethernet.session.on('error', error => client.onConnectionError(error))
-
   const getSessions = async () => {
-    const sessions = await client.nethernet.session.host.rest.getSessions(xbl.userXUID)
+    const sessions = await xbox.getActivityHandles(profile.xuid, requestOptions)
     debug('sessions', sessions)
     if (!sessions.length) throw Error('Couldn\'t find any sessions for the authenticated account')
     return sessions
@@ -85,12 +92,16 @@ async function worldAuthenticate (client, options) {
   if (!world) throw Error('Couldn\'t find a session to connect to.')
 
   if (client._closed) return
-  const session = await client.nethernet.session.joinSession(world.sessionRef.name)
+  const session = await xbox.joinSession(world.sessionRef.name, requestOptions)
+  if (client._closed) { await session.close(); return }
+  client.nethernet.session = session
+  session.on('error', error => client.onConnectionError(error))
 
-  const networkId = session.properties?.custom?.SupportedConnections?.find(e => e.ConnectionType === 3)?.NetherNetId
+  const networkId = session.current.properties?.custom?.SupportedConnections?.find(e => e.ConnectionType === 3)?.NetherNetId
 
   if (!networkId) throw Error('Couldn\'t find a Nethernet ID to connect to.')
 
+  await session.setActivity()
   options.networkId = BigInt(networkId)
 }
 
