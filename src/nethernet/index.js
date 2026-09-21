@@ -1,4 +1,4 @@
-const { Client, Server } = require('node-nethernet')
+const { Client, Server } = require('nethernet')
 const { NethernetServerAdvertisement } = require('./advertisement')
 const debug = require('debug')('bedrock-protocol:nethernet')
 

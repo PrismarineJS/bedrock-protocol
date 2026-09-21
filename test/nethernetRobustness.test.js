@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 const assert = require('assert')
 const { EventEmitter } = require('events')
-const { SignalStructure } = require('node-nethernet')
+const { SignalStructure } = require('nethernet')
 const { parseJson, parseSignalMessage, parseJsonRpcReceiveItem, encodeSignal } = require('../src/nethernet/signallingCodec')
 const { NethernetSignal } = require('../src/nethernet/signalling')
 const { NethernetClient } = require('../src/nethernet')

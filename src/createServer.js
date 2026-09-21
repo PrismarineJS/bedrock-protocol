@@ -4,7 +4,7 @@ const assert = require('assert')
 
 const { getRandomUint64 } = require('./datatypes/util')
 const { serverAuthenticate } = require('./client/auth')
-const { SignalType } = require('node-nethernet')
+const { SignalType } = require('nethernet')
 
 /** @param {{ port?: number, version?: string, networkId?: string | bigint, transport?: string }} options */
 function createServer (options) {
