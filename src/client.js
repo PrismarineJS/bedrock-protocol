@@ -9,7 +9,6 @@ const { NethernetClient } = require('./nethernet')
 const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
-const { NethernetSignal } = require('./nethernet/signalling')
 const { closeNethernet } = require('./nethernet/cleanup')
 
 const debugging = false
@@ -97,6 +96,7 @@ class Client extends Connection {
     this.once('session', (sessionData) => {
       if (this._closed) return
       if (this.options.transport === 'nethernet' && this.options.nethernet.signalling === 'services') {
+        const { NethernetSignal } = require('./nethernet/signalling')
         this.nethernet.signalling = new NethernetSignal(
           this.connection.nethernet.networkId,
           this.options.authflow,

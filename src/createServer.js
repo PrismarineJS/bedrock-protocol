@@ -1,10 +1,8 @@
 const { Server } = require('./server')
-const { NethernetSignal } = require('./nethernet/signalling')
 const assert = require('assert')
 
 const { getRandomUint64 } = require('./datatypes/util')
 const { serverAuthenticate } = require('./client/auth')
-const { SignalType } = require('nethernet')
 
 /** @param {{ port?: number, version?: string, nethernet?: { networkId?: string | bigint, signalling?: string }, transport?: string }} options */
 function createServer (options) {
@@ -17,6 +15,8 @@ function createServer (options) {
     if (server._closed) return
     if (server.options.transport !== 'nethernet' || server.options.nethernet.signalling !== 'services') return
 
+    const { NethernetSignal } = require('./nethernet/signalling')
+    const { SignalType } = require('nethernet')
     await serverAuthenticate(server, server.options)
     if (server._closed) return
 
