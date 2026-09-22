@@ -47,7 +47,9 @@ class NethernetServerAdvertisement {
         offset += field.size
       }
     }
-    return new NethernetServerAdvertisement(value)
+    const advertisement = new NethernetServerAdvertisement(value)
+    advertisement.raw = buffer.toString('hex')
+    return advertisement
   }
 
   toBuffer () {
