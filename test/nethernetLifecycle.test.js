@@ -81,19 +81,83 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
     })
   }
 
-  it('uses pingTimeout for LAN discovery and reports failure without a services fallback', async () => {
-    const failure = new Error('discovery expired')
+  for (const version of [undefined, '1.21.0']) {
+    it(`falls back after discovery failure, explicit version=${version}`, async () => {
+      const initialized = deferred()
+      let timeout
+      stub(NethernetClient.prototype, 'ping', async value => { timeout = value; throw new Error('discovery expired') })
+      stub(Client.prototype, 'init', function () { initialized.resolve(this.options.version) })
+      const client = createClient({ transport: 'nethernet', nethernet: { networkId: 1n }, version, pingTimeout: 123, connectTimeout: 456, conLog: null })
+      try {
+        assert.strictEqual(await initialized.promise, version ?? CURRENT_VERSION)
+        assert.strictEqual(timeout, 123)
+        assert.strictEqual(client.options.nethernet.signalling, 'lan')
+        assert.strictEqual(client._closed, false)
+      } finally {
+        client.close()
+      }
+    })
+  }
+
+  it('does not initialize a client closed during discovery', async () => {
+    const discovery = deferred()
     let initialized = false
-    let timeout
-    stub(NethernetClient.prototype, 'ping', async value => { timeout = value; throw failure })
+    stub(NethernetClient.prototype, 'ping', () => discovery.promise)
     stub(Client.prototype, 'init', () => { initialized = true })
-    const client = createClient({ transport: 'nethernet', nethernet: { networkId: 1n }, pingTimeout: 123, connectTimeout: 456 })
-    const error = await new Promise(resolve => client.once('error', resolve))
-    assert.strictEqual(error, failure)
-    assert.strictEqual(timeout, 123)
+    const client = createClient({ transport: 'nethernet', nethernet: { networkId: 1n }, conLog: null })
+    client.close()
+    discovery.resolve({ version: 7, gameVersion: '1.21.0' })
+    await new Promise(resolve => setImmediate(resolve))
     assert.strictEqual(initialized, false)
+  })
+
+  it('reports initialization errors without retrying with the fallback', async () => {
+    const failure = new Error('initialization failed')
+    let initialized = 0
+    stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: '1.21.0' }))
+    stub(Client.prototype, 'init', () => { initialized++; throw failure })
+    const client = createClient({ transport: 'nethernet', nethernet: { networkId: 1n }, conLog: null })
+    assert.strictEqual(await new Promise(resolve => client.once('error', resolve)), failure)
+    assert.strictEqual(initialized, 1)
     assert.strictEqual(client._closed, true)
   })
+
+  for (const [version, compression] of [['1.18.0', 'deflate'], ['1.21.0', 'none']]) {
+    it(`selects ${compression} compression after discovering ${version}`, async () => {
+      const initialized = deferred()
+      stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: version }))
+      stub(Client.prototype, 'connect', function () { initialized.resolve(this.compressionAlgorithm) })
+      const client = createClient({ transport: 'nethernet', nethernet: { networkId: 1n }, conLog: null })
+      try {
+        assert.strictEqual(await initialized.promise, compression)
+        assert.strictEqual(client.options.version, version)
+      } finally {
+        client.close()
+      }
+    })
+  }
+
+  for (const transport of ['raknet', 'nethernet']) {
+    for (const advertised of ['1.21.0.3', '9.99.0', undefined]) {
+      it(`selects a version from ${transport} pong ${advertised}`, async () => {
+        const initialized = deferred()
+        if (transport === 'raknet') {
+          const { RakClient } = require('../src/rak')('raknet-native')
+          stub(RakClient.prototype, 'ping', async () => `MCPE;test;0;${advertised ?? ''};0;5;1;world;Creative;1;19133;19133;`)
+        } else {
+          stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: advertised }))
+        }
+        stub(Client.prototype, 'init', function () { initialized.resolve(this.options.version) })
+        const client = createClient({ host: '127.0.0.1', transport, ...(transport === 'nethernet' ? { nethernet: { networkId: 1n } } : {}), conLog: null })
+        try {
+          assert.strictEqual(await initialized.promise, advertised === '1.21.0.3' ? '1.21.0' : CURRENT_VERSION)
+          if (transport === 'raknet') assert.strictEqual(client.options.port, 19133)
+        } finally {
+          client.close()
+        }
+      })
+    }
+  }
 
   it('keeps explicit client ping deadlines independent of connection deadlines', async () => {
     const client = new Client({ delayedInit: true, pingTimeout: 123, connectTimeout: 456 })
