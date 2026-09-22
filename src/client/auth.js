@@ -4,6 +4,8 @@ const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
 const { uuidFrom } = require('../datatypes/util')
 const { RealmAPI } = require('prismarine-realms')
+const { XboxClient } = require('prismarine-xbox-services')
+const { title, createWorldProperties } = require('./xboxSession')
 
 // BDS validates that the login DeviceOS agrees with the platform used to
 // authenticate. Values are from the protocol DeviceOS enum.
@@ -31,14 +33,87 @@ function validateOptions (options) {
   }
 }
 
+async function serverAuthenticate (server, options) {
+  validateOptions(options)
+
+  options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  const xbox = new XboxClient(options.authflow, title)
+  const controller = new AbortController()
+  server.nethernet.sessionAbort = controller
+  const session = await xbox.createSession({
+    signal: controller.signal,
+    properties: ({ profile }) => createWorldProperties(profile, options.nethernet.networkId, {
+      hostName: server.advertisement.motd,
+      name: server.advertisement.levelName,
+      version: options.version,
+      protocol: options.protocolVersion,
+      memberCount: server.advertisement.playerCount,
+      maxMemberCount: server.advertisement.playersMax
+    })
+  })
+  if (server._closed) { await session.close(); return }
+  server.nethernet.session = session
+  session.on('error', error => server.onConnectionError(error))
+  await session.setActivity()
+}
+
+async function worldAuthenticate (client, options) {
+  validateOptions(options)
+
+  options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+
+  options.transport = 'nethernet'
+  options.nethernet = { ...options.nethernet, signalling: 'services' }
+  client.nethernet ??= {}
+
+  const xbox = new XboxClient(options.authflow, title)
+  const controller = new AbortController()
+  client.nethernet.sessionAbort = controller
+  const requestOptions = { signal: controller.signal }
+  const profile = await xbox.getProfile('me', requestOptions)
+  if (client._closed) return
+
+  const getSessions = async () => {
+    const sessions = await xbox.getActivityHandles(profile.xuid, requestOptions)
+    debug('sessions', sessions)
+    if (!sessions.length) throw Error('Couldn\'t find any sessions for the authenticated account')
+    return sessions
+  }
+
+  let world
+
+  if (options.world.pickSession) {
+    if (typeof options.world.pickSession !== 'function') throw Error('world.pickSession must be a function')
+    const sessions = await getSessions()
+    world = await options.world.pickSession(sessions)
+  }
+
+  if (!world) throw Error('Couldn\'t find a session to connect to.')
+
+  if (client._closed) return
+  const session = await xbox.joinSession(world.sessionRef.name, requestOptions)
+  if (client._closed) { await session.close(); return }
+  client.nethernet.session = session
+  session.on('error', error => client.onConnectionError(error))
+
+  // Select the connection that advertises a NetherNet id. The ConnectionType value for NetherNet is not stable across
+  // client versions (a live 1.26.51 host advertises 7, this code assumed 3), so match on the NetherNetId itself.
+  const networkId = session.current.properties?.custom?.SupportedConnections?.find(e => e.NetherNetId)?.NetherNetId
+
+  if (!networkId) throw Error('Couldn\'t find a Nethernet ID to connect to.')
+
+  await session.setActivity()
+  options.nethernet.networkId = BigInt(networkId)
+}
+
 async function realmAuthenticate (options) {
   validateOptions(options)
 
-  options.authflow = new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+  options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
 
-  // TODO: Correct minecraft-data which incorrectly dropped 1. prefix from version
-  const ver = options.version.startsWith('1.') ? options.version : `1.${options.version}`
-  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: ver })
+  const version = options.version.startsWith('1.') ? options.version : `1.${options.version}`
+  const api = RealmAPI.from(options.authflow, 'bedrock', { minecraftVersion: version })
 
   const getRealms = async () => {
     const realms = await api.getRealms()
@@ -62,12 +137,24 @@ async function realmAuthenticate (options) {
 
   if (!realm) throw Error('Couldn\'t find a Realm to connect to. Authenticated account must be the owner or has been invited to the Realm.')
 
-  const { host, port } = await realm.getAddress()
+  const join = await api.rest.get(`/worlds/${realm.id}/join`)
 
-  debug('realms connection', { host, port })
+  debug('realms connection', join)
 
-  options.host = host
-  options.port = port
+  if (join.networkProtocol === 'NETHERNET_JSONRPC') {
+    options.transport = 'nethernet'
+    options.nethernet = { ...options.nethernet, networkId: join.address, signalling: 'services' }
+    options.nethernet._signallingProtocol = 'jsonrpc'
+    const region = join.sessionRegionData?.regionName
+    if (region) options.nethernet._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
+  } else {
+    const address = join.address?.match(/^(.*):(\d+)$/)
+    if (!address) throw new Error('Invalid RakNet Realm address')
+    options.transport = 'raknet'
+    options.host = address[1].replace(/^\[|\]$/g, '')
+    options.port = Number(address[2])
+    delete options.nethernet
+  }
 }
 
 /**
@@ -81,8 +168,8 @@ async function realmAuthenticate (options) {
 async function authenticate (client, options) {
   validateOptions(options)
   try {
-    const authflow = options.authflow || new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
-    const loginData = await authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
+    options.authflow ??= new PrismarineAuth(options.username, options.profilesFolder, options, options.onMsaCode)
+    const loginData = await options.authflow.getMinecraftBedrockToken(client.clientX509).catch(e => {
       if (options.password) console.warn('Sign in failed, try removing the password field')
       throw e
     })
@@ -105,8 +192,7 @@ async function authenticate (client, options) {
 
     return postAuthenticate(client, profile, loginData)
   } catch (err) {
-    console.error(err)
-    client.emit('error', err)
+    client.onConnectionError(err)
   }
 }
 
@@ -125,6 +211,7 @@ function createOfflineSession (client, options) {
 }
 
 function postAuthenticate (client, profile, auth = {}) {
+  if (client._closed) return
   client.profile = profile
   client.username = profile.name
   client.accessToken = auth.chain || []
@@ -135,5 +222,7 @@ function postAuthenticate (client, profile, auth = {}) {
 module.exports = {
   createOfflineSession,
   authenticate,
-  realmAuthenticate
+  realmAuthenticate,
+  worldAuthenticate,
+  serverAuthenticate
 }

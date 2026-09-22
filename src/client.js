@@ -5,9 +5,11 @@ const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
 const initRaknet = require('./rak')
+const { NethernetClient } = require('./nethernet')
 const KeyExchange = require('./handshake/keyExchange')
 const Login = require('./handshake/login')
 const LoginVerify = require('./handshake/loginVerify')
+const { closeNethernet } = require('./nethernet/cleanup')
 
 const debugging = false
 
@@ -18,15 +20,17 @@ class Client extends Connection {
   /** @param {{ version: number, host: string, port: number }} options */
   constructor (options) {
     super()
-    this.options = { ...Options.defaultOptions, ...options }
+    this._closed = false
+    this.options = { ...Options.defaultOptions, ...options, nethernet: { signalling: 'lan', ...options.nethernet } }
+
+    if (this.options.transport === 'nethernet') {
+      this.nethernet = {}
+    }
 
     this.startGameData = {}
     this.clientRuntimeId = null
-    // Start off without compression on 1.19.30, zlib on below
-    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
-    this.batchHeader = 0xfe
 
     if (isDebug) {
       this.inLog = (...args) => debug('C ->', ...args)
@@ -40,7 +44,10 @@ class Client extends Connection {
   }
 
   init () {
+    if (this._closed) return
     this.validateOptions()
+    // Choose initial compression after discovery has selected the protocol version.
+    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
     this._loadFeatures()
@@ -49,11 +56,24 @@ class Client extends Connection {
     Login(this, null, this.options)
     LoginVerify(this, null, this.options)
 
-    const { RakClient } = initRaknet(this.options.raknetBackend)
     const host = this.options.host
     const port = this.options.port
-    this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
 
+    const networkId = this.options.nethernet?.networkId
+
+    if (this.options.transport === 'nethernet') {
+      this.nethernet ??= {}
+      this.connection = new NethernetClient({ networkId, host: this.options.host, webrtcBackend: this.options.nethernet.webrtcBackend })
+      this.batchHeader = null
+      this.disableEncryption = true
+    } else if (this.options.transport === 'raknet') {
+      const { RakClient } = initRaknet(this.options.raknetBackend)
+      this.connection = new RakClient({ useWorkers: this.options.useRaknetWorkers, host, port }, this)
+      this.batchHeader = 0xfe
+      this.disableEncryption = false
+    }
+
+    this.connection.onError = error => this.onConnectionError(error)
     this.emit('connect_allowed')
   }
 
@@ -72,7 +92,36 @@ class Client extends Connection {
 
   connect () {
     if (!this.connection) throw new Error('Connect not currently allowed') // must wait for `connect_allowed`, or use `createClient`
-    this.on('session', this._connect)
+    if (this._closed) throw new Error('Client is closed')
+    this.once('session', (sessionData) => {
+      if (this._closed) return
+      if (this.options.transport === 'nethernet' && this.options.nethernet.signalling === 'services') {
+        const { NethernetSignal } = require('./nethernet/signalling')
+        this.nethernet.signalling = new NethernetSignal(
+          this.connection.nethernet.networkId,
+          this.options.authflow,
+          this.options.version,
+          { protocol: this.options.nethernet._signallingProtocol, host: this.options.nethernet._signallingHost, timeout: this.options.nethernet.signallingConnectTimeout }
+        )
+
+        this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
+
+        this.nethernet.signalling.on('signal', signal => {
+          Promise.resolve().then(() => {
+            if (!this._closed) return this.connection.nethernet.handleSignal(signal)
+          }).catch(error => this.onConnectionError(error))
+        })
+        this.nethernet.signalling.on('credentials', (credentials) => {
+          this.connection.nethernet.credentials = credentials
+        })
+        this.nethernet.signalling.on('error', error => this.onConnectionError(error))
+        this.nethernet.signalling.connect()
+          .then(() => { if (!this._closed) this._connect(sessionData) })
+          .catch(error => this.onConnectionError(error))
+      } else {
+        this._connect(sessionData)
+      }
+    })
 
     if (this.options.offline) {
       debug('offline mode, not authenticating', this.options)
@@ -85,7 +134,16 @@ class Client extends Connection {
   }
 
   validateOptions () {
-    if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
+    switch (this.options.transport) {
+      case 'nethernet':
+        if (!this.options.nethernet.networkId) throw Error('Invalid nethernet.networkId')
+        break
+      case 'raknet':
+        if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
+        break
+      default:
+        throw Error(`Unsupported transport: ${this.options.transport} (nethernet, raknet)`)
+    }
     Options.validateOptions(this.options)
   }
 
@@ -100,15 +158,16 @@ class Client extends Connection {
 
   async ping () {
     try {
-      return await this.connection.ping(this.options.connectTimeout)
+      return await this.connection.ping(this.options.pingTimeout)
     } catch (e) {
       this.conLog?.(`Unable to connect to [${this.options.host}]/${this.options.port}. Is the server running?`)
       throw e
     }
   }
 
-  _connect = async (sessionData) => {
-    debug('[client] connecting to', this.options.host, this.options.port, sessionData, this.connection)
+  _connect = (sessionData) => {
+    if (this._closed) return
+    debug('[client] connecting to', this.options.host, this.options.port, sessionData)
     this.connection.onConnected = () => {
       this.status = ClientStatus.Connecting
       if (this.versionGreaterThanOrEqualTo('1.19.30')) {
@@ -122,14 +181,25 @@ class Client extends Connection {
       this.close()
     }
     this.connection.onEncapsulated = this.onEncapsulated
-    this.connection.connect()
-
     this.connectTimeout = setTimeout(() => {
       if (this.status === ClientStatus.Disconnected) {
-        this.connection.close()
-        this.emit('error', Error('Connect timed out'))
+        this.onConnectionError(Error('Connect timed out'))
       }
     }, this.options.connectTimeout || 9000)
+
+    // Preserve immediate transport startup: deferring this call coalesces
+    // independently created RakNet clients into simultaneous handshakes.
+    try {
+      if (this.options.transport === 'nethernet' && this.multiplayerToken) {
+        this.connection.nethernet.identity = {
+          privateKey: this.ecdhKeyPair.privateKey,
+          token: this.multiplayerToken
+        }
+      }
+      Promise.resolve(this.connection.connect()).catch(error => this.onConnectionError(error))
+    } catch (error) {
+      this.onConnectionError(error)
+    }
   }
 
   updateCompressorSettings (packet) {
@@ -201,18 +271,32 @@ class Client extends Connection {
     this.close(reason)
   }
 
-  close () {
-    if (this.status !== ClientStatus.Disconnected) {
-      this.emit('close') // Emit close once
-      debug('Client closed!')
+  onConnectionError (error) {
+    if (this._closed) return
+    try {
+      this.emit('error', error)
+    } finally {
+      this.close()
     }
+  }
+
+  close () {
+    if (this._closed) return
+    this._closed = true
+    this._discoveryAbort?.abort(new Error('Client closed during discovery'))
     clearInterval(this.loop)
     clearTimeout(this.connectTimeout)
     this.q = []
     this.q2 = []
-    this.connection?.close()
-    this.removeAllListeners()
     this.status = ClientStatus.Disconnected
+    this._nethernetCleanup = closeNethernet(this.nethernet)
+    try {
+      this.connection?.close()
+      this.emit('close')
+      debug('Client closed!')
+    } finally {
+      this.removeAllListeners()
+    }
   }
 
   readPacket (packet) {
@@ -262,7 +346,7 @@ class Client extends Connection {
         break
       case 'start_game':
         this.startGameData = pakData.params
-        // fallsthrough
+      // fallsthrough
       case 'item_registry': // 1.21.60+ send itemstates in item_registry packet
         pakData.params.itemstates?.forEach(state => {
           if (state.name === 'minecraft:shield') {

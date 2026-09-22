@@ -2,7 +2,8 @@ const mcData = require('minecraft-data')
 
 // Minimum supported version (< will be kicked)
 const MIN_VERSION = '1.16.201'
-// Currently supported verson. Note, clients with newer versions can still connect as long as data is in minecraft-data
+// Fallback when client discovery cannot supply a version; also the server default.
+// Clients can discover newer versions when their data is available in minecraft-data.
 const CURRENT_VERSION = '1.26.45'
 
 const Versions = Object.fromEntries(mcData.versions.bedrock.filter(e => e.releaseType === 'release').map(e => [e.minecraftVersion, e.version]))
@@ -12,6 +13,8 @@ const skippedVersionsOnGithubCI = ['1.16.210', '1.17.10', '1.17.30', '1.18.11', 
 const testedVersions = process.env.CI ? Object.keys(Versions).filter(v => !skippedVersionsOnGithubCI.includes(v)) : Object.keys(Versions)
 
 const defaultOptions = {
+  // Choice of raknet or nethernet
+  transport: 'raknet',
   // https://minecraft.wiki/w/Protocol_version#Bedrock_Edition_2
   version: CURRENT_VERSION,
   // client: If we should send SetPlayerInitialized to the server after getting play_status spawn.
@@ -20,7 +23,7 @@ const defaultOptions = {
   autoInitPlayer: true,
   // If true, do not authenticate with Xbox Live
   offline: false,
-  // Milliseconds to wait before aborting connection attempt
+  // Transport establishment deadline after authentication/signalling, in milliseconds
   connectTimeout: 9000,
   // Specifies the raknet implementation to use
   raknetBackend: 'raknet-native',
