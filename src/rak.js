@@ -37,6 +37,8 @@ class RakNativeClient extends EventEmitter {
   constructor (options, client) {
     super()
     this.connected = false
+    this.closed = false
+    this.pendingPings = new Set()
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
@@ -60,19 +62,47 @@ class RakNativeClient extends EventEmitter {
     })
   }
 
-  async ping (timeout = 1000) {
-    this.raknet.ping()
-    return waitFor((done) => {
-      this.raknet.on('pong', (ret) => {
-        if (ret.extra) {
-          done(ret.extra.toString())
-        }
-      })
-    }, timeout, () => {
-      if ('REPLIT_ENVIRONMENT' in process.env) {
-        console.warn('A Replit environment was detected. Replit may not support the necessary outbound UDP connections required to connect to a Minecraft server. Please see https://github.com/PrismarineJS/bedrock-protocol/blob/master/docs/FAQ.md for more information.')
+  ping (timeout = 1000, { signal } = {}) {
+    if (this.closed) return Promise.reject(new Error('RakNet client is closed'))
+    if (signal?.aborted) return Promise.reject(signal.reason)
+    return new Promise((resolve, reject) => {
+      const finish = (error, data) => {
+        clearTimeout(timer)
+        this.raknet.removeListener('pong', onPong)
+        this.raknet.removeListener('error', onError)
+        signal?.removeEventListener('abort', onAbort)
+        this.pendingPings.delete(cancel)
+        if (error) reject(error)
+        else resolve(data)
       }
-      throw new RakTimeout('Ping timed out')
+      const onPong = ret => {
+        // Recent BDS versions can answer RakNet pings with no advertisement.
+        // These replies do not indicate that a RakNet connection is supported.
+        // raknet-native includes the advertisement's uint16 length prefix.
+        const extra = ret.extra
+        const message = Buffer.isBuffer(extra) && extra.length >= 2 && extra.readUInt16BE(0) === extra.length - 2
+          ? extra.subarray(2).toString()
+          : extra?.toString()
+        if (message?.startsWith('MCPE;') || message?.startsWith('MCEE;')) finish(null, message)
+      }
+      const onError = error => finish(error)
+      const onAbort = () => finish(signal.reason)
+      const cancel = () => finish(new Error('RakNet discovery cancelled'))
+      const timer = setTimeout(() => {
+        if ('REPLIT_ENVIRONMENT' in process.env) {
+          console.warn('A Replit environment was detected. Replit may not support the necessary outbound UDP connections required to connect to a Minecraft server. Please see https://github.com/PrismarineJS/bedrock-protocol/blob/master/docs/FAQ.md for more information.')
+        }
+        finish(new RakTimeout('Ping timed out'))
+      }, timeout)
+      this.pendingPings.add(cancel)
+      this.raknet.on('pong', onPong)
+      this.raknet.once('error', onError)
+      signal?.addEventListener('abort', onAbort, { once: true })
+      try {
+        this.raknet.ping()
+      } catch (error) {
+        finish(error)
+      }
     })
   }
 
@@ -81,6 +111,9 @@ class RakNativeClient extends EventEmitter {
   }
 
   close () {
+    if (this.closed) return
+    this.closed = true
+    for (const cancel of this.pendingPings) cancel()
     this.connected = false
     setTimeout(() => {
       this.raknet.close()

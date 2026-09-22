@@ -8,16 +8,17 @@ Returns a `Client` instance and connects to the server.
 
 | Parameter   | Optionality | Description |
 | ----------- | ----------- |-|
-| host        | Conditional | Not required if `realms` is set. host to connect to, for example `127.0.0.1`. |
+| host        | *optional* | Host to connect to (default `127.0.0.1`, or LAN broadcast for explicit Nethernet). Not needed with `realms` or `world`. |
+| transport | *optional* | Force `raknet` or `nethernet`. Otherwise discover both and use the first readable advertisement. Providing `nethernet` settings selects Nethernet. Realm/world lookup determines its own transport. |
 | port        | *optional* |  port to connect to, default to **19132**     |
 | version     | *optional* |  Explicit version override. Otherwise select a minecraft-data version matching the protocol number in the server pong, regardless of its displayed game version. Report an error if that protocol is unsupported. Fall back to `CURRENT_VERSION` in `src/options.js` only if discovery fails, is skipped, or provides no protocol number. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Required | The profile name to connect to the server as. If `offline` set to true, the username that will appear on join, that would normally be the Xbox Gamer Tag. |
 | connectTimeout | *optional* | Transport establishment deadline after authentication and signalling, default **9000ms**. Does not bound login or spawning. |
-| pingTimeout | *optional* | Advertisement lookup deadline: **1000ms** for RakNet, **10000ms** for Nethernet. Used by `createClient` and `client.ping()`. |
+| pingTimeout | *optional* | Advertisement lookup deadline: **1000ms** for automatic/RakNet discovery, **10000ms** for explicit Nethernet. Used by `createClient` and `client.ping()`. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
-| skipPing | *optional* | Skip the initial version-discovery ping. Nethernet `'services'` mode always skips this LAN probe; specify `version` or use the fallback in `src/options.js`. |
+| skipPing | *optional* | Skip transport and version discovery; without explicit transport settings this retains RakNet. Nethernet `'services'` mode always skips this LAN probe; specify `version` or use the fallback in `src/options.js`. |
 | followPort | *optional* | Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified) |
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |
@@ -66,9 +67,37 @@ authenticated unless offline is set to true.
 
 *`useNativeRaknet` is deprecated. Setting to true will use 'raknet-native' for `raknetBackend` and setting it to false will use a JavaScript implemenation (jsp-raknet)*
 
-## be.ping({ host, port }) : ServerAdvertisement
+## be.ping({ host, port, transport, timeout, signal }) : Promise<PingResponse>
 
-Ping a server and get the response. See type definitions for the structure.
+Without a transport override, probe RakNet and Nethernet concurrently and return the first
+readable advertisement. The response has `transport: 'raknet'` or `'nethernet'` and retains
+that transport's advertisement fields (see the type definitions). For example:
+
+```js
+const ad = await bedrock.ping({ host: '127.0.0.1', port: 19132 })
+console.log(ad.transport, ad.motd)
+if (ad.transport === 'nethernet') console.log(ad.networkId)
+else console.log(ad.portV4)
+```
+
+Supply `transport: 'raknet'` or `transport: 'nethernet'` to probe only that transport.
+An omitted transport with `nethernet` options also selects Nethernet. Automatic discovery
+waits up to 1000ms for each probe, concurrently; `timeout` overrides this deadline.
+Explicit Nethernet discovery retains its 10000ms default. All probes close their sockets
+on completion; the losing probe is cancelled. `signal` cancels the entire lookup.
+If both fail, the rejection is an `AggregateError` with the individual failures in `errors`.
+Empty RakNet replies do not count as advertisements.
+
+`createClient` uses the winning transport and, for Nethernet, the discovered network ID.
+If discovery fails completely, it retains the requested transport (RakNet when omitted)
+and the explicit version or the fallback in `src/options.js`. Authentication/connection
+failures do not trigger a retry over another transport. Low-level `new Client` and Relay
+connections still require callers to select their transport; they do not run this discovery.
+
+Nethernet discovery uses LAN UDP 7551, not `port`; multiple servers on the same host must
+be distinguished with `nethernet.networkId`. Discovery does not select an HTTP signalling
+endpoint. Vanilla dedicated servers that require HTTP signalling are not yet supported by
+this connection path; the local test helper implements that separate flow.
 
 ## Server usage
 
@@ -266,14 +295,14 @@ relay.on('connect', player => {
 
 ### Nethernet transport
 
-Clients, servers, and relay destinations accept `transport: 'nethernet'`. The default remains
-`'raknet'`. Nethernet carries Minecraft packets over WebRTC; the WebRTC connection provides
+Clients, servers, and relay destinations accept `transport: 'nethernet'`. `createClient` discovers
+the transport when omitted; low-level clients, servers, and relays default to `'raknet'`. Nethernet carries Minecraft packets over WebRTC; the WebRTC connection provides
 transport encryption, while Minecraft authentication still follows the `offline` option.
 
 | Option | Description |
 | --- | --- |
-| `nethernet.networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createServer` generates an ID when omitted. |
-| `host` | For a Nethernet client, the address for LAN discovery (default `255.255.255.255`); for a server, the local bind address. |
+| `nethernet.networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createClient` discovers an omitted remote ID; `createServer` generates an omitted local ID. |
+| `host` | Address for LAN discovery (automatic discovery defaults to `127.0.0.1`; explicit Nethernet without a host broadcasts to `255.255.255.255`); for a server, the local bind address. |
 | `nethernet.signalling` | `'lan'` (default) or `'services'` for authenticated Minecraft services signalling. Services mode skips the initial LAN advertisement lookup. Hosting with `'services'` publishes an Xbox world session. |
 | `nethernet.webrtcBackend` | `'werift'` (default, pure JavaScript), `'wrtc'` (requires a separately installed `@roamhq/wrtc`), or `'auto'` (native when loadable, otherwise Werift). |
 | `nethernet.signallingConnectTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
@@ -348,5 +377,5 @@ no WebRTC connection and does not require support for the advertised game versio
 Nethernet uses UDP 7551 and requires LAN visibility; the HTTP signalling port is
 not a discovery port. If multiple servers are discoverable, specify a network ID.
 
-RakNet `ping({ host, port })` also returns `raw`, containing the original
+RakNet `ping({ transport: 'raknet', host, port })` also returns `raw`, containing the original
 semicolon-separated advertisement.

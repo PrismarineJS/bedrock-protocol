@@ -11,7 +11,8 @@ new Relay({ destination: { host: 'localhost', port: 19132 } })
 const advertisement = new NethernetServerAdvertisement({ motd: 'test' }, '1.26.45')
 NethernetServerAdvertisement.fromBuffer(advertisement.toBuffer())
 ping({ nethernet: { networkId: 123n } }).then(ad => ad.gameVersion)
-ping({ host: 'localhost', port: 19132 }).then(ad => ad.portV4)
+ping({ transport: 'raknet', host: 'localhost', port: 19132 }).then(ad => ad.portV4)
+ping({ host: 'localhost', port: 19132 }).then(ad => ad.transport === 'raknet' ? ad.portV4 : ad.networkId)
 // @ts-expect-error Unknown transports are not valid.
 createClient({ transport: 'tcp' })
 // @ts-expect-error Network IDs must retain 64-bit precision.

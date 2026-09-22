@@ -37,19 +37,19 @@ describe('Nethernet LAN transport', function () {
             player.once('join', onJoin)
           })
           client = createClient({
-            transport: 'nethernet',
-            nethernet: { networkId },
+            ...(initiator === 'server' ? { transport: 'nethernet', nethernet: { networkId }, skipPing: true } : {}),
             host: '127.0.0.1',
             offline: true,
             username: 'NethernetTest',
             version: CURRENT_VERSION,
-            skipPing: true,
             conLog: null
           })
           client.on('error', reject)
           client.once('join', onJoin)
         })
         await joined
+        assert.strictEqual(client.options.transport, 'nethernet')
+        assert.strictEqual(client.options.nethernet.networkId, networkId)
         assert.strictEqual(server.clientCount, 1)
         clearTimeout(timer)
         let closes = 0
