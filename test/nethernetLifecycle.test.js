@@ -147,9 +147,17 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
         } else {
           stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: advertised }))
         }
-        stub(Client.prototype, 'init', function () { initialized.resolve(this.options.version) })
+        let initCalls = 0
+        stub(Client.prototype, 'init', function () { initCalls++; initialized.resolve(this.options.version) })
         const client = createClient({ host: '127.0.0.1', transport, ...(transport === 'nethernet' ? { nethernet: { networkId: 1n } } : {}), conLog: null })
         try {
+          if (advertised === '9.99.0') {
+            const error = await new Promise(resolve => client.once('error', resolve))
+            assert.match(error.message, /Unsupported server version 9\.99\.0/)
+            assert.strictEqual(initCalls, 0)
+            assert.strictEqual(client._closed, true)
+            return
+          }
           assert.strictEqual(await initialized.promise, advertised === '1.21.0.3' ? '1.21.0' : CURRENT_VERSION)
           if (transport === 'raknet') assert.strictEqual(client.options.port, 19133)
         } finally {

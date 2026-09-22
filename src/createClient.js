@@ -33,7 +33,10 @@ function createClient (options) {
       const advertisedVersion = (client.options.transport !== 'nethernet' || ad?.version === 7)
         ? gameVersion?.split('.').slice(0, 3).join('.')
         : undefined
-      client.options.version = options.version ?? (Options.Versions[advertisedVersion] ? advertisedVersion : Options.CURRENT_VERSION)
+      if (options.version == null && advertisedVersion && !Options.Versions[advertisedVersion]) {
+        throw new Error(`Unsupported server version ${gameVersion}: no minecraft-data support`)
+      }
+      client.options.version = options.version ?? (advertisedVersion || Options.CURRENT_VERSION)
       if (ad && client.options.transport === 'raknet') {
         if (ad.portV4 && client.options.followPort) client.options.port = ad.portV4
         client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${gameVersion}${client.options.version !== gameVersion ? ` (as ${client.options.version})` : ''}`)

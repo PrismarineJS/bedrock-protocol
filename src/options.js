@@ -2,7 +2,7 @@ const mcData = require('minecraft-data')
 
 // Minimum supported version (< will be kicked)
 const MIN_VERSION = '1.16.201'
-// Fallback when client discovery cannot supply a supported version; also the server default.
+// Fallback when client discovery cannot supply a version; also the server default.
 // Clients can discover newer versions when their data is available in minecraft-data.
 const CURRENT_VERSION = '1.26.45'
 
