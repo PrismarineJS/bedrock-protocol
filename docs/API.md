@@ -10,14 +10,14 @@ Returns a `Client` instance and connects to the server.
 | ----------- | ----------- |-|
 | host        | Conditional | Not required if `realms` is set. host to connect to, for example `127.0.0.1`. |
 | port        | *optional* |  port to connect to, default to **19132**     |
-| version     | *optional* |  Version to connect as. If not specified, automatically match server version. |
+| version     | *optional* |  Explicit version override. Otherwise use the version advertised by the server pong, reporting an error if minecraft-data does not support it. Fall back to `CURRENT_VERSION` in `src/options.js` only if discovery fails, is skipped, or provides no version. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Required | The profile name to connect to the server as. If `offline` set to true, the username that will appear on join, that would normally be the Xbox Gamer Tag. |
 | connectTimeout | *optional* | Transport establishment deadline after authentication and signalling, default **9000ms**. Does not bound login or spawning. |
 | pingTimeout | *optional* | Advertisement lookup deadline: **1000ms** for RakNet, **10000ms** for Nethernet. Used by `createClient` and `client.ping()`. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
-| skipPing | *optional* | Skip the initial version-discovery ping. Nethernet `'services'` mode always skips this LAN probe; specify `version` or use the library default. |
+| skipPing | *optional* | Skip the initial version-discovery ping. Nethernet `'services'` mode always skips this LAN probe; specify `version` or use the fallback in `src/options.js`. |
 | followPort | *optional* | Update the options' port parameter to match the port broadcast on the server's ping data (default to true if `realms` not specified) |
 | autoInitPlayer | *optional* |  default to true, If we should send SetPlayerInitialized to the server after getting play_status spawn.    |
 | conLog | *optional* | Where to log connection information (server join, kick messages to). Defaults to console.log, set to `null` to not log anywhere. |

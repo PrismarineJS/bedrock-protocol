@@ -111,13 +111,13 @@ describe('Nethernet advertisement integration', () => {
     }
   })
 
-  for (const [layout, explicit, expected] of [[7, undefined, '1.21.0'], [7, CURRENT_VERSION, CURRENT_VERSION], [4, undefined, CURRENT_VERSION]]) {
+  for (const [layout, advertised, explicit, expected] of [[7, '1.21.0', undefined, '1.21.0'], [7, '9.99.0', CURRENT_VERSION, CURRENT_VERSION], [4, '1.21.0', undefined, CURRENT_VERSION]]) {
     it(`selects a game version for layout ${layout}, explicit=${explicit}`, async () => {
       const originalPing = NethernetClient.prototype.ping
       const originalInit = Client.prototype.init
       let client
       try {
-        NethernetClient.prototype.ping = async () => new NethernetServerAdvertisement({ version: layout }, '1.21.0')
+        NethernetClient.prototype.ping = async () => new NethernetServerAdvertisement({ version: layout }, advertised)
         const initialized = new Promise(resolve => { Client.prototype.init = function () { resolve(this.options.version) } })
         client = createClient({ transport: 'nethernet', nethernet: { networkId: 123n }, ...(explicit ? { version: explicit } : {}), conLog: null })
         assert.strictEqual(await initialized, expected)

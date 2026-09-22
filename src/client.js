@@ -29,8 +29,6 @@ class Client extends Connection {
 
     this.startGameData = {}
     this.clientRuntimeId = null
-    // Start off without compression on 1.19.30, zlib on below
-    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.compressionThreshold = 512
     this.compressionLevel = this.options.compressionLevel
 
@@ -48,6 +46,8 @@ class Client extends Connection {
   init () {
     if (this._closed) return
     this.validateOptions()
+    // Choose initial compression after discovery has selected the protocol version.
+    this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
     this.serializer = createSerializer(this.options.version)
     this.deserializer = createDeserializer(this.options.version)
     this._loadFeatures()

@@ -12,36 +12,40 @@ function createClient (options) {
   assert(options)
   const client = new Client({ port: 19132, followPort: !options.realms, ...options, delayedInit: true })
 
-  function onServerInfo () {
+  async function onServerInfo () {
     if (client._closed) return
     client.on('connect_allowed', () => connect(client))
-    if (client.options.skipPing || (client.options.transport === 'nethernet' && client.options.nethernet.signalling === 'services')) {
-      client.init()
-    } else {
-      client._discoveryAbort = new AbortController()
-      ping({ ...client.options, timeout: client.options.pingTimeout, signal: client._discoveryAbort.signal }).then(ad => {
-        if (client._closed) return
-        const gameVersion = client.options.transport === 'nethernet' ? ad.gameVersion : ad.version
-        // Version 4 advertisements do not carry a game version.
-        const advertisedVersion = (client.options.transport !== 'nethernet' || ad.version === 7)
-          ? gameVersion?.split('.').slice(0, 3).join('.')
-          : undefined
-        client.options.version = options.version ?? (Options.Versions[advertisedVersion] ? advertisedVersion : Options.CURRENT_VERSION)
-        if (client.options.transport === 'raknet') {
-          if (ad.portV4 && client.options.followPort) {
-            client.options.port = ad.portV4
-          }
-
-          client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${(ad.gameVersion ?? ad.version)} ${client.options.version !== (ad.gameVersion ?? ad.version) ? ` (as ${client.options.version})` : ''}`)
-        } else if (client.options.transport === 'nethernet') {
-          client.conLog?.(`Connecting to ${client.options.nethernet.networkId} ${ad.motd} (${ad.levelName})`)
+    try {
+      const canPing = !client.options.skipPing && !(client.options.transport === 'nethernet' && client.options.nethernet.signalling === 'services')
+      let ad
+      if (canPing) {
+        client._discoveryAbort = new AbortController()
+        try {
+          ad = await ping({ ...client.options, timeout: client.options.pingTimeout, signal: client._discoveryAbort.signal })
+        } catch (error) {
+          if (client._closed) return
+          client.conLog?.(`Version discovery failed (${error.message}); connecting as ${options.version ?? Options.CURRENT_VERSION}`)
         }
-
-        if (!client._closed) client.init()
-      }).catch(e => {
-        if (client._closed) return
-        client.onConnectionError(e)
-      })
+      }
+      if (client._closed) return
+      const gameVersion = client.options.transport === 'nethernet' ? ad?.gameVersion : ad?.version
+      // Version 4 Nethernet advertisements do not carry a game version.
+      const advertisedVersion = (client.options.transport !== 'nethernet' || ad?.version === 7)
+        ? gameVersion?.split('.').slice(0, 3).join('.')
+        : undefined
+      if (options.version == null && advertisedVersion && !Options.Versions[advertisedVersion]) {
+        throw new Error(`Unsupported server version ${gameVersion}: no minecraft-data support`)
+      }
+      client.options.version = options.version ?? (advertisedVersion || Options.CURRENT_VERSION)
+      if (ad && client.options.transport === 'raknet') {
+        if (ad.portV4 && client.options.followPort) client.options.port = ad.portV4
+        client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${gameVersion}${client.options.version !== gameVersion ? ` (as ${client.options.version})` : ''}`)
+      } else if (ad && client.options.transport === 'nethernet') {
+        client.conLog?.(`Connecting to ${client.options.nethernet.networkId} ${ad.motd} (${ad.levelName})`)
+      }
+      client.init()
+    } catch (error) {
+      if (!client._closed) client.onConnectionError(error)
     }
   }
 
