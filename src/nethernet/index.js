@@ -5,6 +5,7 @@ const debug = require('debug')('bedrock-protocol:nethernet')
 class NethernetClient {
   constructor (options = {}) {
     this.closed = false
+    this.discoverAny = options.networkId == null
     this.pendingPings = new Set()
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
@@ -12,7 +13,7 @@ class NethernetClient {
     this.onError = () => { }
 
     this.nethernet = new Client(
-      options.networkId,
+      options.networkId ?? 0n,
       options.host || '255.255.255.255',
       { webrtcBackend: options.webrtcBackend }
     )
@@ -57,7 +58,7 @@ class NethernetClient {
         else resolve(data)
       }
       const onPong = ret => {
-        if (this.nethernet.serverNetworkId != null && String(ret.sender_id) !== String(this.nethernet.serverNetworkId)) return
+        if (!this.discoverAny && String(ret.sender_id) !== String(this.nethernet.serverNetworkId)) return
         let advertisement
         try {
           advertisement = NethernetServerAdvertisement.fromBuffer(Buffer.from(ret.data, 'hex'))

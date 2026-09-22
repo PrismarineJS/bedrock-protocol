@@ -69,7 +69,7 @@ describe('Nethernet discovery lifecycle', () => {
 
   it('discovers an unknown network ID and preserves unsupported game metadata', async () => {
     const client = discoveryClient()
-    client.nethernet.serverNetworkId = undefined
+    client.discoverAny = true
     const data = new NethernetServerAdvertisement({ gameVersion: '9.99.0', protocol: 9999 }).toBuffer().toString('hex')
     client.nethernet.ping = () => client.nethernet.emit('pong', { sender_id: 18446744073709551615n, data })
     const ad = await client.ping()
