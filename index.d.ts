@@ -28,7 +28,7 @@ declare module 'bedrock-protocol' {
     // For the server, if we should verify client's authentication with Xbox Live.
     offline?: boolean
 
-    // RakNet is the default; Nethernet uses WebRTC and a network ID.
+    // createClient discovers the transport; low-level Client, servers and relays default to RakNet.
     transport?: 'raknet' | 'nethernet'
     nethernet?: NethernetOptions
     // An existing prismarine-auth flow can be shared with signalling and Realms.
@@ -55,7 +55,7 @@ declare module 'bedrock-protocol' {
     deviceOS?: number
     // Transport establishment after authentication/signalling, in milliseconds (default: 9000).
     connectTimeout?: number
-    // LAN/server advertisement lookup, in milliseconds (default: RakNet 1000, Nethernet 10000).
+    // LAN/server advertisement lookup, in milliseconds (default: automatic/RakNet 1000, explicit Nethernet 10000).
     pingTimeout?: number
     // whether to skip initial ping and immediately connect
     skipPing?: boolean
@@ -309,7 +309,9 @@ declare module 'bedrock-protocol' {
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
-  export function ping(options: { transport: 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement>
-  export function ping(options: { nethernet: { networkId: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement>
-  export function ping(options: { transport?: 'raknet', host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement>
+  export type PingResponse = (ServerAdvertisement & { transport: 'raknet' }) | (NethernetServerAdvertisement & { transport: 'nethernet' })
+  export function ping(options: { transport: 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement & { transport: 'nethernet' }>
+  export function ping(options: { transport?: undefined, nethernet: { networkId: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement & { transport: 'nethernet' }>
+  export function ping(options: { transport: 'raknet', host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement & { transport: 'raknet' }>
+  export function ping(options: { transport?: 'raknet' | 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, port?: number, timeout?: number, signal?: AbortSignal }): Promise<PingResponse>
 }
