@@ -1,6 +1,6 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 const { ProtoDef } = require('protodef')
-const schemas = require('minecraft-data/minecraft-data/data/bedrock/common/nethernetAdvertisement.json')
+const schemas = require('./advertisement.json')
 
 const proto = new ProtoDef(false)
 proto.addTypes(schemas)

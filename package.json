@@ -26,7 +26,7 @@
     "json-bigint": "^1.0.0",
     "jsonwebtoken": "^9.0.0",
     "jsp-raknet": "^2.1.3",
-    "minecraft-data": "git+https://github.com/PrismarineJS//node-minecraft-data.git#85c86d5efff9c00a83dd2d1034341b05f2f099e9",
+    "minecraft-data": "^3.0.0",
     "minecraft-folder-path": "^1.2.0",
     "nethernet": "^1.1.2",
     "prismarine-auth": "^3.1.1",
