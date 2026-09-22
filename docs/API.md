@@ -13,8 +13,8 @@ Returns a `Client` instance and connects to the server.
 | version     | *optional* |  Explicit version override. Otherwise match the pong’s protocol number to minecraft-data, regardless of its displayed version; reject unsupported protocols. Fall back to `CURRENT_VERSION` in `src/options.js` only if discovery fails, is skipped, or provides no protocol. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Required | The profile name to connect to the server as. If `offline` set to true, the username that will appear on join, that would normally be the Xbox Gamer Tag. |
-| connectTimeout | *optional* | Transport establishment deadline after authentication and signalling, default **9000ms**. Does not bound login or spawning. |
-| pingTimeout | *optional* | Advertisement lookup deadline: **1000ms** for automatic/RakNet discovery, **10000ms** for explicit Nethernet. Used by `createClient` and `client.ping()`. |
+| connectTimeout | *optional* | Transport establishment deadline after authentication, default **9000ms**; includes HTTP signalling when used. Does not bound login or spawning. |
+| pingTimeout | *optional* | Deadline per discovery stage (UDP, then HTTP fallback): **1000ms** for automatic/RakNet discovery, **10000ms** for explicit Nethernet. Used by `createClient` and `client.ping()`. |
 | onMsaCode   | *optional* |  Callback called when signing in with a microsoft account with device code auth, `data` is an object documented [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code#device-authorization-response) |
 | profilesFolder | *optional* | Where to store cached authentication tokens. Defaults to .minecraft, or the node_modules folder if not found. |
 | skipPing | *optional* | Skip transport/version discovery; without a transport override this retains RakNet. Nethernet `'services'` mode always skips this LAN probe; specify `version` or use the fallback in `src/options.js`. |
@@ -272,16 +272,52 @@ relay.on('connect', player => {
 | --- | --- |
 | `nethernet.networkId` | Remote network ID for a client, or local ID for a server. Use a `bigint` or string to preserve 64-bit IDs. `createClient` discovers an omitted remote ID; `createServer` generates an omitted local ID. |
 | `host` | For a Nethernet client, the address for LAN discovery (default `255.255.255.255`); for a server, the local bind address. |
-| `nethernet.signalling` | `'lan'` (default) or `'services'` for authenticated Minecraft services signalling. Services mode skips the initial LAN advertisement lookup. Hosting with `'services'` publishes an Xbox world session. |
+| `nethernet.signalling` | `'lan'`, `'http'` (direct dedicated servers, client-only), or `'services'` for authenticated Minecraft services signalling. Automatic discovery selects LAN or HTTP; low-level clients default to LAN. Services mode skips the initial LAN advertisement lookup. Hosting with `'services'` publishes an Xbox world session. |
+| `nethernet.url` | Optional HTTP(S) origin for HTTP signalling, e.g. `https://server.example.com:19132`. Defaults to `http://host:port`; redirects are not followed. |
+| `nethernet.serverKey` | Expected operator public-key fingerprint: `sha256:` followed by the lowercase hexadecimal SHA-256 of DER SPKI. A mismatch always fails. |
+| `nethernet.onServerKey` | Optional `(fingerprint, origin) => boolean \| Promise<boolean>` approval callback for an unknown plain-HTTP operator key. Only an explicit `true` approves it; never overrides a configured pin. |
 | `nethernet.webrtcBackend` | `'werift'` (default, pure JavaScript), `'wrtc'` (requires a separately installed `@roamhq/wrtc`), or `'auto'` (native when loadable, otherwise Werift). |
-| `nethernet.signallingConnectTimeout` | Maximum wait for signalling credentials, including authentication, in milliseconds. Defaults to 15000. Applies to initial connection and reconnect attempts. |
+| `nethernet.signallingConnectTimeout` | Services credentials deadline (including authentication), or HTTP exchange deadline (including ICE gathering and key approval), in milliseconds. Defaults to 15000; also applies to services reconnects. |
 | `authflow` | Optional existing `prismarine-auth` `Authflow`, shared by Minecraft authentication, Realms, and signalling. |
 
-The deadlines apply to separate stages: `pingTimeout` bounds advertisement lookup;
-`nethernet.signallingConnectTimeout` bounds services signalling setup through receipt of ICE
-credentials (and each reconnect); `connectTimeout` bounds transport establishment after
-setup. They are not one total timeout and do not bound Minecraft login or spawning.
-Standalone `ping({ ..., timeout })` sets the lookup deadline for that individual call.
+`pingTimeout` bounds each discovery stage: UDP probes run together, followed by HTTP
+only if UDP fails. Explicit RakNet, LAN, services or network-ID selections do not fall back
+to HTTP. Standalone `ping({ ..., timeout })` uses the same per-stage deadline.
+`nethernet.signallingConnectTimeout` bounds services setup (and reconnects), or the HTTP
+exchange. `connectTimeout` bounds transport establishment; for HTTP it also runs during
+the exchange. These deadlines do not bound Minecraft login or spawning.
+
+### Direct servers using HTTP signalling
+
+```js
+const client = bedrock.createClient({
+  host: 'server.example.com',
+  port: 19132,
+  nethernet: {
+    signalling: 'http', // skip LAN discovery
+    serverKey: process.env.BDS_SERVER_KEY // obtain from a trusted source
+  },
+  username: 'Player'
+})
+client.on('error', console.error)
+```
+
+HTTP signalling does not require a remote network ID. `skipPing: true` skips the metadata
+GET but still performs the signalling POST. Without an explicit signalling choice,
+`createClient` also tries HTTP after UDP discovery fails. HTTP discovery selects the
+Minecraft version by the reported protocol number. BDS may return HTTP 200 with an
+empty body when LAN visibility is disabled; then an explicit `version` or the library's
+fallback version is used.
+
+Following [Mojang's HTTP signalling protocol](https://mojang.github.io/bedrock-protocol-docs/guides/nether-net-onboarding-guide/),
+the client verifies the server identity token and its signed DTLS fingerprints before
+applying the answer. HTTPS uses normal TLS certificate validation to establish trust;
+plain HTTP additionally requires `serverKey` or approval through `onServerKey`. A pin,
+when configured, is enforced for HTTPS too. The callback runs only after signature
+verification and receives the operator-key fingerprint and signalling origin. Applications
+can use it to prompt for first-use approval and persist the approved key; the library
+never stores or silently accepts unknown keys. Offline Minecraft authentication does
+not bypass these checks. A changed operator key requires renewed trust.
 
 Xbox session hosting advertises `ConnectionType: 7` with `NetherNetId`, matching the
 retail 1.26.51 capture. Receiving clients select the ID by field presence.
@@ -338,13 +374,20 @@ the owner emits an error and closes; it does not silently create or join a diffe
 
 ### Discovering Nethernet without a network ID
 
-`await ping({ transport: 'nethernet', host: '127.0.0.1', timeout: 5000 })`
+`await ping({ transport: 'nethernet', nethernet: { signalling: 'lan' }, host: '127.0.0.1', timeout: 5000 })`
 returns the first readable LAN advertisement from that host. The result includes
 `networkId` (a bigint) and `raw` (the hexadecimal advertisement). Supply
 `nethernet: { networkId }` to filter discovery to a known server. Discovery opens
 no WebRTC connection and does not require support for the advertised game version.
-Nethernet uses UDP 7551 and requires LAN visibility; the HTTP signalling port is
-not a discovery port. If multiple servers are discoverable, specify a network ID. Production HTTP signalling for vanilla dedicated servers remains separate from this LAN/services connection path.
+LAN discovery uses UDP 7551 and requires LAN visibility. If multiple servers are
+discoverable, specify a network ID. Without an explicit LAN choice or network ID,
+failed UDP discovery falls back to HTTP on `host:port`.
+
+`ping({ host, port, nethernet: { signalling: 'http' } })` skips UDP and returns a plain
+object with `transport: 'nethernet'`, `signalling: 'http'`, and `raw` containing the
+response body. Metadata fields such as `protocol` and `gameVersion` may be absent;
+HTTP discovery never supplies a `networkId`. The metadata GET does not authenticate
+the operator key; identity verification occurs during connection setup.
 
 RakNet `ping({ transport: 'raknet', host, port })` also returns `raw`, containing the original
 semicolon-separated advertisement.

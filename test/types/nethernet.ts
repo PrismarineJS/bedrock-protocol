@@ -35,3 +35,11 @@ ping({ transport: 'nethernet', host: '127.0.0.1' }).then(ad => {
   const raw: string | undefined = ad.raw
   console.log(networkId, raw)
 })
+
+createClient({ nethernet: { signalling: 'http', url: 'https://example.com', onServerKey: async key => key === 'sha256:expected' } })
+ping({ nethernet: { signalling: 'http' }, host: 'localhost', port: 19132 }).then(ad => {
+  const protocol: number | undefined = ad.protocol
+  console.log(protocol, ad.raw)
+})
+// @ts-expect-error HTTP signalling is not a server implementation.
+createServer({ nethernet: { signalling: 'http' } })

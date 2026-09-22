@@ -1,6 +1,7 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { serialize, isDebug } = require('./datatypes/util')
+const { setupHttpSignalling } = require('./nethernet/http')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
@@ -21,7 +22,7 @@ class Client extends Connection {
   constructor (options) {
     super()
     this._closed = false
-    this.options = { ...Options.defaultOptions, ...options, nethernet: { signalling: 'lan', ...options.nethernet } }
+    this.options = { ...Options.defaultOptions, ...options, nethernet: { ...options.nethernet } }
 
     if (this.options.transport === 'nethernet') {
       this.nethernet = {}
@@ -45,6 +46,7 @@ class Client extends Connection {
 
   init () {
     if (this._closed) return
+    this.options.nethernet.signalling ??= 'lan'
     this.validateOptions()
     // Choose initial compression after discovery has selected the protocol version.
     this.compressionAlgorithm = this.versionGreaterThanOrEqualTo('1.19.30') ? 'none' : 'deflate'
@@ -64,6 +66,7 @@ class Client extends Connection {
     if (this.options.transport === 'nethernet') {
       this.nethernet ??= {}
       this.connection = new NethernetClient({ networkId, host: this.options.host, webrtcBackend: this.options.nethernet.webrtcBackend })
+      if (this.options.nethernet.signalling === 'http') setupHttpSignalling(this)
       this.batchHeader = null
       this.disableEncryption = true
     } else if (this.options.transport === 'raknet') {
@@ -136,7 +139,7 @@ class Client extends Connection {
   validateOptions () {
     switch (this.options.transport) {
       case 'nethernet':
-        if (!this.options.nethernet.networkId) throw Error('Invalid nethernet.networkId')
+        if (this.options.nethernet.signalling !== 'http' && !this.options.nethernet.networkId) throw Error('Invalid nethernet.networkId')
         break
       case 'raknet':
         if (!this.options.host || this.options.port == null) throw Error('Invalid host/port')
@@ -190,6 +193,7 @@ class Client extends Connection {
     // Preserve immediate transport startup: deferring this call coalesces
     // independently created RakNet clients into simultaneous handshakes.
     try {
+      if (this.options.transport === 'nethernet' && this.options.nethernet.signalling === 'http' && this.options.offline) this.createClientChain(null, true)
       if (this.options.transport === 'nethernet' && this.multiplayerToken) {
         this.connection.nethernet.identity = {
           privateKey: this.ecdhKeyPair.privateKey,
