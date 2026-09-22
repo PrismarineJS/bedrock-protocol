@@ -2,6 +2,7 @@
 const assert = require('assert')
 const { Server } = require('../src/server')
 const { createClient, ping } = require('../src/createClient')
+const { getPort } = require('./util')
 const { CURRENT_VERSION } = require('../src/options')
 const { SignalStructure, SignalType } = require('nethernet')
 
@@ -9,23 +10,25 @@ const { SignalStructure, SignalType } = require('nethernet')
 // together. Both peers stay on loopback and authenticate offline.
 describe('Nethernet LAN transport', function () {
   this.timeout(20000)
-  for (const initiator of ['client', 'server']) {
-    it(`discovers, logs in and closes once from the ${initiator}`, async () => {
+  for (const [transport, initiator] of [['nethernet', 'client'], ['nethernet', 'server'], ['raknet', 'client']]) {
+    it(`discovers ${transport}, logs in and closes once from the ${initiator}`, async () => {
       const networkId = 123456789n
-      const server = new Server({ transport: 'nethernet', nethernet: { networkId }, host: '127.0.0.1', offline: true, version: CURRENT_VERSION })
+      const port = await getPort()
+      const server = new Server({ transport, port, nethernet: { networkId }, host: '127.0.0.1', offline: true, version: CURRENT_VERSION })
       let client
       let serverPlayer
       let timer
       try {
         await server.listen()
-        assert.strictEqual(server.transport.nethernet.socket.address().address, '127.0.0.1')
+        if (transport === 'nethernet') assert.strictEqual(server.transport.nethernet.socket.address().address, '127.0.0.1')
         server.transport.updateAdvertisement()
-        const ad = await ping({ host: '127.0.0.1', nethernet: { networkId } })
-        assert.strictEqual(ad.gameVersion, CURRENT_VERSION)
-        const discovered = await ping({ transport: 'nethernet', host: '127.0.0.1' })
-        assert.strictEqual(discovered.networkId, networkId)
+        const ad = await ping({ transport, host: '127.0.0.1', port, nethernet: { networkId } })
+        assert.strictEqual(ad.gameVersion ?? ad.version, CURRENT_VERSION)
+        const discovered = await ping({ host: '127.0.0.1', port })
+        assert.strictEqual(discovered.transport, transport)
+        if (transport === 'nethernet') assert.strictEqual(discovered.networkId, networkId)
         assert.strictEqual(discovered.raw, ad.raw)
-        assert.strictEqual(discovered.gameVersion, CURRENT_VERSION)
+        assert.strictEqual(discovered.gameVersion ?? discovered.version, CURRENT_VERSION)
         const joined = new Promise((resolve, reject) => {
           let joins = 0
           const onJoin = () => { if (++joins === 2) resolve() }
@@ -37,19 +40,19 @@ describe('Nethernet LAN transport', function () {
             player.once('join', onJoin)
           })
           client = createClient({
-            transport: 'nethernet',
-            nethernet: { networkId },
+            ...(initiator === 'server' ? { transport, nethernet: { networkId }, skipPing: true } : {}),
+            port,
             host: '127.0.0.1',
             offline: true,
             username: 'NethernetTest',
-            version: CURRENT_VERSION,
-            skipPing: true,
             conLog: null
           })
           client.on('error', reject)
           client.once('join', onJoin)
         })
         await joined
+        assert.strictEqual(client.options.transport, transport)
+        assert.strictEqual(client.options.version, CURRENT_VERSION)
         assert.strictEqual(server.clientCount, 1)
         clearTimeout(timer)
         let closes = 0

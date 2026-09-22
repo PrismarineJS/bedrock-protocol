@@ -10,7 +10,7 @@ const { RealmAPI } = require('prismarine-realms')
 const { NethernetSignal } = require('../src/nethernet/signalling')
 const { XboxClient } = require('prismarine-xbox-services')
 const { EventEmitter } = require('events')
-const { CURRENT_VERSION } = require('../src/options')
+const { CURRENT_VERSION, Versions } = require('../src/options')
 
 function deferred () {
   let resolvePromise
@@ -125,7 +125,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
   for (const [version, compression] of [['1.18.0', 'deflate'], ['1.21.0', 'none']]) {
     it(`selects ${compression} compression after discovering ${version}`, async () => {
       const initialized = deferred()
-      stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: version }))
+      stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: version, protocol: Versions[version] }))
       stub(Client.prototype, 'connect', function () { initialized.resolve(this.compressionAlgorithm) })
       const client = createClient({ transport: 'nethernet', nethernet: { networkId: 1n }, conLog: null })
       try {
@@ -138,27 +138,33 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
   }
 
   for (const transport of ['raknet', 'nethernet']) {
-    for (const advertised of ['1.21.0.3', '9.99.0', undefined]) {
-      it(`selects a version from ${transport} pong ${advertised}`, async () => {
+    for (const [advertised, protocol, explicit, expected] of [
+      ['1.26.50', 2193, undefined, '1.26.51'],
+      ['9.99.0', Versions['1.21.0'], undefined, '1.21.0'],
+      ['9.99.0', 99999, undefined, undefined],
+      ['9.99.0', 99999, '1.21.0', '1.21.0'],
+      [undefined, undefined, undefined, CURRENT_VERSION]
+    ]) {
+      it(`selects ${transport} protocol ${protocol}, advertised=${advertised}, override=${explicit}`, async () => {
         const initialized = deferred()
         if (transport === 'raknet') {
           const { RakClient } = require('../src/rak')('raknet-native')
-          stub(RakClient.prototype, 'ping', async () => `MCPE;test;0;${advertised ?? ''};0;5;1;world;Creative;1;19133;19133;`)
+          stub(RakClient.prototype, 'ping', async () => `MCPE;test;${protocol ?? ''};${advertised ?? ''};0;5;1;world;Creative;1;19133;19133;`)
         } else {
-          stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: advertised }))
+          stub(NethernetClient.prototype, 'ping', async () => ({ version: 7, gameVersion: advertised, protocol }))
         }
         let initCalls = 0
         stub(Client.prototype, 'init', function () { initCalls++; initialized.resolve(this.options.version) })
-        const client = createClient({ host: '127.0.0.1', transport, ...(transport === 'nethernet' ? { nethernet: { networkId: 1n } } : {}), conLog: null })
+        const client = createClient({ host: '127.0.0.1', transport, version: explicit, ...(transport === 'nethernet' ? { nethernet: { networkId: 1n } } : {}), conLog: null })
         try {
-          if (advertised === '9.99.0') {
+          if (!expected) {
             const error = await new Promise(resolve => client.once('error', resolve))
-            assert.match(error.message, /Unsupported server version 9\.99\.0/)
+            assert.match(error.message, /Unsupported server protocol 99999/)
             assert.strictEqual(initCalls, 0)
             assert.strictEqual(client._closed, true)
             return
           }
-          assert.strictEqual(await initialized.promise, advertised === '1.21.0.3' ? '1.21.0' : CURRENT_VERSION)
+          assert.strictEqual(await initialized.promise, expected)
           if (transport === 'raknet') assert.strictEqual(client.options.port, 19133)
         } finally {
           client.close()

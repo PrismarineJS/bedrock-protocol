@@ -1,12 +1,12 @@
+const waitForPong = require('../client/ping')
 const { Client, Server } = require('nethernet')
 const { NethernetServerAdvertisement } = require('./advertisement')
 const debug = require('debug')('bedrock-protocol:nethernet')
 
 class NethernetClient {
   constructor (options = {}) {
-    this.closed = false
     this.discoverAny = options.networkId == null
-    this.pendingPings = new Set()
+    this.discoveryAbort = new AbortController()
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
@@ -42,53 +42,22 @@ class NethernetClient {
   }
 
   ping (timeout = 10000, { signal } = {}) {
-    if (this.closed) return Promise.reject(new Error('Nethernet client is closed'))
-    if (signal?.aborted) return Promise.reject(signal.reason)
-    return new Promise((resolve, reject) => {
-      let settled = false
-      const finish = (error, data) => {
-        if (settled) return
-        settled = true
-        clearTimeout(timer)
-        this.nethernet.removeListener('pong', onPong)
-        this.nethernet.removeListener('error', onError)
-        signal?.removeEventListener('abort', onAbort)
-        this.pendingPings.delete(cancel)
-        if (error) reject(error)
-        else resolve(data)
-      }
-      const onPong = ret => {
-        if (!this.discoverAny && String(ret.sender_id) !== String(this.nethernet.serverNetworkId)) return
-        let advertisement
-        try {
-          advertisement = NethernetServerAdvertisement.fromBuffer(Buffer.from(ret.data, 'hex'))
-        } catch (error) {
-          debug('Ignoring unreadable discovery advertisement: %s', error.message)
-          return
-        }
-        advertisement.networkId = BigInt(ret.sender_id.toString())
-        finish(null, advertisement)
-      }
-      const onError = error => finish(error)
-      const onAbort = () => finish(signal.reason)
-      const cancel = () => finish(new Error('Nethernet discovery cancelled'))
-      const timer = setTimeout(() => finish(new Error('Ping timed out')), timeout)
-      this.pendingPings.add(cancel)
-      this.nethernet.on('pong', onPong)
-      this.nethernet.once('error', onError)
-      signal?.addEventListener('abort', onAbort, { once: true })
+    signal = signal ? AbortSignal.any([signal, this.discoveryAbort.signal]) : this.discoveryAbort.signal
+    return waitForPong(this.nethernet, timeout, signal, ret => {
+      if (!this.discoverAny && String(ret.sender_id) !== String(this.nethernet.serverNetworkId)) return
       try {
-        this.nethernet.ping()
+        const ad = NethernetServerAdvertisement.fromBuffer(Buffer.from(ret.data, 'hex'))
+        ad.networkId = BigInt(ret.sender_id.toString())
+        return ad
       } catch (error) {
-        finish(error)
+        debug('Ignoring unreadable discovery advertisement: %s', error.message)
       }
     })
   }
 
   close () {
-    if (this.closed) return
-    this.closed = true
-    for (const cancel of this.pendingPings) cancel()
+    if (this.discoveryAbort.signal.aborted) return
+    this.discoveryAbort.abort(new Error('Nethernet discovery cancelled'))
     this.nethernet.close()
   }
 }

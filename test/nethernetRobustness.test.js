@@ -45,15 +45,13 @@ function discoveryClient () {
   client.nethernet.serverNetworkId = 123n
   client.nethernet.ping = () => {}
   client.nethernet.close = () => {}
-  client.pendingPings = new Set()
-  client.closed = false
+  client.discoveryAbort = new AbortController()
   return client
 }
 
 function assertNoDiscoveryListeners (client) {
   assert.strictEqual(client.nethernet.listenerCount('pong'), 0)
   assert.strictEqual(client.nethernet.listenerCount('error'), 0)
-  assert.strictEqual(client.pendingPings.size, 0)
 }
 
 describe('Nethernet discovery lifecycle', () => {
