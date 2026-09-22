@@ -28,13 +28,18 @@ describe('Nethernet authenticated identity', function () {
           }
         }
       })
+      const originalFetch = fetch
       let timer
       try {
         const offer = new Promise((resolve, reject) => {
           timer = setTimeout(() => reject(new Error('No Nethernet offer')), 5000)
           client.on('error', reject)
-          client.connection.nethernet.signalHandler = signal => {
-            if (signal.type === 'CONNECTREQUEST') resolve(signal.data)
+          if (signalling === 'http') {
+            global.fetch = async (url, options) => { resolve(options.body); return new Response('37') }
+          } else {
+            client.connection.nethernet.signalHandler = signal => {
+              if (signal.type === 'CONNECTREQUEST') resolve(signal.data)
+            }
           }
         })
         client.connect()
@@ -60,6 +65,7 @@ describe('Nethernet authenticated identity', function () {
         const publicKey = crypto.createPublicKey({ key: Buffer.from(authenticatedPublicKey ?? client.clientX509, 'base64'), type: 'spki', format: 'der' })
         assert(crypto.verify('SHA384', Buffer.from(`${header}.${payload}`), { key: publicKey, dsaEncoding: 'ieee-p1363' }, Buffer.from(signature, 'base64url')))
       } finally {
+        global.fetch = originalFetch
         clearTimeout(timer)
         client.close()
         await client._nethernetCleanup

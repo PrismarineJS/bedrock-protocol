@@ -1,7 +1,6 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
 const { serialize, isDebug } = require('./datatypes/util')
-const { setupHttpSignalling } = require('./nethernet/http')
 const debug = require('debug')('minecraft-protocol')
 const Options = require('./options')
 const auth = require('./client/auth')
@@ -65,8 +64,7 @@ class Client extends Connection {
 
     if (this.options.transport === 'nethernet') {
       this.nethernet ??= {}
-      this.connection = new NethernetClient({ networkId, host: this.options.host, webrtcBackend: this.options.nethernet.webrtcBackend })
-      if (this.options.nethernet.signalling === 'http') setupHttpSignalling(this)
+      this.connection = new NethernetClient({ networkId, host: this.options.host, ...this.options.nethernet, port: this.options.port })
       this.batchHeader = null
       this.disableEncryption = true
     } else if (this.options.transport === 'raknet') {

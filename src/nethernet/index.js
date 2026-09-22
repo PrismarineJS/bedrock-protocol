@@ -1,3 +1,4 @@
+const { signallingUrl } = require('./http')
 const waitForPong = require('../client/ping')
 const { Client, Server } = require('nethernet')
 const { NethernetServerAdvertisement } = require('./advertisement')
@@ -15,7 +16,13 @@ class NethernetClient {
     this.nethernet = new Client(
       options.networkId ?? 0n,
       options.host || '255.255.255.255',
-      { webrtcBackend: options.webrtcBackend }
+      {
+        webrtcBackend: options.webrtcBackend,
+        ...(options.signalling === 'http' && {
+          http: { url: signallingUrl({ ...options, nethernet: options }), serverKey: options.serverKey, onServerKey: options.onServerKey },
+          responseTimeoutMs: options.signallingConnectTimeout
+        })
+      }
     )
 
     this.nethernet.on('connected', (client) => {

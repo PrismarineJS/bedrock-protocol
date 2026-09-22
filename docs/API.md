@@ -311,7 +311,8 @@ fallback version is used.
 
 Following [Mojang's HTTP signalling protocol](https://mojang.github.io/bedrock-protocol-docs/guides/nether-net-onboarding-guide/),
 the client verifies the server identity token and its signed DTLS fingerprints before
-applying the answer. HTTPS uses normal TLS certificate validation to establish trust;
+applying the answer. The `nethernet` dependency owns this exchange and identity verification;
+Bedrock supplies player credentials and interprets discovery metadata. HTTPS uses normal TLS certificate validation to establish trust;
 plain HTTP additionally requires `serverKey` or approval through `onServerKey`. A pin,
 when configured, is enforced for HTTPS too. The callback runs only after signature
 verification and receives the operator-key fingerprint and signalling origin. Applications
