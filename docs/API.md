@@ -10,7 +10,7 @@ Returns a `Client` instance and connects to the server.
 | ----------- | ----------- |-|
 | host        | Conditional | Not required if `realms` is set. host to connect to, for example `127.0.0.1`. |
 | port        | *optional* |  port to connect to, default to **19132**     |
-| version     | *optional* |  Explicit version override. Otherwise use the version advertised by the server pong, reporting an error if minecraft-data does not support it. Fall back to `CURRENT_VERSION` in `src/options.js` only if discovery fails, is skipped, or provides no version. |
+| version     | *optional* |  Explicit version override. Otherwise select a minecraft-data version matching the protocol number in the server pong, regardless of its displayed game version. Report an error if that protocol is unsupported. Fall back to `CURRENT_VERSION` in `src/options.js` only if discovery fails, is skipped, or provides no protocol number. |
 | offline     | *optional* |  default to **false**. Set this to true to disable Microsoft/Xbox auth.   |
 | username    | Required | The profile name to connect to the server as. If `offline` set to true, the username that will appear on join, that would normally be the Xbox Gamer Tag. |
 | connectTimeout | *optional* | Transport establishment deadline after authentication and signalling, default **9000ms**. Does not bound login or spawning. |

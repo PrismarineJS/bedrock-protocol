@@ -29,14 +29,14 @@ function createClient (options) {
       }
       if (client._closed) return
       const gameVersion = client.options.transport === 'nethernet' ? ad?.gameVersion : ad?.version
-      // Version 4 Nethernet advertisements do not carry a game version.
-      const advertisedVersion = (client.options.transport !== 'nethernet' || ad?.version === 7)
-        ? gameVersion?.split('.').slice(0, 3).join('.')
-        : undefined
-      if (options.version == null && advertisedVersion && !Options.Versions[advertisedVersion]) {
-        throw new Error(`Unsupported server version ${gameVersion}: no minecraft-data support`)
+      // Nethernet v4 carries neither protocol nor game version; ignore constructor defaults.
+      const protocol = client.options.transport !== 'nethernet' || ad?.version === 7 ? ad?.protocol : undefined
+      let version = options.version
+      if (version == null && protocol != null && protocol !== '') {
+        version = Object.keys(Options.Versions).find(version => Options.Versions[version] === Number(protocol))
+        if (!version) throw new Error(`Unsupported server protocol ${protocol} (advertised version ${gameVersion ?? 'unknown'}): no minecraft-data support`)
       }
-      client.options.version = options.version ?? (advertisedVersion || Options.CURRENT_VERSION)
+      client.options.version = version ?? Options.CURRENT_VERSION
       if (ad && client.options.transport === 'raknet') {
         if (ad.portV4 && client.options.followPort) client.options.port = ad.portV4
         client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${gameVersion}${client.options.version !== gameVersion ? ` (as ${client.options.version})` : ''}`)
