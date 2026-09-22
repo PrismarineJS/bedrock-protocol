@@ -1,0 +1,137 @@
+const { EventEmitter } = require('events')
+const ConnWorker = require('../rakWorker')
+const { waitFor } = require('../datatypes/util')
+
+module.exports = ({ Client, Server, EncapsulatedPacket, Reliability, RakTimeout }) => {
+  class RakJsClient extends EventEmitter {
+    constructor (options = {}) {
+      super()
+      this.options = options
+      this.onConnected = () => { }
+      this.onCloseConnection = () => { }
+      this.onEncapsulated = () => { }
+      if (options.useWorkers) {
+        this.connect = this.workerConnect
+        this.close = reason => this.worker?.postMessage({ type: 'close', reason })
+        this.sendReliable = this.workerSendReliable
+      } else {
+        this.connect = this.plainConnect
+        this.close = reason => this.raknet.close(reason)
+        this.sendReliable = this.plainSendReliable
+      }
+      this.pongCb = null
+    }
+
+    workerConnect (host = this.options.host, port = this.options.port) {
+      this.worker = ConnWorker.connect(host, port)
+
+      this.worker.on('message', (evt) => {
+        switch (evt.type) {
+          case 'connected': {
+            this.onConnected()
+            break
+          }
+          case 'encapsulated': {
+            const [ecapsulated, address] = evt.args
+            this.onEncapsulated(ecapsulated, address.hash)
+            break
+          }
+          case 'pong':
+            this.pongCb?.(evt.args)
+            break
+          case 'disconnect':
+            this.onCloseConnection()
+            break
+        }
+      })
+    }
+
+    async plainConnect (host = this.options.host, port = this.options.port) {
+      this.raknet = new Client(host, port)
+      await this.raknet.connect()
+
+      this.raknet.on('connecting', () => {
+        console.log(`[client] connecting to ${host}/${port}`)
+      })
+
+      this.raknet.on('connected', this.onConnected)
+      this.raknet.on('encapsulated', (encapsulated, addr) => this.onEncapsulated(encapsulated, addr.hash))
+      this.raknet.on('disconnect', (reason) => this.onCloseConnection(reason))
+    }
+
+    workerSendReliable (buffer, immediate) {
+      this.worker.postMessage({ type: 'queueEncapsulated', packet: buffer, immediate })
+    }
+
+    plainSendReliable (buffer, immediate) {
+      const sendPacket = new EncapsulatedPacket()
+      sendPacket.reliability = Reliability.ReliableOrdered
+      sendPacket.buffer = buffer
+      this.raknet.connection.addEncapsulatedToQueue(sendPacket)
+      if (immediate) this.raknet.connection.sendQueue()
+    }
+
+    async ping (timeout = 1000) {
+      if (this.worker) {
+        this.worker.postMessage({ type: 'ping' })
+        return waitFor(res => {
+          this.pongCb = data => res(data)
+        }, timeout, () => { throw new RakTimeout('Ping timed out') })
+      } else {
+        if (!this.raknet) this.raknet = new Client(this.options.host, this.options.port)
+        return waitFor(res => {
+          this.raknet.ping(data => {
+            this.raknet.close()
+            res(data)
+          })
+        }, timeout, () => { throw new RakTimeout('Ping timed out') })
+      }
+    }
+  }
+
+  class RakJsServer extends EventEmitter {
+    constructor (options = {}, server) {
+      super()
+      this.options = options
+      this.server = server
+      this.onOpenConnection = () => { }
+      this.onCloseConnection = () => { }
+      this.onEncapsulated = (packet, address) => server.onEncapsulated(packet.buffer, address)
+      this.onClose = () => {}
+      this.updateAdvertisement = () => {
+        this.raknet.setPongAdvertisement(server.getAdvertisement())
+      }
+      if (options.useWorkers) {
+        throw Error('nyi')
+      } else {
+        this.listen = this.plainListen
+      }
+    }
+
+    async plainListen () {
+      this.raknet = new Server(this.options.host, this.options.port, this.server.getAdvertisement())
+      await this.raknet.listen(this.options.host, this.options.port)
+      this.raknet.on('openConnection', (conn) => {
+        conn.sendReliable = (buffer, immediate) => {
+          const sendPacket = new EncapsulatedPacket()
+          sendPacket.reliability = Reliability.ReliableOrdered
+          sendPacket.buffer = buffer
+          conn.addEncapsulatedToQueue(sendPacket, immediate ? 1 : 0)
+        }
+        this.onOpenConnection(conn)
+      })
+      this.raknet.on('closeConnection', this.onCloseConnection)
+      this.raknet.on('encapsulated', this.onEncapsulated)
+      this.raknet.on('close', this.onClose)
+    }
+
+    close () {
+      // Allow some time for the final packets to come in/out
+      setTimeout(() => {
+        this.raknet.close()
+      }, 40)
+    }
+  }
+
+  return { RakServer: RakJsServer, RakClient: RakJsClient }
+}
