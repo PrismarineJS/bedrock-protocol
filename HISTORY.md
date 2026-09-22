@@ -1,6 +1,6 @@
 ## 3.60.0
-* [Support Nethernet discovery without a known network ID (#822)](https://github.com/PrismarineJS/bedrock-protocol/commit/27014c3f8bfd5ee696cbaa37069da17713f9a5d9) (thanks @extremeheat)
 * [Support Minecraft 1.26.51 (#823)](https://github.com/PrismarineJS/bedrock-protocol/commit/ecb152dd572632bd8a5f2111d859d26f4b7e7740) (thanks @extremeheat)
+* [Support Nethernet discovery without a known network ID (#822)](https://github.com/PrismarineJS/bedrock-protocol/commit/27014c3f8bfd5ee696cbaa37069da17713f9a5d9) (thanks @extremeheat)
 * [Add support for Nethernet transport (#774)](https://github.com/PrismarineJS/bedrock-protocol/commit/f072752251b05c3240059d020d54a7f681d4e3f5) (thanks @extremeheat)
 * [Update the current Bedrock offline login payload (#796)](https://github.com/PrismarineJS/bedrock-protocol/commit/05940d77bee67b96395c69afb57b92e32bea4148) (thanks @Pix3lPirat3)
 * [Refactor update workflows (#795)](https://github.com/PrismarineJS/bedrock-protocol/commit/1704cf2a0763efa637af2b449794954b5ee01b94) (thanks @extremeheat)
