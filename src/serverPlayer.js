@@ -31,6 +31,8 @@ class Player extends Connection {
     }
 
     this.batchHeader = this.server.batchHeader
+    this.disableEncryption = this.server.disableEncryption
+
     // Compression is server-wide
     this.compressionAlgorithm = this.server.compressionAlgorithm
     this.compressionLevel = this.server.compressionLevel
@@ -137,7 +139,7 @@ class Player extends Connection {
   onHandshake () {
     try {
       this.loginState.require(LoginPhase.AwaitingClientHandshake)
-      if (this.status !== ClientStatus.Authenticating || !this.encryptionEnabled) {
+      if (this.status !== ClientStatus.Authenticating || (!this.encryptionEnabled && !this.disableEncryption)) {
         throw new Error('Client handshake arrived before encryption was enabled')
       }
       this.loginState.transition(LoginPhase.Complete)
@@ -154,17 +156,26 @@ class Player extends Connection {
   }
 
   close (reason) {
-    if (this.status !== ClientStatus.Disconnected) {
-      this.emit('close') // Emit close once
-      if (!reason) this.inLog?.('Client closed connection', this.connection?.address)
-    }
+    if (this._closed) return
+    this._closed = true
+    const wasConnected = this.status !== ClientStatus.Disconnected
+    this.status = ClientStatus.Disconnected
+    this.loginState?.close()
     this.q = []
     this.q2 = []
     clearInterval(this.loop)
-    this.connection?.close()
-    this.removeAllListeners()
-    this.status = ClientStatus.Disconnected
-    this.loginState?.close()
+    try {
+      if (wasConnected) {
+        this.emit('close')
+        if (!reason) this.inLog?.('Client closed connection', this.connection?.address)
+      }
+    } finally {
+      try {
+        this.connection?.close()
+      } finally {
+        this.removeAllListeners()
+      }
+    }
   }
 
   readPacket (packet) {

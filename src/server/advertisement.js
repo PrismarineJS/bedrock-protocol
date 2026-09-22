@@ -1,4 +1,5 @@
 const { Versions, CURRENT_VERSION } = require('../options')
+const { NethernetServerAdvertisement } = require('../nethernet/advertisement')
 
 class ServerAdvertisement {
   motd = 'Bedrock Protocol Server'
@@ -61,6 +62,7 @@ class ServerAdvertisement {
 
 module.exports = {
   ServerAdvertisement,
+  NethernetServerAdvertisement,
   getServerName (client) {
     return new ServerAdvertisement().toBuffer()
   },
