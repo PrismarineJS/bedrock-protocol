@@ -22,6 +22,10 @@ describe('Nethernet LAN transport', function () {
         server.transport.updateAdvertisement()
         const ad = await ping({ host: '127.0.0.1', nethernet: { networkId } })
         assert.strictEqual(ad.gameVersion, CURRENT_VERSION)
+        const discovered = await ping({ transport: 'nethernet', host: '127.0.0.1' })
+        assert.strictEqual(discovered.networkId, networkId)
+        assert.strictEqual(discovered.raw, ad.raw)
+        assert.strictEqual(discovered.gameVersion, CURRENT_VERSION)
         const joined = new Promise((resolve, reject) => {
           let joins = 0
           const onJoin = () => { if (++joins === 2) resolve() }

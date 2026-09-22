@@ -1,6 +1,6 @@
 const { Versions, CURRENT_VERSION } = require('../options')
 const { ProtoDef } = require('protodef')
-const schemas = require('./advertisement.json')
+const schemas = require('minecraft-data/minecraft-data/data/bedrock/common/nethernetAdvertisement.json')
 
 const proto = new ProtoDef(false)
 proto.addTypes(schemas)
@@ -47,7 +47,9 @@ class NethernetServerAdvertisement {
         offset += field.size
       }
     }
-    return new NethernetServerAdvertisement(value)
+    const advertisement = new NethernetServerAdvertisement(value)
+    advertisement.raw = buffer.toString('hex')
+    return advertisement
   }
 
   toBuffer () {

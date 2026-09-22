@@ -67,6 +67,19 @@ describe('Nethernet discovery lifecycle', () => {
     assertNoDiscoveryListeners(client)
   })
 
+  it('discovers an unknown network ID and preserves unsupported game metadata', async () => {
+    const client = discoveryClient()
+    client.nethernet.serverNetworkId = undefined
+    const data = new NethernetServerAdvertisement({ gameVersion: '9.99.0', protocol: 9999 }).toBuffer().toString('hex')
+    client.nethernet.ping = () => client.nethernet.emit('pong', { sender_id: 18446744073709551615n, data })
+    const ad = await client.ping()
+    assert.strictEqual(ad.networkId, 18446744073709551615n)
+    assert.strictEqual(ad.gameVersion, '9.99.0')
+    assert.strictEqual(ad.protocol, 9999)
+    assert.strictEqual(ad.raw, data)
+    assertNoDiscoveryListeners(client)
+  })
+
   it('ignores unreadable replies and accepts a subsequent valid reply', async () => {
     const client = discoveryClient()
     client.nethernet.ping = () => {

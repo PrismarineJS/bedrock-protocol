@@ -337,3 +337,16 @@ Connection and signalling failures emit `error` on the owning client/server and 
 resources. Closing a client or server also closes its signalling connection and leaves its Xbox
 session, including when closed during startup. If an Xbox session can no longer be maintained,
 the owner emits an error and closes; it does not silently create or join a different session.
+
+### Discovering Nethernet without a network ID
+
+`await ping({ transport: 'nethernet', host: '127.0.0.1', timeout: 5000 })`
+returns the first readable LAN advertisement from that host. The result includes
+`networkId` (a bigint) and `raw` (the hexadecimal advertisement). Supply
+`nethernet: { networkId }` to filter discovery to a known server. Discovery opens
+no WebRTC connection and does not require support for the advertised game version.
+Nethernet uses UDP 7551 and requires LAN visibility; the HTTP signalling port is
+not a discovery port. If multiple servers are discoverable, specify a network ID.
+
+RakNet `ping({ host, port })` also returns `raw`, containing the original
+semicolon-separated advertisement.

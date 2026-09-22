@@ -57,7 +57,7 @@ class NethernetClient {
         else resolve(data)
       }
       const onPong = ret => {
-        if (String(ret.sender_id) !== String(this.nethernet.serverNetworkId)) return
+        if (this.nethernet.serverNetworkId != null && String(ret.sender_id) !== String(this.nethernet.serverNetworkId)) return
         let advertisement
         try {
           advertisement = NethernetServerAdvertisement.fromBuffer(Buffer.from(ret.data, 'hex'))
@@ -65,6 +65,7 @@ class NethernetClient {
           debug('Ignoring unreadable discovery advertisement: %s', error.message)
           return
         }
+        advertisement.networkId = BigInt(ret.sender_id.toString())
         finish(null, advertisement)
       }
       const onError = error => finish(error)

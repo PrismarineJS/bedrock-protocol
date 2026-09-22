@@ -121,10 +121,11 @@ function connect (client) {
   }
 }
 
-async function ping ({ host, port, nethernet, signal, timeout }) {
+async function ping ({ host, port, nethernet, transport = nethernet ? 'nethernet' : 'raknet', signal, timeout }) {
+  const useNethernet = transport === 'nethernet'
   const networkId = nethernet?.networkId
   signal?.throwIfAborted()
-  const con = networkId ? new NethernetClient({ networkId, host, webrtcBackend: nethernet.webrtcBackend }) : new RakClient({ host, port })
+  const con = useNethernet ? new NethernetClient({ networkId, host, webrtcBackend: nethernet?.webrtcBackend }) : new RakClient({ host, port })
   let onAbort
   const aborted = new Promise((resolve, reject) => {
     onAbort = () => reject(signal.reason)
@@ -132,7 +133,7 @@ async function ping ({ host, port, nethernet, signal, timeout }) {
   })
   try {
     const result = await Promise.race([con.ping(timeout, { signal }), aborted])
-    return networkId ? result : advertisement.fromServerName(result)
+    return useNethernet ? result : advertisement.fromServerName(result)
   } finally {
     signal?.removeEventListener('abort', onAbort)
     con.close()

@@ -29,3 +29,9 @@ createClient({ host: 'localhost', pingTimeout: 1000, connectTimeout: 9000, useRa
 createClient({ useRaknetWorker: false })
 // @ts-expect-error The signalling deadline explicitly names connection setup.
 createClient({ nethernet: { signallingTimeout: 1000 } })
+
+ping({ transport: 'nethernet', host: '127.0.0.1' }).then(ad => {
+  const networkId: bigint | undefined = ad.networkId
+  const raw: string | undefined = ad.raw
+  console.log(networkId, raw)
+})

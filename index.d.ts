@@ -245,6 +245,8 @@ declare module 'bedrock-protocol' {
   }
 
   export class ServerAdvertisement {
+    // Original semicolon-separated advertisement, populated by discovery.
+    raw?: string
     motd: string
     name: string
     protocol: number
@@ -261,6 +263,9 @@ declare module 'bedrock-protocol' {
   }
 
   export class NethernetServerAdvertisement {
+    // Populated by discovery; raw is the hexadecimal advertisement.
+    networkId?: bigint
+    raw?: string
     // Discovery layout version (4 or 7), distinct from gameVersion.
     version: number
     gameVersion: string
@@ -304,6 +309,7 @@ declare module 'bedrock-protocol' {
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
+  export function ping(options: { transport: 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement>
   export function ping(options: { nethernet: { networkId: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement>
-  export function ping(options: { host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement>
+  export function ping(options: { transport?: 'raknet', host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement>
 }
