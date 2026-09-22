@@ -1,3 +1,6 @@
+## 3.60.1
+* [Simplify discovery and select RakNet or Nethernet from server pongs (#828)](https://github.com/PrismarineJS/bedrock-protocol/commit/4b88b412914fe25c829c980301fc450bb9b4da14) (thanks @extremeheat)
+
 ## 3.60.0
 * [Support Minecraft 1.26.51 (#823)](https://github.com/PrismarineJS/bedrock-protocol/commit/ecb152dd572632bd8a5f2111d859d26f4b7e7740) (thanks @extremeheat)
 * [Support Nethernet discovery without a known network ID (#822)](https://github.com/PrismarineJS/bedrock-protocol/commit/27014c3f8bfd5ee696cbaa37069da17713f9a5d9) (thanks @extremeheat)
