@@ -143,12 +143,13 @@ SizeOf.encapsulated = ['parametrizable', (compiler, { lengthType, type }) => {
  */
 Read.nbtLoop = ['context', (buffer, offset) => {
   const values = []
+  const start = offset
   while (buffer[offset] != 0) {
     const n = ctx.nbt(buffer, offset)
     values.push(n.value)
     offset += n.size
   }
-  return { value: values, size: buffer.length - offset }
+  return { value: values, size: offset + 1 - start }
 }]
 Write.nbtLoop = ['context', (value, buffer, offset) => {
   for (const val of value) {
