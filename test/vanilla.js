@@ -1,7 +1,7 @@
 // process.env.DEBUG = 'minecraft-protocol raknet'
 const vanillaServer = require('../tools/startVanillaServer')
 const { dumpPackets } = require('../tools/genPacketDumps')
-const { Client } = require('../src/client')
+const { createVanillaClient, getTransport } = require('../tools/vanillaClient')
 const { waitFor } = require('../src/datatypes/util')
 const { getPort } = require('./util')
 
@@ -9,7 +9,8 @@ const { getPort } = require('./util')
 // (needed by the internal client/server test) against it in parallel with
 // two different bots.
 async function vanillaTest (version) {
-  const [port, v6] = [await getPort(), await getPort()]
+  const protocol = getTransport(version) === 'nethernet' ? 'tcp' : 'udp'
+  const [port, v6] = [await getPort(protocol), await getPort(protocol)]
   console.log('Starting vanilla server', version, 'on port', port, v6)
   const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220, { 'server-port': port, 'server-portv6': v6 })
   console.log('Started server')
@@ -26,7 +27,7 @@ async function vanillaTest (version) {
 async function clientTest (version, port) {
   // const ChunkColumn = require('bedrock-provider').chunk('bedrock_' + (version.includes('1.19') ? '1.18.30' : version)) // TODO: Fix prismarine-chunk
 
-  const client = new Client({
+  const client = createVanillaClient({
     host: '127.0.0.1',
     port,
     username: 'Notch',

@@ -2,7 +2,7 @@
 // process.env.DEBUG = 'minecraft-protocol'
 const fs = require('fs')
 const vanillaServer = require('../tools/startVanillaServer')
-const { Client } = require('../src/client')
+const { createVanillaClient, getTransport } = require('../tools/vanillaClient')
 const { serialize, waitFor, getFiles } = require('../src/datatypes/util')
 const { CURRENT_VERSION } = require('../src/options')
 const { join } = require('path')
@@ -21,6 +21,7 @@ function hasDumps (version) {
 // Pass an existingPort to dump from an already running server instead of
 // booting (and killing) one here.
 async function dump (version, force = true, existingPort = null) {
+  version ||= CURRENT_VERSION
   const random = (Math.random() * 1000) | 0
   let loop
   let handle
@@ -28,12 +29,13 @@ async function dump (version, force = true, existingPort = null) {
 
   if (!existingPort) {
     let v6
-    ;[port, v6] = [await getPort(), await getPort()]
+    const protocol = getTransport(version) === 'nethernet' ? 'tcp' : 'udp'
+    ;[port, v6] = [await getPort(protocol), await getPort(protocol)]
     console.log('Starting dump server', version, 'on port', port, v6)
-    handle = await vanillaServer.startServerAndWait2(version || CURRENT_VERSION, 1000 * 120, { 'server-port': port, 'server-portv6': v6 })
+    handle = await vanillaServer.startServerAndWait2(version, 1000 * 120, { 'server-port': port, 'server-portv6': v6 })
     console.log('Started dump server', version)
   }
-  const client = new Client({
+  const client = createVanillaClient({
     host: '127.0.0.1',
     port,
     version,

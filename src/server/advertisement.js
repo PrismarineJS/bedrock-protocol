@@ -1,4 +1,5 @@
 const { Versions, CURRENT_VERSION } = require('../options')
+const { NethernetServerAdvertisement } = require('../nethernet/advertisement')
 
 class ServerAdvertisement {
   motd = 'Bedrock Protocol Server'
@@ -21,6 +22,7 @@ class ServerAdvertisement {
   }
 
   fromString (str) {
+    this.raw = str
     const [header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode, gamemodeId, portV4, portV6] = str.split(';')
     Object.assign(this, { header, motd, protocol, version, playersOnline, playersMax, serverId, levelName, gamemode, gamemodeId, portV4, portV6 })
     for (const numeric of ['playersOnline', 'playersMax', 'gamemodeId', 'portV4', 'portV6']) {
@@ -61,6 +63,7 @@ class ServerAdvertisement {
 
 module.exports = {
   ServerAdvertisement,
+  NethernetServerAdvertisement,
   getServerName (client) {
     return new ServerAdvertisement().toBuffer()
   },

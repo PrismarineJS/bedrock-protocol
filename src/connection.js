@@ -48,6 +48,7 @@ class Connection extends EventEmitter {
   }
 
   startEncryption (iv) {
+    if (this.disableEncryption) return
     this.encryptionEnabled = true
     this.inLog?.('Started encryption')
     this.decrypt = cipher.createDecryptor(this, iv)

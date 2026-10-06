@@ -1,12 +1,11 @@
 const dgram = require('dgram')
+const net = require('net')
 
-// The tests bind UDP servers, so probe for a free port over UDP too: a port
-// that is free for TCP can still be unavailable for UDP (notably on Windows,
-// which reserves excluded port ranges per protocol).
-const getPort = () => new Promise((resolve, reject) => {
-  const socket = dgram.createSocket('udp4')
+// Probe the protocol that will bind the port: RakNet uses UDP, HTTP signalling uses TCP.
+const getPort = (protocol = 'udp') => new Promise((resolve, reject) => {
+  const socket = protocol === 'tcp' ? net.createServer() : dgram.createSocket('udp4')
   socket.once('error', reject)
-  socket.bind(0, () => {
+  socket.once('listening', () => {
     const { port } = socket.address()
     socket.close(() => {
       // Wait a bit for port to free as we try to bind right after freeing it
@@ -15,6 +14,8 @@ const getPort = () => new Promise((resolve, reject) => {
       }, 200)
     })
   })
+  if (protocol === 'tcp') socket.listen(0, '127.0.0.1')
+  else socket.bind(0)
 })
 
 module.exports = { getPort }

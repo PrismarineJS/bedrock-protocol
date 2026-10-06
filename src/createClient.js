@@ -1,43 +1,60 @@
 const { Client } = require('./client')
-const { RakClient } = require('./rak')('raknet-native')
+const initRaknet = require('./rak')
 const { sleep } = require('./datatypes/util')
 const assert = require('assert')
 const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
+const { NethernetClient } = require('./nethernet')
 
-/** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
+/** @param {{ version?: string, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
   assert(options)
-  const client = new Client({ port: 19132, followPort: !options.realms, ...options, delayedInit: true })
+  const client = new Client({ port: 19132, followPort: !options.realms, ...options, transport: options.transport ?? (options.nethernet ? 'nethernet' : undefined), delayedInit: true })
+  const config = client.options
 
-  function onServerInfo () {
-    client.on('connect_allowed', () => connect(client))
-    if (options.skipPing) {
-      client.init()
-    } else {
-      ping(client.options).then(ad => {
-        const adVersion = ad.version?.split('.').slice(0, 3).join('.') // Only 3 version units
-        client.options.version = options.version ?? (Options.Versions[adVersion] ? adVersion : Options.CURRENT_VERSION)
-
-        if (ad.portV4 && client.options.followPort) {
-          client.options.port = ad.portV4
-        }
-
-        client.conLog?.(`Connecting to ${client.options.host}:${client.options.port} ${ad.motd} (${ad.levelName}), version ${ad.version} ${client.options.version !== ad.version ? ` (as ${client.options.version})` : ''}`)
-        client.init()
-      }).catch(e => client.emit('error', e))
+  client.once('connect_allowed', () => connect(client))
+  async function start () {
+    if (options.world) await auth.worldAuthenticate(client, config)
+    else if (options.realms) await auth.realmAuthenticate(config)
+    if (client._closed) return
+    let ad
+    if (!config.skipPing && !(config.transport === 'nethernet' && config.nethernet.signalling === 'services')) {
+      client._discoveryAbort = new AbortController()
+      try {
+        ad = await ping({
+          ...config,
+          nethernet: config.transport === 'nethernet' ? config.nethernet : undefined,
+          timeout: config.pingTimeout,
+          signal: client._discoveryAbort.signal
+        })
+      } catch (error) {
+        if (client._closed) return
+        client.conLog?.(`Server discovery failed: ${error.message}; using configured defaults`)
+      }
     }
+    if (client._closed) return
+    config.transport = ad?.transport ?? config.transport ?? 'raknet'
+    config.version = options.version ?? Options.CURRENT_VERSION
+    if (ad) {
+      if (ad.networkId != null) config.nethernet.networkId = ad.networkId
+      if (ad.portV4 && config.followPort) config.port = ad.portV4
+      // Nethernet v4 has no protocol field; its constructor defaults are not server metadata.
+      const protocol = ad.transport === 'nethernet' && ad.version === 4 ? undefined : Number(ad.protocol)
+      if (options.version == null && protocol) {
+        config.version = Object.keys(Options.Versions).find(version => Options.Versions[version] === protocol)
+        if (!config.version) throw new Error(`Unsupported server protocol ${protocol}: no minecraft-data support`)
+      }
+      client.conLog?.(`Connecting over ${config.transport} to ${ad.networkId ?? `${config.host}:${config.port}`} ${ad.motd} (${ad.levelName}), version ${config.version}`)
+    }
+    client.init()
   }
 
-  if (options.realms) {
-    auth.realmAuthenticate(client.options).then(onServerInfo).catch(e => client.emit('error', e))
-  } else {
-    onServerInfo()
-  }
+  start().catch(error => { if (!client._closed) client.onConnectionError(error) })
   return client
 }
 
+/** @param {Client} client */
 function connect (client) {
   // Actually connect
   client.connect()
@@ -49,22 +66,15 @@ function connect (client) {
     }
   })
 
-  client.once('resource_packs_info', (packet) => {
-    // As of 1.26.40 the status is a varint followed by the same status as a lowercase string.
-    // Older protocol versions have no such field and simply ignore it.
-    client.write('resource_pack_client_response', {
-      response_status: 'completed',
-      response_status_name: 'resourcepackstackfinished',
-      resourcepackids: []
-    })
-
-    client.once('resource_pack_stack', (stack) => {
-      client.write('resource_pack_client_response', {
-        response_status: 'completed',
-        response_status_name: 'resourcepackstackfinished',
-        resourcepackids: []
-      })
-    })
+  const completeResourcePacks = () => client.write('resource_pack_client_response', {
+    response_status: 'completed',
+    // Added in 1.26.40; older serializers ignore this field.
+    response_status_name: 'resourcepackstackfinished',
+    resourcepackids: []
+  })
+  client.once('resource_packs_info', () => {
+    completeResourcePacks()
+    client.once('resource_pack_stack', completeResourcePacks)
 
     client.queue('client_cache_status', { enabled: false })
 
@@ -99,13 +109,29 @@ function connect (client) {
   }
 }
 
-async function ping ({ host, port }) {
-  const con = new RakClient({ host, port })
-
+async function ping ({ host, port = 19132, nethernet, transport = nethernet ? 'nethernet' : undefined, signal, timeout = transport === 'nethernet' ? 10000 : 1000 }) {
+  if (transport != null && !['raknet', 'nethernet'].includes(transport)) throw new Error(`Unsupported transport: ${transport}`)
+  const controller = new AbortController()
+  signal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal
+  signal.throwIfAborted()
   try {
-    return advertisement.fromServerName(await con.ping())
+    return await Promise.any((transport ? [transport] : ['raknet', 'nethernet']).map(async selected => {
+      const { RakClient } = initRaknet('raknet-native')
+      const con = selected === 'nethernet'
+        ? new NethernetClient({ ...nethernet, host: host ?? (transport ? '255.255.255.255' : '127.0.0.1') })
+        : new RakClient({ host: host ?? '127.0.0.1', port })
+      try {
+        const result = await con.ping(timeout, { signal })
+        return Object.assign(selected === 'nethernet' ? result : advertisement.fromServerName(result), { transport: selected })
+      } finally {
+        con.close()
+      }
+    }))
+  } catch (error) {
+    signal.throwIfAborted()
+    throw transport ? error.errors[0] : error
   } finally {
-    con.close()
+    controller.abort()
   }
 }
 

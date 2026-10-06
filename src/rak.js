@@ -1,4 +1,5 @@
 const { EventEmitter } = require('events')
+const waitForPong = require('./client/ping')
 const ConnWorker = require('./rakWorker')
 const { waitFor } = require('./datatypes/util')
 
@@ -37,6 +38,7 @@ class RakNativeClient extends EventEmitter {
   constructor (options, client) {
     super()
     this.connected = false
+    this.discoveryAbort = new AbortController()
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
@@ -60,20 +62,20 @@ class RakNativeClient extends EventEmitter {
     })
   }
 
-  async ping (timeout = 1000) {
-    this.raknet.ping()
-    return waitFor((done) => {
-      this.raknet.on('pong', (ret) => {
-        if (ret.extra) {
-          done(ret.extra.toString())
-        }
+  async ping (timeout = 1000, { signal } = {}) {
+    signal = signal ? AbortSignal.any([signal, this.discoveryAbort.signal]) : this.discoveryAbort.signal
+    try {
+      return await waitForPong(this.raknet, timeout, signal, ({ extra }) => {
+        // Native RakNet includes a uint16 length prefix; other backends may omit it.
+        if (Buffer.isBuffer(extra) && extra.length >= 2 && extra.readUInt16BE(0) === extra.length - 2) extra = extra.subarray(2)
+        const text = extra?.toString()
+        if (/^(MCPE|MCEE);/.test(text)) return text
       })
-    }, timeout, () => {
-      if ('REPLIT_ENVIRONMENT' in process.env) {
-        console.warn('A Replit environment was detected. Replit may not support the necessary outbound UDP connections required to connect to a Minecraft server. Please see https://github.com/PrismarineJS/bedrock-protocol/blob/master/docs/FAQ.md for more information.')
-      }
-      throw new RakTimeout('Ping timed out')
-    })
+    } catch (error) {
+      if (error.name !== 'TimeoutError') throw error
+      if ('REPLIT_ENVIRONMENT' in process.env) console.warn('Replit may block outbound UDP. See https://github.com/PrismarineJS/bedrock-protocol/blob/master/docs/FAQ.md')
+      throw new RakTimeout(error.message)
+    }
   }
 
   connect () {
@@ -81,6 +83,8 @@ class RakNativeClient extends EventEmitter {
   }
 
   close () {
+    if (this.discoveryAbort.signal.aborted) return
+    this.discoveryAbort.abort(new Error('RakNet discovery cancelled'))
     this.connected = false
     setTimeout(() => {
       this.raknet.close()
