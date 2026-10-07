@@ -14,6 +14,7 @@ class Server extends EventEmitter {
     this._closed = false
 
     this.options = { ...Options.defaultOptions, ...options, nethernet: { signalling: 'lan', ...options.nethernet } }
+    if (this.options.nethernet.signalling === 'http') throw new Error('HTTP signalling is currently client-only')
     this.options.maxPlayers ??= 3
     this.validateOptions()
 

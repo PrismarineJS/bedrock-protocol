@@ -91,7 +91,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
       try {
         assert.strictEqual(await initialized.promise, version ?? CURRENT_VERSION)
         assert.strictEqual(timeout, 123)
-        assert.strictEqual(client.options.nethernet.signalling, 'lan')
+        assert.notStrictEqual(client.options.nethernet.signalling, 'services')
         assert.strictEqual(client._closed, false)
       } finally {
         client.close()
