@@ -108,7 +108,7 @@ Server event emissions:
 'error' event is emitted when a catchable exception happens with a client (for example receiving a bad encrypted packet).
 
 A ServerPlayer instance also emits the following special events:
-* 'join' - the client is ready to recieve game packets after successful server-client handshake/encryption
+* 'join' - the client is ready to receive game packets after successful server-client handshake/encryption
 * 'close' - emitted when client quit the server
 * 'login' - emitted after identity and client-data verification. The event value is `{ user, authentication }`, where `authentication` contains `authenticated`, `method` (`oidc`, `legacy`, or `offline`), and the verified issuer. Check `authenticated` rather than inferring trust from an XUID.
 * 'spawn' - emitted after the client lets the server know that it has successfully spawned
@@ -130,7 +130,7 @@ const client = bedrock.createClient({
 
 ```js
 // The 'join' event is emitted after the player has authenticated
-// and is ready to recieve chunks and start game packets
+// and is ready to receive chunks and start game packets
 client.on('join', client => console.log('Player has joined!'))
 
 // The 'spawn' event is emitted. The chunks have been sent and all is well.
@@ -155,7 +155,7 @@ client.on('add_player', (packet) => {
 Order of client event emissions:
 * 'connect' - emitted after a client first joins the server
 * 'login' - emitted after the client has been authenticated by the server
-* 'join' - the client is ready to recieve game packets after successful server-client handshake
+* 'join' - the client is ready to receive game packets after successful server-client handshake
 * 'spawn' - emitted after the client has permission from the server to spawn
 
 ## Methods
@@ -213,7 +213,7 @@ To make joining a Realm easier we've added an optional `realm` property to the c
 const bedrock = require('bedrock-protocol')
 const client = bedrock.createClient({
   realms: {
-    pickRealm: (realms) => realms[0] // Function which recieves an array of joined/owned Realms and must return a single Realm. Can be async
+    pickRealm: (realms) => realms[0] // Function which receives an array of joined/owned Realms and must return a single Realm. Can be async
   }
 })
 ```
