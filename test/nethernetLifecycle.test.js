@@ -10,6 +10,7 @@ const { RealmAPI } = require('prismarine-realms')
 const { NethernetSignal } = require('../src/nethernet/signalling')
 const { XboxClient } = require('prismarine-xbox-services')
 const { EventEmitter } = require('events')
+const dns = require('dns')
 const { CURRENT_VERSION, Versions } = require('../src/options')
 
 function deferred () {
@@ -297,6 +298,7 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
 
   for (const [protocol, address] of [['RAKNET', 'example.com:19132'], ['NETHERNET_JSONRPC', 'realm-network-id']]) {
     it(`retains the connection information from a ${protocol} Realm`, async () => {
+      stub(dns.promises, 'lookup', async () => ({ address: '127.0.0.1', family: 4 }))
       stub(RealmAPI, 'from', () => ({
         getRealms: async () => [{ id: 123 }],
         rest: { get: async () => ({ address, networkProtocol: protocol, sessionRegionData: { regionName: 'WestUS' } }) }
@@ -319,6 +321,17 @@ describe('nethernet lifecycle and RakNet compatibility', () => {
       }
     })
   }
+
+  it('falls back to the default signalling host when the regional one does not resolve', async () => {
+    stub(dns.promises, 'lookup', async host => { throw Object.assign(new Error(`getaddrinfo ENOTFOUND ${host}`), { code: 'ENOTFOUND' }) })
+    stub(RealmAPI, 'from', () => ({
+      getRealms: async () => [{ id: 123 }],
+      rest: { get: async () => ({ address: 'realm-network-id', networkProtocol: 'NETHERNET_JSONRPC', sessionRegionData: { regionName: 'NorthCentralUs' } }) }
+    }))
+    const options = { version: CURRENT_VERSION, realms: { realmId: 123 }, authflow: {} }
+    await auth.realmAuthenticate(options)
+    assert.strictEqual(options.nethernet._signallingHost, undefined)
+  })
 
   it('joins a selected world using the ready session snapshot and publishes activity', async () => {
     const client = new Client({ transport: 'nethernet', delayedInit: true })

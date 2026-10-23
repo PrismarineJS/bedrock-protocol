@@ -1,4 +1,5 @@
 const path = require('path')
+const dns = require('dns')
 const { Authflow: PrismarineAuth, Titles } = require('prismarine-auth')
 const minecraftFolderPath = require('minecraft-folder-path')
 const debug = require('debug')('minecraft-protocol')
@@ -146,7 +147,16 @@ async function realmAuthenticate (options) {
     options.nethernet = { ...options.nethernet, networkId: join.address, signalling: 'services' }
     options.nethernet._signallingProtocol = 'jsonrpc'
     const region = join.sessionRegionData?.regionName
-    if (region) options.nethernet._signallingHost = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
+    if (region) {
+      // Most regions have no signal-<region> host (#832); keep it only if it resolves
+      const host = `signal-${String(region).toLowerCase()}.franchise.minecraft-services.net`
+      try {
+        await dns.promises.lookup(host)
+        options.nethernet._signallingHost = host
+      } catch {
+        debug('regional signalling host does not resolve, using the default one', host)
+      }
+    }
   } else {
     const address = join.address?.match(/^(.*):(\d+)$/)
     if (!address) throw new Error('Invalid RakNet Realm address')
