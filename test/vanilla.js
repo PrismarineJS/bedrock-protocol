@@ -2,6 +2,8 @@
 const vanillaServer = require('../tools/startVanillaServer')
 const { dumpPackets } = require('../tools/genPacketDumps')
 const { createVanillaClient, getTransport } = require('../tools/vanillaClient')
+const { createClient } = require('../src/createClient')
+const { once } = require('events')
 const { waitFor } = require('../src/datatypes/util')
 const { getPort } = require('./util')
 
@@ -12,7 +14,7 @@ async function vanillaTest (version) {
   const protocol = getTransport(version) === 'nethernet' ? 'tcp' : 'udp'
   const [port, v6] = [await getPort(protocol), await getPort(protocol)]
   console.log('Starting vanilla server', version, 'on port', port, v6)
-  const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220, { 'server-port': port, 'server-portv6': v6 })
+  const handle = await vanillaServer.startServerAndWait2(version, 1000 * 220, { 'server-port': port, 'server-portv6': v6, 'enable-lan-visibility': protocol !== 'tcp' })
   console.log('Started server')
   try {
     await Promise.all([
@@ -25,6 +27,8 @@ async function vanillaTest (version) {
 }
 
 async function clientTest (version, port) {
+  if (getTransport(version) === 'nethernet') return httpClientTest(version, port)
+
   // const ChunkColumn = require('bedrock-provider').chunk('bedrock_' + (version.includes('1.19') ? '1.18.30' : version)) // TODO: Fix prismarine-chunk
 
   const client = createVanillaClient({
@@ -83,6 +87,23 @@ async function clientTest (version, port) {
     throw Error('❌ client timed out ')
   })
   clearInterval(loop)
+}
+
+async function httpClientTest (version, port) {
+  const client = createClient({
+    host: '127.0.0.1',
+    port,
+    username: 'Notch',
+    version,
+    offline: true,
+    nethernet: { signalling: 'http', onServerKey: () => true }
+  })
+  try {
+    await once(client, 'spawn', { signal: AbortSignal.timeout(60000) })
+    console.log('✔ Public client has spawned')
+  } finally {
+    client.close()
+  }
 }
 
 module.exports = { vanillaTest, clientTest }

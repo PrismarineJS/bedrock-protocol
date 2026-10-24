@@ -10,9 +10,16 @@ declare module 'bedrock-protocol' {
     webrtcBackend?: 'werift' | 'wrtc' | 'auto'
     // Remote ID for clients; local ID for servers (generated when omitted by createServer).
     networkId?: string | bigint
-    // LAN discovery signalling or authenticated Minecraft services signalling (default: lan).
-    signalling?: 'lan' | 'services'
-    // Maximum wait for services signalling credentials in milliseconds (default: 15000).
+    // createClient discovers LAN/HTTP signalling; low-level clients default to LAN.
+    signalling?: 'lan' | 'services' | 'http'
+    // HTTP(S) signalling origin; defaults to http://host:port (client only).
+    url?: string
+    // SHA-256 fingerprint of the server identity's DER SPKI, formatted sha256:<hex>.
+    serverKey?: string
+    // Approve an unknown plain-HTTP key. Called only after verifying its signatures.
+    // A configured serverKey mismatch is always rejected, without calling this hook.
+    onServerKey?: (fingerprint: string, url: string) => boolean | Promise<boolean>
+    // Maximum wait for HTTP signalling or services signalling credentials in milliseconds (default: 15000).
     signallingConnectTimeout?: number
   }
 
@@ -73,6 +80,7 @@ declare module 'bedrock-protocol' {
   }
 
   export interface ServerOptions extends Options {
+    nethernet?: Omit<NethernetOptions, 'signalling' | 'url' | 'serverKey' | 'onServerKey'> & { signalling?: 'lan' | 'services' }
     // Account configuration for hosting a world through Xbox signalling.
     username?: string
     profilesFolder?: string | false
@@ -309,9 +317,34 @@ declare module 'bedrock-protocol' {
   export function createClient(options: ClientOptions): Client
   export function createServer(options: ServerOptions): Server
 
-  export type PingResponse = (ServerAdvertisement & { transport: 'raknet' }) | (NethernetServerAdvertisement & { transport: 'nethernet' })
-  export function ping(options: { transport: 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement & { transport: 'nethernet' }>
-  export function ping(options: { transport?: undefined, nethernet: { networkId: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement & { transport: 'nethernet' }>
-  export function ping(options: { transport: 'raknet', host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement & { transport: 'raknet' }>
-  export function ping(options: { transport?: 'raknet' | 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, port?: number, timeout?: number, signal?: AbortSignal }): Promise<PingResponse>
+  export interface NethernetHttpAdvertisement {
+    transport: 'nethernet'
+    signalling: 'http'
+    motd?: string
+    protocol?: number
+    gameVersion?: string
+    levelName?: string
+    playersOnline?: number
+    playersMax?: number
+    gamemodeId?: number
+    networkId?: never
+    raw: string
+  }
+
+  export interface PingOptions {
+    transport?: 'raknet' | 'nethernet'
+    nethernet?: Pick<NethernetOptions, 'networkId' | 'signalling' | 'url' | 'webrtcBackend'>
+    host?: string
+    port?: number
+    timeout?: number
+    signal?: AbortSignal
+  }
+
+  export type NethernetLanAdvertisement = NethernetServerAdvertisement & { transport: 'nethernet', signalling: 'lan' }
+  export type PingResponse = (ServerAdvertisement & { transport: 'raknet' }) | NethernetLanAdvertisement | NethernetHttpAdvertisement
+  export function ping(options: PingOptions & { transport: 'raknet' }): Promise<ServerAdvertisement & { transport: 'raknet' }>
+  export function ping(options: PingOptions & { transport?: 'nethernet', nethernet: { signalling: 'http' } }): Promise<NethernetHttpAdvertisement>
+  export function ping(options: PingOptions & { transport?: 'nethernet', nethernet: { signalling?: 'lan', networkId: string | bigint } | { signalling: 'lan' } }): Promise<NethernetLanAdvertisement>
+  export function ping(options: PingOptions & { transport: 'nethernet' }): Promise<NethernetLanAdvertisement | NethernetHttpAdvertisement>
+  export function ping(options: PingOptions): Promise<PingResponse>
 }
