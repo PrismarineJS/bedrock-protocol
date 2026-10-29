@@ -6,6 +6,7 @@ const Options = require('./options')
 const advertisement = require('./server/advertisement')
 const auth = require('./client/auth')
 const { NethernetClient } = require('./nethernet')
+const { pingHttp } = require('./nethernet/http')
 
 /** @param {{ version?: string, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient (options) {
@@ -37,6 +38,7 @@ function createClient (options) {
     config.transport = ad?.transport ?? config.transport ?? 'raknet'
     config.version = options.version ?? Options.CURRENT_VERSION
     if (ad) {
+      if (ad.signalling === 'http') config.nethernet.signalling = 'http'
       if (ad.networkId != null) config.nethernet.networkId = ad.networkId
       if (ad.portV4 && config.followPort) config.port = ad.portV4
       // Nethernet v4 has no protocol field; its constructor defaults are not server metadata.
@@ -111,6 +113,8 @@ function connect (client) {
 
 async function ping ({ host, port = 19132, nethernet, transport = nethernet ? 'nethernet' : undefined, signal, timeout = transport === 'nethernet' ? 10000 : 1000 }) {
   if (transport != null && !['raknet', 'nethernet'].includes(transport)) throw new Error(`Unsupported transport: ${transport}`)
+  if (transport === 'nethernet' && nethernet?.signalling === 'services') throw new Error('Services signalling does not support server discovery')
+  if (transport === 'nethernet' && nethernet?.signalling === 'http') return pingHttp({ host, port, nethernet, timeout, signal })
   const controller = new AbortController()
   signal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal
   signal.throwIfAborted()
@@ -122,14 +126,21 @@ async function ping ({ host, port = 19132, nethernet, transport = nethernet ? 'n
         : new RakClient({ host: host ?? '127.0.0.1', port })
       try {
         const result = await con.ping(timeout, { signal })
-        return Object.assign(selected === 'nethernet' ? result : advertisement.fromServerName(result), { transport: selected })
+        return Object.assign(selected === 'nethernet' ? result : advertisement.fromServerName(result), { transport: selected, ...(selected === 'nethernet' ? { signalling: 'lan' } : {}) })
       } finally {
         con.close()
       }
     }))
   } catch (error) {
     signal.throwIfAborted()
-    throw transport ? error.errors[0] : error
+    if (transport === 'raknet' || nethernet?.signalling || nethernet?.networkId != null) throw error.errors[0]
+    // Prefer existing UDP connections; HTTP is the fallback when neither responds.
+    try {
+      return await pingHttp({ host, port, nethernet, timeout, signal })
+    } catch (httpError) {
+      signal.throwIfAborted()
+      throw new AggregateError([...error.errors, httpError], 'Server discovery failed')
+    }
   } finally {
     controller.abort()
   }
