@@ -1,6 +1,5 @@
 ## 3.61.0
 * [1.26.60 support (#842)](https://github.com/PrismarineJS/bedrock-protocol/commit/d1cae607381164cf2c69e4222c774039629eeed8) (thanks @github-actions[bot])
-* [docs: fix receive spelling in API docs (#838)](https://github.com/PrismarineJS/bedrock-protocol/commit/de199f0fe7ade6477c5637851ea814a65cffabe9) (thanks @Rohit-Singh-01)
 * [nethernet: Fall back to the default signalling host when the regional one doesn't resolve (#839)](https://github.com/PrismarineJS/bedrock-protocol/commit/c9e1fbf21dc6abde8d89920996575791b79e66cf) (thanks @ExtReMLapin)
 * [Fix `nbtLoop` read size (#834)](https://github.com/PrismarineJS/bedrock-protocol/commit/f0ac6151322b2176244421c7c481f45814baf929) (thanks @mc-zuri)
 * [Add a stable required CI gate (#835)](https://github.com/PrismarineJS/bedrock-protocol/commit/f4fe1e8abd8763539fa6020bfb0932144968bfdf) (thanks @rom1504)
