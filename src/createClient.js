@@ -109,17 +109,21 @@ function connect (client) {
   }
 }
 
-async function ping ({ host, port = 19132, nethernet, transport = nethernet ? 'nethernet' : undefined, signal, timeout = transport === 'nethernet' ? 10000 : 1000 }) {
+async function ping ({ host, port = 19132, raknetBackend, useNativeRaknet, nethernet, transport = nethernet ? 'nethernet' : undefined, signal, timeout = transport === 'nethernet' ? 10000 : 1000 }) {
   if (transport != null && !['raknet', 'nethernet'].includes(transport)) throw new Error(`Unsupported transport: ${transport}`)
   const controller = new AbortController()
   signal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal
   signal.throwIfAborted()
   try {
     return await Promise.any((transport ? [transport] : ['raknet', 'nethernet']).map(async selected => {
-      const { RakClient } = initRaknet('raknet-native')
-      const con = selected === 'nethernet'
-        ? new NethernetClient({ ...nethernet, host: host ?? (transport ? '255.255.255.255' : '127.0.0.1') })
-        : new RakClient({ host: host ?? '127.0.0.1', port })
+      let con
+      if (selected === 'nethernet') {
+        con = new NethernetClient({ ...nethernet, host: host ?? (transport ? '255.255.255.255' : '127.0.0.1') })
+      } else {
+        const backend = useNativeRaknet === true ? 'raknet-native' : useNativeRaknet === false ? 'jsp-raknet' : raknetBackend
+        const { RakClient } = initRaknet(backend)
+        con = new RakClient({ host: host ?? '127.0.0.1', port })
+      }
       try {
         const result = await con.ping(timeout, { signal })
         return Object.assign(selected === 'nethernet' ? result : advertisement.fromServerName(result), { transport: selected })

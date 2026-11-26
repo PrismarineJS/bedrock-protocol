@@ -312,6 +312,6 @@ declare module 'bedrock-protocol' {
   export type PingResponse = (ServerAdvertisement & { transport: 'raknet' }) | (NethernetServerAdvertisement & { transport: 'nethernet' })
   export function ping(options: { transport: 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement & { transport: 'nethernet' }>
   export function ping(options: { transport?: undefined, nethernet: { networkId: string | bigint }, host?: string, timeout?: number, signal?: AbortSignal }): Promise<NethernetServerAdvertisement & { transport: 'nethernet' }>
-  export function ping(options: { transport: 'raknet', host: string, port: number, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement & { transport: 'raknet' }>
-  export function ping(options: { transport?: 'raknet' | 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, port?: number, timeout?: number, signal?: AbortSignal }): Promise<PingResponse>
+  export function ping(options: { transport: 'raknet', host: string, port: number, raknetBackend?: ClientOptions['raknetBackend'], useNativeRaknet?: boolean, timeout?: number, signal?: AbortSignal }): Promise<ServerAdvertisement & { transport: 'raknet' }>
+  export function ping(options: { transport?: 'raknet' | 'nethernet', nethernet?: { networkId?: string | bigint }, host?: string, port?: number, raknetBackend?: ClientOptions['raknetBackend'], useNativeRaknet?: boolean, timeout?: number, signal?: AbortSignal }): Promise<PingResponse>
 }

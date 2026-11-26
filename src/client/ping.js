@@ -1,14 +1,14 @@
 const { on } = require('events')
 
 // Subscribe before sending; ignore replies the transport cannot decode.
-module.exports = async function waitForPong (socket, timeout, signal, read) {
+module.exports = async function waitForPong (socket, timeout, signal, read, event = 'pong', send = () => socket.ping()) {
   const controller = new AbortController()
   signal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal
   signal.throwIfAborted()
-  const replies = on(socket, 'pong', { signal })
+  const replies = on(socket, event, { signal })
   const timer = setTimeout(() => controller.abort(new DOMException('Ping timed out', 'TimeoutError')), timeout)
   try {
-    socket.ping()
+    send()
     for await (const [packet] of replies) {
       signal.throwIfAborted()
       const result = read(packet)

@@ -147,6 +147,7 @@ class RakJsClient extends EventEmitter {
   constructor (options = {}) {
     super()
     this.options = options
+    this.discoveryAbort = new AbortController()
     this.onConnected = () => { }
     this.onCloseConnection = () => { }
     this.onEncapsulated = () => { }
@@ -156,7 +157,11 @@ class RakJsClient extends EventEmitter {
       this.sendReliable = this.workerSendReliable
     } else {
       this.connect = this.plainConnect
-      this.close = reason => this.raknet.close(reason)
+      this.close = reason => {
+        if (this.discoveryAbort.signal.aborted) return
+        this.discoveryAbort.abort(new Error('RakNet discovery cancelled'))
+        this.raknet?.close(reason)
+      }
       this.sendReliable = this.plainSendReliable
     }
     this.pongCb = null
@@ -211,7 +216,7 @@ class RakJsClient extends EventEmitter {
     if (immediate) this.raknet.connection.sendQueue()
   }
 
-  async ping (timeout = 1000) {
+  async ping (timeout = 1000, { signal } = {}) {
     if (this.worker) {
       this.worker.postMessage({ type: 'ping' })
       return waitFor(res => {
@@ -219,12 +224,16 @@ class RakJsClient extends EventEmitter {
       }, timeout, () => { throw new RakTimeout('Ping timed out') })
     } else {
       if (!this.raknet) this.raknet = new Client(this.options.host, this.options.port)
-      return waitFor(res => {
-        this.raknet.ping(data => {
-          this.raknet.close()
-          res(data)
-        })
-      }, timeout, () => { throw new RakTimeout('Ping timed out') })
+      signal = signal ? AbortSignal.any([signal, this.discoveryAbort.signal]) : this.discoveryAbort.signal
+      try {
+        return await waitForPong(this.raknet, timeout, signal, data => {
+          const text = data?.toString()
+          if (/^(MCPE|MCEE);/.test(text)) return text
+        }, 'unconnectedPong', () => this.raknet.sendUnconnectedPing())
+      } catch (error) {
+        if (error.name !== 'TimeoutError') throw error
+        throw new RakTimeout(error.message)
+      }
     }
   }
 }
