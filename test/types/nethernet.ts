@@ -35,3 +35,5 @@ ping({ transport: 'nethernet', host: '127.0.0.1' }).then(ad => {
   const raw: string | undefined = ad.raw
   console.log(networkId, raw)
 })
+
+ping({ transport: 'raknet', host: 'localhost', port: 19132, raknetBackend: 'jsp-raknet' }).then(ad => ad.portV4)

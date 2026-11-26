@@ -66,7 +66,7 @@ authenticated unless offline is set to true.
 
 *`useNativeRaknet` is deprecated. Setting to true will use 'raknet-native' for `raknetBackend` and setting it to false will use a JavaScript implemenation (jsp-raknet)*
 
-## be.ping({ host, port, transport, timeout, signal }) : Promise<PingResponse>
+## be.ping({ host, port, transport, raknetBackend, timeout, signal }) : Promise<PingResponse>
 
 Probe both transports concurrently and return the first readable advertisement, with `transport: 'raknet'` or `'nethernet'`. Explicit `transport` or `nethernet` options restrict discovery. Empty replies are ignored; losing probes are cancelled. `timeout` bounds discovery (automatic default: 1000ms), and `signal` cancels it. If both probes fail, the `AggregateError.errors` array contains their failures.
 
